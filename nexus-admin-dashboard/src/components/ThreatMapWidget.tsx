@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API_BASE_URL } from '@/config';
-import { Shield, Activity, Globe, Crosshair, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Activity, Globe, Crosshair, RefreshCw } from 'lucide-react';
 
 interface Threat {
     id: string;
@@ -43,7 +43,7 @@ export default function ThreatMapWidget() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timeoutId = setTimeout(() => setMounted(true), 0);
         const eventSource = new EventSource(`${API_BASE_URL}/api/stream/threats`);
 
         eventSource.onmessage = (event) => {
@@ -65,10 +65,13 @@ export default function ThreatMapWidget() {
                     }
                     return node;
                 }));
-            } catch (e) { }
+            } catch { }
         };
 
-        return () => eventSource.close();
+        return () => {
+            clearTimeout(timeoutId);
+            eventSource.close();
+        };
     }, []);
 
     // ♻️ AUTO-REPAIR LOGIC (Reset node status after clear time)
@@ -113,7 +116,7 @@ export default function ThreatMapWidget() {
                     <line x1="0" y1={MAP_HEIGHT / 2} x2={MAP_WIDTH} y2={MAP_HEIGHT / 2} stroke="rgba(6,182,212,0.05)" strokeWidth="0.5" />
 
                     {/* 🛡️ SENTINEL NODES (Fixed) */}
-                    {sentinels.map((node, i) => {
+                    {sentinels.map((node) => {
                         const { x, y } = project(node.lat, node.lng);
                         const isBreached = node.status === 'breached';
                         const isAttacked = node.status === 'under_attack';

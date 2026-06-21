@@ -65,7 +65,7 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
   const prevHoneypotRef = useRef(0)
   const isFirstFetch = useRef(true)
 
-  const initialTimeline = useMemo(() => {
+  const [history, setHistory] = useState<{ time: string; allowed: number; honeypot: number }[]>(() => {
     const now = Date.now();
     return Array.from({ length: 40 }).map((_, i) => {
       const time = new Date(now - (39 - i) * 2000)
@@ -75,10 +75,12 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
         honeypot: 0
       }
     })
-  }, []);
+  });
 
-  const timeline = useRef<{ time: string; allowed: number; honeypot: number }[]>(initialTimeline)
-  const [history, setHistory] = useState<{ time: string; allowed: number; honeypot: number }[]>(initialTimeline)
+  const timeline = useRef<{ time: string; allowed: number; honeypot: number }[]>([]);
+  if (timeline.current.length === 0) {
+    timeline.current = history;
+  }
 
   useEffect(() => {
     let pollingActive = true;
@@ -233,7 +235,7 @@ function useIPMonitoring(intervalMs: number = 2000) {
 interface DesktopIconProps {
   id: string;
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   onClick: (id: string) => void;
   isOpen: boolean;
 }
@@ -683,14 +685,15 @@ const NCCDashboard = () => {
       const data = await res.json();
       setAuditResult(data);
       setAuditStatus("COMPLETED");
-    } catch (err: any) {
+    } catch (err) {
       setAuditStatus("ERROR");
-      setAuditError(err.message || "Connection to Gateway lost or script execution timed out.");
+      const errMsg = err instanceof Error ? err.message : "Connection to Gateway lost or script execution timed out.";
+      setAuditError(errMsg);
     }
   };
 
   const handlePanic = async () => {
-    try { await fetch(`${API_BASE_URL}/api/panic`, { method: "POST" }) } catch (err) {}
+    try { await fetch(`${API_BASE_URL}/api/panic`, { method: "POST" }) } catch {}
   }
 
   const handleDeleteDomain = async () => {
@@ -718,7 +721,7 @@ const NCCDashboard = () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/system/reset`, { method: "POST", mode: 'cors' })
         if (res.ok) window.location.reload();
-      } catch (err) {}
+      } catch {}
     }
   }
 

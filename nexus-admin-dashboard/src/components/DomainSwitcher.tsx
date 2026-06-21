@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Globe, ChevronDown, Check, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { Globe, ChevronDown, Check, Plus } from 'lucide-react';
 import { API_BASE_URL } from '@/config';
 
 interface DomainSwitcherProps {
@@ -15,31 +15,37 @@ export default function DomainSwitcher({ activeDomain, onDomainChange, onAddClic
     const [isOpen, setIsOpen] = useState(false);
     const [domains, setDomains] = useState<string[]>(['all']);
 
-    const fetchDomains = async () => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/domains`, {
-                signal: controller.signal,
-                mode: 'cors'
-            });
-            clearTimeout(timeoutId);
-
-            if (res.ok) {
-                const data = await res.json();
-                const fetchedDomains = data?.domains || (Array.isArray(data) ? data : []);
-                if (fetchedDomains.length > 0) {
-                    setDomains(['all', ...fetchedDomains.filter((d: string) => d !== 'all')]);
-                }
-            }
-        } catch (err) {}
-    };
-
     useEffect(() => {
+        let active = true;
+        const fetchDomains = async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/domains`, {
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                clearTimeout(timeoutId);
+
+                if (res.ok && active) {
+                    const data = await res.json();
+                    const fetchedDomains = data?.domains || (Array.isArray(data) ? data : []);
+                    if (fetchedDomains.length > 0) {
+                        setDomains(['all', ...fetchedDomains.filter((d: string) => d !== 'all')]);
+                    }
+                }
+            } catch {
+                // ignore
+            }
+        };
+
         fetchDomains();
         const interval = setInterval(fetchDomains, 10000);
-        return () => clearInterval(interval);
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
     }, [refreshTrigger]);
 
     return (
