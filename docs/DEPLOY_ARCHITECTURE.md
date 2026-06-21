@@ -14,25 +14,25 @@ Dalam lingkungan produksi, arsitektur sistem ini dibagi menjadi dua zona utama g
 
 ```mermaid
 graph TD
-    subgraph Zona Internet Publik
-        User[User Steril]
-        Hacker[Hacker / Bot]
+    subgraph zone_internet ["Zona Internet Publik"]
+        User["User Steril"]
+        Hacker["Hacker / Bot"]
     end
 
-    subgraph Edge Layer (Zone A - IP Publik)
-        Gateway[Go Core Gateway: Port 80/443]
+    subgraph zone_edge ["Edge Layer (Zone A - IP Publik)"]
+        Gateway["Go Core Gateway: Port 80/443"]
     end
 
-    subgraph Private Subnet (Zone A - Steril)
-        App[Website Asli / Backend: Port 3001]
-        DB[(PostgreSQL & Redis)]
-        eBPF[eBPF / XDP Kernel Map]
+    subgraph zone_private ["Private Subnet (Zone A - Steril)"]
+        App["Website Asli / Backend: Port 3001"]
+        DB[("PostgreSQL & Redis")]
+        eBPF["eBPF / XDP Kernel Map"]
     end
 
-    subgraph SOC Internal Network (Zone B - VPN/SSH Tunnel)
-        Dashboard[Next.js Command Center: Port 3000]
-        AI[AI Reasoning Layer: Ollama]
-        Analyst[Security Analyst / Admin SOC]
+    subgraph zone_soc ["SOC Internal Network (Zone B - VPN/SSH Tunnel)"]
+        Dashboard["Next.js Command Center: Port 3000"]
+        AI["AI Reasoning Layer: Ollama"]
+        Analyst["Security Analyst / Admin SOC"]
     end
 
     %% Jalur Lalu Lintas Data Plane
@@ -42,7 +42,7 @@ graph TD
     %% Filter & Mitigasi Gateway
     Gateway -->|1. Validasi Hash & Blacklist| eBPF
     Gateway -->|2. Lewati jika Bersih| App
-    Gateway -->|3. Alihkan jika Terdeteksi Serangan| Honeypot[Honeypot Sandbox: Port 9090]
+    Gateway -->|3. Alihkan jika Terdeteksi Serangan| Honeypot["Honeypot Sandbox: Port 9090"]
     
     %% Jejak Forensik & Komunikasi Kontrol
     Gateway -->|Kirim Log Forensik| DB
