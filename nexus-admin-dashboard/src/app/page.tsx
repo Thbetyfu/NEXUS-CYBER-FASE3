@@ -7,20 +7,19 @@
    - Improved UX: Desktop Icons, Snappy Windows, Active Focus
 */
 
-import React, { useEffect, useState, useRef, useCallback } from "react"
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import {
   Shield, Activity, ShieldAlert, Cpu, Globe, Terminal,
-  RotateCcw, WifiOff, Layout, Maximize2, ShieldCheck, Lock,
-  Database, Server, Monitor, Users, Ban
+  WifiOff, ShieldCheck, Lock,
+  Database, Users, Ban
 } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer
+  AreaChart, Area, CartesianGrid, ResponsiveContainer
 } from "recharts"
 import { AnimatePresence, motion } from "framer-motion";
 
 // Components
 import NechatWidget from '@/components/NechatWidget';
-import DomainSwitcher from '@/components/DomainSwitcher';
 import AddRouteModal from '@/components/AddRouteModal';
 import AiTerminalWidget from '@/components/AiTerminalWidget';
 import ThreatMapWidget from '@/components/ThreatMapWidget';
@@ -63,17 +62,20 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
   const prevHoneypotRef = useRef(0)
   const isFirstFetch = useRef(true)
 
-  const initialTimeline = Array.from({ length: 40 }).map((_, i) => {
-    const time = new Date(Date.now() - (39 - i) * 2000)
-    return {
-      time: time.toLocaleTimeString("id-ID", { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      allowed: 0,
-      honeypot: 0
-    }
-  })
+  const initialTimeline = useMemo(() => {
+    const now = Date.now();
+    return Array.from({ length: 40 }).map((_, i) => {
+      const time = new Date(now - (39 - i) * 2000)
+      return {
+        time: time.toLocaleTimeString("id-ID", { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        allowed: 0,
+        honeypot: 0
+      }
+    })
+  }, []);
 
-  const timeline = useRef<any[]>(initialTimeline)
-  const [history, setHistory] = useState<any[]>(initialTimeline)
+  const timeline = useRef<{ time: string; allowed: number; honeypot: number }[]>(initialTimeline)
+  const [history, setHistory] = useState<{ time: string; allowed: number; honeypot: number }[]>(initialTimeline)
 
   useEffect(() => {
     let pollingActive = true;
@@ -131,7 +133,7 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
         timeline.current = [...timeline.current, point].slice(-40)
         setHistory([...timeline.current])
 
-      } catch (error) {
+      } catch {
         if (pollingActive) setIsLive(false)
       }
     };
@@ -155,7 +157,7 @@ function useAIEvents(url: string, intervalMs: number = 1000) {
         if (!res.ok) return;
         const data = await res.json();
         if (pollingActive) setEvents(data || []);
-      } catch (err) { }
+      } catch { }
     };
     fetchAPI();
     const timer = setInterval(fetchAPI, intervalMs);
@@ -214,7 +216,10 @@ function useIPMonitoring(intervalMs: number = 2000) {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    const initFetch = async () => {
+      await fetchData();
+    };
+    initFetch();
     const interval = setInterval(fetchData, intervalMs);
     return () => clearInterval(interval);
   }, [fetchData, intervalMs]);
@@ -222,8 +227,16 @@ function useIPMonitoring(intervalMs: number = 2000) {
   return { entries, blacklist, loading, refetch: fetchData };
 }
 
+interface DesktopIconProps {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  onClick: (id: string) => void;
+  isOpen: boolean;
+}
+
 // Sub-component: Desktop Icon
-const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: any) => (
+const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: DesktopIconProps) => (
   <motion.button
     whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
     whileTap={{ scale: 0.95 }}
@@ -571,7 +584,7 @@ const NCCDashboard = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [logLimit, setLogLimit] = useState<number>(10);
   
-  const { logs, metrics, history, shufflerData, isLive, isUnlicensed } = useTelemetry(`http://localhost:8080/api/telemetry?domain=${activeDomain}`, 2000)
+  const { logs, metrics, history, isLive, isUnlicensed } = useTelemetry(`http://localhost:8080/api/telemetry?domain=${activeDomain}`, 2000)
   const aiEvents = useAIEvents('http://localhost:8080/api/ai-events', 1000)
   const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
 
@@ -598,7 +611,7 @@ const NCCDashboard = () => {
 
   // System State
   const [isEmergency, setIsEmergency] = useState(false);
-  const [lastHoneypotCount, setLastHoneypotCount] = useState(0);
+  const lastHoneypotCountRef = useRef(0);
 
   // Window Management State
   const [openWindows, setOpenWindows] = useState<string[]>(["metrics", "threat-map", "ai-terminal", "system-status"]);
@@ -631,12 +644,12 @@ const NCCDashboard = () => {
   }, [openWindows, handleFocusWindow]);
 
   useEffect(() => {
-    const hasNewThreat = metrics.honeypot > lastHoneypotCount && lastHoneypotCount !== 0;
+    const hasNewThreat = metrics.honeypot > lastHoneypotCountRef.current && lastHoneypotCountRef.current !== 0;
     const latestLogIsThreat = logs.length > 0 && logs[0].status !== "ALLOWED";
     if (hasNewThreat || latestLogIsThreat) {
       if (!isEmergency) setIsEmergency(true);
     }
-    setLastHoneypotCount(metrics.honeypot);
+    lastHoneypotCountRef.current = metrics.honeypot;
   }, [metrics.honeypot, logs, isEmergency]);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
