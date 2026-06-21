@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/bpf"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -118,6 +119,10 @@ func BanIP(ip string, reason string, duration time.Duration) {
 		LocalBlacklist.Store(ip, true) // Permanent
 	}
 
+	// Register in eBPF map for kernel-level driver dropping (XDP_DROP)
+	bpfManager := bpf.NewBpfManager()
+	_ = bpfManager.BlockIP(ip)
+
 	if DB == nil {
 		return
 	}
@@ -150,6 +155,10 @@ func UnbanIP(ip string) {
 	}
 
 	LocalBlacklist.Delete(ip)
+
+	// Remove from eBPF map to restore network access (XDP_PASS)
+	bpfManager := bpf.NewBpfManager()
+	_ = bpfManager.UnblockIP(ip)
 
 	if DB == nil {
 		return

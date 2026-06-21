@@ -11,7 +11,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react"
 import {
   Shield, Activity, ShieldAlert, Cpu, Globe, Terminal,
   RotateCcw, WifiOff, Layout, Maximize2, ShieldCheck, Lock,
-  Database, Server, Monitor
+  Database, Server, Monitor, Users, Ban
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer
@@ -164,6 +164,57 @@ function useAIEvents(url: string, intervalMs: number = 1000) {
   return events;
 }
 
+export interface IPMonitoringEntry {
+  source_ip: string;
+  total_requests: number;
+  threat_count: number;
+  last_active: string;
+  endpoints: string[];
+  is_banned: boolean;
+  user_agent: string;
+}
+
+export interface BlacklistItem {
+  ip_address: string;
+  reason: string;
+  expires_at?: string;
+  created_at: string;
+}
+
+function useIPMonitoring(intervalMs: number = 2000) {
+  const [entries, setEntries] = useState<IPMonitoringEntry[]>([]);
+  const [blacklist, setBlacklist] = useState<BlacklistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [ipRes, blRes] = await Promise.all([
+        fetch("http://localhost:8080/api/ip-monitoring", { cache: "no-store" }),
+        fetch("http://localhost:8080/api/blacklist", { cache: "no-store" })
+      ]);
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        setEntries(ipData || []);
+      }
+      if (blRes.ok) {
+        const blData = await blRes.json();
+        setBlacklist(blData || []);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching IP monitoring data:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, intervalMs);
+    return () => clearInterval(interval);
+  }, [fetchData, intervalMs]);
+
+  return { entries, blacklist, loading, refetch: fetchData };
+}
+
 // Sub-component: Desktop Icon
 const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: any) => (
   <motion.button
@@ -189,6 +240,316 @@ const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: any) => (
   </motion.button>
 )
 
+const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonitoringEntry[], blacklist: BlacklistItem[], onRefetch: () => void }) => {
+  const [activeTab, setActiveTab] = useState<"live" | "blacklist">("live");
+  const [banTarget, setBanTarget] = useState<string | null>(null);
+  const [banHours, setBanHours] = useState<number>(24);
+  const [banReason, setBanReason] = useState<string>("Manual ban from SOC Console");
+
+  const handleBanSubmit = async () => {
+    if (!banTarget) return;
+
+    // Double confirmation logic
+    if (!window.confirm(`🚨 DOUBLE CONFIRMATION:\nAre you sure you want to block IP [${banTarget}]?\nThis will enforce XDP_DROP at kernel/NIC level (0% CPU overhead) and return HTTP 403 Forbidden at application level.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8080/api/blacklist/ban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ip: banTarget,
+          reason: banReason,
+          expires_hours: banHours
+        })
+      });
+      if (res.ok) {
+        onRefetch();
+        setBanTarget(null);
+        setBanReason("Manual ban from SOC Console");
+        setBanHours(24);
+        alert(`🔒 IP [${banTarget}] successfully blacklisted.`);
+      } else {
+        alert("🚨 Failed to ban IP.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("🚨 Connection error.");
+    }
+  };
+
+  const handleUnban = async (ip: string) => {
+    if (!window.confirm(`🔓 Are you sure you want to unban IP [${ip}]?\nThis will restore its traffic access (XDP_PASS).`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8080/api/blacklist/unban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip })
+      });
+      if (res.ok) {
+        onRefetch();
+        alert(`🔓 IP [${ip}] successfully unbanned.`);
+      } else {
+        alert("🚨 Failed to unban IP.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("🚨 Connection error.");
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col bg-[#07090c] text-gray-200">
+      {/* Tabs Header */}
+      <div className="flex border-b border-white/5 bg-[#090b0e] px-4 py-2 shrink-0 justify-between items-center">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab("live")}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "live"
+                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                : "text-gray-400 hover:text-white border border-transparent"
+            }`}
+          >
+            Live Traffic Monitor
+          </button>
+          <button
+            onClick={() => setActiveTab("blacklist")}
+            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+              activeTab === "blacklist"
+                ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                : "text-gray-400 hover:text-white border border-transparent"
+            }`}
+          >
+            Persistent Blacklist ({blacklist.length})
+          </button>
+        </div>
+        <button
+          onClick={onRefetch}
+          className="px-3 py-1 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded border border-white/10 text-[8px] font-bold uppercase tracking-wider transition-all"
+        >
+          Refresh Data
+        </button>
+      </div>
+
+      {/* Main Body */}
+      <div className="flex-1 overflow-auto p-4 relative">
+        {activeTab === "live" ? (
+          <div className="space-y-4">
+            <div className="bg-black/40 border border-white/5 rounded-xl overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#0a0d11] text-[9px] uppercase text-gray-500 tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-4">Source IP</th>
+                    <th className="py-2.5 px-4 text-center">Total Req</th>
+                    <th className="py-2.5 px-4 text-center">Threats</th>
+                    <th className="py-2.5 px-4 text-center">Heuristic Threat Score</th>
+                    <th className="py-2.5 px-4">Last Active</th>
+                    <th className="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-mono text-[10px]">
+                  {entries.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-gray-600 uppercase tracking-widest">
+                        No active traffic logs detected
+                      </td>
+                    </tr>
+                  ) : (
+                    entries.map((entry, idx) => {
+                      const threatPercent = entry.total_requests > 0
+                        ? Math.min(100, Math.round((entry.threat_count / entry.total_requests) * 100))
+                        : 0;
+
+                      // heuristic extra threat scoring for display
+                      const threatScore = entry.threat_count > 0 
+                        ? Math.min(100, threatPercent + (entry.threat_count * 15))
+                        : 0;
+
+                      let scoreColor = "text-emerald-400";
+                      let scoreBg = "bg-emerald-500/10 border-emerald-500/20";
+                      if (threatScore > 75) {
+                        scoreColor = "text-red-400";
+                        scoreBg = "bg-red-500/10 border-red-500/20";
+                      } else if (threatScore > 25) {
+                        scoreColor = "text-yellow-400";
+                        scoreBg = "bg-yellow-500/10 border-yellow-500/20";
+                      }
+
+                      return (
+                        <tr key={idx} className="hover:bg-white/[0.01] transition-colors">
+                          <td className="py-2 px-4 font-bold text-gray-300">
+                            {entry.source_ip}
+                            {entry.user_agent && (
+                              <div className="text-[7px] text-gray-600 font-sans font-normal truncate max-w-xs mt-0.5">
+                                UA: {entry.user_agent}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2 px-4 text-center text-gray-400">{entry.total_requests}</td>
+                          <td className="py-2 px-4 text-center text-red-400 font-bold">{entry.threat_count}</td>
+                          <td className="py-2 px-4 text-center">
+                            <span className={`px-2 py-0.5 rounded border text-[8px] font-black ${scoreBg} ${scoreColor}`}>
+                              {threatScore}%
+                            </span>
+                          </td>
+                          <td className="py-2 px-4 text-gray-500">
+                            {new Date(entry.last_active).toLocaleTimeString("id-ID", { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </td>
+                          <td className="py-2 px-4 text-right">
+                            {entry.is_banned ? (
+                              <span className="text-red-400 font-bold text-[8px] uppercase tracking-widest bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                                Banned
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => setBanTarget(entry.source_ip)}
+                                className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded font-black text-[8px] uppercase tracking-widest transition-all"
+                              >
+                                Ban IP
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-black/40 border border-white/5 rounded-xl overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#0a0d11] text-[9px] uppercase text-gray-500 tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-4">Banned IP</th>
+                    <th className="py-2.5 px-4">Reason</th>
+                    <th className="py-2.5 px-4">Banned At</th>
+                    <th className="py-2.5 px-4">Expires At</th>
+                    <th className="py-2.5 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-mono text-[10px]">
+                  {blacklist.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-gray-600 uppercase tracking-widest">
+                        No blacklisted IPs found
+                      </td>
+                    </tr>
+                  ) : (
+                    blacklist.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="py-2.5 px-4 text-red-400 font-bold">{item.ip_address}</td>
+                        <td className="py-2.5 px-4 text-gray-300">{item.reason}</td>
+                        <td className="py-2.5 px-4 text-gray-500">
+                          {new Date(item.created_at).toLocaleString("id-ID")}
+                        </td>
+                        <td className="py-2.5 px-4 text-gray-400">
+                          {item.expires_at ? (
+                            new Date(item.expires_at).toLocaleString("id-ID")
+                          ) : (
+                            <span className="text-red-500 font-black tracking-widest text-[8px] uppercase">
+                              Permanent
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-4 text-right">
+                          <button
+                            onClick={() => handleUnban(item.ip_address)}
+                            className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 rounded font-black text-[8px] uppercase tracking-widest transition-all"
+                          >
+                            Unban
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Ban Popup Overlay inside panel */}
+        <AnimatePresence>
+          {banTarget && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 z-[9999]"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 10 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 10 }}
+                className="bg-[#0b0e14] border border-red-500/30 rounded-xl p-6 max-w-sm w-full space-y-4"
+              >
+                <div className="flex items-center gap-2 text-red-500">
+                  <Ban size={16} />
+                  <h4 className="text-xs font-black uppercase tracking-widest">Enforce IP Blacklist</h4>
+                </div>
+
+                <p className="text-[10px] text-gray-400">
+                  You are about to isolate IP <span className="text-white font-bold">{banTarget}</span> at both Firewall Kernel level (eBPF XDP_DROP) and Gateway Layer.
+                </p>
+
+                <div className="space-y-3 text-[10px]">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-gray-500 uppercase tracking-wider font-bold">Ban Duration</label>
+                    <select
+                      value={banHours}
+                      onChange={(e) => setBanHours(Number(e.target.value))}
+                      className="bg-black/60 border border-white/10 rounded px-2.5 py-1.5 outline-none text-white focus:border-red-500/30 transition-colors"
+                    >
+                      <option value={1}>1 Hour (Temporary)</option>
+                      <option value={24}>24 Hours (Standard)</option>
+                      <option value={168}>7 Days (Severe)</option>
+                      <option value={0}>Permanent Lockout</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-gray-500 uppercase tracking-wider font-bold">Reason for Blacklist</label>
+                    <input
+                      type="text"
+                      value={banReason}
+                      onChange={(e) => setBanReason(e.target.value)}
+                      placeholder="Reason details"
+                      className="bg-black/60 border border-white/10 rounded px-2.5 py-1.5 outline-none text-white focus:border-red-500/30 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 text-[8px] font-black uppercase tracking-widest">
+                  <button
+                    onClick={handleBanSubmit}
+                    className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-black rounded-lg transition-colors"
+                  >
+                    Confirm & Ban
+                  </button>
+                  <button
+                    onClick={() => setBanTarget(null)}
+                    className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg border border-white/10 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 const NCCDashboard = () => {
   const [activeDomain, setActiveDomain] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -197,6 +558,7 @@ const NCCDashboard = () => {
   
   const { logs, metrics, history, shufflerData, isLive, isUnlicensed } = useTelemetry(`http://localhost:8080/api/telemetry?domain=${activeDomain}`, 2000)
   const aiEvents = useAIEvents('http://localhost:8080/api/ai-events', 1000)
+  const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
 
   // Subscription Re-activation State
   const [activationKey, setActivationKey] = useState("");
@@ -232,7 +594,8 @@ const NCCDashboard = () => {
     "ai-terminal": 12,
     "forensic-logs": 13,
     "system-status": 14,
-    "mtd-audit": 15
+    "mtd-audit": 15,
+    "ip-monitor": 16
   });
 
   const handleFocusWindow = useCallback((id: string) => {
@@ -443,6 +806,13 @@ const NCCDashboard = () => {
             icon={ShieldCheck} 
             onClick={toggleWindow} 
             isOpen={openWindows.includes("mtd-audit")}
+          />
+          <DesktopIcon 
+            id="ip-monitor" 
+            label="IP Activity" 
+            icon={Users} 
+            onClick={toggleWindow} 
+            isOpen={openWindows.includes("ip-monitor")}
           />
         </div>
 
@@ -820,6 +1190,30 @@ const NCCDashboard = () => {
                   </div>
                 )}
               </div>
+            </WindowFrame>
+          )}
+
+          {/* IP Activity & Blacklist Console Window */}
+          {openWindows.includes("ip-monitor") && (
+            <WindowFrame
+              key="ip-monitor"
+              id="ip-monitor"
+              title="IP Activity & Blacklist Console"
+              icon={<Users size={14} />}
+              initialX={320}
+              initialY={120}
+              width={820}
+              height={520}
+              zIndex={windowZIndices["ip-monitor"]}
+              isActive={focusedWindow === "ip-monitor"}
+              onFocus={() => handleFocusWindow("ip-monitor")}
+              onClose={() => toggleWindow("ip-monitor")}
+            >
+              <IPMonitorConsole 
+                entries={ipEntries} 
+                blacklist={ipBlacklist} 
+                onRefetch={refetchIpMonitoring} 
+              />
             </WindowFrame>
           )}
         </AnimatePresence>

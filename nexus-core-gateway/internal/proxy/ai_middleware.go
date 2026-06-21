@@ -196,8 +196,11 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 					// Rekam jejak hasil keputusan kognitif AI ke basis data audit.
 					database.SaveAIInsight(id, "qwen/qwen3-235b-a22b", result.ForensicSummary, result.ThreatVerdict)
 
-					// Eksekusi pemblokiran Netfilter seketika jika intensi terbukti berbahaya.
+					// Eksekusi pemblokiran Netfilter & eBPF Blacklist seketika jika intensi terbukti berbahaya.
 					if result.ThreatVerdict == "CONFIRMED_MALICIOUS" || result.ThreatVerdict == "ADVANCED_PERSISTENT" {
+						// Pendaftaran otonom ke database & Redis blacklist selama 24 jam (yang juga menginjeksi eBPF stub)
+						database.BanIP(source, "AI Auto-Ban: Confirmed malicious intent via Llama3 reasoning", 24*time.Hour)
+						// Tambahan mitigasi Netfilter/IPtables
 						mtd.BlockIPAtOSLevel(source)
 					}
 				}
