@@ -181,6 +181,13 @@ export interface BlacklistItem {
   created_at: string;
 }
 
+/*
+   useIPMonitoring Hook
+   Alasan Arsitektural (Why):
+   Menyediakan sinkronisasi asinkron log lalu lintas IP aktif dan daftar hitam persisten secara real-time.
+   Menggunakan Promise.all untuk mengambil data secara paralel dari endpoint /api/ip-monitoring
+   dan /api/blacklist guna meminimalkan RTT (Round Trip Time) koneksi HTTP ke gateway control plane.
+*/
 function useIPMonitoring(intervalMs: number = 2000) {
   const [entries, setEntries] = useState<IPMonitoringEntry[]>([]);
   const [blacklist, setBlacklist] = useState<BlacklistItem[]>([]);
@@ -240,6 +247,14 @@ const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: any) => (
   </motion.button>
 )
 
+/*
+   IPMonitorConsole Component
+   Alasan Arsitektural (Why):
+   Menyediakan antarmuka visual terpadu bagi analis SOC untuk melacak anomali per-IP,
+   melihat riwayat User-Agent, serta memicu/mencabut pemblokiran firewall secara asinkron.
+   Fitur pemblokiran dilengkapi dengan konfirmasi ganda (double-confirm) untuk mencegah
+   kesalahan operasional (human error) yang dapat mengisolasi node administrator internal secara tidak sengaja.
+*/
 const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonitoringEntry[], blacklist: BlacklistItem[], onRefetch: () => void }) => {
   const [activeTab, setActiveTab] = useState<"live" | "blacklist">("live");
   const [banTarget, setBanTarget] = useState<string | null>(null);

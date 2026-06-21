@@ -104,7 +104,14 @@ func IsIPBlacklisted(ip string) bool {
 	return result.Error == nil
 }
 
-// BanIP menambahkan IP ke daftar hitam di database dan RAM local
+// BanIP menambahkan IP ke daftar hitam di database dan RAM local.
+//
+// Alasan Arsitektural (Why):
+// 1. IP yang diblokir harus disimpan di memori RAM local (LocalBlacklist) untuk pengecekan O(1) super cepat pada WAF middleware
+//    tanpa perlu melakukan query SQL di setiap request masuk yang dapat memperlambat gerbang proxy secara ekstrem.
+// 2. Memanggil bpfManager.BlockIP untuk memprogram XDP_DROP tingkat driver jaringan, sehingga lalu lintas dari IP ini
+//    dapat dijatuhkan seketika oleh kernel sebelum diproses di user-space, mengeliminasi CPU/memory amplification attack.
+// 3. Menyimpan data di PostgreSQL guna memenuhi klausul log audit ISO 27001 untuk pelaporan kepatuhan keamanan (ISMS).
 func BanIP(ip string, reason string, duration time.Duration) {
 	if idx := strings.Index(ip, ":"); idx != -1 {
 		ip = ip[:idx]
@@ -148,7 +155,13 @@ func BanIP(ip string, reason string, duration time.Duration) {
 	}
 }
 
-// UnbanIP menghapus IP dari daftar hitam di database dan RAM local
+// UnbanIP menghapus IP dari daftar hitam di database dan RAM local.
+//
+// Alasan Arsitektural (Why):
+// 1. Membersihkan memori RAM local (LocalBlacklist) agar host dapat kembali berinteraksi dengan gateway secara instan.
+// 2. Memanggil bpfManager.UnblockIP untuk menghapus entri dari tabel kernel eBPF (mengembalikan aksi ke XDP_PASS).
+// 3. Melakukan pembaruan non-destruktif di database PostgreSQL (mengubah is_active ke false) alih-alih menghapus barisnya,
+//    agar jejak audit forensik tentang kapan pemblokiran dilakukan dan dicabut tetap tersimpan untuk keperluan audit kepatuhan.
 func UnbanIP(ip string) {
 	if idx := strings.Index(ip, ":"); idx != -1 {
 		ip = ip[:idx]

@@ -190,6 +190,12 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 			np.Logger.EnrichLog(&tLog, r)
 			logID := np.Logger.LogTraffic(tLog)
 
+			// Alasan Arsitektural (Why):
+			// Evaluasi model AI Kognitif (Reasoning Layer) membutuhkan waktu komputasi intensif (~1-5 detik).
+			// Untuk mencegah lonjakan latensi (latency spikes) pada request klien yang sah, audit kognitif ini
+			// dijalankan secara asinkron di dalam goroutine latar belakang. Klien langsung menerima respon (HTTP PASS),
+			// namun jika analisis asinkron mengonfirmasi ancaman berbahaya (CONFIRMED_MALICIOUS), IP penyerang
+			// akan diblokir seketika pada request berikutnya melalui database.BanIP (Redis/DB + eBPF) dan mtd.BlockIPAtOSLevel (iptables).
 			go func(data string, source string, id uuid.UUID) {
 				result, err := np.Reasoning.AnalyzeIntent(data)
 				if err == nil && result != nil {
