@@ -16,6 +16,7 @@ import (
 	"github.com/nexus-cyber/nexus-core-gateway/internal/licensing"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/proxy"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/repair"
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
 )
 
@@ -44,6 +45,9 @@ func main() {
 	loadEnv()
 	fmt.Println("[NEXUS] NEXUS CYBER GATEWAY - ENTERPRISE PRODUCTION INITIALIZING...")
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// 0. Initialize Distributed State (Redis & Postgres)
 	mtd.InitRedis()
 	database.InitPostgres()
@@ -65,6 +69,18 @@ func main() {
 		log.Fatalf("[NEXUS] Failed to initiate logger: %v", err)
 	}
 	defer telemetry.Close()
+
+	// Initialize System Integrity Monitor (Phase 8)
+	monitoredDir := os.Getenv("INTEGRITY_MONITORED_DIR")
+	if monitoredDir == "" {
+		monitoredDir = "../playground/vulnerable-ojk-portal/templates"
+	}
+	integrityMonitor, err := repair.NewIntegrityMonitor(monitoredDir, telemetry)
+	if err != nil {
+		log.Printf("[SELF-HEAL-WARN] Integrity monitor initialization failed: %v", err)
+	} else {
+		go integrityMonitor.Start(ctx, 2*time.Second)
+	}
 
 	// Register Real-time AI Event Streaming (Powering the Command Center SOC Terminal)
 	telemetry.OnAIEvent = func(event logger.AIEventLog) {
@@ -164,6 +180,10 @@ func main() {
 	mux.HandleFunc("/api/panic", panicHandler(shuffler, telemetry))                            // Phase 6 Rescue Protocol
 	mux.HandleFunc("/api/report/generate", reportGenerateHandler(telemetry))                   // [NEW: EXECUTIVE REPORTING]
 	mux.HandleFunc("/api/stream/threats", threatsStreamHandler(gateway))                       // [NEW: THREAT MAP STREAMS]
+	mux.HandleFunc("/api/ip-monitoring", ipMonitoringHandler(telemetry))                       // [NEW: IP MONITORING & TRACKING]
+	mux.HandleFunc("/api/blacklist", blacklistListHandler())                                   // [NEW: LIST BANNED IPS]
+	mux.HandleFunc("/api/blacklist/ban", blacklistBanHandler(telemetry))                       // [NEW: MANUAL/AI BAN IP]
+	mux.HandleFunc("/api/blacklist/unban", blacklistUnbanHandler(telemetry))                   // [NEW: MANUAL UNBAN IP]
 	mux.HandleFunc("/api/system/reset", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,9 @@ import (
 
 // DB adalah referensi singleton global untuk koneksi database GORM PostgreSQL.
 var DB *gorm.DB
+
+// Fallback in-memory blacklist for degraded mode when DB is nil
+var LocalBlacklist sync.Map
 
 // InitPostgres menginisialisasi pool koneksi database PostgreSQL dan menjalankan migrasi skema otomatis.
 //
@@ -68,6 +72,25 @@ func InitPostgres() {
 // Fungsi ini melakukan normalisasi IP (stripping port) dengan membuang tanda titik dua ":" dan nomor port di belakangnya
 // sebelum melakukan query. Ini menjamin pemblokiran IP bersifat mutlak tanpa peduli port mana yang digunakan peretas.
 func IsIPBlacklisted(ip string) bool {
+	// Normalisasi IP: Potong port jika ada (misal "192.168.1.10:49281" -> "192.168.1.10")
+	if idx := strings.Index(ip, ":"); idx != -1 {
+		ip = ip[:idx]
+	}
+
+	// 1. Cek local in-memory blacklist
+	if val, ok := LocalBlacklist.Load(ip); ok {
+		if expiresAt, ok2 := val.(time.Time); ok2 {
+			if time.Now().Before(expiresAt) {
+				return true
+			}
+			// Kedaluwarsa, hapus
+			LocalBlacklist.Delete(ip)
+		} else {
+			// Permanent ban di memori local
+			return true
+		}
+	}
+
 	if DB == nil {
 		return false
 	}
@@ -75,14 +98,66 @@ func IsIPBlacklisted(ip string) bool {
 	var blacklist models.IntelBlacklist
 	now := time.Now()
 	
-	// Normalisasi IP: Potong port jika ada (misal "192.168.1.10:49281" -> "192.168.1.10")
+	// Query dioptimalkan dengan memverifikasi masa berlaku blacklist (expires_at) secara real-time.
+	result := DB.Where("ip_address = ? AND is_active = true AND (expires_at IS NULL OR expires_at > ?)", ip, now).First(&blacklist)
+	return result.Error == nil
+}
+
+// BanIP menambahkan IP ke daftar hitam di database dan RAM local
+func BanIP(ip string, reason string, duration time.Duration) {
 	if idx := strings.Index(ip, ":"); idx != -1 {
 		ip = ip[:idx]
 	}
 
-	// Query dioptimalkan dengan memverifikasi masa berlaku blacklist (expires_at) secara real-time.
-	result := DB.Where("ip_address = ? AND is_active = true AND (expires_at IS NULL OR expires_at > ?)", ip, now).First(&blacklist)
-	return result.Error == nil
+	var expiresAt *time.Time
+	if duration > 0 {
+		exp := time.Now().Add(duration)
+		expiresAt = &exp
+		LocalBlacklist.Store(ip, exp)
+	} else {
+		LocalBlacklist.Store(ip, true) // Permanent
+	}
+
+	if DB == nil {
+		return
+	}
+
+	// Cek apakah data blacklist sudah ada
+	var blacklist models.IntelBlacklist
+	err := DB.Where("ip_address = ?", ip).First(&blacklist).Error
+	if err != nil {
+		blacklist = models.IntelBlacklist{
+			Base:      models.Base{ID: uuid.New()},
+			IPAddress: ip,
+			Reason:    reason,
+			ExpiresAt: expiresAt,
+			IsActive:  true,
+		}
+		DB.Create(&blacklist)
+	} else {
+		DB.Model(&blacklist).Updates(map[string]interface{}{
+			"is_active":  true,
+			"reason":     reason,
+			"expires_at": expiresAt,
+		})
+	}
+}
+
+// UnbanIP menghapus IP dari daftar hitam di database dan RAM local
+func UnbanIP(ip string) {
+	if idx := strings.Index(ip, ":"); idx != -1 {
+		ip = ip[:idx]
+	}
+
+	LocalBlacklist.Delete(ip)
+
+	if DB == nil {
+		return
+	}
+
+	DB.Model(&models.IntelBlacklist{}).
+		Where("ip_address = ?", ip).
+		Update("is_active", false)
 }
 
 // SaveAIInsight menyimpan hasil analisis forensik kustom dari Llama/Qwen ke database.

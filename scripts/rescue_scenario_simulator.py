@@ -2,9 +2,11 @@ import requests
 import time
 import base64
 import sys
+import os
 
 # TARGET CONFIG
 GATEWAY_URL = "http://localhost:8080"
+TEMPLATE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../playground/vulnerable-ojk-portal/templates/index.html"))
 
 # ANSI Colors
 RED = '\033[91m'
@@ -43,16 +45,17 @@ try:
         print(f"{RED}[!] Nexus AI Reasoning (Qwen) sedang menganalisa intent penyerang secara asinkron...{RESET}")
 except Exception as e:
     print(f"{RED}[!] Koneksi Gagal: {e}{RESET}")
+    print(f"{YELLOW}[*] Catatan: Pastikan Gateway sedang berjalan pada {GATEWAY_URL} untuk simulasi penuh.{RESET}")
     sys.exit(1)
 
-time.sleep(3)
+time.sleep(2)
 
 # ----------------------------------------------------
 # 🚨 STAGE 2: ADAPTIVE CRISIS (Sistem Mendeteksi Anomali)
 # ----------------------------------------------------
 print_step(2, "NEXUS INTELLIGENCE: Mendeteksi anomali pada pola request...")
 print("[~] Menganalisa ribuan log dalam milidetik...")
-time.sleep(2)
+time.sleep(1)
 print(f"{YELLOW}[ALERT] Anomali terdeteksi! Mengeksekusi 'Self-Repair' & 'Rescue Protocol' Otonom...{RESET}")
 
 # ----------------------------------------------------
@@ -69,10 +72,50 @@ try:
 except:
     print(f"{RED}[!] Gagal memicu protokol penyelamatan.{RESET}")
 
+time.sleep(2)
+
+# ----------------------------------------------------
+# 🛠️ STAGE 4: AUTONOMOUS SELF-REPAIR (Visual Rollback)
+# ----------------------------------------------------
+print_step(4, "Hacker mencoba merusak file templat visual (Web Defacement)...")
+if os.path.exists(TEMPLATE_FILE):
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        orig = f.read()
+        
+    print(f"[*] File target: templates/index.html")
+    print(f"{RED}[!] Simulating Defacement: Mengubah halaman utama ke website judi online...{RESET}")
+    
+    with open(TEMPLATE_FILE, "w", encoding="utf-8") as f:
+        f.write("<html><h1>SLOT GACOR MANIA - DEFACE SUCCESS</h1></html>")
+        
+    print(f"[*] Menunggu deteksi & pemulihan otonom dari System Integrity Monitor...")
+    
+    restored = False
+    start_time = time.time()
+    for _ in range(30):
+        time.sleep(0.1)
+        with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+            curr = f.read()
+        if curr == orig:
+            restored = True
+            duration = (time.time() - start_time) * 1000
+            break
+            
+    if restored:
+        print(f"{GREEN}[SUCCESS] Terdeteksi adanya perubahan hash file!{RESET}")
+        print(f"{GREEN}[SUCCESS] Restorasi baseline visual berhasil dilakukan otonom dalam {duration:.2f} ms!{RESET}")
+        print(f"{CYAN}[INFO] Mengirim log perbaikan asinkron (Layer: 'Self-Repair') ke Command Center.{RESET}")
+    else:
+        print(f"{RED}[FAIL] Gagal memulihkan file templates/index.html otomatis.{RESET}")
+        with open(TEMPLATE_FILE, "w", encoding="utf-8") as f:
+            f.write(orig)
+else:
+    print(f"{RED}[!] File target templates tidak ditemukan untuk simulasi deface.{RESET}")
+
 print(f"\n{MAGENTA}{'='*60}")
 print(f"{'SIMULASI SELESAI: SISTEM NEXUS BERHASIL MEMULIHKAN DIRI'.center(60)}")
 print(f"{'='*60}{RESET}")
-print(f"\n{YELLOW}💡 LIHAT DASHBOARD SEKARANG!{RESET}")
-print(f"1. Periksa log entry {BLUE}'RESCUE_PROTOCOL'{RESET} di Rogue Gallery.")
+print(f"\n{YELLOW}[DASHBOARD] LIHAT DASHBOARD SEKARANG!{RESET}")
+print(f"1. Periksa log entry {BLUE}'RESCUE_PROTOCOL'{RESET} dan {BLUE}'Self-Repair'{RESET} di Rogue Gallery.")
 print(f"2. Perhatikan status {BLUE}'Rescue Protocols'{RESET} bernilai minimal 1.")
 print(f"3. Gunakan {BLUE}NECHAT{RESET} (chat widget) dan tanyakan: 'Apa yang terjadi dengan sistem?'")

@@ -327,7 +327,6 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 		case cmd == "shuffle" || cmd == "/shuffle":
 			shuffler.ManualShuffle()
 			response = "[ACTION] Manual Topology Rotation Triggered. New port mapping established."
-
 		case strings.HasPrefix(cmd, "ban ") || strings.HasPrefix(cmd, "/ban "):
 			parts := strings.Fields(payload.Command)
 			if len(parts) < 2 {
@@ -335,15 +334,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				break
 			}
 			ipToBan := parts[1]
-			if database.DB != nil {
-				blacklist := models.IntelBlacklist{
-					Base:      models.Base{ID: uuid.New()},
-					IPAddress: ipToBan,
-					Reason:    "Manual ban from SOC CLI",
-					IsActive:  true,
-				}
-				database.DB.Create(&blacklist)
-			}
+			database.BanIP(ipToBan, "Manual ban from SOC CLI", 0)
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
 				Layer:        "Intel-Shield-Manual",
@@ -359,11 +350,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				break
 			}
 			ipToUnban := parts[1]
-			if database.DB != nil {
-				database.DB.Model(&models.IntelBlacklist{}).
-					Where("ip_address = ?", ipToUnban).
-					Update("is_active", false)
-			}
+			database.UnbanIP(ipToUnban)
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
 				Layer:        "Intel-Shield-Manual",
@@ -371,7 +358,6 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				DetailAction: fmt.Sprintf("[CLI-SHIELD] IP %s has been manually restored.", ipToUnban),
 			})
 			response = fmt.Sprintf("[SUCCESS] [SHIELD] IP %s successfully unbanned and restored.", ipToUnban)
-
 		case strings.HasPrefix(cmd, "sub ") || strings.HasPrefix(cmd, "/sub "):
 			parts := strings.Fields(payload.Command)
 			if len(parts) < 2 {
@@ -570,5 +556,277 @@ func runTestHandler() http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(response)
+	}
+}
+
+
+// IPMonitoringEntry holds aggregated IP activity metrics
+type IPMonitoringEntry struct {
+	SourceIP      string    `json:"source_ip"`
+	TotalRequests int       `json:"total_requests"`
+	ThreatCount   int       `json:"threat_count"`
+	LastActive    time.Time `json:"last_active"`
+	Endpoints     []string  `json:"endpoints"`
+	IsBanned      bool      `json:"is_banned"`
+	UserAgent     string    `json:"user_agent"`
+}
+
+// ipMonitoringHandler aggregates IP activity metrics from DB or RAM logs
+func ipMonitoringHandler(telemetry *logger.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		var list []IPMonitoringEntry
+
+		if database.DB != nil {
+			type DBResult struct {
+				SourceIP      string    `gorm:"column:source_ip"`
+				TotalRequests int       `gorm:"column:total_requests"`
+				ThreatCount   int       `gorm:"column:threat_count"`
+				LastActive    time.Time `gorm:"column:last_active"`
+				Endpoints     string    `gorm:"column:endpoints"`
+				UserAgent     string    `gorm:"column:user_agent"`
+			}
+			var dbResults []DBResult
+			// Using standard SQL aggregation compatible with PostgreSQL
+			err := database.DB.Model(&models.ThreatLog{}).
+				Select("source_ip, count(*) as total_requests, sum(case when status in ('BLOCKED', 'RATE_LIMITED', 'BANNED_IP_DIVERTED') then 1 else 0 end) as threat_count, max(created_at) as last_active, string_agg(distinct endpoint, ', ') as endpoints, max(user_agent) as user_agent").
+				Group("source_ip").
+				Scan(&dbResults).Error
+
+			if err == nil {
+				for _, res := range dbResults {
+					var eps []string
+					if res.Endpoints != "" {
+						eps = strings.Split(res.Endpoints, ", ")
+					} else {
+						eps = []string{}
+					}
+					list = append(list, IPMonitoringEntry{
+						SourceIP:      res.SourceIP,
+						TotalRequests: res.TotalRequests,
+						ThreatCount:   res.ThreatCount,
+						LastActive:    res.LastActive,
+						Endpoints:     eps,
+						IsBanned:      database.IsIPBlacklisted(res.SourceIP),
+						UserAgent:     res.UserAgent,
+					})
+				}
+			}
+		}
+
+		// Fallback to in-memory aggregation if DB is nil or failed
+		if len(list) == 0 {
+			logs := telemetry.GetRecentLogs()
+			ipMap := make(map[string]*IPMonitoringEntry)
+
+			for _, l := range logs {
+				ip := l.SourceIP
+				// strip port
+				if idx := strings.Index(ip, ":"); idx != -1 {
+					ip = ip[:idx]
+				}
+
+				entry, exists := ipMap[ip]
+				if !exists {
+					entry = &IPMonitoringEntry{
+						SourceIP:   ip,
+						LastActive: l.Timestamp,
+						IsBanned:   database.IsIPBlacklisted(ip),
+						UserAgent:  l.DeviceFingerprint,
+						Endpoints:  []string{},
+					}
+					ipMap[ip] = entry
+				}
+
+				entry.TotalRequests++
+				if l.Status == "BLOCKED" || l.Status == "RATE_LIMITED" || l.Status == "BANNED_IP_DIVERTED" {
+					entry.ThreatCount++
+				}
+				if l.Timestamp.After(entry.LastActive) {
+					entry.LastActive = l.Timestamp
+				}
+
+				// Add unique endpoint
+				found := false
+				for _, ep := range entry.Endpoints {
+					if ep == l.Endpoint {
+						found = true
+						break
+					}
+				}
+				if !found && l.Endpoint != "" {
+					entry.Endpoints = append(entry.Endpoints, l.Endpoint)
+				}
+			}
+
+			for _, v := range ipMap {
+				list = append(list, *v)
+			}
+		}
+
+		json.NewEncoder(w).Encode(list)
+	}
+}
+
+// blacklistListHandler lists all active blacklisted IPs
+func blacklistListHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		type BlacklistItem struct {
+			IPAddress string     `json:"ip_address"`
+			Reason    string     `json:"reason"`
+			ExpiresAt *time.Time `json:"expires_at,omitempty"`
+			CreatedAt time.Time  `json:"created_at"`
+		}
+
+		var list []BlacklistItem
+
+		if database.DB != nil {
+			var dbBlacklists []models.IntelBlacklist
+			now := time.Now()
+			err := database.DB.Where("is_active = true AND (expires_at IS NULL OR expires_at > ?)", now).Find(&dbBlacklists).Error
+			if err == nil {
+				for _, b := range dbBlacklists {
+					list = append(list, BlacklistItem{
+						IPAddress: b.IPAddress,
+						Reason:    b.Reason,
+						ExpiresAt: b.ExpiresAt,
+						CreatedAt: b.CreatedAt,
+					})
+				}
+			}
+		}
+
+		// Fallback/add in-memory local blacklist
+		database.LocalBlacklist.Range(func(key, value interface{}) bool {
+			ip := key.(string)
+			// Check if already in list to avoid duplicates
+			alreadyListed := false
+			for _, item := range list {
+				if item.IPAddress == ip {
+					alreadyListed = true
+					break
+				}
+			}
+			if !alreadyListed {
+				item := BlacklistItem{
+					IPAddress: ip,
+					Reason:    "Banned via Memory/Redis",
+					CreatedAt: time.Now(),
+				}
+				if expiresAt, ok := value.(time.Time); ok {
+					if time.Now().Before(expiresAt) {
+						item.ExpiresAt = &expiresAt
+						list = append(list, item)
+					} else {
+						// clean up expired item
+						database.LocalBlacklist.Delete(ip)
+					}
+				} else {
+					list = append(list, item)
+				}
+			}
+			return true
+		})
+
+		json.NewEncoder(w).Encode(list)
+	}
+}
+
+// blacklistBanHandler bans a new IP address
+func blacklistBanHandler(telemetry *logger.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		var payload struct {
+			IP           string `json:"ip"`
+			Reason       string `json:"reason"`
+			ExpiresHours int    `json:"expires_hours"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid request body"})
+			return
+		}
+
+		if payload.IP == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "IP is required"})
+			return
+		}
+
+		duration := time.Duration(payload.ExpiresHours) * time.Hour
+		reason := payload.Reason
+		if reason == "" {
+			reason = "Manual ban from Admin API"
+		}
+
+		database.BanIP(payload.IP, reason, duration)
+
+		telemetry.LogAIEvent(logger.AIEventLog{
+			Timestamp:    time.Now(),
+			Layer:        "Intel-Shield-API",
+			Status:       "IP_BANNED",
+			DetailAction: fmt.Sprintf("[MANUAL_BAN] IP %s has been banned. Reason: %s (Expires: %dh)", payload.IP, reason, payload.ExpiresHours),
+		})
+
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "success",
+			"message": fmt.Sprintf("IP %s has been blacklisted successfully.", payload.IP),
+		})
+	}
+}
+
+// blacklistUnbanHandler removes an IP from the blacklist
+func blacklistUnbanHandler(telemetry *logger.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		var payload struct {
+			IP string `json:"ip"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid request body"})
+			return
+		}
+
+		if payload.IP == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "IP is required"})
+			return
+		}
+
+		database.UnbanIP(payload.IP)
+
+		telemetry.LogAIEvent(logger.AIEventLog{
+			Timestamp:    time.Now(),
+			Layer:        "Intel-Shield-API",
+			Status:       "IP_UNBANNED",
+			DetailAction: fmt.Sprintf("[MANUAL_UNBAN] IP %s has been manual unbanned/restored.", payload.IP),
+		})
+
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "success",
+			"message": fmt.Sprintf("IP %s has been removed from blacklist successfully.", payload.IP),
+		})
 	}
 }
