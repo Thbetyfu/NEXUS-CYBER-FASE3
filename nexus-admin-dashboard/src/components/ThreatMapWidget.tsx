@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE_URL } from '@/config';
 import { Shield, Activity, Globe, Crosshair, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Threat {
@@ -43,7 +44,7 @@ export default function ThreatMapWidget() {
 
     useEffect(() => {
         setMounted(true);
-        const eventSource = new EventSource('http://localhost:8080/api/stream/threats');
+        const eventSource = new EventSource(`${API_BASE_URL}/api/stream/threats`);
 
         eventSource.onmessage = (event) => {
             try {

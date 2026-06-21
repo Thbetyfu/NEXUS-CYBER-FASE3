@@ -28,6 +28,9 @@ import WindowFrame from '@/components/WindowFrame';
 import Taskbar from '@/components/Taskbar';
 import BootSequence from '@/components/BootSequence';
 
+// Config
+import { API_BASE_URL } from '@/config';
+
 // Type definitions
 export interface TelemetryLog {
   timestamp: string;
@@ -198,8 +201,8 @@ function useIPMonitoring(intervalMs: number = 2000) {
   const fetchData = useCallback(async () => {
     try {
       const [ipRes, blRes] = await Promise.all([
-        fetch("http://localhost:8080/api/ip-monitoring", { cache: "no-store" }),
-        fetch("http://localhost:8080/api/blacklist", { cache: "no-store" })
+        fetch(`${API_BASE_URL}/api/ip-monitoring`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/api/blacklist`, { cache: "no-store" })
       ]);
       if (ipRes.ok) {
         const ipData = await ipRes.json();
@@ -283,7 +286,7 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/blacklist/ban", {
+      const res = await fetch(`${API_BASE_URL}/api/blacklist/ban`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -313,7 +316,7 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/blacklist/unban", {
+      const res = await fetch(`${API_BASE_URL}/api/blacklist/unban`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ip })
@@ -584,8 +587,8 @@ const NCCDashboard = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [logLimit, setLogLimit] = useState<number>(10);
   
-  const { logs, metrics, history, isLive, isUnlicensed } = useTelemetry(`http://localhost:8080/api/telemetry?domain=${activeDomain}`, 2000)
-  const aiEvents = useAIEvents('http://localhost:8080/api/ai-events', 1000)
+  const { logs, metrics, history, isLive, isUnlicensed } = useTelemetry(`${API_BASE_URL}/api/telemetry?domain=${activeDomain}`, 2000)
+  const aiEvents = useAIEvents(`${API_BASE_URL}/api/ai-events`, 1000)
   const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
 
   // Subscription Re-activation State
@@ -669,7 +672,7 @@ const NCCDashboard = () => {
     setAuditError("");
     setAuditResult(null);
     try {
-      const res = await fetch("http://localhost:8080/api/test/run", {
+      const res = await fetch(`${API_BASE_URL}/api/test/run`, {
         method: "POST",
         mode: "cors"
       });
@@ -687,7 +690,7 @@ const NCCDashboard = () => {
   };
 
   const handlePanic = async () => {
-    try { await fetch("http://localhost:8080/api/panic", { method: "POST" }) } catch (err) {}
+    try { await fetch(`${API_BASE_URL}/api/panic`, { method: "POST" }) } catch (err) {}
   }
 
   const handleDeleteDomain = async () => {
@@ -695,7 +698,7 @@ const NCCDashboard = () => {
     
     if (window.confirm(`🚨 CRITICAL: Purge all data for [${activeDomain}]? This cannot be undone.`)) {
       try {
-        const res = await fetch(`http://localhost:8080/api/domains?domain=${activeDomain}`, {
+        const res = await fetch(`${API_BASE_URL}/api/domains?domain=${activeDomain}`, {
           method: 'DELETE',
         });
         
@@ -713,7 +716,7 @@ const NCCDashboard = () => {
   const handleReset = async () => {
     if (window.confirm("🚨 PURGE ALL SYSTEM DATA? This will reset metrics, clear AI memory, and wipe all forensic logs.")) {
       try {
-        const res = await fetch("http://localhost:8080/api/system/reset", { method: "POST", mode: 'cors' })
+        const res = await fetch(`${API_BASE_URL}/api/system/reset`, { method: "POST", mode: 'cors' })
         if (res.ok) window.location.reload();
       } catch (err) {}
     }

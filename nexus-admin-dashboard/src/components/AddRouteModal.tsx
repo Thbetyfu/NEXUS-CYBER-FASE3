@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Globe, Shield, X, Plus, Loader2 } from "lucide-react"
+import { API_BASE_URL } from '@/config'
 
 interface AddRouteModalProps {
     isOpen: boolean;
@@ -21,7 +22,7 @@ export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteMo
         setError(null)
 
         try {
-            const res = await fetch("http://localhost:8080/api/routes", {
+            const res = await fetch(`${API_BASE_URL}/api/routes`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ domain, target_url: targetUrl }),

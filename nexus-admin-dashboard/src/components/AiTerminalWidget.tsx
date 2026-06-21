@@ -7,6 +7,7 @@
 */
 import React, { useEffect, useState, useRef } from 'react';
 import { Terminal, ServerOff, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '@/config';
 
 interface AIEventLog {
     timestamp: string;
@@ -81,7 +82,7 @@ export default function AiTerminalWidget() {
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const res = await fetch('http://localhost:8080/api/ai/status');
+                const res = await fetch(`${API_BASE_URL}/api/ai/status`);
                 const data = await res.json();
                 setAiStatus({ state: data.status, latency: data.latency_ms, model: data.model });
             } catch (err) {
@@ -100,7 +101,7 @@ export default function AiTerminalWidget() {
         let reconnectTimeout: NodeJS.Timeout;
 
         const connectSSE = () => {
-            eventSource = new EventSource('http://localhost:8080/api/ai/stream');
+            eventSource = new EventSource(`${API_BASE_URL}/api/ai/stream`);
 
             eventSource.onmessage = (e) => {
                 if (e.data === ': heartbeat') return;
@@ -201,7 +202,7 @@ export default function AiTerminalWidget() {
             });
 
             try {
-                const res = await fetch('http://localhost:8080/api/cli/execute', {
+                const res = await fetch(`${API_BASE_URL}/api/cli/execute`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ command: cmd })

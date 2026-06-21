@@ -7,6 +7,7 @@
 */
 import React, { useState, useRef, useEffect } from "react"
 import { MessageSquare, X, Send, Command, Loader2, Minimize2, Maximize2 } from "lucide-react"
+import { API_BASE_URL } from '@/config'
 
 interface Message {
     id: number;
@@ -57,7 +58,7 @@ export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
         try {
             const minLoadingPromise = new Promise(resolve => setTimeout(resolve, 1000));
             
-            const fetchPromise = fetch("http://localhost:8080/api/nechat", {
+            const fetchPromise = fetch(`${API_BASE_URL}/api/nechat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ query, domain: activeDomain })
