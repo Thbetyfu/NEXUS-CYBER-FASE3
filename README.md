@@ -65,13 +65,24 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 * **Autoban IP & Persistent Blacklist**: Mekanisme pemblokiran IP penyerang secara otomatis setelah 5 kali gagal menebak password vault hadiah. Fitur ini dapat diaktifkan kembali secara fungsional dalam kode untuk menguji skenario pemblokiran riil.
 * **Geospatial Tracking & GeoIP Integration**: Melacak asal negara penyerang, nama ISP, koordinat geografis, serta sidik jari perangkat penyerang (*device fingerprinting*) untuk dipetakan secara real-time pada Defense Matrix Dashboard.
 
+### 10. Autonomous Self-Repair & Rollback (Fase 8)
+
+* **System Integrity Monitor**: Pemindaian file sistem berkala (`repair.IntegrityMonitor`) menggunakan hash SHA-256 baseline steril yang disimpan aman di memori RAM.
+* **Instant Rollback**: Secara otomatis memulihkan visual situs yang terkena serangan defacement (pengubahan berkas visual/templates) kembali ke kondisi steril dalam waktu sub-milidetik (~600µs) tanpa *downtime*.
+* **Anti-Webshell Protection**: Melacak dan menghapus instan berkas tidak dikenal (*webshell* / berkas ilegal) yang sengaja ditambahkan ke dalam direktori templat visual yang dilindungi.
+
+### 11. IP Monitoring & Blacklist Control API
+
+* **IP Activity Monitoring**: API `/api/ip-monitoring` untuk agregasi data lalu lintas per IP (jumlah request, aktivitas URL/endpoint, status ban, dan user agent).
+* **Blacklist Control**: API `/api/blacklist/ban` dan `/api/blacklist/unban` untuk kontrol pemblokiran IP otonom maupun manual oleh admin.
+
 ---
 
 ## 📂 Dokumentasi Proyek
 
 Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 
-* [🏗️ **Architecture & Flow**](./docs/ARCHITECTURE.md) - Detail teknis MTD & AI Layers.
+* [🏗️ **Architecture & Flow**](./docs/ARCHITECTURE.md) - Detail teknis MTD, AI Layers, & Self-Repair.
 * [🛡️ **Capabilities**](./docs/CAPABILITIES.md) - Daftar serangan yang bisa dicegah.
 * [⚠️ **Limitations**](./docs/LIMITATIONS.md) - Batasan perlindungan sistem.
 * [🕹️ **CLI Guide**](./docs/CLI_GUIDE.md) - Panduan perintah Command Center.
@@ -95,13 +106,21 @@ Gunakan script kendali terpadu di folder `scripts/`:
 ./scripts/nexus-kill.sh
 ```
 
-### 3. Melakukan Audit Keamanan
+### 3. Melakukan Audit Keamanan & Pemulihan Mandiri
 
-Jalankan alat uji terpadu untuk memverifikasi seluruh komponen:
-
+Jalankan alat uji terpadu untuk memverifikasi komponen MTD:
 ```bash
-cd nexus-brain-lab
-python3 nexus_tester.py
+python scripts/test_mtd_defense.py
+```
+
+Uji fitur pemulihan mandiri otonom (Self-Repair):
+```bash
+python scripts/test_self_repair.py
+```
+
+Uji skenario simulasi krisis & penyelamatan:
+```bash
+python scripts/rescue_scenario_simulator.py
 ```
 
 ---

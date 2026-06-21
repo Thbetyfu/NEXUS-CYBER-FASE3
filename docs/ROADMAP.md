@@ -42,10 +42,10 @@ Arsitek: Antigravity
 - [x] Integrasi API Gateway Control Plane.
 - [x] **MVP Upgrade**: Premium Boot Sequence & Windowing System.
 
-## 🛠️ Phase 8: Autonomous Self-Repair & Rollback (IN PROGRESS) 🔵
+## 🛠️ Phase 8: Autonomous Self-Repair & Rollback (COMPLETED) ✅
 - [x] Implementasi System Integrity Monitor (Baseline check).
-- [ ] Scripting Virtual Patching Otonom (Recursive Self-Repair Skill).
-- [ ] Mekanisme Rollback Instan (< 100ms).
+- [x] Scripting Virtual Patching Otonom (Recursive Self-Repair Skill).
+- [x] Mekanisme Rollback Instan (< 100ms) & Anti-Webshell.
 
 ## 🎭 Phase 9: Digital Hallucination (Honeypot Sandbox) (COMPLETED) ✅
 - [x] Implementasi High-Interaction Honeypot (Port 9090).

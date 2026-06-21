@@ -16,3 +16,6 @@ Serangan seperti Spectre atau Meltdown yang menyerang kelemahan pada chipset CPU
 
 ## 5. Email-Specific Attacks
 Nexus menjaga trafik web (HTTP/TCP), tapi ia bukan sistem Email Security. Ia tidak memindai lampiran email yang berisi virus (malware) yang dikirim langsung ke kotak masuk pengguna.
+
+## 6. Database Transactional Data Recovery (Pemulihan Data Basis Data Dinamis)
+Meskipun Nexus Cyber memiliki fitur *Self-Repair* untuk mengembalikan berkas visual situs statis/templat yang ter-deface ke kondisi steril, sistem ini **tidak memulihkan rekaman data dinamis basis data** (seperti tabel transaksi, log data user) yang terlanjur terhapus jika penyerang membobol masuk langsung ke basis data backend (bypass gateway). Pemulihan data dinamis semacam itu tetap membutuhkan mekanisme replikasi basis data atau pencadangan eksternal (PITR).

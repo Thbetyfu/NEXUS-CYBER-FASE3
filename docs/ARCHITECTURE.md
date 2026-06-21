@@ -10,6 +10,7 @@ Dokumen ini memvisualisasikan struktur folder dan spesifikasi teknologi yang dig
 - **AI Integration**: gRPC/REST untuk Qwen (Reflex) dan Llama 3 (Reasoning).
 - **PQC Library**: `circl` (Cloudflare) atau bindings ML-KEM NIST.
 - **Database**: **Redis** (Real-time MTD Tracking) & **PostgreSQL** (Metadata/Audit Log).
+- **Self-Repair Engine**: Modul pemulihan mandiri `repair` dengan pemindaian integritas berbasis hash SHA-256 dan RAM cache untuk restorasi file instan (<100ms).
 
 ### 2. Frontend Command Center (nexus-admin-dashboard)
 - **Framework**: **Next.js 14+ (App Router)**.
