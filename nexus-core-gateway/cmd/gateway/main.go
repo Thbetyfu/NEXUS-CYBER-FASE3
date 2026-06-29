@@ -218,6 +218,7 @@ func main() {
 	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler) // CGNAT Bypass Challenge Validator
 	mux.HandleFunc("/api/test/run", runTestHandler())
 	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                 // [NEW: CSRF TOKEN ENDPOINT]
+	mux.HandleFunc("/api/license/validate-domain", validateDomainHandler(gateway.Router)) // [NEW: CADDY TLS VALIDATION ENDPOINT]
 	mux.Handle("/", gatewayHandler)                                     // all other requests go to the proxy
 
 	// 9. Root Matrix Shield: Wrap EVERYTHING in AI Intelligence

@@ -45,9 +45,10 @@ services:
       context: ./nexus-core-gateway
       dockerfile: Dockerfile
     container_name: nexus_gateway
+    expose:
+      - "8080" # Di-expose internal ke Caddy saja (Security Hardening)
     ports:
-      - "8080:8080" # Gateway Port
-      - "9090:9090" # Honeypot Port
+      - "9090:9090" # Honeypot Port tetap diakses publik untuk menjebak bot
     environment:
       - REDIS_URL=redis:6379
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -73,8 +74,8 @@ services:
       context: ./nexus-admin-dashboard
       dockerfile: Dockerfile
     container_name: nexus_dashboard
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000" # Di-expose internal ke Caddy saja (Security Hardening)
     environment:
       - NEXT_PUBLIC_API_URL=http://nexus_gateway:8080
       - NODE_ENV=production
@@ -105,6 +106,24 @@ services:
         condition: service_healthy
     restart: always
 
+  # Caddy Edge Router (Auto-HTTPS & On-Demand TLS SSL)
+  caddy:
+    image: caddy:2-alpine
+    container_name: nexus_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - gateway
+      - dashboard
+
 volumes:
   redis_data:
   postgres_data:
+  caddy_data:
+  caddy_config:

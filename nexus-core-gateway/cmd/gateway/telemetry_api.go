@@ -1122,3 +1122,30 @@ func auditVerifyHandler() http.HandlerFunc {
 		})
 	}
 }
+
+// validateDomainHandler memvalidasi apakah domain yang di-request aktif dan dilindungi oleh router.
+// Ini digunakan oleh Caddy On-Demand TLS untuk menerbitkan sertifikat SSL/TLS secara dinamis.
+func validateDomainHandler(router *proxy.DynamicRouter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		domain := r.URL.Query().Get("domain")
+		if domain == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		// Normalisasi domain (lowercase, buang port jika ada)
+		domain = strings.ToLower(domain)
+		if strings.Contains(domain, ":") {
+			domain = strings.Split(domain, ":")[0]
+		}
+
+		// Cari domain di routing table
+		_, found := router.Lookup(domain)
+		if found {
+			w.WriteHeader(http.StatusOK) // Kembalikan 200 OK untuk mengizinkan SSL
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound) // Kembalikan 404 jika tidak ditemukan
+	}
+}

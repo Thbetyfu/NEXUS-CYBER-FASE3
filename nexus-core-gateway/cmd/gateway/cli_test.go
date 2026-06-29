@@ -89,3 +89,29 @@ func TestCliExecuteSubUnsub(t *testing.T) {
 		t.Errorf("Expected route %s to be deleted from Dynamic Router, but it still exists", testDomain)
 	}
 }
+
+func TestValidateDomainHandler(t *testing.T) {
+	router := proxy.NewDynamicRouter(10 * time.Second)
+	handler := validateDomainHandler(router)
+
+	// 1. Cek domain yang belum terdaftar (harus kembalikan 404)
+	reqUnregistered := httptest.NewRequest(http.MethodGet, "/api/license/validate-domain?domain=unregistered.localhost", nil)
+	rrUnregistered := httptest.NewRecorder()
+	handler.ServeHTTP(rrUnregistered, reqUnregistered)
+
+	if rrUnregistered.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 Not Found for unregistered domain, got %d", rrUnregistered.Code)
+	}
+
+	// 2. Daftarkan domain ke router
+	router.AddRoute("registered.localhost", "http://127.0.0.1:3003")
+
+	// 3. Cek domain yang sudah terdaftar (harus kembalikan 200 OK)
+	reqRegistered := httptest.NewRequest(http.MethodGet, "/api/license/validate-domain?domain=registered.localhost", nil)
+	rrRegistered := httptest.NewRecorder()
+	handler.ServeHTTP(rrRegistered, reqRegistered)
+
+	if rrRegistered.Code != http.StatusOK {
+		t.Errorf("Expected 200 OK for registered domain, got %d", rrRegistered.Code)
+	}
+}

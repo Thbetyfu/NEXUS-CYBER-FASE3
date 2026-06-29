@@ -1,0 +1,31 @@
+{
+    # Konfigurasi Global Caddy
+    on_demand_tls {
+        # Validasi domain dinamis melalui endpoint Go WAF Gateway
+        ask http://gateway:8080/api/license/validate-domain
+    }
+    
+    # Batasi log admin local Caddy
+    admin off
+}
+
+# 1. Routing Nexus Command Center (Next.js Admin Dashboard)
+# Sesuai untuk akses administrasi tersentralisasi
+admin.nexus-cyber.local, localhost:3000 {
+    reverse_proxy dashboard:3000
+}
+
+# 2. Routing Multi-Tenant Client (SaaS WAF Gateway)
+# Menggunakan On-Demand TLS untuk mendaftarkan SSL/TLS otomatis per domain klien
+:443 {
+    tls {
+        on_demand
+    }
+    
+    reverse_proxy gateway:8080
+}
+
+# 3. HTTP-to-HTTPS Redirect
+:80 {
+    redir https://{host}{uri}
+}

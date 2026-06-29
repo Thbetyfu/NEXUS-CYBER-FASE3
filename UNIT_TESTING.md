@@ -60,10 +60,10 @@ Pengujian di dalam file [resistance_handlers_test.go](file:///d:/0. Kerjaan/Nexu
   - Memverifikasi akses dibuka kembali dan tautan reward diberikan setelah dilakukan `Unban` dan memasukkan password yang benar.
 - **`TestPaymentWebhookHandler`:**
   - Memverifikasi integrasi penanganan webhook pembayaran (simulasi Stripe/Midtrans) dengan respon sukses `HTTP 200 OK`, alokasi port dinamis otonom, dan pemicuan orkestrasi kontainer.
-- **`TestCliExecuteSubUnsub`:**
-  - Memverifikasi eksekusi komando terminal CLI `/sub` dan `/unsub` pada gateway.
   - Memastikan `/sub` mengalokasikan port dinamis, mendaftarkan langganan aktif, memicu peluncuran container, dan mendaftarkan rute.
   - Memastikan `/unsub` menonaktifkan status sewa, mencopot rute proxy, dan menghancurkan container tenant dari host.
+- **`TestValidateDomainHandler`:**
+  - Memverifikasi endpoint validasi domain `/api/license/validate-domain` (yang digunakan Caddy On-Demand TLS) dengan memastikan domain tak terdaftar mengembalikan `HTTP 404 Not Found`, sedangkan domain terdaftar mengembalikan `HTTP 200 OK`.
 
 ---
 
