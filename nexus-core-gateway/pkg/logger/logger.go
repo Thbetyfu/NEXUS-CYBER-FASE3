@@ -68,6 +68,9 @@ type Logger struct {
 
 	// Cache profil perantara untuk efisiensi komputasi ekstrem
 	fingerprintCache map[string]TelemetryLog
+
+	// Rantai kriptografi log forensik audit (ISO 27001)
+	lastLogHash string
 }
 
 // NewLogger mengonstruksi sistem pencatatan baru dan mempratata domain aset nasional kritis.
@@ -103,6 +106,16 @@ func NewLogger() (*Logger, error) {
 	}
 	for _, a := range criticalAssets {
 		l.DomainStats[a] = &DomainStatsEntry{}
+	}
+
+	// Inisialisasi rantai hash kriptografi (ISO 27001) dari log terakhir di database
+	l.lastLogHash = "NEXUS_GENESIS_ROOT"
+	if database.DB != nil {
+		var lastLog models.ThreatLog
+		if err := database.DB.Order("created_at desc, id desc").First(&lastLog).Error; err == nil && lastLog.Hash != "" {
+			l.lastLogHash = lastLog.Hash
+			fmt.Printf("[AUDIT-INIT] Resumed cryptographic chain. Last known block hash: %s\n", l.lastLogHash)
+		}
 	}
 
 	return l, nil
@@ -219,6 +232,15 @@ func (l *Logger) LogTraffic(log TelemetryLog) uuid.UUID {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	// Hitung rantai hash kriptografi (ISO 27001)
+	prevHash := l.lastLogHash
+	timeStr := log.Timestamp.UTC().Format(time.RFC3339)
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("%s|%s|%s|%s|%s|%s|%d|%s", 
+		prevHash, log.SourceIP, log.Endpoint, log.Method, log.Status, log.ThreatDetail, log.LatencyMS, timeStr)))
+	newHash := fmt.Sprintf("%x", h.Sum(nil))
+	l.lastLogHash = newHash
+
 	// 1. Perbarui Penghitung Global
 	switch log.Status {
 	case "ALLOWED":
@@ -287,8 +309,11 @@ func (l *Logger) LogTraffic(log TelemetryLog) uuid.UUID {
 				UserAgent:     l.DeviceFingerprint,
 				LatencyMs:     int(l.LatencyMS),
 				PayloadSample: cleanPayload,
+				PrevHash:      prevHash,
+				Hash:          newHash,
 			}
 			dbLog.ID = logID
+			dbLog.CreatedAt = l.Timestamp
 
 			if err := database.DB.Create(&dbLog).Error; err != nil {
 				fmt.Printf("[DB-ERROR] Failed to save threat log: %v\n", err)

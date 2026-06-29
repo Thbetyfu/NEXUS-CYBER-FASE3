@@ -17,10 +17,19 @@ import (
 // Hal ini mencegah serangan ID Enumeration (peretas memetakan total log kita dengan menebak angka berurutan)
 // serta menjamin tidak ada konflik ID saat melakukan merger database multi-node secara terdistribusi.
 type Base struct {
-	ID        uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	ID        uuid.UUID      `gorm:"type:uuid;primaryKey"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt gorm.DeletedAt `gorm:"index"` // Menggunakan Soft Delete untuk mematuhi retensi data investigasi forensik
+}
+
+// BeforeCreate dipanggil oleh GORM secara otomatis sebelum menyimpan record baru.
+// Menghasilkan UUID v4 secara programmatik untuk kompatibilitas lintas database (PostgreSQL & SQLite).
+func (b *Base) BeforeCreate(tx *gorm.DB) (err error) {
+	if b.ID == uuid.Nil {
+		b.ID = uuid.New()
+	}
+	return
 }
 
 // ThreatLog memetakan struktur tabel `threat_logs` untuk menyimpan rekam jejak ancaman (Forensic Audit).
@@ -39,6 +48,8 @@ type ThreatLog struct {
 	PayloadSample string `gorm:"type:text"`
 	UserAgent     string `gorm:"type:text"`
 	LatencyMs     int    `gorm:"type:int"` // Latensi pemrosesan internal gateway
+	PrevHash      string `gorm:"type:varchar(64);index"` // Hash entri log sebelumnya
+	Hash          string `gorm:"type:varchar(64);index"` // Hash SHA-256 entri log ini
 }
 
 // MTDAuditTrail memetakan tabel `mtd_audit_trail` untuk merekam rotasi konfigurasi pertahanan dinamis (MTD).

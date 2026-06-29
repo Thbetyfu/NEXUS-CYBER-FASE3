@@ -450,6 +450,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - stats                 : Show global traffic metrics\n" +
 				"  - shuffle               : Trigger manual topology rotation\n" +
 				"  - /audit                : Run MTD Compliance stress tests (17 checks)\n" +
+				"  - /verify-audit         : Verify cryptographic integrity of threat logs\n" +
 				"  - /ban [IP]             : Blacklist an attacker IP manually\n" +
 				"  - /unban [IP]           : Restore/unban an IP address\n" +
 				"  - /sub [domain]         : Activate premium SaaS PACS shield for a client\n" +
@@ -485,6 +486,22 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 		case cmd == "shuffle" || cmd == "/shuffle":
 			shuffler.ManualShuffle()
 			response = "[ACTION] Manual Topology Rotation Triggered. New port mapping established."
+		case cmd == "verify-audit" || cmd == "/verify-audit" || cmd == "audit-verify" || cmd == "/audit-verify":
+			if database.DB == nil {
+				response = "[ERROR] Database connection is offline. Cannot verify audit trail."
+				break
+			}
+			_, verifiedCount, err := logger.VerifyAuditChain(database.DB)
+			if err != nil {
+				response = fmt.Sprintf("[ALERT] INTEGRITY VIOLATION DETECTED!\n" +
+					"  - Verified Records: %d\n" +
+					"  - Error Detail    : %s\n" +
+					"  - Status          : COMPROMISED. The threat log trail has been illegally modified!", verifiedCount, err.Error())
+			} else {
+				response = fmt.Sprintf("[SUCCESS] INTEGRITY VERIFIED (ISO 27001 Annex A.12.4)\n" +
+					"  - Verified Records: %d\n" +
+					"  - Status          : 100%% INTACT. Cryptographic hash chain is valid and untampered.", verifiedCount)
+			}
 		case strings.HasPrefix(cmd, "ban ") || strings.HasPrefix(cmd, "/ban "):
 			parts := strings.Fields(payload.Command)
 			if len(parts) < 2 {
@@ -999,6 +1016,45 @@ func blacklistUnbanHandler(telemetry *logger.Logger) http.HandlerFunc {
 		json.NewEncoder(w).Encode(map[string]string{
 			"status":  "success",
 			"message": fmt.Sprintf("IP %s has been removed from blacklist successfully.", payload.IP),
+		})
+	}
+}
+
+// auditVerifyHandler checks the integrity of the cryptographic log chain
+func auditVerifyHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if database.DB == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status":  "error",
+				"message": "Database connection is unavailable",
+			})
+			return
+		}
+
+		isValid, verifiedCount, err := logger.VerifyAuditChain(database.DB)
+		if err != nil {
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"status":           "compromised",
+				"verified_records": verifiedCount,
+				"message":          "INTEGRITY VIOLATION DETECTED: Audit trail has been tampered with or modified illegally.",
+				"error_detail":     err.Error(),
+			})
+			return
+		}
+
+		_ = isValid
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":           "success",
+			"verified_records": verifiedCount,
+			"message":          "INTEGRITY VERIFIED: Audit trail is fully intact and mathematically secure.",
 		})
 	}
 }
