@@ -1,3 +1,5 @@
+//go:build !linux
+
 // Package bpf mengintegrasikan manajer tingkat rendah (kernel-level) menggunakan eBPF untuk mitigasi serangan siber.
 package bpf
 
