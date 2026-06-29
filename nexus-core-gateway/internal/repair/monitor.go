@@ -2,7 +2,6 @@ package repair
 
 import (
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"log"
@@ -12,13 +11,14 @@ import (
 	"time"
 
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
+	"github.com/zeebo/blake3"
 )
 
 // FileBaseline stores the original content and hash of a protected file
 type FileBaseline struct {
 	Path     string
 	Content  []byte
-	SHA256   string
+	BLAKE3   string
 	Mode     os.FileMode
 }
 
@@ -86,7 +86,7 @@ func (im *IntegrityMonitor) buildBaseline() error {
 		im.baselines[path] = FileBaseline{
 			Path:    path,
 			Content: content,
-			SHA256:  hash,
+			BLAKE3:  hash,
 			Mode:    info.Mode(),
 		}
 		return nil
@@ -156,7 +156,7 @@ func (im *IntegrityMonitor) ScanAndRestore() {
 		}
 
 		currentHash := computeHash(content)
-		if currentHash != baseline.SHA256 {
+		if currentHash != baseline.BLAKE3 {
 			// FILE MODIFIED (e.g. web deface): Restore immediately
 			im.restoreFile(path, baseline, "MODIFIED", start)
 		}
@@ -220,9 +220,9 @@ func (im *IntegrityMonitor) restoreFile(path string, baseline FileBaseline, viol
 	}
 }
 
-// computeHash calculates the SHA-256 hex string of bytes
+// computeHash calculates the BLAKE3 hex string of bytes
 func computeHash(content []byte) string {
-	h := sha256.New()
+	h := blake3.New()
 	h.Write(content)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }

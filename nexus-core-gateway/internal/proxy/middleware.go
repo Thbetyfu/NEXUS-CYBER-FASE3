@@ -3,6 +3,7 @@ package proxy
 
 import (
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -176,4 +177,62 @@ func generateChallengeHTML(target string) string {
     </script>
 </body>
 </html>`
+}
+
+// GenerateCSRFToken generates a cryptographically secure random token (32 hex chars)
+func GenerateCSRFToken() string {
+	b := make([]byte, 16)
+	_, _ = rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
+
+// CsrfShield implements Double-Submit Cookie CSRF Protection at the gateway level.
+func CsrfShield(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 1. Bypass CORS preflight requests
+		if r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// 2. Set CSRF cookie for all GET requests if it doesn't exist
+		cookie, err := r.Cookie("nexus_csrf")
+		var csrfToken string
+		if err != nil || cookie.Value == "" {
+			csrfToken = GenerateCSRFToken()
+			http.SetCookie(w, &http.Cookie{
+				Name:     "nexus_csrf",
+				Value:    csrfToken,
+				Path:     "/",
+				HttpOnly: false, // Must be readable by client JS
+				SameSite: http.SameSiteLaxMode,
+			})
+		} else {
+			csrfToken = cookie.Value
+		}
+
+		// 3. Verify CSRF for state-changing requests (POST, PUT, DELETE, PATCH)
+		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch {
+			// Bypass verify-session challenge handler
+			if r.URL.Path == "/api/verify-session" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Read token from header or form value
+			clientToken := r.Header.Get("X-CSRF-Token")
+			if clientToken == "" {
+				clientToken = r.FormValue("csrf_token")
+			}
+
+			if clientToken == "" || clientToken != csrfToken {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte(`{"status":"error","message":"Security Violation: CSRF verification failed. Missing or invalid X-CSRF-Token."}`))
+				return
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

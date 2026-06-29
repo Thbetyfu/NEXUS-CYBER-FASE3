@@ -201,14 +201,12 @@ func rewardUnlockHandler(telemetry *logger.Logger) http.HandlerFunc {
 
 		ip := getCleanIP(r.RemoteAddr)
 
-		// 1. Cek apakah IP sudah ter-blacklist di database (DINONAKTIFKAN SEMENTARA SEBAGAI KOMENTAR)
-		/*
+		// 1. Cek apakah IP sudah ter-blacklist di database
 		if database.IsIPBlacklisted(r.RemoteAddr) {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte(`{"status":"error","message":"BANNED: Your IP is in the persistent blacklist due to multiple failed attempts."}`))
 			return
 		}
-		*/
 
 		var req RequestData
 		bodyBytes, err := io.ReadAll(r.Body)
@@ -281,19 +279,10 @@ func rewardUnlockHandler(telemetry *logger.Logger) http.HandlerFunc {
 			DetailAction: fmt.Sprintf("Failed unlock attempt from %s. Tried: '%s' (%d/5 attempts)", ip, req.Password, attempts),
 		})
 
-		// 4. Trigger AUTOBAN jika gagal >= 5 kali (DINONAKTIFKAN SEMENTARA SEBAGAI KOMENTAR)
-		/*
+		// 4. Trigger AUTOBAN jika gagal >= 5 kali
 		if attempts >= 5 {
-			// Simpan ban ke database
-			blacklist := models.IntelBlacklist{
-				Base:      models.Base{ID: uuid.New()},
-				IPAddress: ip,
-				Reason:    "Autoban: Exceeded maximum failed reward password attempts (5/5)",
-				IsActive:  true,
-			}
-			if database.DB != nil {
-				database.DB.Create(&blacklist)
-			}
+			// Simpan ban ke database dan local memory menggunakan database.BanIP (blokir 24 jam)
+			database.BanIP(ip, "Autoban: Exceeded maximum failed reward password attempts (5/5)", 24*time.Hour)
 
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
@@ -308,7 +297,6 @@ func rewardUnlockHandler(telemetry *logger.Logger) http.HandlerFunc {
 			w.Write([]byte(`{"status":"error","message":"BANNED: Too many failed attempts. Your IP has been permanently blacklisted."}`))
 			return
 		}
-		*/
 
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(fmt.Sprintf(`{"status":"error","message":"Incorrect Password. Attempt %d of 5"}`, attempts)))

@@ -134,7 +134,10 @@ func (l *Logger) EnrichLog(log *TelemetryLog, r *http.Request) {
 	log.TargetDomain = host
 
 	uaStr := r.Header.Get("User-Agent")
-	cacheKey := log.SourceIP + uaStr
+	deviceFP := r.Header.Get("X-Device-Fingerprint")
+	
+	// Gunakan kombinasi Source IP + User Agent + Device Fingerprint untuk cache key yang sangat akurat
+	cacheKey := log.SourceIP + uaStr + "_" + deviceFP
 
 	// Uji keberadaan data profil klien di memori cache lokal
 	l.mu.RLock()
@@ -149,16 +152,27 @@ func (l *Logger) EnrichLog(log *TelemetryLog, r *http.Request) {
 		return
 	}
 
-	// 1. SHA-256 Digital Fingerprinting
+	// 1. SHA-256 Digital Fingerprinting (AttackerID)
 	h := sha256.New()
 	h.Write([]byte(cacheKey))
-	log.AttackerID = fmt.Sprintf("APT-ID-%X", h.Sum(nil)[:4])
+	hashHex := fmt.Sprintf("%X", h.Sum(nil))
+	if deviceFP != "" {
+		// Jika ada fingerprint dari client, padukan ke AttackerID
+		log.AttackerID = fmt.Sprintf("APT-%s-%s", deviceFP, hashHex[:4])
+	} else {
+		log.AttackerID = fmt.Sprintf("APT-ID-%s", hashHex[:4])
+	}
 
-	// 2. User-Agent Parsing
+	// 2. User-Agent & Hardware Fingerprinting
 	ua := user_agent.New(uaStr)
 	osInfo := ua.OS()
 	browser, _ := ua.Browser()
-	log.DeviceFingerprint = fmt.Sprintf("%s (%s)", osInfo, browser)
+	
+	if deviceFP != "" {
+		log.DeviceFingerprint = fmt.Sprintf("%s (%s) [%s]", osInfo, browser, deviceFP)
+	} else {
+		log.DeviceFingerprint = fmt.Sprintf("%s (%s)", osInfo, browser)
+	}
 
 	// 3. Klasifikasi Zona Koneksi (Mock Dynamic GeoIP)
 	isLocal := strings.HasPrefix(log.SourceIP, "127.") ||

@@ -3,6 +3,17 @@
 import React, { useState } from "react"
 import { Globe, Shield, X, Plus, Loader2 } from "lucide-react"
 import { API_BASE_URL } from '@/config'
+import { z } from "zod"
+
+const routeSchema = z.object({
+    domain: z.string().regex(/^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*(:\d+)?$/, {
+        message: "Invalid domain format (e.g. ojk.localhost, domain.com)",
+    }),
+    targetUrl: z.union([
+        z.literal("auto"),
+        z.string().url({ message: "Invalid target URL format (e.g. http://10.0.0.5:80)" })
+    ])
+})
 
 interface AddRouteModalProps {
     isOpen: boolean;
@@ -13,6 +24,7 @@ interface AddRouteModalProps {
 export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteModalProps) {
     const [domain, setDomain] = useState("")
     const [targetUrl, setTargetUrl] = useState("http://host.docker.internal:3001")
+    const [autoProvision, setAutoProvision] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -21,16 +33,38 @@ export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteMo
         setIsSubmitting(true)
         setError(null)
 
+        const valUrl = autoProvision ? "auto" : targetUrl
+
+        // Validate using Zod
+        const validationResult = routeSchema.safeParse({ domain, targetUrl: valUrl })
+        if (!validationResult.success) {
+            setError(validationResult.error.issues[0].message)
+            setIsSubmitting(false)
+            return
+        }
+
         try {
+            // Fetch CSRF Token
+            const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" })
+            const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" }
+
             const res = await fetch(`${API_BASE_URL}/api/routes`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ domain, target_url: targetUrl }),
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...(csrf_token ? { "X-CSRF-Token": csrf_token } : {})
+                },
+                credentials: "include",
+                body: JSON.stringify({ domain, target_url: valUrl }),
             })
 
-            if (!res.ok) throw new Error("Failed to add route")
+            if (!res.ok) {
+                const data = await res.json()
+                throw new Error(data.message || "Failed to add route")
+            }
 
             setDomain("")
+            setAutoProvision(false)
             onSuccess()
             onClose()
         } catch (err: any) {
@@ -86,18 +120,33 @@ export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteMo
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Target Backend URL</label>
+                    <div className="flex items-center gap-2 py-1">
                         <input
-                            type="url"
-                            required
-                            value={targetUrl}
-                            onChange={(e) => setTargetUrl(e.target.value)}
-                            placeholder="http://10.0.0.5:80"
-                            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all font-mono"
+                            type="checkbox"
+                            id="auto-provision"
+                            checked={autoProvision}
+                            onChange={(e) => setAutoProvision(e.target.checked)}
+                            className="rounded border-slate-700/50 bg-slate-900/50 text-blue-600 focus:ring-0 w-4 h-4 cursor-pointer"
                         />
-                        <p className="mt-1.5 text-[10px] text-slate-600 font-medium">Use 'host.docker.internal' for host-side apps</p>
+                        <label htmlFor="auto-provision" className="text-xs text-slate-400 font-semibold cursor-pointer select-none">
+                            Auto-Provision (Docker Container)
+                        </label>
                     </div>
+
+                    {!autoProvision && (
+                        <div>
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Target Backend URL</label>
+                            <input
+                                type="url"
+                                required
+                                value={targetUrl}
+                                onChange={(e) => setTargetUrl(e.target.value)}
+                                placeholder="http://10.0.0.5:80"
+                                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all font-mono"
+                            />
+                            <p className="mt-1.5 text-[10px] text-slate-600 font-medium">Use 'host.docker.internal' for host-side apps</p>
+                        </div>
+                    )}
 
                     {error && (
                         <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400">

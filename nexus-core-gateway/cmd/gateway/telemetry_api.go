@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +21,20 @@ import (
 	"github.com/nexus-cyber/nexus-core-gateway/internal/proxy"
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
 )
+
+var domainRegex = regexp.MustCompile(`^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*(:\d+)?$`)
+
+func isValidDomain(domain string) bool {
+	return domainRegex.MatchString(domain)
+}
+
+func isValidURL(targetURL string) bool {
+	u, err := url.Parse(targetURL)
+	if err != nil {
+		return false
+	}
+	return u.Scheme == "http" || u.Scheme == "https"
+}
 
 type TelemetryResponse struct {
 	MTD struct {
@@ -130,6 +148,14 @@ func xxxDomainsHandler(telemetry *logger.Logger, router *proxy.DynamicRouter) ht
 			// 1. Hapus secara permanen dari Dynamic Router (caching lokal + Redis)
 			router.RemoveRoute(domain)
 
+			// Trigger container teardown if it was auto-provisioned
+			go func(d string) {
+				err := proxy.RunProvisioner("down", d, 0)
+				if err != nil {
+					fmt.Printf("[PROVISIONER-ERROR] Failed to down container for %s: %v\n", d, err)
+				}
+			}(domain)
+
 			// 2. Hapus secara permanen (hard delete) dari database subscriptions
 			if database.DB != nil {
 				database.DB.Unscoped().Where("domain = ?", domain).Delete(&models.DomainSubscription{})
@@ -233,14 +259,45 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 				return
 			}
 
+			// Validate inputs
+			if !isValidDomain(payload.Domain) {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"status":"error","message":"Invalid Domain format"}`))
+				return
+			}
+			if payload.TargetURL != "auto" && !isValidURL(payload.TargetURL) {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"status":"error","message":"Invalid Target URL format"}`))
+				return
+			}
+
+			targetURL := payload.TargetURL
+			if targetURL == "auto" {
+				port, err := proxy.FindFreePort(3003)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(`{"status":"error","message":"Failed to allocate port"}`))
+					return
+				}
+				targetURL = "http://127.0.0.1:" + strconv.Itoa(port)
+
+				// Run container provisioner asynchronously
+				go func(d string, p int) {
+					err := proxy.RunProvisioner("up", d, p)
+					if err != nil {
+						fmt.Printf("[PROVISIONER-ERROR] Failed to up container for %s on port %d: %v\n", d, p, err)
+					}
+				}(payload.Domain, port)
+			}
+
 			// 1. Add to Proxy Router
-			router.AddRoute(payload.Domain, payload.TargetURL)
+			router.AddRoute(payload.Domain, targetURL)
 			
 			// 2. Register in Telemetry so it appears in the dropdown immediately
 			telemetry.AddDomain(payload.Domain)
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{"status": "success", "domain": payload.Domain})
+			json.NewEncoder(w).Encode(map[string]string{"status": "success", "domain": payload.Domain, "target_url": targetURL})
 			return
 		}
 	}
@@ -767,6 +824,20 @@ func blacklistBanHandler(telemetry *logger.Logger) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "IP is required"})
 			return
+		}
+
+		ipClean := payload.IP
+		if idx := strings.Index(ipClean, ":"); idx != -1 {
+			ipClean = ipClean[:idx]
+		}
+		if net.ParseIP(ipClean) == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid IP address format"})
+			return
+		}
+
+		if len(payload.Reason) > 255 {
+			payload.Reason = payload.Reason[:255]
 		}
 
 		duration := time.Duration(payload.ExpiresHours) * time.Hour

@@ -58,9 +58,17 @@ export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
         try {
             const minLoadingPromise = new Promise(resolve => setTimeout(resolve, 1000));
             
+            // Get CSRF Token
+            const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
+            const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" };
+
             const fetchPromise = fetch(`${API_BASE_URL}/api/nechat`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...(csrf_token ? { "X-CSRF-Token": csrf_token } : {})
+                },
+                credentials: "include",
                 body: JSON.stringify({ query, domain: activeDomain })
             });
 

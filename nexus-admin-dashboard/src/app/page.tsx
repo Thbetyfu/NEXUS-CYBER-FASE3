@@ -31,6 +31,19 @@ import BootSequence from '@/components/BootSequence';
 // Config
 import { API_BASE_URL } from '@/config';
 
+// CSRF Token Helper
+const fetchCsrfToken = async (): Promise<string | null> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.csrf_token;
+  } catch (err) {
+    console.error("Failed to fetch CSRF token:", err);
+    return null;
+  }
+};
+
 // Type definitions
 export interface TelemetryLog {
   timestamp: string;
@@ -288,9 +301,14 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
     }
 
     try {
+      const csrfToken = await fetchCsrfToken();
       const res = await fetch(`${API_BASE_URL}/api/blacklist/ban`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+        },
+        credentials: "include",
         body: JSON.stringify({
           ip: banTarget,
           reason: banReason,
@@ -318,9 +336,14 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
     }
 
     try {
+      const csrfToken = await fetchCsrfToken();
       const res = await fetch(`${API_BASE_URL}/api/blacklist/unban`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+        },
+        credentials: "include",
         body: JSON.stringify({ ip })
       });
       if (res.ok) {
@@ -418,8 +441,15 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
                           <td className="py-2 px-4 font-bold text-gray-300">
                             {entry.source_ip}
                             {entry.user_agent && (
-                              <div className="text-[7px] text-gray-600 font-sans font-normal truncate max-w-xs mt-0.5">
-                                UA: {entry.user_agent}
+                              <div className="text-[7px] text-gray-500 font-sans font-normal truncate max-w-xs mt-0.5 flex flex-col gap-0.5">
+                                <div>UA: {entry.user_agent.split(" [FP-")[0]}</div>
+                                {entry.user_agent.includes("[FP-") && (
+                                  <div className="mt-0.5">
+                                    <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-1 py-0.5 rounded-sm text-[7px] font-mono font-black uppercase tracking-wider shadow-[0_0_8px_rgba(6,182,212,0.1)]">
+                                      FP: {entry.user_agent.split("[FP-")[1]?.replace("]", "")}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </td>
@@ -674,8 +704,13 @@ const NCCDashboard = () => {
     setAuditError("");
     setAuditResult(null);
     try {
+      const csrfToken = await fetchCsrfToken();
       const res = await fetch(`${API_BASE_URL}/api/test/run`, {
         method: "POST",
+        headers: {
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+        },
+        credentials: "include",
         mode: "cors"
       });
       if (!res.ok) {
@@ -693,7 +728,16 @@ const NCCDashboard = () => {
   };
 
   const handlePanic = async () => {
-    try { await fetch(`${API_BASE_URL}/api/panic`, { method: "POST" }) } catch {}
+    try {
+      const csrfToken = await fetchCsrfToken();
+      await fetch(`${API_BASE_URL}/api/panic`, { 
+        method: "POST",
+        headers: {
+          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+        },
+        credentials: "include"
+      });
+    } catch {}
   }
 
   const handleDeleteDomain = async () => {
@@ -701,8 +745,13 @@ const NCCDashboard = () => {
     
     if (window.confirm(`🚨 CRITICAL: Purge all data for [${activeDomain}]? This cannot be undone.`)) {
       try {
+        const csrfToken = await fetchCsrfToken();
         const res = await fetch(`${API_BASE_URL}/api/domains?domain=${activeDomain}`, {
           method: 'DELETE',
+          headers: {
+            ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+          },
+          credentials: "include"
         });
         
         if (res.ok) {
@@ -719,7 +768,15 @@ const NCCDashboard = () => {
   const handleReset = async () => {
     if (window.confirm("🚨 PURGE ALL SYSTEM DATA? This will reset metrics, clear AI memory, and wipe all forensic logs.")) {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/system/reset`, { method: "POST", mode: 'cors' })
+        const csrfToken = await fetchCsrfToken();
+        const res = await fetch(`${API_BASE_URL}/api/system/reset`, { 
+          method: "POST", 
+          headers: {
+            ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
+          },
+          credentials: "include",
+          mode: 'cors' 
+        })
         if (res.ok) window.location.reload();
       } catch {}
     }

@@ -1,8 +1,10 @@
 package proxy
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
@@ -39,6 +41,35 @@ func IsDomainActive(domain string) bool {
 	return sub.IsActive
 }
 
+// Helper to generate a cryptographically secure random key
+func generateRandomKey(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+	k := make([]byte, length)
+	for i := 0; i < length; i++ {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			k[i] = charset[0]
+		} else {
+			k[i] = charset[num.Int64()]
+		}
+	}
+	return string(k)
+}
+
+// Helper to generate dynamic random variable names for JS obfuscation
+func randomVarName(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, length)
+	// First character must be a letter
+	firstNum, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+	b[0] = charset[firstNum.Int64()]
+	for i := 1; i < length; i++ {
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		b[i] = charset[num.Int64()]
+	}
+	return "_" + string(b)
+}
+
 // ObfuscateHTML converts the backend HTML page into an encrypted Polymorphic Alien-Language (PACS) payload
 // which can only be decoded by our customized browser-side virtual decoding runtime.
 func ObfuscateHTML(originalHTML string, domain string) string {
@@ -48,12 +79,165 @@ func ObfuscateHTML(originalHTML string, domain string) string {
 		return getUnlicensedPaywallHTML(domain)
 	}
 
-	// 2. Perform Polymorphic Alien-Language Transpilation
-	// Convert HTML content into Base64 so it appears as 100% garbage strings to web scrapers & automated bot scanners
-	encoded := base64.StdEncoding.EncodeToString([]byte(originalHTML))
+	// 2. Generate random XOR key and encrypt the HTML body
+	key := generateRandomKey(8)
+	encryptedBytes := make([]byte, len(originalHTML))
+	for i := 0; i < len(originalHTML); i++ {
+		encryptedBytes[i] = originalHTML[i] ^ key[i%len(key)]
+	}
+	encodedHTML := base64.StdEncoding.EncodeToString(encryptedBytes)
 
-	// 3. Inject our secure in-browser PAC Decrypter runtime.
-	// This page renders a futuristic sub-millisecond loader, then decodes and writes the original document on the fly.
+	// 3. Choose one of 3 decryption templates randomly (Polymorphism)
+	templateChoiceBig, _ := rand.Int(rand.Reader, big.NewInt(3))
+	templateChoice := int(templateChoiceBig.Int64())
+
+	var jsDecrypterScript string
+
+	switch templateChoice {
+	case 0:
+		// Template 0: Key represented as a Character Code Array shifted by a random delta
+		deltaBig, _ := rand.Int(rand.Reader, big.NewInt(15))
+		delta := int(deltaBig.Int64()) + 5 // Delta between 5 and 19
+		keyCodes := make([]string, len(key))
+		for i := 0; i < len(key); i++ {
+			keyCodes[i] = fmt.Sprintf("%d", int(key[i])+delta)
+		}
+		keyArrayStr := "[" + strings.Join(keyCodes, ",") + "]"
+
+		vSig := randomVarName(6)
+		vArr := randomVarName(6)
+		vKey := randomVarName(6)
+		vBin := randomVarName(6)
+		vByt := randomVarName(6)
+		vIdx := randomVarName(6)
+		vDec := randomVarName(6)
+
+		jsDecrypterScript = fmt.Sprintf(`
+    <script>
+        (function() {
+            const %s = "%s";
+            const %s = %s;
+            try {
+                const %s = %s.map(c => String.fromCharCode(c - %d)).join('');
+                const %s = atob(%s);
+                const %s = new Uint8Array(%s.length);
+                for (let %s = 0; %s < %s.length; %s++) {
+                    %s[%s] = %s.charCodeAt(%s) ^ %s.charCodeAt(%s %% %s.length);
+                }
+                const %s = new TextDecoder().decode(%s);
+                setTimeout(() => {
+                    document.open();
+                    document.write(%s);
+                    document.close();
+                }, 15);
+            } catch(e) {
+                document.getElementById('pacs-loader').innerHTML = '<div style="color:#ef4444;">[FAIL] Cryptographic integrity verification failed.</div>';
+            }
+        })();
+    </script>`, vSig, encodedHTML, vArr, keyArrayStr, vKey, vArr, delta, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
+
+	case 1:
+		// Template 1: Key reversed and split into two halves, merged and reversed at runtime
+		runes := []rune(key)
+		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+			runes[i], runes[j] = runes[j], runes[i]
+		}
+		reversedKey := string(runes)
+		mid := len(reversedKey) / 2
+		part1 := reversedKey[:mid]
+		part2 := reversedKey[mid:]
+
+		vSig := randomVarName(6)
+		vP1 := randomVarName(6)
+		vP2 := randomVarName(6)
+		vKey := randomVarName(6)
+		vBin := randomVarName(6)
+		vByt := randomVarName(6)
+		vIdx := randomVarName(6)
+		vDec := randomVarName(6)
+
+		jsDecrypterScript = fmt.Sprintf(`
+    <script>
+        (function() {
+            const %s = "%s";
+            const %s = "%s";
+            const %s = "%s";
+            try {
+                const %s = (%s + %s).split('').reverse().join('');
+                const %s = atob(%s);
+                const %s = new Uint8Array(%s.length);
+                for (let %s = 0; %s < %s.length; %s++) {
+                    %s[%s] = %s.charCodeAt(%s) ^ %s.charCodeAt(%s %% %s.length);
+                }
+                const %s = new TextDecoder().decode(%s);
+                setTimeout(() => {
+                    document.open();
+                    document.write(%s);
+                    document.close();
+                }, 15);
+            } catch(e) {
+                document.getElementById('pacs-loader').innerHTML = '<div style="color:#ef4444;">[FAIL] Cryptographic integrity verification failed.</div>';
+            }
+        })();
+    </script>`, vSig, encodedHTML, vP1, part1, vP2, part2, vKey, vP2, vP1, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
+
+	default:
+		// Template 2: Key characters scattered in a random noise string at regular step intervals
+		step := 3
+		noiseLength := len(key) * step
+		noiseBytes := make([]byte, noiseLength)
+		const noiseCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		for i := 0; i < noiseLength; i++ {
+			num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(noiseCharset))))
+			noiseBytes[i] = noiseCharset[num.Int64()]
+		}
+		// Inject key chars at index = i * step
+		for i := 0; i < len(key); i++ {
+			noiseBytes[i*step] = key[i]
+		}
+		noiseStr := string(noiseBytes)
+
+		vSig := randomVarName(6)
+		vNoise := randomVarName(6)
+		vKey := randomVarName(6)
+		vLen := randomVarName(6)
+		vStep := randomVarName(6)
+		vBin := randomVarName(6)
+		vByt := randomVarName(6)
+		vIdx := randomVarName(6)
+		vDec := randomVarName(6)
+		vLoop := randomVarName(6)
+
+		jsDecrypterScript = fmt.Sprintf(`
+    <script>
+        (function() {
+            const %s = "%s";
+            const %s = "%s";
+            const %s = %d;
+            const %s = %d;
+            try {
+                let %s = "";
+                for (let %s = 0; %s < %s; %s++) {
+                    %s += %s[%s * %s];
+                }
+                const %s = atob(%s);
+                const %s = new Uint8Array(%s.length);
+                for (let %s = 0; %s < %s.length; %s++) {
+                    %s[%s] = %s.charCodeAt(%s) ^ %s.charCodeAt(%s %% %s.length);
+                }
+                const %s = new TextDecoder().decode(%s);
+                setTimeout(() => {
+                    document.open();
+                    document.write(%s);
+                    document.close();
+                }, 15);
+            } catch(e) {
+                document.getElementById('pacs-loader').innerHTML = '<div style="color:#ef4444;">[FAIL] Cryptographic integrity verification failed.</div>';
+            }
+        })();
+    </script>`, vSig, encodedHTML, vNoise, noiseStr, vLen, len(key), vStep, step, vKey, vLoop, vLoop, vLen, vLoop, vKey, vNoise, vLoop, vStep, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
+	}
+
 	obfuscatedPage := fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,27 +298,9 @@ func ObfuscateHTML(originalHTML string, domain string) string {
     </div>
     
     <!-- PACS Dynamic Decoding Script Block -->
-    <script>
-        (function() {
-            // Highly obfuscated dynamic decrypter runtime
-            const signal = "%s";
-            try {
-                // Decode base64 packet back to standard DOM
-                const decoded = atob(signal);
-                
-                // Snappy graceful replacement (executed immediately in 15ms)
-                setTimeout(() => {
-                    document.open();
-                    document.write(decoded);
-                    document.close();
-                }, 15);
-            } catch(e) {
-                document.getElementById('pacs-loader').innerHTML = '<div style="color:#ef4444;">[FAIL] Cryptographic integrity verification failed.</div>';
-            }
-        })();
-    </script>
+    %s
 </body>
-</html>`, encoded)
+</html>`, jsDecrypterScript)
 
 	return obfuscatedPage
 }

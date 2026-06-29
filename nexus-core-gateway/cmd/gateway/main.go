@@ -16,6 +16,7 @@ import (
 	"github.com/nexus-cyber/nexus-core-gateway/internal/licensing"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/proxy"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/rasp"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/repair"
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
 )
@@ -81,6 +82,9 @@ func main() {
 	} else {
 		go integrityMonitor.Start(ctx, 2*time.Second)
 	}
+
+	// Initialize RASP (Runtime Application Self-Protection) (Phase 9)
+	go rasp.StartRASP(ctx, telemetry, 500*time.Millisecond)
 
 	// Register Real-time AI Event Streaming (Powering the Command Center SOC Terminal)
 	telemetry.OnAIEvent = func(event logger.AIEventLog) {
@@ -211,6 +215,7 @@ func main() {
 	mux.HandleFunc("/api/unlock-reward", rewardUnlockHandler(telemetry))
 	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler) // CGNAT Bypass Challenge Validator
 	mux.HandleFunc("/api/test/run", runTestHandler())
+	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                 // [NEW: CSRF TOKEN ENDPOINT]
 	mux.Handle("/", gatewayHandler)                                     // all other requests go to the proxy
 
 	// 9. Root Matrix Shield: Wrap EVERYTHING in AI Intelligence
@@ -229,7 +234,7 @@ func main() {
 		})
 	}
 
-	rootShield := corsShield(gateway.AIMiddleware(mux))
+	rootShield := corsShield(proxy.CsrfShield(gateway.AIMiddleware(mux)))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -252,5 +257,35 @@ func main() {
 
 	if err := http.ListenAndServe(port, rootShield); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// Handler to retrieve or generate the CSRF token.
+func csrfTokenHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		
+		// If CORS preflight, return early
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		cookie, err := r.Cookie("nexus_csrf")
+		var token string
+		if err != nil || cookie.Value == "" {
+			token = proxy.GenerateCSRFToken()
+			http.SetCookie(w, &http.Cookie{
+				Name:     "nexus_csrf",
+				Value:    token,
+				Path:     "/",
+				HttpOnly: false,
+				SameSite: http.SameSiteLaxMode,
+			})
+		} else {
+			token = cookie.Value
+		}
+
+		json.NewEncoder(w).Encode(map[string]string{"csrf_token": token})
 	}
 }
