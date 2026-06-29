@@ -69,6 +69,11 @@ type IntelBlacklist struct {
 	Reason    string     `gorm:"type:varchar(255)"`
 	ExpiresAt *time.Time `gorm:"type:timestamp"` // Nullable: Jika NULL, maka pemblokiran bersifat permanen (Permanent Ban)
 	IsActive  bool       `gorm:"type:boolean;default:true"`
+	Country   string     `gorm:"type:varchar(100)"`
+	City      string     `gorm:"type:varchar(100)"`
+	ISP       string     `gorm:"type:varchar(150)"`
+	Latitude  float64    `gorm:"type:decimal(9,6)"`
+	Longitude float64    `gorm:"type:decimal(9,6)"`
 }
 
 // AIInsight menyimpan analisis kecerdasan buatan mendalam yang di-eskalasi dari Reflex Layer.

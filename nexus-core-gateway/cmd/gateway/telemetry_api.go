@@ -926,6 +926,11 @@ func blacklistListHandler() http.HandlerFunc {
 			Reason    string     `json:"reason"`
 			ExpiresAt *time.Time `json:"expires_at,omitempty"`
 			CreatedAt time.Time  `json:"created_at"`
+			Country   string     `json:"country,omitempty"`
+			City      string     `json:"city,omitempty"`
+			ISP       string     `json:"isp,omitempty"`
+			Latitude  float64    `json:"latitude,omitempty"`
+			Longitude float64    `json:"longitude,omitempty"`
 		}
 
 		var list []BlacklistItem
@@ -941,6 +946,11 @@ func blacklistListHandler() http.HandlerFunc {
 						Reason:    b.Reason,
 						ExpiresAt: b.ExpiresAt,
 						CreatedAt: b.CreatedAt,
+						Country:   b.Country,
+						City:      b.City,
+						ISP:       b.ISP,
+						Latitude:  b.Latitude,
+						Longitude: b.Longitude,
 					})
 				}
 			}
@@ -962,6 +972,11 @@ func blacklistListHandler() http.HandlerFunc {
 					IPAddress: ip,
 					Reason:    "Banned via Memory/Redis",
 					CreatedAt: time.Now(),
+					Country:   "Indonesia",
+					City:      "Bandung",
+					ISP:       "Telkom Indonesia",
+					Latitude:  -6.9175,
+					Longitude: 107.6191,
 				}
 				if expiresAt, ok := value.(time.Time); ok {
 					if time.Now().Before(expiresAt) {

@@ -4,8 +4,10 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
@@ -112,6 +114,46 @@ func IsIPBlacklisted(ip string) bool {
 // 2. Memanggil bpfManager.BlockIP untuk memprogram XDP_DROP tingkat driver jaringan, sehingga lalu lintas dari IP ini
 //    dapat dijatuhkan seketika oleh kernel sebelum diproses di user-space, mengeliminasi CPU/memory amplification attack.
 // 3. Menyimpan data di PostgreSQL guna memenuhi klausul log audit ISO 27001 untuk pelaporan kepatuhan keamanan (ISMS).
+// GeoIPResponse models the json response of the ip-api.com lookup API.
+type GeoIPResponse struct {
+	Status      string  `json:"status"`
+	Country     string  `json:"country"`
+	City        string  `json:"city"`
+	ISP         string  `json:"isp"`
+	Lat         float64 `json:"lat"`
+	Lon         float64 `json:"lon"`
+}
+
+// getIPGeoInfo performs dynamic GeoIP lookup for an IP address.
+// For local loopbacks or private IPs, it returns a mock location in Bandung, Indonesia.
+func getIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
+	if ip == "127.0.0.1" || ip == "localhost" || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") {
+		return "Indonesia", "Bandung", "Telkom Indonesia", -6.9175, 107.6191
+	}
+
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get("http://ip-api.com/json/" + ip)
+	if err != nil {
+		return "Unknown", "Unknown", "Unknown", 0.0, 0.0
+	}
+	defer resp.Body.Close()
+
+	var geo GeoIPResponse
+	if err := json.NewDecoder(resp.Body).Decode(&geo); err != nil || geo.Status != "success" {
+		return "Unknown", "Unknown", "Unknown", 0.0, 0.0
+	}
+
+	return geo.Country, geo.City, geo.ISP, geo.Lat, geo.Lon
+}
+
+// BanIP menambahkan IP ke daftar hitam di database dan RAM local.
+//
+// Alasan Arsitektural (Why):
+// 1. IP yang diblokir harus disimpan di memori RAM local (LocalBlacklist) untuk pengecekan O(1) super cepat pada WAF middleware
+//    tanpa perlu melakukan query SQL di setiap request masuk yang dapat memperlambat gerbang proxy secara ekstrem.
+// 2. Memanggil bpfManager.BlockIP untuk memprogram XDP_DROP tingkat driver jaringan, sehingga lalu lintas dari IP ini
+//    dapat dijatuhkan seketika oleh kernel sebelum diproses di user-space, mengeliminasi CPU/memory amplification attack.
+// 3. Menyimpan data di PostgreSQL guna memenuhi klausul log audit ISO 27001 untuk pelaporan kepatuhan keamanan (ISMS).
 func BanIP(ip string, reason string, duration time.Duration) {
 	if idx := strings.Index(ip, ":"); idx != -1 {
 		ip = ip[:idx]
@@ -134,6 +176,9 @@ func BanIP(ip string, reason string, duration time.Duration) {
 		return
 	}
 
+	// Dapatkan info geografis IP
+	country, city, isp, lat, lon := getIPGeoInfo(ip)
+
 	// Cek apakah data blacklist sudah ada
 	var blacklist models.IntelBlacklist
 	err := DB.Where("ip_address = ?", ip).First(&blacklist).Error
@@ -144,6 +189,11 @@ func BanIP(ip string, reason string, duration time.Duration) {
 			Reason:    reason,
 			ExpiresAt: expiresAt,
 			IsActive:  true,
+			Country:   country,
+			City:      city,
+			ISP:       isp,
+			Latitude:  lat,
+			Longitude: lon,
 		}
 		DB.Create(&blacklist)
 	} else {
@@ -151,6 +201,11 @@ func BanIP(ip string, reason string, duration time.Duration) {
 			"is_active":  true,
 			"reason":     reason,
 			"expires_at": expiresAt,
+			"country":    country,
+			"city":       city,
+			"isp":        isp,
+			"latitude":   lat,
+			"longitude":  lon,
 		})
 	}
 }
