@@ -303,6 +303,107 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 	}
 }
 
+func paymentWebhookHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.HandlerFunc {
+	type WebhookPayload struct {
+		Domain   string `json:"domain"`
+		Status   string `json:"status"` // "paid" or "success"
+		PlanType string `json:"plan_type"` // "premium" or "enterprise"
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Method not allowed"})
+			return
+		}
+
+		var payload WebhookPayload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid JSON payload"})
+			return
+		}
+
+		if payload.Domain == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Missing domain parameter"})
+			return
+		}
+
+		// Validasi format domain
+		if !isValidDomain(payload.Domain) {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid domain format"})
+			return
+		}
+
+		// Memproses jika status pembayaran adalah paid atau success
+		if payload.Status != "paid" && payload.Status != "success" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Payment status must be paid or success"})
+			return
+		}
+
+		// 1. Alokasikan port acak secara dinamis
+		port, err := proxy.FindFreePort(3003)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Failed to allocate target port"})
+			return
+		}
+		targetURL := "http://127.0.0.1:" + strconv.Itoa(port)
+
+		// 2. Daftarkan DomainSubscription di PostgreSQL database
+		plan := payload.PlanType
+		if plan == "" {
+			plan = "premium"
+		}
+		if database.DB != nil {
+			sub := models.DomainSubscription{
+				Domain:   payload.Domain,
+				OriginIP: targetURL,
+				IsActive: true,
+				PlanType: plan,
+			}
+			// Gunakan Save untuk update jika sudah ada
+			if err := database.DB.Save(&sub).Error; err != nil {
+				fmt.Printf("[BILLING-ERROR] Failed to save domain subscription: %v\n", err)
+			}
+		}
+
+		// 3. Picu orkestrasi provisioning kontainer secara asinkron di goroutine
+		go func(d string, p int) {
+			err := proxy.RunProvisioner("up", d, p)
+			if err != nil {
+				fmt.Printf("[PROVISIONER-ERROR] Failed to up container for %s on port %d: %v\n", d, p, err)
+			}
+		}(payload.Domain, port)
+
+		// 4. Daftarkan rute proxy dinamis
+		router.AddRoute(payload.Domain, targetURL)
+
+		// 5. Tambahkan ke monitoring domain telemetri
+		telemetry.AddDomain(payload.Domain)
+
+		// 6. Log aktivitas AI untuk Dashboard SOC
+		telemetry.LogAIEvent(logger.AIEventLog{
+			Timestamp:    time.Now(),
+			Layer:        "SaaS-Billing",
+			Status:       "PROVISION_SUCCESS",
+			DetailAction: fmt.Sprintf("[BILLING] Webhook payment verified for %s. Provisioning container on port %d.", payload.Domain, port),
+		})
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":     "success",
+			"message":    "Payment processed successfully. Tenant provisioned.",
+			"domain":     payload.Domain,
+			"target_url": targetURL,
+		})
+	}
+}
+
 func panicHandler(shuffler *mtd.TopologyShuffler, telemetry *logger.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		telemetry.TotalPanic++

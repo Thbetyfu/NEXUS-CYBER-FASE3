@@ -213,6 +213,7 @@ func main() {
 	})
 	mux.HandleFunc("/api/upload", uploadShieldHandler(gateway, telemetry))
 	mux.HandleFunc("/api/unlock-reward", rewardUnlockHandler(telemetry))
+	mux.HandleFunc("/api/webhook/payment", paymentWebhookHandler(gateway.Router, telemetry))
 	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler) // CGNAT Bypass Challenge Validator
 	mux.HandleFunc("/api/test/run", runTestHandler())
 	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                 // [NEW: CSRF TOKEN ENDPOINT]
