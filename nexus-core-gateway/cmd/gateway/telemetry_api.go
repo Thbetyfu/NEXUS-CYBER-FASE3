@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/ai"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/bpf"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/models"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
@@ -42,6 +43,14 @@ type TelemetryResponse struct {
 		NextShuffle int    `json:"next_shuffle_secs"`
 		Status      string `json:"status"`
 	} `json:"mtd"`
+	Ebpf struct {
+		Enabled         bool     `json:"enabled"`
+		DroppedPackets  uint64   `json:"dropped_packets"`
+		DroppedBytes    uint64   `json:"dropped_bytes"`
+		ThroughputMbps  float64  `json:"throughput_mbps"`
+		BlockedIPsCount int      `json:"blocked_ips_count"`
+		BlockedIPsList  []string `json:"blocked_ips_list"`
+	} `json:"ebpf"`
 	RecentLogs []logger.TelemetryLog `json:"recent_logs"`
 	Stats      struct {
 		Allowed  int `json:"allowed"`
@@ -70,9 +79,21 @@ func telemetryHandler(shuffler *mtd.TopologyShuffler, telemetry *logger.Logger, 
 		} else {
 			pingResp.Body.Close()
 		}
+		// Fetch eBPF stats
+		bpfManager := bpf.NewBpfManager()
+		ebpfEnabled, droppedPackets, droppedBytes, throughput, blockedCount, blockedList := bpfManager.GetStats()
+
 		resp := TelemetryResponse{}
 		resp.MTD.Status = backendStatus
 		resp.MTD.ActivePort, resp.MTD.NextShuffle = shuffler.GetStatus()
+
+		resp.Ebpf.Enabled = ebpfEnabled
+		resp.Ebpf.DroppedPackets = droppedPackets
+		resp.Ebpf.DroppedBytes = droppedBytes
+		resp.Ebpf.ThroughputMbps = throughput
+		resp.Ebpf.BlockedIPsCount = blockedCount
+		resp.Ebpf.BlockedIPsList = blockedList
+
 		allLogs := telemetry.GetRecentLogs()
 		if filterDomain == "all" {
 			resp.RecentLogs = allLogs
@@ -430,7 +451,6 @@ func nechatHandler(telemetry *logger.Logger) http.HandlerFunc {
 }
 
 func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler, router *proxy.DynamicRouter) http.HandlerFunc {
-	_ = router
 	return func(w http.ResponseWriter, r *http.Request) {
 		var payload struct {
 			Command string `json:"command"`
@@ -540,6 +560,21 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				break
 			}
 			domainToSub := parts[1]
+
+			// Validasi format domain
+			if !isValidDomain(domainToSub) {
+				response = "[ERROR] Invalid domain format"
+				break
+			}
+
+			// Cari port bebas untuk kontainer baru
+			port, err := proxy.FindFreePort(3003)
+			if err != nil {
+				response = "[ERROR] Failed to allocate free port for container"
+				break
+			}
+			targetURL := "http://127.0.0.1:" + strconv.Itoa(port)
+
 			if database.DB != nil {
 				var sub models.DomainSubscription
 				err := database.DB.Where("domain = ?", domainToSub).First(&sub).Error
@@ -547,22 +582,37 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 					sub = models.DomainSubscription{
 						Base:     models.Base{ID: uuid.New()},
 						Domain:   domainToSub,
-						OriginIP: "127.0.0.1",
+						OriginIP: targetURL,
 						IsActive: true,
 						PlanType: "premium",
 					}
 					database.DB.Create(&sub)
 				} else {
-					database.DB.Model(&sub).Update("is_active", true)
+					database.DB.Model(&sub).Updates(map[string]interface{}{
+						"is_active": true,
+						"origin_ip": targetURL,
+					})
 				}
 			}
+
+			// Picu container provisioner secara asinkron
+			go func(d string, p int) {
+				err := proxy.RunProvisioner("up", d, p)
+				if err != nil {
+					fmt.Printf("[CLI-PROVISIONER-ERROR] Failed to up container for %s on port %d: %v\n", d, p, err)
+				}
+			}(domainToSub, port)
+
+			// Daftarkan rute proxy
+			router.AddRoute(domainToSub, targetURL)
+
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
 				Layer:        "SaaS-WAF-Manager",
 				Status:       "LICENSE_ACTIVATED",
-				DetailAction: fmt.Sprintf("[SAAS] Domain %s activated. PACS Polymorphic Shield ACTIVE.", domainToSub),
+				DetailAction: fmt.Sprintf("[SAAS] Domain %s activated via CLI. Container provisioned on port %d.", domainToSub, port),
 			})
-			response = fmt.Sprintf("[SUCCESS] [SAAS] Domain %s premium license successfully activated! PACS Shield active.", domainToSub)
+			response = fmt.Sprintf("[SUCCESS] [SAAS] Domain %s premium license successfully activated! Container provisioned on port %d (PACS Shield ACTIVE).", domainToSub, port)
 
 		case strings.HasPrefix(cmd, "unsub ") || strings.HasPrefix(cmd, "/unsub "):
 			parts := strings.Fields(payload.Command)
@@ -571,18 +621,32 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				break
 			}
 			domainToUnsub := parts[1]
+
+			// Nonaktifkan subscription di DB
 			if database.DB != nil {
 				database.DB.Model(&models.DomainSubscription{}).
 					Where("domain = ?", domainToUnsub).
 					Update("is_active", false)
 			}
+
+			// Hapus rute proxy
+			router.RemoveRoute(domainToUnsub)
+
+			// Picu teardown kontainer secara asinkron
+			go func(d string) {
+				err := proxy.RunProvisioner("down", d, 0)
+				if err != nil {
+					fmt.Printf("[CLI-PROVISIONER-ERROR] Failed to down container for %s: %v\n", d, err)
+				}
+			}(domainToUnsub)
+
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
 				Layer:        "SaaS-WAF-Manager",
 				Status:       "LICENSE_REVOKED",
-				DetailAction: fmt.Sprintf("[SAAS-ALERT] Domain %s license revoked! Copot/Shield deactivated.", domainToUnsub),
+				DetailAction: fmt.Sprintf("[SAAS-ALERT] Domain %s license revoked via CLI. Container destroyed.", domainToUnsub),
 			})
-			response = fmt.Sprintf("[WARNING] [SAAS] Domain %s license revoked! Shield deactivated, domain locked.", domainToUnsub)
+			response = fmt.Sprintf("[WARNING] [SAAS] Domain %s license revoked! Container destroyed and domain locked.", domainToUnsub)
 
 
 		case cmd == "honeystats" || cmd == "/honeystats":

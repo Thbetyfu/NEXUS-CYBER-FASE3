@@ -97,6 +97,9 @@ const WindowFrame: React.FC<WindowFrameProps> = ({
       }}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
       onMouseDown={onFocus}
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby={`${id}-title`}
       className={`absolute flex flex-col bg-[#0c0f14]/95 backdrop-blur-3xl border transition-colors duration-300 ${
         isActive ? "border-blue-500/50" : "border-gray-800/80"
       } ${isMaximized ? "z-[9999]" : ""}`}
@@ -124,9 +127,12 @@ const WindowFrame: React.FC<WindowFrameProps> = ({
           <div className={`${isActive ? "text-blue-400" : "text-gray-500"} transition-colors`}>
             {icon || <Terminal size={16} />}
           </div>
-          <span className={`text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
-            isActive ? "text-blue-100" : "text-gray-500"
-          }`}>
+          <span 
+            id={`${id}-title`}
+            className={`text-[11px] font-black uppercase tracking-[0.2em] transition-colors ${
+              isActive ? "text-blue-100" : "text-gray-500"
+            }`}
+          >
             {title}
           </span>
         </div>
@@ -135,12 +141,14 @@ const WindowFrame: React.FC<WindowFrameProps> = ({
           <button 
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-500 transition-all"
             onClick={() => {/* minimize logic usually handled by parent */}}
+            aria-label={`Minimize ${title} window`}
           >
             <Minus size={14} />
           </button>
           <button 
             onClick={() => setIsMaximized(!isMaximized)}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-500 transition-all"
+            aria-label={isMaximized ? `Restore ${title} window` : `Maximize ${title} window`}
           >
             {isMaximized ? (
               <div className="relative w-3 h-3 border border-current">
@@ -153,6 +161,7 @@ const WindowFrame: React.FC<WindowFrameProps> = ({
           <button 
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition-all"
+            aria-label={`Close ${title} window`}
           >
             <X size={14} />
           </button>

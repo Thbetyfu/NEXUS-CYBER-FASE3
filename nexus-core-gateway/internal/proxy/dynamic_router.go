@@ -4,6 +4,7 @@ package proxy
 import (
 	"context"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,47 +39,91 @@ func NewDynamicRouter(cacheTTL time.Duration) *DynamicRouter {
 	}
 }
 
-// Lookup menemukan URL target backend berdasarkan nama domain (host).
+// Lookup menemukan URL target backend berdasarkan nama domain (host), dengan dukungan wildcard fallback (misal *.domain.com atau *).
 //
 // Alasan Teknis (Why):
 // 1. Menguji cache memori lokal dengan Read-Lock (`RLock`) terlebih dahulu.
 //    Read-Lock memungkinkan ratusan goroutine membaca cache secara simultan tanpa saling memblokir (high concurrency).
 // 2. Jika kadaluarsa atau tidak ditemukan, sistem melakukan fallback ke Redis dengan batas waktu ketat (`500ms timeout`).
-//    Batas waktu ini memastikan jika Redis mengalami kemacetan, gateway tidak ikut macet dan tetap responsif.
-// 3. Hasil dari Redis disimpan secara malas (lazy population) ke memori lokal untuk mempercepat pencarian berikutnya.
+// 3. Jika pencocokan tepat gagal, dilakukan pencarian rekursif wildcard (misal `*.example.com`) untuk mendukung Shared WAF.
+// 4. Jika tetap tidak ditemukan, pencarian diarahkan ke global wildcard (`*`) sebagai gerbang fallback universal.
 func (dr *DynamicRouter) Lookup(host string) (string, bool) {
-	// 1. Periksa Cache RAM Lokal (Tier 1 - Kinerja Ekstrem)
+	// 1. Periksa Pencocokan Tepat di Cache RAM Lokal (Tier 1)
 	dr.mu.RLock()
 	entry, exists := dr.cache[host]
 	dr.mu.RUnlock()
 
 	// [SAAS RESILIENCY FALLBACK]
-	// Alasan Keamanan (Why):
-	// Jika Redis tidak diaktifkan atau offline, kita tetap percaya 100% pada cache memori lokal
-	// dan mengabaikan kedaluwarsa TTL agar perlindungan domain tidak terputus setelah 10 detik.
 	if exists && (time.Now().Before(entry.ExpiresAt) || mtd.MtdRedis == nil || !mtd.MtdRedis.Enabled) {
 		return entry.TargetURL, true
 	}
 
-	// 2. Fallback ke Redis terdistribusi (Tier 2 - Sinkronisasi Global)
+	// 2. Fallback Pencocokan Tepat ke Redis (Tier 2)
 	if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
 		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 		defer cancel()
 
 		target, err := mtd.MtdRedis.Client.HGet(ctx, "nexus:routes", host).Result()
 		if err == nil && target != "" {
-			// Perbarui cache memori lokal menggunakan Write-Lock (`Lock`)
-			dr.mu.Lock()
-			dr.cache[host] = RouteEntry{
-				TargetURL: target,
-				ExpiresAt: time.Now().Add(dr.ttl),
+			dr.updateLocalCache(host, target)
+			return target, true
+		}
+	}
+
+	// 3. Pencocokan Wildcard Fallback (e.g., *.domain.com) jika pencocokan tepat gagal
+	parts := strings.Split(host, ".")
+	for i := 0; i < len(parts)-1; i++ {
+		wildcardHost := "*." + strings.Join(parts[i+1:], ".")
+		
+		// Cek di Cache RAM Lokal
+		dr.mu.RLock()
+		wEntry, wExists := dr.cache[wildcardHost]
+		dr.mu.RUnlock()
+		if wExists && (time.Now().Before(wEntry.ExpiresAt) || mtd.MtdRedis == nil || !mtd.MtdRedis.Enabled) {
+			return wEntry.TargetURL, true
+		}
+
+		// Cek di Redis
+		if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
+			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+			defer cancel()
+			target, err := mtd.MtdRedis.Client.HGet(ctx, "nexus:routes", wildcardHost).Result()
+			if err == nil && target != "" {
+				dr.updateLocalCache(wildcardHost, target)
+				return target, true
 			}
-			dr.mu.Unlock()
+		}
+	}
+
+	// 4. Pencocokan Global Fallback (e.g., "*") untuk Shared WAF universal
+	dr.mu.RLock()
+	gEntry, gExists := dr.cache["*"]
+	dr.mu.RUnlock()
+	if gExists && (time.Now().Before(gEntry.ExpiresAt) || mtd.MtdRedis == nil || !mtd.MtdRedis.Enabled) {
+		return gEntry.TargetURL, true
+	}
+
+	if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
+		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+		defer cancel()
+		target, err := mtd.MtdRedis.Client.HGet(ctx, "nexus:routes", "*").Result()
+		if err == nil && target != "" {
+			dr.updateLocalCache("*", target)
 			return target, true
 		}
 	}
 
 	return "", false
+}
+
+// updateLocalCache memperbarui entri cache RAM lokal secara thread-safe menggunakan Write-Lock.
+func (dr *DynamicRouter) updateLocalCache(host, target string) {
+	dr.mu.Lock()
+	dr.cache[host] = RouteEntry{
+		TargetURL: target,
+		ExpiresAt: time.Now().Add(dr.ttl),
+	}
+	dr.mu.Unlock()
 }
 
 // AddRoute mendaftarkan pemetaan rute baru secara instan di memori lokal dan menyinkronkannya ke Redis.

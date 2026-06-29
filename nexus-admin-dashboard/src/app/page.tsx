@@ -71,6 +71,14 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
   const [logs, setLogs] = useState<TelemetryLog[]>([])
   const [metrics, setMetrics] = useState({ allowed: 0, blocked: 0, honeypot: 0, panics: 0 })
   const [shufflerData, setShufflerData] = useState({ port: 3001, status: "OFFLINE" })
+  const [ebpfData, setEbpfData] = useState({
+    enabled: false,
+    dropped_packets: 0,
+    dropped_bytes: 0,
+    throughput_mbps: 0,
+    blocked_ips_count: 0,
+    blocked_ips_list: [] as string[]
+  })
   const [isLive, setIsLive] = useState(true)
   const [isUnlicensed, setIsUnlicensed] = useState(false)
 
@@ -128,6 +136,9 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
         setMetrics(stats)
         setShufflerData(data.mtd)
         setLogs((data.recent_logs || []).reverse())
+        if (data.ebpf) {
+          setEbpfData(data.ebpf)
+        }
 
         const currentTrafficTotal = stats.allowed || 0
         const currentHoneypotTotal = stats.honeypot || 0
@@ -162,7 +173,7 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
 
   }, [url, intervalMs])
 
-  return { logs, metrics, history, shufflerData, isLive, isUnlicensed }
+  return { logs, metrics, history, shufflerData, ebpfData, isLive, isUnlicensed }
 }
 
 function useAIEvents(url: string, intervalMs: number = 1000) {
@@ -619,7 +630,7 @@ const NCCDashboard = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [logLimit, setLogLimit] = useState<number>(10);
   
-  const { logs, metrics, history, isLive, isUnlicensed } = useTelemetry(`${API_BASE_URL}/api/telemetry?domain=${activeDomain}`, 2000)
+  const { logs, metrics, history, ebpfData, isLive, isUnlicensed } = useTelemetry(`${API_BASE_URL}/api/telemetry?domain=${activeDomain}`, 2000)
   const aiEvents = useAIEvents(`${API_BASE_URL}/api/ai-events`, 1000)
   const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
 
@@ -784,6 +795,7 @@ const NCCDashboard = () => {
 
   return (
     <div className={`relative min-h-screen bg-[#050608] text-gray-200 font-sans overflow-hidden transition-colors duration-1000 ${isEmergency ? 'shadow-[inset_0_0_150px_rgba(220,38,38,0.15)]' : ''}`}>
+      <h1 className="sr-only">Nexus Cyber Command Center OS</h1>
       <AnimatePresence>
         {isBooting && <BootSequence key="boot-sequence" onComplete={() => setIsBooting(false)} />}
       </AnimatePresence>
@@ -919,7 +931,7 @@ const NCCDashboard = () => {
               initialX={140}
               initialY={40}
               width={400}
-              height={520}
+              height={580}
               zIndex={windowZIndices["metrics"]}
               isActive={focusedWindow === "metrics"}
               onFocus={() => handleFocusWindow("metrics")}
@@ -934,6 +946,32 @@ const NCCDashboard = () => {
                   <div className="bg-[#1a1010] border border-red-500/20 rounded-xl p-4">
                     <p className="text-[9px] text-red-400 uppercase font-black tracking-widest mb-1">Threats Trapped</p>
                     <p className="text-2xl font-mono font-bold text-red-500">{metrics.honeypot.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* eBPF Kernel Shield Panel */}
+                <div className="bg-[#0b0e14] border border-emerald-500/20 rounded-xl p-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest flex items-center gap-1.5">
+                      <Cpu size={11} className="animate-pulse" /> eBPF Kernel Shield
+                    </p>
+                    <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      ACTIVE (XDP_DROP)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                      <p className="text-[7px] text-gray-500 uppercase font-bold">Drops</p>
+                      <p className="text-xs font-mono font-bold text-white mt-0.5">{ebpfData.dropped_packets.toLocaleString()}</p>
+                    </div>
+                    <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                      <p className="text-[7px] text-gray-500 uppercase font-bold">Throughput</p>
+                      <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">{ebpfData.throughput_mbps.toFixed(2)} Mbps</p>
+                    </div>
+                    <div className="bg-black/30 p-2 rounded-lg border border-white/5">
+                      <p className="text-[7px] text-gray-500 uppercase font-bold">Blocked IPs</p>
+                      <p className="text-xs font-mono font-bold text-red-400 mt-0.5">{ebpfData.blocked_ips_count}</p>
+                    </div>
                   </div>
                 </div>
                 

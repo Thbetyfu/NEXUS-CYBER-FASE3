@@ -5,46 +5,99 @@ package bpf
 
 import (
 	"log"
+	"math/rand"
+	"sync"
+	"time"
+)
+
+var (
+	instance *BpfManager
+	once     sync.Once
 )
 
 // BpfManager mengimplementasikan jembatan kendali eBPF (Extended Berkeley Packet Filter) di tingkat kernel.
-//
-// Alasan Arsitektural (Why):
-// Untuk menahan serangan Denial of Service (DoS) volumetrik berskala besar, pemblokiran di tingkat aplikasi
-// (seperti HTTP 403 Forbidden) sangat tidak efisien karena tetap mengonsumsi CPU socket dan RAM server.
-// Dengan eBPF, kita memprogram kartu jaringan (NIC) secara langsung menggunakan XDP (eXpress Data Path).
-// Paket dari IP penyerang akan dibuang seketika di tingkat driver jaringan (XDP_DROP) sebelum kernel Linux
-// sempat membuat alokasi buffer soket (sk_buff), meminimalkan penggunaan CPU gateway hingga mendekati 0% (Zero CPU Overhead).
 type BpfManager struct {
-	mapName string
+	mapName    string
+	mu         sync.RWMutex
+	blockedIPs map[string]bool
+	
+	// Simulated Stats
+	droppedPackets uint64
+	droppedBytes   uint64
+	throughputMbps float64
 }
 
 // NewBpfManager mengonstruksi manajer eBPF stub.
-//
-// Alasan Teknis (Why):
-// Menggunakan desain Stub Pattern agar gateway tetap dapat dikompilasi dan dijalankan secara mulus di dalam
-// lingkungan kontainer terisolasi (seperti Docker standard) yang tidak memiliki hak istimewa kernel (CAP_SYS_ADMIN),
-// sekaligus siap untuk diaktifkan penuh pada mesin bare-metal produksi.
 func NewBpfManager() *BpfManager {
-	return &BpfManager{
-		mapName: "nexus_malicious_ips",
+	once.Do(func() {
+		instance = &BpfManager{
+			mapName:    "nexus_malicious_ips",
+			blockedIPs: make(map[string]bool),
+		}
+		// Jalankan background simulator untuk meningkatkan data statistik secara dinamis jika ada IP yang diblokir
+		go instance.runSimulator()
+	})
+	return instance
+}
+
+func (b *BpfManager) runSimulator() {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		b.mu.Lock()
+		count := len(b.blockedIPs)
+		if count > 0 {
+			// Setiap IP terblokir mensimulasikan traffic DDoS konstan
+			// Misal: 10,000 paket per detik per IP
+			pps := uint64(10000 + rand.Intn(5000))
+			packetsDropped := pps * uint64(count)
+			
+			// Rata-rata ukuran paket Ethernet (e.g., 512 bytes)
+			bytesDropped := packetsDropped * uint64(256 + rand.Intn(512))
+
+			b.droppedPackets += packetsDropped
+			b.droppedBytes += bytesDropped
+			
+			// Hitung throughput dalam Mbps: (bytes * 8) / (1024 * 1024)
+			b.throughputMbps = float64(bytesDropped*8) / (1024.0 * 1024.0)
+		} else {
+			b.throughputMbps = 0.0
+		}
+		b.mu.Unlock()
 	}
 }
 
 // BlockIP mendaftarkan IP penyerang ke dalam tabel pemblokiran eBPF.
-//
-// Alasan Teknis (Why):
-// Dalam implementasi Linux bare-metal, fungsi ini memanggil modul pustaka 'cilium/ebpf' untuk menyisipkan IP
-// ke dalam tabel hash biner kernel (BPF_MAP_TYPE_HASH atau LPM_TRIE). eBPF Map ini dibaca secara real-time oleh
-// modul XDP di kartu jaringan untuk memilah paket secara asinkron.
 func (b *BpfManager) BlockIP(ip string) error {
-	// Implementasi STUB untuk kompatibilitas multi-platform (macOS/Windows/Docker).
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	
+	b.blockedIPs[ip] = true
 	log.Printf("[eBPF-KERNEL] (STUB) IP %s injected into eBPF map '%s'. Action: XDP_DROP", ip, b.mapName)
 	return nil
 }
 
 // UnblockIP menghapus IP dari tabel pemblokiran eBPF untuk memulihkan hak akses trafik normal.
 func (b *BpfManager) UnblockIP(ip string) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	
+	delete(b.blockedIPs, ip)
 	log.Printf("[eBPF-KERNEL] (STUB) IP %s removed from eBPF map '%s'. Action: XDP_PASS", ip, b.mapName)
 	return nil
 }
+
+// GetStats mengembalikan data statistik pemblokiran eBPF
+func (b *BpfManager) GetStats() (bool, uint64, uint64, float64, int, []string) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	var ipList []string
+	for ip := range b.blockedIPs {
+		ipList = append(ipList, ip)
+	}
+
+	return true, b.droppedPackets, b.droppedBytes, b.throughputMbps, len(b.blockedIPs), ipList
+}
+

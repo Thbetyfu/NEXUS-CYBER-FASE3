@@ -9,7 +9,7 @@ Dokumen ini menjelaskan seluruh skenario pengujian unit (*Unit Testing*) otomati
 Backend Go WAF Gateway dilengkapi dengan rangkaian pengujian otomatis di bawah package `internal` dan `cmd/gateway` untuk mengamankan gerbang lalu lintas jaringan.
 
 ### 1.1 Modul Proxy, PACS & CSRF Protection (`internal/proxy`)
-Pengujian di dalam file [pacs_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/pacs_test.go), [middleware_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/middleware_test.go), dan [provisioner_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/provisioner_test.go):
+Pengujian di dalam file [pacs_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/pacs_test.go), [middleware_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/middleware_test.go), [provisioner_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/provisioner_test.go), dan [dynamic_router_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/dynamic_router_test.go):
 
 - **`TestCsrfShield` (Double-Submit Cookie Verification):**
   - Memastikan request `GET` menyisipkan cookie `nexus_csrf` secara otomatis.
@@ -28,6 +28,8 @@ Pengujian di dalam file [pacs_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-C
   - Memastikan fungsi pendeteksi port TCP bebas (`FindFreePort`) bekerja dengan benar untuk alokasi port kontainer tenant baru.
 - **`TestRunProvisionerInvalidAction`:**
   - Memverifikasi penanganan galat argumen pada orkestrator kontainer jika dikirimkan aksi kosong.
+- **`TestDynamicRouterWildcardAndFallback`:**
+  - Memverifikasi kemampuan rute dinamis untuk mendeteksi pencocokan tepat domain, pencocokan wildcard (seperti `*.tenant.localhost`), serta global fallback `*` jika domain tidak terdaftar sama sekali.
 
 ### 1.2 Modul RASP (Runtime Application Self-Protection) (`internal/rasp`)
 Pengujian di dalam file [monitor_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/rasp/monitor_test.go):
@@ -47,8 +49,8 @@ Pengujian di dalam file [monitor_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexu
   - **Skenario Penghapusan:** Menghapus file baseline visual, memverifikasi pembuatan ulang file steril otomatis.
   - **Skenario File Ilegal:** Menambahkan file tidak dikenal (simulasi web-shell), memverifikasi file tersebut langsung dihapus paksa secara instan.
 
-### 1.4 Modul Handlers & Autoban IP (`cmd/gateway`)
-Pengujian di dalam file [resistance_handlers_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/resistance_handlers_test.go):
+### 1.4 Modul Handlers, Billing Webhook & CLI (`cmd/gateway`)
+Pengujian di dalam file [resistance_handlers_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/resistance_handlers_test.go), [webhook_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/webhook_test.go), dan [cli_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/cli_test.go):
 
 - **`TestRewardUnlockAutoban`:**
   - Menguji counter brute force sandi reward galeri portofolio.
@@ -56,6 +58,12 @@ Pengujian di dalam file [resistance_handlers_test.go](file:///d:/0. Kerjaan/Nexu
   - Memastikan percobaan salah ke-5 langsung memicu **Autoban IP** (`HTTP 403 Forbidden`) dan mendaftarkannya ke RAM lokal serta eBPF stub.
   - Memverifikasi request berikutnya dari IP terban langsung ditolak di layer awal.
   - Memverifikasi akses dibuka kembali dan tautan reward diberikan setelah dilakukan `Unban` dan memasukkan password yang benar.
+- **`TestPaymentWebhookHandler`:**
+  - Memverifikasi integrasi penanganan webhook pembayaran (simulasi Stripe/Midtrans) dengan respon sukses `HTTP 200 OK`, alokasi port dinamis otonom, dan pemicuan orkestrasi kontainer.
+- **`TestCliExecuteSubUnsub`:**
+  - Memverifikasi eksekusi komando terminal CLI `/sub` dan `/unsub` pada gateway.
+  - Memastikan `/sub` mengalokasikan port dinamis, mendaftarkan langganan aktif, memicu peluncuran container, dan mendaftarkan rute.
+  - Memastikan `/unsub` menonaktifkan status sewa, mencopot rute proxy, dan menghancurkan container tenant dari host.
 
 ---
 
