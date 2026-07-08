@@ -49,6 +49,9 @@ services:
       - "8080" # Di-expose internal ke Caddy saja (Security Hardening)
     ports:
       - "9090:9090" # Honeypot Port tetap diakses publik untuk menjebak bot
+      - "22:2222"   # SSH Tarpit Port
+    volumes:
+      - ./nexus-core-gateway/geoip:/app/geoip
     environment:
       - REDIS_URL=redis:6379
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/bpf"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/models"
+	"github.com/oschwald/geoip2-golang"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -35,6 +37,7 @@ var LocalBlacklist sync.Map
 // - Menggunakan Auto-Migrate untuk memastikan tabel audit trail penting seperti ThreatLog dan MTDAuditTrail
 //   selalu sinkron dengan struktur data terbaru saat gateway pertama kali dijalankan.
 func InitPostgres() {
+	InitThreatReporter()
 	dsn := os.Getenv("POSTGRES_DSN")
 	if dsn == "" {
 		log.Println("[DB-WARNING] POSTGRES_DSN is not set. Database persistence is disabled (Degraded Local Mode).")
@@ -124,13 +127,43 @@ type GeoIPResponse struct {
 	Lon         float64 `json:"lon"`
 }
 
-// getIPGeoInfo performs dynamic GeoIP lookup for an IP address.
-// For local loopbacks or private IPs, it returns a mock location in Bandung, Indonesia.
-func getIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
+// GetIPGeoInfo performs dynamic GeoIP lookup for an IP address.
+func GetIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
 	if ip == "127.0.0.1" || ip == "localhost" || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") {
 		return "Indonesia", "Bandung", "Telkom Indonesia", -6.9175, 107.6191
 	}
 
+	// 1. Coba pencarian lokal dengan database GeoLite2 MaxMind jika tersedia
+	dbPath := "geoip/GeoLite2-City.mmdb"
+	if _, err := os.Stat(dbPath); err == nil {
+		db, err := geoip2.Open(dbPath)
+		if err == nil {
+			defer db.Close()
+			netIP := net.ParseIP(ip)
+			if netIP != nil {
+				record, err := db.City(netIP)
+				if err == nil {
+					country = record.Country.Names["en"]
+					city = record.City.Names["en"]
+					if country == "" {
+						country = "Unknown"
+					}
+					if city == "" {
+						city = "Unknown"
+					}
+					lat = record.Location.Latitude
+					lon = record.Location.Longitude
+					isp = "MaxMind Local DB"
+					return country, city, isp, lat, lon
+				}
+			}
+		}
+	}
+
+	// Log warning bahwa database lokal mmdb absen atau gagal dibaca, fallback ke API online
+	log.Printf("[GEOIP-WARN] Local mmdb database not found or unreadable. Falling back to online API for IP: %s", ip)
+
+	// 2. Fallback ke API online ip-api.com
 	client := &http.Client{Timeout: 3 * time.Second}
 	resp, err := client.Get("http://ip-api.com/json/" + ip)
 	if err != nil {
@@ -172,12 +205,23 @@ func BanIP(ip string, reason string, duration time.Duration) {
 	bpfManager := bpf.NewBpfManager()
 	_ = bpfManager.BlockIP(ip)
 
+	// Laporkan ancaman secara asinkron ke provider aktif (AbuseIPDB / SIEM)
+	var categories []int
+	if strings.Contains(strings.ToLower(reason), "brute") || strings.Contains(strings.ToLower(reason), "vault") {
+		categories = []int{18, 15}
+	} else {
+		categories = []int{15}
+	}
+	if ActiveThreatReporter != nil {
+		_ = ActiveThreatReporter.ReportThreat(ip, categories, fmt.Sprintf("Nexus-Cyber WAF: Blocked due to '%s'", reason))
+	}
+
 	if DB == nil {
 		return
 	}
 
 	// Dapatkan info geografis IP
-	country, city, isp, lat, lon := getIPGeoInfo(ip)
+	country, city, isp, lat, lon := GetIPGeoInfo(ip)
 
 	// Cek apakah data blacklist sudah ada
 	var blacklist models.IntelBlacklist

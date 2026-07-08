@@ -24,22 +24,19 @@ func NewRedisClient() *RedisClientWrapper {
 		redisURL = "localhost:6379"
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:         redisURL,
-		Password:     "",
-		DB:           0,
-		PoolSize:     10, // Small pool for local mode
-		MinIdleConns: 1,
-		DialTimeout:  300 * time.Millisecond, // Instant failover
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+	// Lakukan probe cepat tanpa membuat pool dulu, agar tidak ada goroutine
+	// reconnect yang menggantung di latar belakang saat Redis memang tidak aktif.
+	probeClient := redis.NewClient(&redis.Options{
+		Addr:        redisURL,
+		DialTimeout: 500 * time.Millisecond,
+		ReadTimeout: 500 * time.Millisecond,
+		PoolSize:    1,
 	})
 
-	// Coba melakukan Ping dengan retry jika Redis kontainer sedang booting
 	var pingErr error
 	for i := 1; i <= 5; i++ {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		_, pingErr = client.Ping(ctx).Result()
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		_, pingErr = probeClient.Ping(ctx).Result()
 		cancel()
 		if pingErr == nil {
 			break
@@ -48,14 +45,29 @@ func NewRedisClient() *RedisClientWrapper {
 		time.Sleep(1 * time.Second)
 	}
 
+	// Tutup probe client di semua kondisi agar tidak ada goroutine menggantung.
+	_ = probeClient.Close()
+
 	if pingErr != nil {
 		log.Printf("[MTD-REDIS] Bypassed distributed cache (Redis is offline). Falling back to local memory.")
 		return &RedisClientWrapper{Enabled: false}
 	}
 
+	// Redis aktif — baru buat pool koneksi penuh.
+	fullClient := redis.NewClient(&redis.Options{
+		Addr:         redisURL,
+		Password:     "",
+		DB:           0,
+		PoolSize:     100,
+		MinIdleConns: 5,
+		DialTimeout:  300 * time.Millisecond,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	})
+
 	log.Printf("[MTD-REDIS] CONNECTED to Distributed Cache: %s. Using %d connection pool.", redisURL, 100)
 	return &RedisClientWrapper{
-		Client:  client,
+		Client:  fullClient,
 		Enabled: true,
 	}
 }

@@ -33,6 +33,7 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 
 * **Isolated Honeypot**: Server umpan terisolasi pada port `:9090` untuk menjebak pemindai otomatis hacker.
 * **Tarpit Delay**: Menahan koneksi penyerang selama 8 detik secara sengaja untuk menguras *resource* penyerang, yang kemudian disiarkan langsung ke dasbor telemetri.
+* **SSH Tarpit (Socket Starvation)**: TCP Listener di port `:22` (via Docker `:2222`) yang menangkap pemindai SSH otomatis dan membekukan koneksi peretas dengan sequence string acak setiap 10 detik secara tak terbatas.
 
 ### 4. Sanitasi Berkas Visual (AVSE - Anti-Vulnerability SQL/XSS Engine)
 
@@ -54,11 +55,14 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 
 ### 7. Terminal Komando Interaktif (SOC Command CLI)
 
-* Mendukung eksekusi perintah administrator seperti: `/help`, `/status`, `/stats`, `/shuffle`, `/ban [IP]`, `/unban [IP]`, `/sub [domain]`, `/unsub [domain]`, `/honeystats`, `/patches`, dan `@nexus [query]` untuk konsultasi AI.
+* **Xterm.js Console Engine**: Menggunakan emulator terminal web standar industri yang mendukung input keyboard asli, Tab Autocomplete, riwayat perintah (Arrow Up/Down), dan rendering warna ANSI.
+* **Command & AI Integration**: Mendukung eksekusi perintah administrator seperti: `/help`, `/status`, `/stats`, `/shuffle`, `/ban [IP]`, `/unban [IP]`, `/sub [domain]`, `/unsub [domain]`, `/honeystats`, `/patches`, dan `@nexus [query]` untuk konsultasi AI.
 
 ### 8. Database Forensik & Kepatuhan ISO 27001
 
-* Penyimpanan log anomali dan jejak audit secara terstruktur dalam database **PostgreSQL** (`threat_logs`, `mtd_audit_trail`, `intel_blacklist`, `ai_insights`) serta **Redis** untuk *in-memory caching* dan *rate limiting*.
+* **Log Persistensi & Audit**: Penyimpanan log anomali dan jejak audit secara terstruktur dalam database **PostgreSQL** (`threat_logs`, `mtd_audit_trail`, `intel_blacklist`, `ai_insights`) serta **Redis** untuk *in-memory caching* dan *rate limiting*.
+* **Local GeoIP City Lookup**: Resolusi offline koordinat geografis peretas secara lokal menggunakan basis data MaxMind City `.mmdb` dengan fallback dinamis ke API online `ip-api.com`.
+* **AbuseIPDB Async Reporting**: Publikasi IP penyerang yang terblokir secara asinkron (goroutine) ke portal intelijen reputasi global AbuseIPDB.
 
 ### 9. Fitur Pengujian Simulasi & Ketahanan Riil (Testing & Simulation Mode)
 
@@ -82,11 +86,17 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 
 Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 
+### 📖 Panduan Teknis & Operasional
 * [🏗️ **Architecture & Flow**](./docs/ARCHITECTURE.md) - Detail teknis MTD, AI Layers, & Self-Repair.
-* [🛡️ **Capabilities**](./docs/CAPABILITIES.md) - Daftar serangan yang bisa dicegah.
+* [🛡️ **Capabilities**](./docs/CAPABILITIES.md) - Daftar serangan yang bisa pencegah.
 * [⚠️ **Limitations**](./docs/LIMITATIONS.md) - Batasan perlindungan sistem.
 * [🕹️ **CLI Guide**](./docs/CLI_GUIDE.md) - Panduan perintah Command Center.
 * [🛠️ **Git Workflow**](./docs/GIT_WORKFLOW.md) - Panduan Push & Pull (Submodule).
+
+### 🛠️ Rekayasa Perangkat Lunak (SDLC Documents)
+* [📄 **Product Requirements Document (PRD)**](./docs/PRODUCT_REQUIREMENTS_DOCUMENT.md) - Visi produk, profil pengguna, dan kriteria keberhasilan.
+* [📄 **Software Requirements Specification (SRS)**](./docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md) - Kebutuhan fungsional, non-fungsional, dan skema endpoints API.
+* [📄 **Software Design Document (SWD)**](./docs/SOFTWARE_DESIGN_DOCUMENT.md) - ERD basis data relasional, deskripsi modul kode, dan diagram urutan siber aktif-pasif.
 
 ---
 

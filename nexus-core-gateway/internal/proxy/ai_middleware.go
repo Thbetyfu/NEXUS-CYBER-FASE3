@@ -32,7 +32,13 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		if !licensing.IsLicenseValid() {
 			if strings.HasPrefix(r.URL.Path, "/api/") {
 				w.Header().Set("Content-Type", "application/json")
-				w.Header().Set("Access-Control-Allow-Origin", "*")
+				origin := r.Header.Get("Origin")
+				if origin != "" {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
+				} else {
+					w.Header().Set("Access-Control-Allow-Origin", "*")
+				}
 				w.WriteHeader(http.StatusPaymentRequired)
 				w.Write([]byte(`{"status":"error","message":"Nexus [402]: Subscription Expired. Please renew your license."}`))
 				return

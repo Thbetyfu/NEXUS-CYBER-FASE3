@@ -125,6 +125,31 @@ func main() {
 	}
 	honeypot.Start()
 
+	// 3b. MTD: SSH Tarpit
+	// Runs on SSH_TARPIT_PORT (default :2222), stalls SSH scanners
+	sshTarpitPort := os.Getenv("SSH_TARPIT_PORT")
+	if sshTarpitPort == "" {
+		sshTarpitPort = ":2222"
+	}
+	if !strings.HasPrefix(sshTarpitPort, ":") {
+		sshTarpitPort = ":" + sshTarpitPort
+	}
+	
+	sshTarpit := mtd.NewSSHTarpit(sshTarpitPort, 10*time.Second)
+	sshTarpit.OnAttackerCaught = func(ip string) {
+		// Kirim telemetri kejadian ke dashboard
+		telemetry.LogAIEvent(logger.AIEventLog{
+			Timestamp:    time.Now(),
+			Layer:        "SSH-Tarpit",
+			Status:       "ATTACKER_TRAPPED",
+			DetailAction: fmt.Sprintf("[TRAPPED] Attacker from %s caught in SSH Tarpit. Starving connection...", ip),
+		})
+		// Ban IP penyerang secara otomatis selama 24 jam
+		database.BanIP(ip, "SSH brute force probe caught in tarpit", 24*time.Hour)
+	}
+	sshTarpit.Start()
+
+
 	// 4. Setup Initial Backend Target (Mockup OJK Data Center)
 	backendHost := os.Getenv("TARGET_BACKEND_HOST")
 	if backendHost == "" {
@@ -225,7 +250,13 @@ func main() {
 	// 3. CORS Shield (Access for Dashboard)
 	corsShield := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			} else {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+			}
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
 			w.Header().Set("Access-Control-Allow-Headers", "*")
 

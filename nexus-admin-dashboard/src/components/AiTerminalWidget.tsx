@@ -6,594 +6,424 @@
    - Peraturan 2: Jangan pernah menambahkan autoFocus pada input terminal ini.
 */
 import React, { useEffect, useState, useRef } from 'react';
-import { Terminal, ServerOff, Loader2 } from 'lucide-react';
+import { Terminal as TerminalIcon, ServerOff, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '@/config';
 
 interface AIEventLog {
-    timestamp: string;
-    layer: string;
-    status: string;
-    detail_action: string;
-    error?: string;
+	timestamp: string;
+	layer: string;
+	status: string;
+	detail_action: string;
+	error?: string;
 }
 
-// Snappy super high-tech text typist effect
-const simulateStreamingText = (fullText: string, onUpdate: (currentText: string) => void, onComplete: () => void) => {
-    let index = 0;
-    let current = "";
-    const interval = setInterval(() => {
-        if (index < fullText.length) {
-            current += fullText[index];
-            onUpdate(current);
-            index++;
-        } else {
-            clearInterval(interval);
-            onComplete();
-        }
-    }, 12); // Snappy 12ms per char typing speed
+// Format log menjadi ANSI escape codes untuk warna Xterm.js
+const formatLogToAnsi = (log: AIEventLog): string => {
+	let text = log.detail_action;
+	if (!text) return "";
+
+	let prefix = "";
+	if (log.layer === "Reflex") prefix = "\x1b[1;32m[REFLEX_CORE]\x1b[0m ";
+	else if (log.layer === "Reasoning") prefix = "\x1b[1;35m[INTENT_ANALYSIS]\x1b[0m ";
+	else if (log.layer === "Self-Repair") prefix = "\x1b[1;36m[REPAIR_MODULE]\x1b[0m ";
+	else if (log.layer === "SSH-Tarpit") prefix = "\x1b[1;33m[SSH_TARPIT]\x1b[0m ";
+	else if (log.layer === "Honeypot-Trap") prefix = "\x1b[1;31m[HONEYPOT_TRAP]\x1b[0m ";
+	else if (log.layer === "System" || log.layer === "SYSTEM") prefix = "\x1b[1;31m[SYS_ERR]\x1b[0m ";
+	else prefix = "\x1b[1;36m[SYS]\x1b[0m ";
+
+	// Bersihkan prefix default buatan backend agar tidak duplikat
+	const cleanPrefixes = [
+		"> [REFLEX_CORE] ",
+		"> [INTENT_ANALYSIS] ",
+		"> [REPAIR_MODULE] ",
+		"> [SYS] "
+	];
+	for (const p of cleanPrefixes) {
+		if (text.startsWith(p)) {
+			text = text.substring(p.length);
+		}
+	}
+
+	const lines = text.split('\n');
+	const formattedLines = lines.map(line => {
+		// Garis pembatas
+		if (line.match(/^[-=]{10,}$/)) {
+			return "\x1b[90m" + line + "\x1b[0m";
+		}
+
+		let formatted = line;
+
+		// Format [PASS] & [FAIL]
+		if (formatted.includes('[PASS]')) {
+			formatted = formatted.replace('[PASS]', '\x1b[1;42;37m PASS \x1b[0m');
+		}
+		if (formatted.includes('[FAIL]')) {
+			formatted = formatted.replace('[FAIL]', '\x1b[1;41;37m FAIL \x1b[0m');
+		}
+
+		// Format penanda status/stats
+		if (formatted.startsWith('[SUCCESS]')) {
+			formatted = "\x1b[1;32m✓\x1b[0m " + formatted.substring(9);
+		} else if (formatted.startsWith('[ERROR]')) {
+			formatted = "\x1b[1;31m✗\x1b[0m " + formatted.substring(7);
+		} else if (formatted.startsWith('[STATUS]')) {
+			formatted = "\x1b[1;36m⚡\x1b[0m " + formatted.substring(8);
+		} else if (formatted.startsWith('[STATS]')) {
+			formatted = "\x1b[1;33m📊\x1b[0m " + formatted.substring(7);
+		} else if (formatted.startsWith('[VIRTUAL-PATCH-DB]') || formatted.startsWith('[HONEYPOT-STATUS]')) {
+			formatted = "\x1b[1;36m" + formatted + "\x1b[0m";
+		} else if (formatted.startsWith('[NEXUS-AI]')) {
+			formatted = "\x1b[1;35m🧠 " + formatted + "\x1b[0m";
+		}
+
+		// Format list bullet items
+		if (formatted.trim().startsWith('- ') || formatted.trim().startsWith('* ')) {
+			const cleanLine = formatted.trim().replace(/^[-*]\s+/, "");
+			let itemContent = cleanLine;
+
+			if (cleanLine.includes('|')) {
+				const segments = cleanLine.split('|');
+				const formattedSegments = segments.map(seg => {
+					const sTrim = seg.trim();
+					if (sTrim.startsWith('IP:')) {
+						return "\x1b[1;37m" + sTrim + "\x1b[0m";
+					} else if (sTrim.startsWith('Status:')) {
+						const statusVal = sTrim.split(':')[1]?.trim() || '';
+						let statusColor = "\x1b[36m"; // Cyan
+						if (statusVal.includes('STARVED') || statusVal.includes('BANNED') || statusVal.includes('TIMEOUT')) {
+							statusColor = "\x1b[1;31m"; // Red
+						} else if (statusVal.includes('ACTIVE') || statusVal.includes('Active') || statusVal.includes('ISOLATED')) {
+							statusColor = "\x1b[1;32m"; // Green
+						}
+						return "Status: " + statusColor + statusVal + "\x1b[0m";
+					} else if (sTrim.startsWith('Hits:')) {
+						return "\x1b[1;33m" + sTrim + "\x1b[0m";
+					}
+					return sTrim;
+				});
+				itemContent = formattedSegments.join(" | ");
+			}
+			formatted = "  \x1b[1;36m•\x1b[0m " + itemContent;
+		}
+
+		return formatted;
+	});
+
+	return prefix + formattedLines.join("\r\n");
 };
 
 export default function AiTerminalWidget() {
-    const [aiStatus, setAiStatus] = useState({ state: "INITIALIZING", latency: 0, model: "QWEN3-CORE" });
-    const [stream, setStream] = useState<AIEventLog[]>([]);
-    const terminalRef = useRef<HTMLDivElement>(null);
+	const [aiStatus, setAiStatus] = useState({ state: "INITIALIZING", latency: 0, model: "QWEN3-CORE" });
+	const containerRef = useRef<HTMLDivElement>(null);
+	const terminalInstanceRef = useRef<any>(null);
 
-    // Dynamic autocomplete suggestion state
-    const [inputValue, setInputValue] = useState("");
-    const [commandHistory, setCommandHistory] = useState<string[]>(() => {
-        if (typeof window !== "undefined") {
-            const stored = localStorage.getItem("nexus_cli_history");
-            if (stored) {
-                try {
-                    return JSON.parse(stored);
-                } catch (e) {}
-            }
-        }
-        return [];
-    });
-    const [historyIndex, setHistoryIndex] = useState(-1);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+	const allCommands = [
+		"/status",
+		"/stats",
+		"/shuffle",
+		"/ban ",
+		"/unban ",
+		"/sub ",
+		"/unsub ",
+		"/honeystats",
+		"/patches",
+		"/simulate-attack",
+		"@nexus ",
+		"clear"
+	];
 
-    const allCommands = [
-        "/status",
-        "/stats",
-        "/shuffle",
-        "/ban ",
-        "/unban ",
-        "/sub ",
-        "/unsub ",
-        "/honeystats",
-        "/patches",
-        "/simulate-attack",
-        "@nexus ",
-        "clear"
-    ];
+	// Ping status backend
+	useEffect(() => {
+		const fetchStatus = async () => {
+			try {
+				const res = await fetch(`${API_BASE_URL}/api/ai/status`);
+				const data = await res.json();
+				setAiStatus({ state: data.status, latency: data.latency_ms, model: data.model });
+			} catch (err) {
+				setAiStatus({ state: "DISCONNECTED", latency: 0, model: "NEXUS-CORE" });
+			}
+		};
 
-    useEffect(() => {
-        if (terminalRef.current) {
-            terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-        }
-    }, [stream]);
+		fetchStatus();
+		const timer = setInterval(fetchStatus, 5000);
+		return () => clearInterval(timer);
+	}, []);
 
-    // Status ping logic
-    useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/ai/status`);
-                const data = await res.json();
-                setAiStatus({ state: data.status, latency: data.latency_ms, model: data.model });
-            } catch (err) {
-                setAiStatus({ state: "DISCONNECTED", latency: 0, model: "NEXUS-CORE" });
-            }
-        };
+	// Inisialisasi Xterm.js secara dinamis (Aman untuk Next.js SSR)
+	useEffect(() => {
+		let active = true;
+		let term: any = null;
+		let fitAddon: any = null;
+		let eventSource: EventSource | null = null;
+		let reconnectTimeout: NodeJS.Timeout;
 
-        fetchStatus();
-        const timer = setInterval(fetchStatus, 5000);
-        return () => clearInterval(timer);
-    }, []);
+		// Variabel untuk melacak status terminal dan CLI
+		let cmdBuffer = "";
+		let commandHistory: string[] = [];
+		if (typeof window !== "undefined") {
+			const stored = localStorage.getItem("nexus_cli_history");
+			if (stored) {
+				try {
+					commandHistory = JSON.parse(stored);
+				} catch (e) {}
+			}
+		}
+		let historyIndex = -1;
+		let suggestions: string[] = [];
+		let activeSuggestionIndex = -1;
 
-    // SSE Stream Logic
-    useEffect(() => {
-        let eventSource: EventSource | null = null;
-        let reconnectTimeout: NodeJS.Timeout;
+		const initTerm = async () => {
+			// Dynamic imports untuk mencegah crash saat prerender Next.js
+			const { Terminal } = await import('xterm');
+			const { FitAddon: FitAddonClass } = await import('@xterm/addon-fit');
+			await import('xterm/css/xterm.css');
 
-        const connectSSE = () => {
-            eventSource = new EventSource(`${API_BASE_URL}/api/ai/stream`);
+			if (!active || !containerRef.current) return;
 
-            eventSource.onmessage = (e) => {
-                if (e.data === ': heartbeat') return;
+			term = new Terminal({
+				cursorBlink: true,
+				theme: {
+					background: '#030507',
+					foreground: '#22d3ee', // Cyan-400
+					cursor: '#22d3ee',
+					black: '#000000',
+					red: '#f87171',
+					green: '#4ade80',
+					yellow: '#facc15',
+					blue: '#60a5fa',
+					magenta: '#c084fc',
+					cyan: '#22d3ee',
+					white: '#f3f4f6'
+				},
+				fontSize: 11,
+				fontFamily: 'Courier New, Courier, monospace',
+				rows: 24,
+				convertEol: true
+			});
 
-                try {
-                    const data = JSON.parse(e.data);
-                    if (data.error) {
-                        setStream(prev => [...prev, { timestamp: new Date().toISOString(), layer: "SYSTEM", status: "ERROR", detail_action: `> [ERROR] ${data.error}. Retrying...` }].slice(-50));
-                        return;
-                    }
+			fitAddon = new FitAddonClass();
+			term.loadAddon(fitAddon);
+			term.open(containerRef.current);
+			fitAddon.fit();
 
-                    let prefix = "";
-                    if (data.layer === "Reflex") prefix = "> [REFLEX_CORE] ";
-                    else if (data.layer === "Reasoning") prefix = "> [INTENT_ANALYSIS] ";
-                    else if (data.layer === "Self-Repair") prefix = "> [REPAIR_MODULE] ";
-                    else prefix = "> [SYS] ";
+			terminalInstanceRef.current = term;
 
-                    setStream(prev => {
-                        const newMsg = { ...data, detail_action: `${prefix}${data.detail_action}` };
-                        return [...prev.slice(-50), newMsg];
-                    });
-                } catch (err) {
-                    // silent discard
-                }
-            };
+			// Cetak Boot Banner
+			term.writeln("\x1b[1;36mN EX US   C O R E   O S   v7.2\x1b[0m");
+			term.writeln("\x1b[90m> Loading secure cognitive streams...\x1b[0m");
+			term.write("\r\n\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
 
-            eventSource.onerror = (e) => {
-                if (eventSource?.readyState === EventSource.CLOSED) {
-                    setStream(prev => [...prev.slice(-50), { timestamp: new Date().toISOString(), layer: "SYSTEM", status: "ERROR", detail_action: "> [ERROR] Telemetry connection lost. Retrying in 5s..." }]);
-                    reconnectTimeout = setTimeout(connectSSE, 5000);
-                }
-            };
-        };
+			// Event handler untuk masukan keyboard
+			term.onData(async (data: string) => {
+				// Handle Enter
+				if (data === '\r') {
+					term.write('\r\n');
+					const cmd = cmdBuffer.trim();
+					if (cmd !== "") {
+						// Simpan histori perintah
+						commandHistory.push(cmd);
+						if (commandHistory.length > 50) commandHistory.shift();
+						localStorage.setItem("nexus_cli_history", JSON.stringify(commandHistory));
+						historyIndex = -1;
 
-        connectSSE();
+						if (cmd.toLowerCase() === 'clear') {
+							term.clear();
+							cmdBuffer = "";
+							term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
+							return;
+						}
 
-        return () => {
-            if (eventSource) eventSource.close();
-            clearTimeout(reconnectTimeout);
-        };
-    }, []);
+						// Eksekusi CLI backend
+						term.write("\x1b[90mExecuting command...\x1b[0m\r\n");
+						
+						try {
+							const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
+							const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" };
 
-    const handleCommandSubmit = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (commandHistory.length > 0) {
-                const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
-                setHistoryIndex(newIndex);
-                setInputValue(commandHistory[commandHistory.length - 1 - newIndex]);
-                setSuggestions([]);
-                setActiveSuggestionIndex(-1);
-            }
-            return;
-        }
+							const res = await fetch(`${API_BASE_URL}/api/cli/execute`, {
+								method: 'POST',
+								headers: { 
+									'Content-Type': 'application/json',
+									...(csrf_token ? { "X-CSRF-Token": csrf_token } : {})
+								},
+								credentials: "include",
+								body: JSON.stringify({ command: cmd })
+							});
 
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (historyIndex > 0) {
-                const newIndex = historyIndex - 1;
-                setHistoryIndex(newIndex);
-                setInputValue(commandHistory[commandHistory.length - 1 - newIndex]);
-                setSuggestions([]);
-                setActiveSuggestionIndex(-1);
-            } else {
-                setHistoryIndex(-1);
-                setInputValue("");
-                setSuggestions([]);
-                setActiveSuggestionIndex(-1);
-            }
-            return;
-        }
+							if (res.ok) {
+								const data = await res.json();
+								const rawOutput = data.output || data.response || "[EMPTY_RESPONSE]";
+								
+								// Format output dengan warna ANSI
+								const formattedOutput = rawOutput.replace(/\r?\n/g, "\r\n");
+								term.writeln(formattedOutput);
+							} else {
+								term.writeln("\x1b[1;31m[ERROR] Command routing failed.\x1b[0m");
+							}
+						} catch (err) {
+							term.writeln("\x1b[1;31m[ERROR] Execution offline.\x1b[0m");
+						}
+					}
+					cmdBuffer = "";
+					term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
+					suggestions = [];
+					activeSuggestionIndex = -1;
+					return;
+				}
 
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            if (suggestions.length > 0) {
-                const step = e.shiftKey ? -1 : 1;
-                const nextIndex = (activeSuggestionIndex + step + suggestions.length) % suggestions.length;
-                setActiveSuggestionIndex(nextIndex);
-                setInputValue(suggestions[nextIndex]);
-            }
-            return;
-        }
+				// Handle Backspace (DEL / \u007F)
+				if (data === '\u007F') {
+					if (cmdBuffer.length > 0) {
+						cmdBuffer = cmdBuffer.slice(0, -1);
+						term.write('\b \b');
+					}
+					suggestions = [];
+					activeSuggestionIndex = -1;
+					return;
+				}
 
-        if (e.key === 'Escape') {
-            setSuggestions([]);
-            setActiveSuggestionIndex(-1);
-            return;
-        }
+				// Handle Tab Autocomplete
+				if (data === '\t') {
+					const trimmed = cmdBuffer.trim();
+					if (suggestions.length === 0 && trimmed.length > 0) {
+						suggestions = allCommands.filter(c => c.startsWith(trimmed) && c !== trimmed);
+					}
 
-        if (e.key === 'Enter' && inputValue.trim() !== '') {
-            const cmd = inputValue.trim();
-            setInputValue("");
-            setHistoryIndex(-1);
-            setSuggestions([]);
-            setActiveSuggestionIndex(-1);
+					if (suggestions.length > 0) {
+						activeSuggestionIndex = (activeSuggestionIndex + 1) % suggestions.length;
+						const completed = suggestions[activeSuggestionIndex];
+						
+						// Bersihkan baris input Xterm dan tulis suggestion yang baru
+						term.write("\r\x1b[K\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + completed);
+						cmdBuffer = completed;
+					}
+					return;
+				}
 
-            // Persist history to state and localStorage
-            setCommandHistory(prev => {
-                const updated = [...prev, cmd].slice(-50);
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("nexus_cli_history", JSON.stringify(updated));
-                }
-                return updated;
-            });
+				// Handle Arrow Up (Histori Perintah)
+				if (data === '\u001b[A') {
+					if (commandHistory.length > 0) {
+						historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+						const histCmd = commandHistory[commandHistory.length - 1 - historyIndex];
+						term.write("\r\x1b[K\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + histCmd);
+						cmdBuffer = histCmd;
+					}
+					return;
+				}
 
-            const cmdLower = cmd.toLowerCase();
-            if (cmdLower === 'clear' || cmdLower === '/clear') {
-                setStream([]);
-                return;
-            }
+				// Handle Arrow Down (Histori Perintah)
+				if (data === '\u001b[B') {
+					if (historyIndex > 0) {
+						historyIndex--;
+						const histCmd = commandHistory[commandHistory.length - 1 - historyIndex];
+						term.write("\r\x1b[K\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + histCmd);
+						cmdBuffer = histCmd;
+					} else {
+						historyIndex = -1;
+						term.write("\r\x1b[K\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
+						cmdBuffer = "";
+					}
+					return;
+				}
 
-            // Optimistic UI Append with command feedback
-            setStream(prev => {
-                const updated = [...prev.slice(-50), {
-                    timestamp: new Date().toISOString(),
-                    layer: "Admin",
-                    status: "EXEC",
-                    detail_action: `nexus_admin@soc:~$ ${cmd}`
-                }];
+				// Abaikan escape keys lainnya
+				if (data.startsWith('\u001b')) {
+					return;
+				}
 
-                if (cmd.startsWith('@nexus')) {
-                    updated.push({
-                        timestamp: new Date().toISOString(),
-                        layer: "Reasoning",
-                        status: "THINKING",
-                        detail_action: "[NEXUS-AI] Analysing cosmic threat vectors and forensic data..."
-                    });
-                }
-                return updated;
-            });
+				// Karakter ketik biasa
+				cmdBuffer += data;
+				term.write(data);
+				suggestions = [];
+				activeSuggestionIndex = -1;
+			});
 
-            try {
-                // Get CSRF Token
-                const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
-                const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" };
+			// Setup SSE untuk event streaming live logs ke Xterm
+			const connectSSE = () => {
+				eventSource = new EventSource(`${API_BASE_URL}/api/ai/stream`);
 
-                const res = await fetch(`${API_BASE_URL}/api/cli/execute`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        ...(csrf_token ? { "X-CSRF-Token": csrf_token } : {})
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ command: cmd })
-                });
+				eventSource.onmessage = (e) => {
+					if (e.data === ': heartbeat') return;
 
-                if (res.ok) {
-                    const data = await res.json();
-                    const rawOutput = data.output || data.response || "[EMPTY_RESPONSE]";
+					try {
+						const logData = JSON.parse(e.data);
+						const formattedAnsi = formatLogToAnsi(logData);
 
-                    // Check if we have a THINKING state to stream into
-                    let isThinkingMsg = false;
-                    setStream(prev => {
-                        const next = [...prev];
-                        for (let i = next.length - 1; i >= 0; i--) {
-                            if (next[i].status === "THINKING") {
-                                isThinkingMsg = true;
-                                next[i] = {
-                                    ...next[i],
-                                    status: "OK",
-                                    detail_action: "" // Cleared to prepare for letter typing
-                                };
-                                return next;
-                            }
-                        }
-                        return next;
-                    });
+						if (formattedAnsi) {
+							// Bersihkan baris input pengetikan aktif sementara, tulis logs, dan gambar ulang input
+							term.write("\r\x1b[K");
+							term.writeln(formattedAnsi);
+							term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + cmdBuffer);
+						}
+					} catch (err) {}
+				};
 
-                    if (isThinkingMsg) {
-                        simulateStreamingText(rawOutput, (currentText) => {
-                            setStream(prev => {
-                                const next = [...prev];
-                                for (let i = next.length - 1; i >= 0; i--) {
-                                    if (next[i].status === "OK" && next[i].layer === "Reasoning") {
-                                        next[i] = { ...next[i], detail_action: currentText };
-                                        break;
-                                    }
-                                }
-                                return next;
-                            });
-                        }, () => {});
-                    } else {
-                        // Regular CLI output - stream letter-by-letter as well
-                        const streamMsg = {
-                            timestamp: new Date().toISOString(),
-                            layer: "System",
-                            status: "OK",
-                            detail_action: ""
-                        };
-                        setStream(prev => [...prev.slice(-50), streamMsg]);
+				eventSource.onerror = (e) => {
+					if (eventSource?.readyState === EventSource.CLOSED) {
+						term.write("\r\x1b[K");
+						term.writeln("\x1b[1;31m[ERROR] Telemetry connection lost. Retrying in 5s...\x1b[0m");
+						term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + cmdBuffer);
+						reconnectTimeout = setTimeout(connectSSE, 5000);
+					}
+				};
+			};
 
-                        simulateStreamingText(rawOutput, (currentText) => {
-                            setStream(prev => {
-                                const next = [...prev];
-                                if (next.length > 0) {
-                                    next[next.length - 1] = {
-                                        ...next[next.length - 1],
-                                        detail_action: currentText
-                                    };
-                                }
-                                return next;
-                            });
-                        }, () => {});
-                    }
-                } else {
-                    setStream(prev => {
-                        const next = prev.filter(item => item.status !== 'THINKING');
-                        return [...next.slice(-50), {
-                            timestamp: new Date().toISOString(),
-                            layer: "System",
-                            status: "ERROR",
-                            detail_action: "[ERROR] Command routing failed."
-                        }];
-                    });
-                }
-            } catch (err) {
-                setStream(prev => {
-                    const next = prev.filter(item => item.status !== 'THINKING');
-                    return [...next.slice(-50), {
-                        timestamp: new Date().toISOString(),
-                        layer: "System",
-                        status: "ERROR",
-                        detail_action: "[ERROR] Execution offline."
-                    }];
-                });
-            }
-        }
-    };
+			connectSSE();
+		};
 
-    return (
-        <div className="bg-[#030507] border border-cyan-900/30 rounded-xl flex flex-col shadow-[0_0_15px_rgba(6,182,212,0.05)] overflow-hidden h-full relative">
-            <div className="bg-[#05080c] px-4 py-2 border-b border-cyan-900/30 flex items-center justify-between sticky top-0 z-10 shrink-0">
-                <h3 className="text-xs font-semibold text-cyan-500 uppercase tracking-widest flex items-center gap-2">
-                    <Terminal className="w-4 h-4" /> Nexus Core Terminal
-                </h3>
-                <div className="flex items-center gap-2">
-                    {aiStatus.state === 'ONLINE' ? (
-                        <>
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[10px] text-emerald-400 font-mono font-bold tracking-tighter">
-                                {aiStatus.model}: ONLINE ({aiStatus.latency}ms)
-                            </span>
-                        </>
-                    ) : aiStatus.state === 'INITIALIZING' ? (
-                        <>
-                            <Loader2 className="w-3 h-3 text-cyan-500 animate-spin" />
-                            <span className="text-[10px] text-cyan-400 font-mono tracking-tighter">INITIALIZING...</span>
-                        </>
-                    ) : (
-                        <>
-                            <ServerOff className="w-3 h-3 text-red-500" />
-                            <span className="text-[10px] text-red-500 font-mono font-bold tracking-tighter">
-                                AI CORE: DISCONNECTED
-                            </span>
-                        </>
-                    )
-                    }
-                </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-black font-mono" ref={terminalRef}>
-                <div className="flex flex-col gap-1 w-full text-[11px] leading-relaxed">
-                    <div className="text-cyan-600 mb-2 whitespace-pre font-black leading-none tracking-tighter">
-                        {`N EX US   C O R E   O S   v7.2`}
-                    </div>
-                    <div className="text-cyan-500/50 mb-4">{`> Loading secure cognitive streams...`}</div>
+		initTerm();
 
-                    {stream.map((log, index) => (
-                        <React.Fragment key={index}>
-                            {renderFormattedLine(log)}
-                        </React.Fragment>
-                    ))}
+		const handleResize = () => {
+			if (fitAddon) {
+				try {
+					fitAddon.fit();
+				} catch (e) {}
+			}
+		};
 
-                    {/* Suggestions Box Overlay */}
-                    {suggestions.length > 0 && (
-                        <div className="bg-[#05080c] border border-cyan-800/40 rounded-lg p-2 mt-3 mb-1 flex flex-col gap-1 text-[10px] text-cyan-400/80 font-mono shadow-[0_0_10px_rgba(6,182,212,0.1)] w-fit max-w-xs select-none">
-                            <div className="text-cyan-500 font-bold border-b border-cyan-900/30 pb-0.5 mb-1 uppercase tracking-wider text-[9px]">
-                                Command Suggestions:
-                            </div>
-                            {suggestions.map((item, i) => (
-                                <div 
-                                    key={i} 
-                                    className={`cursor-pointer px-2 py-0.5 rounded transition-all ${
-                                        activeSuggestionIndex === i 
-                                            ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/30 shadow-[0_0_6px_rgba(6,182,212,0.15)] font-semibold' 
-                                            : 'hover:bg-cyan-950/40 hover:text-cyan-300 text-cyan-400/80'
-                                    }`}
-                                    onClick={() => {
-                                        setInputValue(item);
-                                        setSuggestions([]);
-                                        setActiveSuggestionIndex(-1);
-                                    }}
-                                >
-                                    {item}
-                                </div>
-                            ))}
-                        </div>
-                    )}
+		window.addEventListener('resize', handleResize);
 
-                    <div className="flex items-center mt-2 group">
-                        <span className="text-emerald-500 shrink-0 mr-2 font-bold tracking-tighter">nexus_admin@soc:~$</span>
-                        <input
-                            type="text"
-                            className="bg-transparent border-none outline-none text-green-400 w-full font-mono text-[11px] focus:ring-0 p-0"
-                            placeholder="Type /help or @nexus [query]..."
-                            value={inputValue}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setInputValue(val);
-                                setActiveSuggestionIndex(-1); // Reset cycling on manual typing
-                                
-                                const trimmed = val.trim();
-                                if (trimmed.startsWith("/") || trimmed.startsWith("@") || trimmed.length > 0) {
-                                    const filtered = allCommands.filter(c => 
-                                        c.toLowerCase().startsWith(trimmed.toLowerCase()) && c.toLowerCase() !== trimmed.toLowerCase()
-                                    );
-                                    setSuggestions(filtered);
-                                } else {
-                                    setSuggestions([]);
-                                }
-                            }}
-                            onKeyDown={handleCommandSubmit}
-                            autoComplete="off"
-                            spellCheck="false"
-                        />
-                    </div>
+		return () => {
+			active = false;
+			window.removeEventListener('resize', handleResize);
+			if (term) term.dispose();
+			if (eventSource) eventSource.close();
+			clearTimeout(reconnectTimeout);
+		};
+	}, []);
 
-                </div>
-            </div>
-        </div>
-    );
+	return (
+		<div className="bg-[#030507] border border-cyan-900/30 rounded-xl flex flex-col shadow-[0_0_15px_rgba(6,182,212,0.05)] overflow-hidden h-full relative">
+			<div className="bg-[#05080c] px-4 py-2 border-b border-cyan-900/30 flex items-center justify-between sticky top-0 z-10 shrink-0">
+				<h3 className="text-xs font-semibold text-cyan-500 uppercase tracking-widest flex items-center gap-2">
+					<TerminalIcon className="w-4 h-4" /> Nexus Core Terminal
+				</h3>
+				<div className="flex items-center gap-2">
+					{aiStatus.state === 'ONLINE' ? (
+						<>
+							<span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+							<span className="text-[10px] text-emerald-400 font-mono font-bold tracking-tighter">
+								{aiStatus.model}: ONLINE ({aiStatus.latency}ms)
+							</span>
+						</>
+					) : aiStatus.state === 'INITIALIZING' ? (
+						<>
+							<Loader2 className="w-3 h-3 text-cyan-500 animate-spin" />
+							<span className="text-[10px] text-cyan-400 font-mono tracking-tighter">INITIALIZING...</span>
+						</>
+					) : (
+						<>
+							<ServerOff className="w-3 h-3 text-red-500" />
+							<span className="text-[10px] text-red-500 font-mono font-bold tracking-tighter">
+								AI CORE: DISCONNECTED
+							</span>
+						</>
+					)
+					}
+				</div>
+			</div>
+			{/* Kontainer Xterm Mount */}
+			<div className="flex-1 p-2 bg-[#030507] overflow-hidden" ref={containerRef} style={{ minHeight: '300px' }} />
+		</div>
+	);
 }
-
-// Premium visual formatted line renderer for console high-fidelity aesthetic
-const renderFormattedLine = (log: AIEventLog) => {
-    const text = log.detail_action;
-    if (!text) return null;
-    
-    // Determine default color class based on status/layer
-    let colorClass = 'text-green-400';
-    if (log.status === 'ERROR') colorClass = 'text-red-500 font-semibold';
-    else if (log.status === 'THINKING') colorClass = 'text-fuchsia-400 animate-pulse font-bold';
-    else if (log.layer === 'Self-Repair') colorClass = 'text-emerald-400 font-bold';
-    else if (log.layer === 'Reasoning') colorClass = 'text-fuchsia-400';
-    else if (log.layer === 'Admin') colorClass = 'text-blue-400 font-bold';
-
-    // If it's a command input prompt:
-    if (text.startsWith("nexus_admin@soc:~$")) {
-        const cmdText = text.replace("nexus_admin@soc:~$", "");
-        return (
-            <div className="flex items-center gap-1.5 py-0.5 border-t border-cyan-950/20 mt-2 first:mt-0">
-                <span className="text-emerald-500 font-bold shrink-0">nexus_admin@soc:~$</span>
-                <span className="text-white font-mono font-semibold">{cmdText}</span>
-            </div>
-        );
-    }
-
-    // Split text by newlines and format each line for premium console styling
-    const lines = text.split('\n');
-    return (
-        <div className="flex flex-col gap-0.5 w-full my-0.5">
-            {lines.map((line, idx) => {
-                let content: React.ReactNode = line;
-                let lineClass = colorClass;
-
-                // Highlight section dividers
-                if (line.match(/^[-=]{10,}$/)) {
-                    content = <div className="h-[1px] w-full bg-cyan-900/20 my-1 shadow-[0_0_2px_rgba(6,182,212,0.1)]" />;
-                    return <div key={idx} className="w-full">{content}</div>;
-                }
-
-                // Parse standard headers: [PASS], [FAIL], [SUCCESS], [ERROR], [STATUS], etc.
-                if (line.includes('[PASS]')) {
-                    lineClass = 'text-emerald-400 font-medium';
-                    const parts = line.split('[PASS]');
-                    content = (
-                        <>
-                            {parts[0]}
-                            <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 rounded-sm text-[9px] font-bold mr-1.5 uppercase shadow-[0_0_4px_rgba(16,185,129,0.1)]">PASS</span>
-                            {parts[1]}
-                        </>
-                    );
-                } else if (line.includes('[FAIL]')) {
-                    lineClass = 'text-red-400 font-medium';
-                    const parts = line.split('[FAIL]');
-                    content = (
-                        <>
-                            {parts[0]}
-                            <span className="bg-red-500/15 text-red-400 border border-red-500/25 px-1.5 py-0.5 rounded-sm text-[9px] font-bold mr-1.5 uppercase shadow-[0_0_4px_rgba(239,68,68,0.1)]">FAIL</span>
-                            {parts[1]}
-                        </>
-                    );
-                } else if (line.startsWith('[SUCCESS]')) {
-                    lineClass = 'text-emerald-400';
-                    content = (
-                        <>
-                            <span className="text-emerald-500 font-extrabold mr-1">✓</span>
-                            {line.substring(9)}
-                        </>
-                    );
-                } else if (line.startsWith('[ERROR]')) {
-                    lineClass = 'text-red-400 font-bold';
-                    content = (
-                        <>
-                            <span className="text-red-500 font-extrabold mr-1">✗</span>
-                            {line.substring(7)}
-                        </>
-                    );
-                } else if (line.startsWith('[STATUS]')) {
-                    lineClass = 'text-cyan-400';
-                    content = (
-                        <>
-                            <span className="text-cyan-500 font-extrabold mr-1.5">⚡</span>
-                            {line.substring(8)}
-                        </>
-                    );
-                } else if (line.startsWith('[STATS]')) {
-                    lineClass = 'text-cyan-400';
-                    content = (
-                        <>
-                            <span className="text-cyan-500 font-extrabold mr-1.5">📊</span>
-                            {line.substring(7)}
-                        </>
-                    );
-                } else if (line.startsWith('[VIRTUAL-PATCH-DB]') || line.startsWith('[HONEYPOT-STATUS]')) {
-                    lineClass = 'text-cyan-400 font-bold tracking-wider';
-                    content = (
-                        <span className="border-l-2 border-cyan-500 pl-1.5 py-0.5 my-1 block bg-cyan-950/20 rounded-r-md">
-                            {line}
-                        </span>
-                    );
-                } else if (line.startsWith('[NEXUS-AI]')) {
-                    lineClass = 'text-fuchsia-400 font-bold';
-                    content = (
-                        <span className="border-l-2 border-fuchsia-500 pl-1.5 py-0.5 my-1 block bg-fuchsia-950/20 rounded-r-md">
-                            🧠 {line}
-                        </span>
-                    );
-                }
-
-                // Highlight list bullet items
-                if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-                    const cleanLine = line.trim().replace(/^[-*]\s+/, "");
-                    
-                    let itemContent: React.ReactNode = cleanLine;
-                    if (cleanLine.includes('|')) {
-                        const segments = cleanLine.split('|');
-                        itemContent = (
-                            <span className="flex flex-wrap gap-x-2 items-center">
-                                {segments.map((seg, sIdx) => {
-                                    const sTrim = seg.trim();
-                                    let segClass = 'text-cyan-400/80';
-                                    if (sTrim.startsWith('IP:')) {
-                                        segClass = 'text-white font-semibold';
-                                    } else if (sTrim.startsWith('Status:')) {
-                                        const statusVal = sTrim.split(':')[1]?.trim() || '';
-                                        let statusColor = 'text-cyan-400';
-                                        if (statusVal.includes('STARVED') || statusVal.includes('BANNED') || statusVal.includes('TIMEOUT')) statusColor = 'text-red-400 font-bold';
-                                        else if (statusVal.includes('ACTIVE') || statusVal.includes('Active') || statusVal.includes('ISOLATED')) statusColor = 'text-emerald-400 font-bold';
-                                        return (
-                                            <span key={sIdx} className="text-cyan-400/60 font-mono">
-                                                Status: <span className={statusColor}>{statusVal}</span>
-                                                {sIdx < segments.length - 1 && <span className="text-cyan-950/40 ml-2">|</span>}
-                                            </span>
-                                        );
-                                    } else if (sTrim.startsWith('Hits:')) {
-                                        segClass = 'text-yellow-400 font-semibold';
-                                    }
-                                    return (
-                                        <span key={sIdx} className={`${segClass} font-mono`}>
-                                            {sTrim}
-                                            {sIdx < segments.length - 1 && <span className="text-cyan-950/40 ml-2">|</span>}
-                                        </span>
-                                    );
-                                })}
-                            </span>
-                        );
-                    }
-
-                    content = (
-                        <span className="flex items-start gap-1.5 pl-3">
-                            <span className="text-cyan-600 shrink-0 select-none">•</span>
-                            <span className="flex-1">{itemContent}</span>
-                        </span>
-                    );
-                }
-
-                return (
-                    <div key={idx} className="flex">
-                        <span className={`w-full whitespace-pre-wrap break-words ${lineClass}`}>
-                            {content}
-                        </span>
-                    </div>
-                );
-            })}
-        </div>
-    );
-};

@@ -3,7 +3,6 @@ package ai
 
 import (
 	"fmt"
-	"os"
 )
 
 // ReasoningEngine bertindak sebagai Facade Pattern (Pola Fasad) yang kompatibel ke belakang (backward-compatible)
@@ -28,14 +27,6 @@ func NewReasoningEngine(url, model string) *ReasoningEngine {
 	// jauh lebih tinggi dalam mendeteksi taktik serangan persisten (APT).
 	if model == "llama3" || model == "" {
 		model = "qwen/qwen3-235b-a22b"
-	}
-
-	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	if apiKey == "" {
-		// Degradasi Anggun (Fail-Open Policy):
-		// Sistem tidak boleh crash jika kunci API kosong, melainkan melanjutkan operasi dengan status
-		// degradasi agar kelancaran trafik pengguna (availability) tetap terjaga.
-		fmt.Println("[WARN] OPENROUTER_API_KEY not set — Reasoning Layer degraded (Fail-Open).")
 	}
 
 	return &ReasoningEngine{

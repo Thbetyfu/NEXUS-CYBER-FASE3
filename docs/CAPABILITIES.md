@@ -9,10 +9,12 @@ Nexus Cyber SOC v13.2 dirancang untuk memitigasi spektrum ancaman berikut secara
 | **Web Application** | SQL Injection, XSS, SSRF, Command Injection | **Dual-Brain AI Shield** (Reflex Layer) |
 | **Infrastructure** | DDoS, Traffic Flooding, API Abuse | **Token Bucket Rate Limiting** |
 | **Reconnaissance** | Port Scanning, IP Mapping, OS Fingerprinting | **MTD Shuffling** (Moving Target Defense) |
+| **Reconnaissance & Access** | SSH Brute Force, SSH Port Probing | **SSH Tarpit & Auto-Banning** (Socket Starvation) |
 | **Access Control** | Brute Force, Credential Stuffing, Broken Access Control | **Intelligent IP Throttling & Honeypots** |
 | **Data Integrity** | Man-in-the-Middle (MitM), Packet Sniffing | **End-to-End PQC Encryption (ML-KEM)** |
 | **Web Defacement** | Unauthorized modification/deletion of templates, Webshell uploads | **Autonomous Self-Repair & Rollback** |
 | **Future Threats** | Quantum Decryption Attempts | **Post-Quantum Cryptography Layers** |
+| **Threat Intelligence** | Global Attacker Anonymity | **AbuseIPDB Automated Reporting Integration** |
 
 ## 2. Deep Dive Mitigation Logic
 
@@ -23,6 +25,14 @@ Nexus Cyber SOC v13.2 dirancang untuk memitigasi spektrum ancaman berikut secara
 ### Webshell Upload (Unggahan Berkas Ilegal)
 - **Mekanisme**: Melakukan pemindaian direktori templat visual yang dilindungi. Setiap berkas baru yang tidak terdaftar dalam baseline steril (untracked files) akan langsung dihapus oleh monitor siber.
 - **Hasil**: Penyerang gagal menanamkan backdoor/webshell pada direktori server.
+
+### SSH Port Probing (Trapping SSH Scanner)
+- **Mekanisme**: **SSH Tarpit** mendengarkan koneksi pada port SSH standar `:22` (melalui Docker map `:2222`). Setelah mengirimkan banner OpenSSH palsu untuk mengelabui OS fingerprinting, modul akan mengirimkan data acak secara sangat lambat (tarpit starvation) ke klien peretas.
+- **Hasil**: Klien penyerang membeku (freeze) selama berhari-hari karena menunggu negosiasi kunci selesai, menguras habis memori/sumber daya peretas, dan IP penyerang otomatis diblokir selama 24 jam.
+
+### AbuseIPDB Integration (Pelaporan Ancaman Global)
+- **Mekanisme**: Saat IP penyerang diblokir secara otomatis oleh Reflex/Reasoning AI atau terjebak dalam Honeypot/Tarpit, fungsi asinkron (Goroutine) akan mengirimkan laporan forensik ancaman langsung ke portal API AbuseIPDB.
+- **Hasil**: Penyerang kehilangan anonimitasnya secara global karena reputasi IP mereka langsung jatuh di repositori intelijen ancaman siber internasional.
 
 ### Credential Stuffing (Penipuan Login Massal)
 - **Mekanisme**: Menggunakan algoritma *Token Bucket*. Jika terdeteksi anomali frekuensi login dari satu IP/Fingerprint, sistem secara otomatis memutus sesi atau mengalihkan trafik ke **Honeypot**.

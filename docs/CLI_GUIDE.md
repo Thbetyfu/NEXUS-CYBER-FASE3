@@ -37,3 +37,21 @@ Untuk memverifikasi dan menguji komponen keamanan, gunakan skrip pengujian berik
    ```bash
    python scripts/rescue_scenario_simulator.py
    ```
+
+---
+
+## 💻 Terminal Interaktif Command Center (Xterm.js Engine)
+
+Mulai versi 13.2, antarmuka terminal Command Center menggunakan emulator **Xterm.js** berkinerja tinggi, yang menggantikan baris masukan teks biasa. Terminal ini memiliki kemampuan:
+
+1. **Dukungan Key Hooks & Shortcuts**:
+   * Menangkap ketukan kunci secara langsung (fokus instan pada area terminal).
+   * **Backspace**: Menghapus karakter input secara fungsional.
+   * **Arrow Up/Down**: Menavigasi riwayat perintah (*command history*) dari memori `localStorage` admin.
+2. **Tab Autocomplete**:
+   * Menekan tombol **Tab** akan secara otomatis mencocokkan input dengan perintah terdaftar dan melakukan autocompletion langsung pada prompt.
+3. **ANSI Color Rendering**:
+   * Setiap output logs dan telemetri yang mengalir dari Server-Sent Events (SSE) dikonversi secara dinamis menjadi kode warna ANSI untuk mempermudah identifikasi (misal: warna hijau untuk `[PASS]` dan merah tebal untuk `[FAIL]`).
+4. **Command Execution Output**:
+   * Command `clear` akan memicu pembersihan total layar terminal virtual secara instan.
+   * Perintah umum akan menampilkan output aslinya langsung di baris konsol.
