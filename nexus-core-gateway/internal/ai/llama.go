@@ -121,6 +121,42 @@ func NewLlamaClient(model string) *LlamaClient {
 	}
 }
 
+// LocalNexAiResult merepresentasikan format JSON lokal dari model NEX-AI.
+type LocalNexAiResult struct {
+	Status      string  `json:"status"`
+	ThreatScore float64 `json:"threat_score"`
+	AttackType  string  `json:"attack_type"`
+	Reason      string  `json:"reason"`
+}
+
+// MapToForensicResult mengubah hasil analisis lokal menjadi struktur standar gateway (Adapter Pattern).
+func (local *LocalNexAiResult) MapToForensicResult() *LlamaForensicResult {
+	verdict := "FALSE_POSITIVE"
+	if local.Status == "MALICIOUS" {
+		verdict = "CONFIRMED_MALICIOUS"
+	} else if local.Status == "SUSPICIOUS" {
+		verdict = "SUSPICIOUS"
+	}
+
+	actions := []MitigationAction{}
+	if local.Status == "MALICIOUS" {
+		actions = append(actions, MitigationAction{
+			ActionType: "BLOCK_IP",
+			Priority:   "HIGH",
+			Parameters: map[string]interface{}{"duration": "24h"},
+		})
+	}
+
+	return &LlamaForensicResult{
+		ThreatVerdict:     verdict,
+		AttackerIntent:    "Exploitation attempt detected via local SLM classification",
+		AttackVector:      local.AttackType,
+		Confidence:        local.ThreatScore,
+		MitigationActions: actions,
+		ForensicSummary:   local.Reason,
+	}
+}
+
 // AnalyzeEscalatedThreat melakukan analisis forensik mendalam pada payload yang dicurigai.
 //
 // Alasan Arsitektural (Why):
@@ -128,17 +164,25 @@ func NewLlamaClient(model string) *LlamaClient {
 // Proses ini sengaja tidak memblokir (non-blocking) arus request trafik utama pengguna demi menjamin
 // tingkat kelancaran respons aplikasi (low latency proxy) tetap optimal.
 func (l *LlamaClient) AnalyzeEscalatedThreat(qwenResult *QwenResult, payload string, ctx AttackContext) (*LlamaForensicResult, error) {
-	qwenJSON, _ := json.MarshalIndent(qwenResult, "", "  ")
-	historyJSON, _ := json.MarshalIndent(ctx.AttackHistory, "", "  ")
-	intelJSON, _ := json.MarshalIndent(ctx.ThreatIntel, "", "  ")
-	stateJSON, _ := json.MarshalIndent(ctx.SystemState, "", "  ")
+	var systemPrompt string
+	var userPrompt string
 
-	truncPayload := payload
-	if len(truncPayload) > 300 {
-		truncPayload = truncPayload[:300] + "...[TRUNCATED]"
-	}
+	if strings.Contains(l.Model, "nex-ai") {
+		systemPrompt = "Lakukan klasifikasi payload HTTP ini. Tentukan status (BENIGN, SUSPICIOUS, MALICIOUS), tipe serangan (SQL_INJECTION, CROSS_SITE_SCRIPTING, PATH_TRAVERSAL, COMMAND_INJECTION, ZERO_DAY_BYPASS, NONE), dan threat score. Kembalikan respons dalam format JSON valid tanpa penjelasan teks lain."
+		userPrompt = payload
+	} else {
+		qwenJSON, _ := json.MarshalIndent(qwenResult, "", "  ")
+		historyJSON, _ := json.MarshalIndent(ctx.AttackHistory, "", "  ")
+		intelJSON, _ := json.MarshalIndent(ctx.ThreatIntel, "", "  ")
+		stateJSON, _ := json.MarshalIndent(ctx.SystemState, "", "  ")
 
-	userPrompt := fmt.Sprintf(`ESCALATED THREAT — Requires deep analysis.
+		truncPayload := payload
+		if len(truncPayload) > 300 {
+			truncPayload = truncPayload[:300] + "...[TRUNCATED]"
+		}
+
+		systemPrompt = LLAMA_SYSTEM_PROMPT
+		userPrompt = fmt.Sprintf(`ESCALATED THREAT — Requires deep analysis.
 
 === Qwen3-32B Pre-screening Result ===
 %s
@@ -168,12 +212,13 @@ Respond ONLY with this JSON structure:
   ],
   "forensic_summary": "..."
 }`,
-		string(qwenJSON), string(historyJSON), string(intelJSON), string(stateJSON), truncPayload)
+			string(qwenJSON), string(historyJSON), string(intelJSON), string(stateJSON), truncPayload)
+	}
 
 	reqBody, _ := json.Marshal(openRouterRequest{
 		Model: l.Model,
 		Messages: []openRouterMsg{
-			{Role: "system", Content: LLAMA_SYSTEM_PROMPT},
+			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: userPrompt},
 		},
 	})
@@ -218,30 +263,40 @@ func (l *LlamaClient) AnalyzeIntent(payload string) (*LlamaForensicResult, error
 // ParseLlamaResponse mengekstrak respon JSON Llama secara tangguh menggunakan 3-Stage Parser.
 func ParseLlamaResponse(raw string) (*LlamaForensicResult, error) {
 	raw = strings.TrimSpace(raw)
-	var result LlamaForensicResult
+	var jsonStr string
 
-	// Stage 1: Unmarshal Langsung
-	if err := json.Unmarshal([]byte(raw), &result); err == nil {
-		return &result, nil
-	}
-
-	// Stage 2: Ekstraksi dari blok kode markdown ```json ... ```
+	// Stage 1: Coba temukan blok kode markdown ```json ... ```
 	if idx := strings.Index(raw, "```json"); idx != -1 {
 		end := strings.Index(raw[idx+7:], "```")
 		if end != -1 {
-			if err := json.Unmarshal([]byte(strings.TrimSpace(raw[idx+7:idx+7+end])), &result); err == nil {
-				return &result, nil
-			}
+			jsonStr = strings.TrimSpace(raw[idx+7 : idx+7+end])
 		}
 	}
 
-	// Stage 3: Bracket Search (Kurung kurawal pertama ke penutup terakhir)
-	start := strings.Index(raw, "{")
-	last := strings.LastIndex(raw, "}")
-	if start != -1 && last != -1 && last > start {
-		if err := json.Unmarshal([]byte(raw[start:last+1]), &result); err == nil {
-			return &result, nil
+	// Stage 2: Bracket Search jika markdown block tidak ada/gagal
+	if jsonStr == "" {
+		start := strings.Index(raw, "{")
+		last := strings.LastIndex(raw, "}")
+		if start != -1 && last != -1 && last > start {
+			jsonStr = raw[start : last+1]
 		}
+	}
+
+	// Stage 3: Gunakan string mentah jika bracket search gagal
+	if jsonStr == "" {
+		jsonStr = raw
+	}
+
+	// Coba unmarshal ke LocalNexAiResult terlebih dahulu untuk deteksi model lokal nex-ai-protect
+	var localResult LocalNexAiResult
+	if err := json.Unmarshal([]byte(jsonStr), &localResult); err == nil && localResult.Status != "" {
+		return localResult.MapToForensicResult(), nil
+	}
+
+	// Unmarshal standar ke LlamaForensicResult
+	var result LlamaForensicResult
+	if err := json.Unmarshal([]byte(jsonStr), &result); err == nil {
+		return &result, nil
 	}
 
 	return nil, fmt.Errorf("llama_parse_error: %s", raw[:min2(len(raw), 200)])
