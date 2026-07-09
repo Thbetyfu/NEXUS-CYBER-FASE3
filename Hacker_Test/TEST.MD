@@ -243,6 +243,43 @@ Suite ini memvalidasi efektivitas tameng sisi klien pada browser untuk menghenti
 
 ---
 
+### 🛡️ [SUITE 6] SYSTEM INTEGRITY SELF-HEAL & LAN PEN-TESTING
+Suite ini memverifikasi kemampuan pemulihan berkas otonom (Self-Heal) serta konfigurasi pengujian menggunakan komputer eksternal dalam satu jaringan Wi-Fi/LAN yang sama.
+
+#### 🧪 Uji Kasus 6.1: Interactive File Integrity Restorer Script
+* **Tujuan**: Menjalankan pengujian manipulasi file index.html atau berkas ilegal otomatis.
+* **Tindakan**:
+  1. Pastikan WAF Gateway dan Portfolio Website sedang berjalan.
+  2. Jalankan skrip pengujian interaktif:
+     ```bash
+     python Hacker_Test/verify_integrity_restore.py
+     ```
+  3. Pilih opsi simulasi [1-3] untuk menguji defacement, penghapusan berkas, atau penyusupan berkas ilegal.
+* **Hasil yang Diharapkan**:
+  * Skrip memanipulasi berkas di direktori `Portfolio-website/dist/`.
+  * Monitor integritas mendeteksi modifikasi/penghapusan dalam <2 detik, lalu merestorasi index.html ke versi asli dari RAM buffer.
+  * Berkas baru yang tidak dikenal langsung dihapus secara instan.
+  * Log WAF Gateway mencatat aktivitas pemulihan dengan label `[SELF-HEAL]`.
+
+#### 🧪 Uji Kasus 6.2: LAN Pen-Testing (Multi-Device Setup)
+* **Tujuan**: Menguji ketahanan WAF Gateway dari perangkat client eksternal di jaringan lokal.
+* **Tindakan**:
+  1. Dapatkan alamat IPv4 lokal host server (jalankan `ipconfig` di Windows). Contoh: `192.168.1.15`.
+  2. Pastikan port `8080` pada host terbuka untuk inbound connection. Jalankan perintah PowerShell (Run as Administrator) jika terblokir:
+     ```powershell
+     New-NetFirewallRule -DisplayName 'Nexus Gateway' -Direction Inbound -LocalPort 8080 -Protocol TCP -Action Allow
+     ```
+  3. Hubungkan komputer klien/HP ke jaringan Wi-Fi yang sama, lalu akses: `http://192.168.1.15:8080/`.
+  4. Lakukan pengujian serangan siber dari komputer klien, misalnya SQL Injection:
+     ```bash
+     curl -i "http://192.168.1.15:8080/search?q='UNION+SELECT+null--"
+     ```
+* **Hasil yang Diharapkan**:
+  * Komputer klien diblokir dengan respons `403 Forbidden`.
+  * Dasbor SOC host (`http://localhost:3001/`) secara real-time menangkap log ancaman dari IP lokal komputer klien tersebut.
+
+---
+
 > [!IMPORTANT]
 > **Catatan Protokol Keamanan Lokal:**  
 > Untuk mencegah Anda tidak sengaja mengunci IP lokal Anda sendiri selama proses pengujian di komputer rumah, fungsionalitas **Autoban IP** (pemblokiran permanen setelah 5 kali salah password) sengaja dinonaktifkan dalam bentuk komentar (*commented-out*) pada berkas Go. Anda dapat melakukan pengujian brute-force berulang kali tanpa takut terisolasi dari basis data lokal Anda sendiri.
