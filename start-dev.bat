@@ -4,6 +4,11 @@ echo ===========================================================================
 # NEXUS CYBER COGNITIVE CORE - DEV LAUNCHER
 echo ==============================================================================
 
+echo [0] Menyalakan Kontainer Database (Postgres & Redis) di Docker...
+docker compose up -d postgres redis
+echo Menunggu inisialisasi basis data (5 detik)...
+timeout /t 5 /nobreak >nul
+
 echo [1] Menjalankan Website Portofolio (Target) di Port 3002...
 start "Nexus Target - Portfolio" cmd /k "cd Portfolio-website && set PORT=3002&& go run main.go"
 

@@ -23,7 +23,10 @@ echo [6] Menghentikan sisa proses Node.js dan Go runner...
 taskkill /F /IM node.exe 2>nul
 taskkill /F /IM go.exe 2>nul
 
+echo [7] Menghentikan kontainer database (Postgres & Redis) di Docker...
+docker compose stop postgres redis
+
 echo ==============================================================================
-echo Seluruh port dan proses zombie berhasil dibersihkan!
+echo Seluruh port, proses zombie, dan kontainer database berhasil dibersihkan!
 echo ==============================================================================
 pause
