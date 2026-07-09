@@ -99,3 +99,34 @@ type DomainSubscription struct {
 	PlanType string `gorm:"type:varchar(50);default:'premium'"`
 }
 
+// AntibodyAudit memetakan tabel `antibody_audits` sebagai audit trail terstruktur untuk setiap antibodi
+// zero-day yang dipelajari secara otonom oleh NEX-AI Cognitive Core (nex-ai-protect).
+//
+// Alasan Arsitektural (Why):
+// Setiap kali NEX-AI mendeteksi serangan zero-day dan melakukan auto-vaccination via AddAntibody(),
+// rekam jejak permanen disimpan di tabel ini agar operator SOC dapat:
+// 1. Menelusuri riwayat lengkap serangan zero-day yang pernah dipelajari sistem.
+// 2. Mengaudit kapan sistem "menjadi lebih cerdas" (timestamp vaksinasi).
+// 3. Mengidentifikasi pola serangan berulang dari botnet yang berbeda.
+// 4. Memenuhi kewajiban ISO 27001 A.12.4 (Logging dan Monitoring) untuk laporan kepatuhan BSSN/OJK.
+type AntibodyAudit struct {
+	Base
+	// PayloadSignature adalah cuplikan (fingerprint) payload serangan yang divaksinasikan.
+	// Dipotong maks 500 karakter untuk efisiensi storage (payload penuh terlalu besar untuk DB).
+	PayloadSignature string `gorm:"type:varchar(500);index"`
+	// SourceIP adalah IP penyerang yang pertama kali menggunakan teknik zero-day ini.
+	SourceIP         string `gorm:"type:varchar(45);index"`
+	// ThreatType adalah klasifikasi jenis serangan dari Cognitive Core (mis: ZERO_DAY_BYPASS, ADVANCED_PERSISTENT).
+	ThreatType       string `gorm:"type:varchar(100)"`
+	// ConfidenceScore adalah tingkat keyakinan model nex-ai-protect saat mendeteksi ancaman (0.0 - 1.0).
+	ConfidenceScore  float64 `gorm:"type:decimal(4,3)"`
+	// VaccinatedAt adalah timestamp eksak saat antibodi didaftarkan ke Reflex Layer.
+	VaccinatedAt     time.Time `gorm:"type:timestamp;index"`
+	// InstanceID mengidentifikasi instansi gateway mana yang pertama kali mendeteksi dan memvaksinasi.
+	// Penting untuk multi-VPS deployment debugging.
+	InstanceID       string `gorm:"type:varchar(100)"`
+	// IsSharedToRedis menandai apakah antibodi ini sudah berhasil disinkronkan ke Redis shared store.
+	IsSharedToRedis  bool   `gorm:"type:boolean;default:false"`
+}
+
+

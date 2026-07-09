@@ -120,5 +120,35 @@ def main():
     tokenizer.save_pretrained(final_checkpoint_path)
     print(f"[NEX-AI] Pelatihan selesai. Adapter tersimpan di: {final_checkpoint_path}")
 
+    # 7. Proses Penggabungan (Merging) LoRA dengan Model Dasar
+    print("[NEX-AI] Memulai penggabungan (merging) LoRA adapter dengan model dasar...")
+    
+    # Hapus model latih untuk membebaskan VRAM guna mencegah OOM
+    del model
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    # Muat ulang model dasar dalam presisi FP16 di CPU/system memory untuk merge yang stabil
+    print(f"[NEX-AI] Memuat model dasar dalam FP16 di CPU: {MODEL_ID}")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID,
+        torch_dtype=torch.float16,
+        device_map="cpu",
+        trust_remote_code=True
+    )
+
+    from peft import PeftModel
+    print("[NEX-AI] Memuat LoRA adapter ke model dasar...")
+    peft_model = PeftModel.from_pretrained(base_model, final_checkpoint_path)
+    
+    print("[NEX-AI] Melakukan merge_and_unload...")
+    merged_model = peft_model.merge_and_unload()
+
+    merged_dir = os.path.join(OUTPUT_DIR, "nex_ai_merged")
+    print(f"[NEX-AI] Menyimpan model utuh terintegrasi di: {merged_dir}")
+    merged_model.save_pretrained(merged_dir)
+    tokenizer.save_pretrained(merged_dir)
+    print("[NEX-AI] Proses penggabungan selesai dengan sukses!")
+
 if __name__ == "__main__":
     main()

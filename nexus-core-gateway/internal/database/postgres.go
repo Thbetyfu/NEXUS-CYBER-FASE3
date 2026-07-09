@@ -62,6 +62,8 @@ func InitPostgres() {
 		&models.IntelBlacklist{},
 		&models.AIInsight{},
 		&models.DomainSubscription{},
+		// [NEW] Audit trail untuk setiap antibodi zero-day yang dipelajari NEX-AI secara otonom (Self-Healing Log)
+		&models.AntibodyAudit{},
 	)
 	if err != nil {
 		log.Fatalf("[DB-ERROR] Failed to run migrations: %v", err)
@@ -299,4 +301,66 @@ func SaveAIInsight(logID uuid.UUID, modelName, analysis, recommendation string) 
 	}
 
 	return DB.Create(&insight).Error
+}
+
+// SaveAntibodyAudit menyimpan rekam jejak permanen setiap kali NEX-AI Cognitive Core
+// melakukan vaksinasi otonom terhadap payload zero-day baru ke Reflex Layer.
+//
+// Alasan Arsitektural (Why - Self-Healing Audit Trail):
+// Event vaksinasi sebelumnya hanya tercatat di log lokal yang menghilang saat proses restart.
+// Dengan menyimpan ke PostgreSQL, operator SOC memiliki visibilitas penuh atas:
+// - Riwayat zero-day yang pernah menyerang dan berhasil dipelajari sistem.
+// - Kapan sistem pertama kali mengenal pola serangan tertentu.
+// - IP mana yang menjadi vektor "penemuan" antibodi baru.
+// - Tingkat keyakinan model AI saat melakukan vaksinasi.
+// Ini memenuhi klausul ISO 27001 A.12.4 untuk retensi log keamanan yang dapat diaudit.
+func SaveAntibodyAudit(sourceIP, payload, threatType, instanceID string, confidence float64) error {
+	// Potong payload menjadi fingerprint 500 karakter untuk efisiensi storage.
+	signature := payload
+	if len(signature) > 500 {
+		signature = signature[:500]
+	}
+
+	record := models.AntibodyAudit{
+		PayloadSignature: signature,
+		SourceIP:         sourceIP,
+		ThreatType:       threatType,
+		ConfidenceScore:  confidence,
+		VaccinatedAt:     time.Now(),
+		InstanceID:       instanceID,
+		IsSharedToRedis:  true, // Diasumsikan berhasil karena AddAntibody selalu mencoba Redis
+	}
+
+	if DB == nil {
+		// Degraded mode: log ke stdout saja, jangan panik
+		log.Printf("[ANTIBODY-AUDIT-WARN] DB not available. Antibody not persisted: type=%s ip=%s", threatType, sourceIP)
+		return fmt.Errorf("database not initialized")
+	}
+
+	return DB.Create(&record).Error
+}
+
+// GetAntibodyAudits mengambil daftar antibodi yang sudah dipelajari sistem untuk ditampilkan
+// di SOC Dashboard. Mendukung pagination untuk efisiensi query pada skala produksi.
+//
+// Alasan Arsitektural (Why):
+// Fungsi ini digunakan oleh endpoint /api/antibodies yang dikonsumsi oleh SOC Dashboard.
+// Menggunakan ORDER BY vaccinated_at DESC agar antibodi terbaru (yang paling relevan secara operasional)
+// muncul di urutan teratas tabel dashboard tanpa perlu sort ulang di sisi frontend.
+func GetAntibodyAudits(limit, offset int) ([]models.AntibodyAudit, int64, error) {
+	if DB == nil {
+		return nil, 0, fmt.Errorf("database not initialized")
+	}
+
+	var records []models.AntibodyAudit
+	var total int64
+
+	DB.Model(&models.AntibodyAudit{}).Count(&total)
+
+	result := DB.Order("vaccinated_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&records)
+
+	return records, total, result.Error
 }

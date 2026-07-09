@@ -9,7 +9,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     command: redis-server --appendonly yes
     restart: always
     healthcheck:
@@ -27,7 +27,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: nexus_cyber
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
@@ -80,7 +80,6 @@ services:
     expose:
       - "3000" # Di-expose internal ke Caddy saja (Security Hardening)
     environment:
-      - NEXT_PUBLIC_API_URL=http://nexus_gateway:8080
       - NODE_ENV=production
     env_file:
       - .env
@@ -117,6 +116,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "3000:3000"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

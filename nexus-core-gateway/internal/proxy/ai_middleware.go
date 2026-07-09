@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -159,6 +160,17 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		ua := r.Header.Get("User-Agent")
 		isThreat, threatType := np.Filter.InspectAdvanced(analysisData, ua)
 
+		// [GAP-003 FIX: HEADER INSPECTION]
+		// Alasan Arsitektural (Why):
+		// Laporan Red Team (INTELLIGENCE_GAP.md GAP-003) membuktikan bahwa header HTTP sepenuhnya
+		// lolos dari pemeriksaan Reflex sebelumnya. Penyerang dapat menyisipkan payload SQLi,
+		// spoofing IP lokal, atau instruksi social engineering prompt injection di dalam header
+		// untuk mengelabui backend atau model AI Cognitive Core. Pemeriksaan ini dijalankan
+		// hanya jika payload body tidak langsung terdeteksi, agar latensi tetap minimal.
+		if !isThreat {
+			isThreat, threatType = np.Filter.InspectHeaders(map[string][]string(r.Header))
+		}
+
 		if isThreat {
 			// Otomatis imunisasi pola serangan jika panjang karakter memenuhi kelayakan tanda tangan antibodi.
 			if len(analysisData) > 10 {
@@ -206,12 +218,51 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 				result, err := np.Reasoning.AnalyzeIntent(data)
 				if err == nil && result != nil {
 					// Rekam jejak hasil keputusan kognitif AI ke basis data audit.
-					database.SaveAIInsight(id, "qwen/qwen3-235b-a22b", result.ForensicSummary, result.ThreatVerdict)
+					// Branding resmi: model tercatat sebagai "nex-ai-protect" (model kustom eksklusif NEX-AI),
+					// bukan nama model cloud generik, untuk menjaga konsistensi identitas produk di log forensik.
+					database.SaveAIInsight(id, "nex-ai-protect", result.ForensicSummary, result.ThreatVerdict)
 
 					// Eksekusi pemblokiran Netfilter & eBPF Blacklist seketika jika intensi terbukti berbahaya.
 					if result.ThreatVerdict == "CONFIRMED_MALICIOUS" || result.ThreatVerdict == "ADVANCED_PERSISTENT" {
+						// [SELF-HEALING: OTONOM VAKSINASI]
+						// Alasan Arsitektural (Why):
+						// Saat Cognitive Core mendeteksi serangan zero-day yang lolos dari Reflex Layer,
+						// payload serangan tersebut didaftarkan sebagai "Antibodi" baru secara instan.
+						// Dengan demikian, seluruh request berikutnya (dari IP manapun / botnet manapun)
+						// yang menggunakan pola eksploitasi yang sama akan diblokir di Layer 1 secara O(1)
+						// tanpa perlu memanggil model AI lagi. Ini mencegah CPU Amplification Attack
+						// dan menjamin kekebalan adaptif sistem bertumbuh setiap kali ada ancaman baru.
+						if len(data) > 10 {
+							np.AddAntibody(data)
+
+							// [STRUCTURED AUDIT TRAIL - Self-Healing]
+							// Alasan Arsitektural (Why):
+							// Sebelumnya event vaksinasi hanya tercatat di log lokal in-memory yang hilang saat restart.
+							// Sekarang, setiap antibodi baru disimpan secara permanen ke PostgreSQL agar operator SOC
+							// dapat menelusuri riwayat zero-day yang pernah dipelajari sistem dari waktu ke waktu.
+							// InstanceID dari os.Hostname() mengidentifikasi gateway mana (multi-VPS) yang pertama mendeteksi.
+							instanceID, _ := os.Hostname()
+							if instanceID == "" {
+								instanceID = "nexus-gateway-01"
+							}
+							go database.SaveAntibodyAudit(
+								source,
+								data,
+								result.ThreatVerdict,
+								instanceID,
+								result.Confidence,
+							)
+
+							np.Logger.LogAIEvent(logger.AIEventLog{
+								Timestamp:    time.Now(),
+								Layer:        "Self-Heal",
+								Status:       "VACCINATED",
+								DetailAction: fmt.Sprintf("[NEX-AI SELF-HEAL] Zero-Day vaccinated. Type=%s Confidence=%.2f Instance=%s. Instant immunity activated.", result.ThreatVerdict, result.Confidence, instanceID),
+							})
+						}
+
 						// Pendaftaran otonom ke database & Redis blacklist selama 24 jam (yang juga menginjeksi eBPF stub)
-						database.BanIP(source, "AI Auto-Ban: Confirmed malicious intent via Llama3 reasoning", 24*time.Hour)
+						database.BanIP(source, "NEX-AI Auto-Ban: Confirmed malicious intent via nex-ai-protect cognitive engine", 24*time.Hour)
 						// Tambahan mitigasi Netfilter/IPtables
 						mtd.BlockIPAtOSLevel(source)
 					}

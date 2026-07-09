@@ -22,6 +22,7 @@ Skema database Nexus Cyber dirancang **secara spesifik** untuk memenuhi klausul 
 erDiagram
     THREAT_LOGS ||--o{ AI_INSIGHTS : "analyzed_by"
     INTEL_BLACKLIST }|--o| THREAT_LOGS : "triggered_by"
+    ANTIBODY_AUDITS }|--o| THREAT_LOGS : "generated_from"
 
     THREAT_LOGS {
         uuid id PK
@@ -61,6 +62,18 @@ erDiagram
         string ai_model
         text analysis_text
         string recommended_action
+    }
+
+    ANTIBODY_AUDITS {
+        uuid id PK
+        timestamp created_at
+        string payload_signature
+        string source_ip
+        string threat_type
+        decimal confidence_score
+        timestamp vaccinated_at
+        string instance_id
+        boolean is_shared_to_redis
     }
 ```
 
@@ -129,3 +142,22 @@ Menyimpan hasil pemikiran dan rekomendasi dari **NEXUS-SOC-BRAIN** (Ollama/Groq)
 | `ai_model` | `VARCHAR(100)`| Model yang memproses (misal: qwen2.5-coder:7b). |
 | `analysis_text`| `TEXT` | Kesimpulan deskriptif dari AI. |
 | `recommended_action`| `VARCHAR(255)`| Saran tindakan (misal: "Isolate IP", "Ignore"). |
+
+---
+
+### 5. `antibody_audits` (Jejak Vaksinasi Self-Healing)
+Tabel untuk mencatat setiap kali **NEX-AI Cognitive Core** (`nex-ai-protect`) mempelajari ancaman zero-day baru secara otonom dan mendaftarkannya sebagai antibodi (virtual patch) di Reflex Layer.
+*   **Tujuan**: Visibilitas bagi operator SOC mengenai dinamika evolusi pertahanan imun, audit kepatuhan ISO 27001 (A.12.4.1), dan analisis forensik penyebaran zero-day.
+
+| Kolom | Tipe Data | Keterangan |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Primary Key. |
+| `created_at` | `TIMESTAMP` | Stempel waktu pembuatan baris log. |
+| `payload_signature`| `VARCHAR(500)`| Cuplikan/fingerprint payload serangan zero-day (maks 500 karakter). |
+| `source_ip` | `VARCHAR(45)` | IP Address penyerang pertama yang meluncurkan serangan ini. |
+| `threat_type` | `VARCHAR(100)`| Kategori ancaman kognitif (misal: ZERO_DAY_BYPASS). |
+| `confidence_score`| `DECIMAL(4,3)`| Nilai tingkat keyakinan (confidence score) model AI (0.000 - 1.000). |
+| `vaccinated_at` | `TIMESTAMP` | Waktu eksak antibodi diinjeksikan ke Reflex Layer. |
+| `instance_id` | `VARCHAR(100)`| Identitas mesin/node gateway yang melakukan deteksi pertama. |
+| `is_shared_to_redis`| `BOOLEAN` | Menunjukkan apakah antibodi berhasil disiarkan ke kluster Redis. |
+

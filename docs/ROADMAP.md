@@ -1,7 +1,7 @@
-# 🚀 Nexus Cyber Strategic Roadmap
+# Nexus Cyber Strategic Roadmap
 
-Status Proyek: **MVP Deployment Phase** 🚀
-Versi: **v2.9.4**
+Status Proyek: **NEX-AI Custom Model Phase** - Active Development
+Versi: **v3.1.0**
 Arsitek: Antigravity
 
 ---
@@ -78,6 +78,22 @@ Arsitek: Antigravity
 * [x] **Fitur Banned Manual (Manual Banning Console)**: Panel kendali manual untuk operator SOC dengan pilihan durasi (1 jam, 24 jam, 7 hari, permanen), input alasan, dan **double confirmation** sebelum eksekusi.
 * [x] **Fitur Auto-Banned AI (AI Autonomous Ban)**: Pemblokiran otomatis 24 jam jika Reflex Layer mendeteksi ancaman > 85 dan Reasoning Layer memvalidasi dengan tingkat keyakinan > 90%.
 * [x] **Multi-Layer Lockout**: Integrasi pemblokiran di tingkat Aplikasi (Redis Blacklist / HTTP 403) dan Driver/Kernel (eBPF map `XDP_DROP` / 0% CPU overhead).
+
+## Phase 13: NEX-AI Custom Model & Branding Eksklusif (COMPLETED) ✅
+*Membangun model kecerdasan buatan siber milik sendiri yang eksklusif dan tidak dapat ditiru kompetitor.*
+
+* [x] **Adversarial Dataset Enrichment (2.000 Sampel)**: Pengayaan dataset latih dengan 5 teknik obfuskasi serangan zero-day (Double URL, nested Base64, Unicode Normalization, SQL Hex, Parameter Pollution) dan 4 jenis trafik benign kompleks (GraphQL, CDATA XML, JWT Auth, Nested JSON).
+* [x] **Pipeline Pelatihan QLoRA 4-bit NF4**: Fine-tuning model dasar `Qwen2.5-3B-Instruct` menggunakan metode QLoRA dengan rank 16, alpha 32, dan optimizer AdamW 8-bit via script `train_qlora.py`.
+* [x] **Otomasi Penggabungan LoRA (Auto-Merge Pipeline)**: Menambahkan fase `peft_model.merge_and_unload()` otomatis di akhir pelatihan untuk menghasilkan model utuh FP16 di `checkpoints/nex_ai_merged` yang langsung siap dikonversi tanpa error.
+* [x] **Ekspor GGUF & Kuantisasi Q4_K_M**: Script `convert_and_quantize.sh` mengonversi model utuh ke format `.gguf` FP16 lalu mengkuantisasinya ke `Q4_K_M` (4-bit) untuk deployment Ollama yang hemat memori.
+* [x] **Registrasi Model Eksklusif di Ollama**: Model terdaftar dengan nama `nex-ai-protect` menggunakan `Modelfile.production` yang mengunci output ke format JSON deterministik.
+* [x] **Dokumentasi Base Model & Alasan Fine-Tuning**: `NEX-AI/ARCHITECTURE_DESIGN.md` diperbarui dengan penjelasan mendalam mengenai alasan pemilihan Qwen2.5-3B, keterbatasan model generik, dan sasaran peningkatan yang dicapai.
+* [x] **Branding Imersif NEX-AI di Dashboard**: Komponen `NexAiMonitorWidget.tsx` baru memvisualisasikan aktivitas synaptik node AI (grid 8x8 berpulsasi), metrik tensor model, dan log keputusan kognitif secara real-time.
+* [x] **Unifikasi Identitas Asisten (NechatWidget)**: Asisten chat dasbor kini memperkenalkan diri sebagai NEX-AI berbasis model lokal `nex-ai-protect` (menggantikan referensi cloud Qwen3-235B).
+* [x] **GeoIP Lookup Terpadu**: Fungsi `PublishThreat` di `proxy_core.go` terhubung ke `database.GetIPGeoInfo` yang memprioritaskan database lokal MaxMind GeoLite2 sebelum fallback online.
+* [x] **Perintah `/geoip [IP]` di CLI Terminal SOC**: Operator SOC dapat melakukan pencarian lokasi geografis langsung dari terminal AiTerminalWidget dengan perintah `/geoip`.
+* [x] **Unit Test Terdedikasi Dual-Brain AI** (`nex_ai_test.go`): Test suite komprehensif yang memverifikasi: (a) Reflex Core dengan 12 kasus serangan nyata + benchmark latensi, (b) Cognitive Adapter dengan verifikasi parsing output JSON model lokal. Status: **PASS 100%**.
+* [x] **Keamanan Infrastruktur**: Port database Postgres dan Redis dibatasi ke `127.0.0.1`. Routing `/api/*` diproxy internal oleh Caddy.
 
 ---
 *Arsitek: Antigravity (Nexus Lead Security Architect)*

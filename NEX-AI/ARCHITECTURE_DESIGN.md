@@ -46,26 +46,44 @@ Sebelum teks payload HTTP dikirim ke model NEX-AI, data harus melalui pipa pembe
 
 ---
 
-## 3. Spesifikasi Pemodelan & Fine-Tuning
+## 3. Spesifikasi Pemodelan & Fine-Tuning (NEX-AI Core)
 
-NEX-AI menggunakan model dasar **Qwen2.5-3B-Instruct** karena memiliki keseimbangan terbaik antara ukuran parameter, efisiensi VRAM, dan pemahaman sintaksis pemrograman (SQL, HTML, PHP).
+Sistem pertahanan cerdas NEX-AI dibangun dengan melakukan proses kustomisasi (*fine-tuning*) pada model dasar terbuka (**open-source base model**) pilihan untuk menghasilkan model siber mandiri yang eksklusif dan aman.
 
-### 3.1 Parameter Fine-Tuning QLoRA
-Pelatihan ulang dilakukan menggunakan metode QLoRA (Quantized Low-Rank Adaptation) dengan konfigurasi hyperparameter berikut:
+### 3.1 Pemilihan Model Dasar (Base Model)
+Model dasar yang dipilih untuk sistem ini adalah **`Qwen2.5-3B-Instruct`**.
+
+**Alasan Pemilihan Model Dasar**:
+*   **Efisiensi Sumber Daya (Parameter Size 3B)**: Memiliki ukuran parameter sebesar 3 Miliar yang sangat optimal untuk dieksekusi secara lokal pada server WAF tanpa memerlukan perangkat keras GPU kelas atas yang mahal. Model ini dapat berjalan cepat pada memori RAM/CPU standar (~2GB footprint).
+*   **Kemampuan Pemahaman Kode yang Unggul**: Seri model Qwen2.5 dilatih pada korpus kode pemrograman yang sangat masif, memberikan pemahaman sintaksis yang mendalam terhadap kode SQL, HTML/JS, PHP, dan Shell Script dibandingkan model kecil lainnya (seperti Llama-3.2-1B atau Phi-3).
+*   **Latensi Rendah**: Memberikan waktu inferensi (*time-to-first-token*) yang jauh lebih cepat dibandingkan model 7B atau 8B, memenuhi ambang toleransi latensi WAF Gateway.
+
+### 3.2 Alasan Proses Fine-Tuning & Pembaruan Model Kustom
+Menggunakan model open-source bawaan (*out-of-the-box*) tidaklah memadai untuk sistem produksi siber karena alasan berikut:
+*   **Masalah Halusinasi & Format Output**: Model instruksi standar cenderung menghasilkan teks percakapan pembuka/penutup atau membungkus output JSON dalam tag markdown (```json ... ```). Untuk operasional gateway, output harus berupa JSON mentah yang sangat bersih dan deterministik demi mencegah kegagalan parsing program.
+*   **Kerentanan Terhadap Teknik Obfuskasi (Zero-Day Bypass)**: Model dasar umum tidak dilatih untuk mengenali payload berbahaya yang telah dimutasikan secara kompleks (seperti enkoding URL ganda, nested Base64, atau unicode homograf). Mereka rentan melewatkan serangan terselubung ini.
+*   **Sensitivitas Berlebih (False Positives)**: Model standar sering salah mengklasifikasikan request API normal (seperti kueri GraphQL, struktur XML biner, atau JWT token) sebagai serangan karena kemiripan struktur format datanya.
+
+**Solusi Peningkatan NEX-AI**:
+Kami melatih ulang model dasar ini menggunakan metode **QLoRA 4-bit NF4** dengan dataset kustom sebanyak **2.000 sampel seimbang** (Adversarial & Benign Enrichment). Hal ini melatih model untuk:
+1.  Mengenali 5 taktik obfuskasi utama (Double URL, Base64 wraps, Unicode Normalization, Parameter Pollution, SQL Hex).
+2.  Menekan angka False Positive terhadap lalu lintas bersih yang kompleks (GraphQL/nested JSON).
+3.  Menjamin keluaran JSON deterministik secara mutlak sesuai skema klasifikasi keamanan siber yang ditetapkan.
+
+### 3.3 Parameter Fine-Tuning QLoRA
+Konfigurasi hyperparameter pelatihan ulang NEX-AI didefinisikan sebagai berikut:
 
 | Hyperparameter | Nilai Konfigurasi | Keterangan |
 | :--- | :--- | :--- |
-| **Model Dasar** | Qwen2.5-3B-Instruct | Model Small Language Model (SLM) dasar |
-| **Quantization** | 4-bit NormalFloat (NF4) | Mereduksi kebutuhan VRAM saat pelatihan |
+| **Model Dasar** | Qwen2.5-3B-Instruct | Model dasar open-source sebagai pondasi |
+| **Quantization** | 4-bit NormalFloat (NF4) | Mereduksi kebutuhan memori saat pelatihan |
 | **LoRA Rank (r)** | 16 | Kapasitas adaptasi parameter |
 | **LoRA Alpha** | 32 | Faktor skala bobot LoRA |
-| **Target Modules** | q_proj, k_proj, v_proj, o_proj | Modul perhatian (attention layers) yang dilatih |
-| **Learning Rate** | 2e-4 | Kecepatan penyesuaian bobot |
-| **Batch Size** | 2 | Ukuran tumpukan per langkah |
-| **Gradient Accumulation** | 4 | Akumulasi gradien sebelum pembaruan |
-| **Optimizer** | AdamW 8-bit | Pengoptimal hemat memori |
+| **Target Modules** | q_proj, k_proj, v_proj, o_proj | Modul attention layers yang dilatih ulang |
+| **Learning Rate** | 2e-4 | Kecepatan penyesuaian bobot adaptif |
+| **Optimizer** | AdamW 8-bit | Pengoptimal hemat memori GPU/RAM |
 
-### 3.2 Struktur Prompt Sistem (System Prompt)
+### 3.4 Struktur Prompt Sistem (System Prompt)
 Model dimuat di Ollama menggunakan parameter sistem yang ketat untuk mengunci keluaran agar selalu berformat JSON valid:
 
 ```text

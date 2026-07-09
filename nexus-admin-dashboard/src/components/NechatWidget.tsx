@@ -32,7 +32,7 @@ const parseMarkdown = (text: string) => {
 
 export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
     const [messages, setMessages] = useState<Message[]>([
-        { id: 1, text: "Halo, Admin! Saya NECHAT, Asisten intelijen SOC Anda. Berdasarkan Qwen3-235B, saya sedang memantau log sekuriti. Ada yang bisa saya analisis hari ini?", sender: "nechat" }
+        { id: 1, text: "Halo, Admin! Saya NEX-AI, Asisten intelijen siber otonom Anda. Berdasarkan model kustom nex-ai-protect yang telah dilatih secara khusus untuk pertahanan WAF, saya sedang memantau log sekuriti secara real-time. Ada yang bisa saya bantu analisis hari ini?", sender: "nechat" }
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);

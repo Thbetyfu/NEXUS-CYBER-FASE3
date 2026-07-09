@@ -18,6 +18,7 @@ import (
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/ai"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/avse"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/licensing"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
@@ -93,11 +94,47 @@ func NewNexusProxy(
 
 // StartImmunitySync menginisialisasi goroutine latar belakang untuk menarik berkas antibodi (virtual patches) dari Redis.
 // Menjamin setiap node gateway Nexus saling berbagi ilmu pertahanan secara instan (Global Immunity Sync).
+// StartImmunitySync menginisialisasi sinkronisasi berkas antibodi (virtual patches) dari Redis terdistribusi.
+// Menjamin setiap node gateway Nexus saling berbagi ilmu pertahanan secara instan (Global Immunity Sync).
+//
+// Alasan Arsitektural (Why):
+// 1. Bootstrap Sync awal dijalankan seketika saat gateway start agar node langsung kebal dari seluruh
+//    serangan zero-day yang sudah dipelajari sebelumnya tanpa menunggu timer ticker pertama.
+// 2. Berlangganan (Subscribe) ke Redis Pub/Sub channel "nexus:virtual_patches:channel" untuk sinkronisasi
+//    real-time instan antar-VPS (multi-instance) ketika ada antibodi baru terdaftar.
+// 3. Loop ticker 10 detik tetap berjalan sebagai fallback sync apabila jaringan Pub/Sub sempat terputus/degradasi.
 func (np *NexusProxy) StartImmunitySync() {
 	if mtd.MtdRedis == nil || !mtd.MtdRedis.Enabled {
 		return
 	}
 
+	// 1. Eksekusi Bootstrap Sync instan di awal
+	ctx := context.Background()
+	patches, err := mtd.MtdRedis.Client.SMembers(ctx, "nexus:virtual_patches").Result()
+	if err == nil {
+		var count int32
+		for _, p := range patches {
+			np.Patches.Store(p, true)
+			count++
+		}
+		atomic.StoreInt32(&np.PatchesCount, count)
+	}
+
+	// 2. Jalankan real-time Pub/Sub listener
+	go func() {
+		pubsub := mtd.MtdRedis.Client.Subscribe(context.Background(), "nexus:virtual_patches:channel")
+		defer pubsub.Close()
+
+		ch := pubsub.Channel()
+		for msg := range ch {
+			payload := msg.Payload
+			if _, loaded := np.Patches.LoadOrStore(payload, true); !loaded {
+				atomic.AddInt32(&np.PatchesCount, 1)
+			}
+		}
+	}()
+
+	// 3. Fallback Ticker polling 10 detik sekali
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		ctx := context.Background()
@@ -121,12 +158,15 @@ func (np *NexusProxy) AddAntibody(payload string) {
 	np.Patches.Store(payload, true)
 	atomic.AddInt32(&np.PatchesCount, 1)
 
-	// 2. Publikasikan secara asinkron ke server kluster Redis.
+	// 2. Publikasikan secara asinkron ke server kluster Redis dan siarkan ke node lain via Pub/Sub.
 	if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
+			// Simpan ke set terdistribusi
 			mtd.MtdRedis.Client.SAdd(ctx, "nexus:virtual_patches", payload)
+			// Siarkan event ke node VPS lain secara instan
+			mtd.MtdRedis.Client.Publish(ctx, "nexus:virtual_patches:channel", payload)
 		}()
 	}
 }
@@ -315,27 +355,15 @@ func (np *NexusProxy) PublishThreat(ip string, threatType string) {
 		cleanIP = strings.Split(ip, ":")[0]
 	}
 
-	isLocal := cleanIP == "127.0.0.1" || cleanIP == "::1" || cleanIP == "localhost"
-
-	if !isLocal {
-		// Panggilan pelacakan lokasi IP publik
-		resp, err := http.Get("http://ip-api.com/json/" + cleanIP)
-		if err == nil {
-			defer resp.Body.Close()
-			var geo struct {
-				Lat     float64 `json:"lat"`
-				Lon     float64 `json:"lon"`
-				Country string  `json:"country"`
-			}
-			if json.NewDecoder(resp.Body).Decode(&geo) == nil && geo.Lat != 0 {
-				lat = geo.Lat
-				lng = geo.Lon
-				sourceName = geo.Country
-			}
-		}
+	// Gunakan pencarian geografis standar terpadu (MaxMind DB + ip-api.com fallback)
+	country, _, _, ipLat, ipLng := database.GetIPGeoInfo(cleanIP)
+	if country != "Unknown" && ipLat != 0 {
+		lat = ipLat
+		lng = ipLng
+		sourceName = country
 	}
 
-	// Fallback koordinat kota besar penyerang untuk war-room simulation lokal.
+	// Fallback koordinat kota besar penyerang untuk war-room simulation lokal
 	if lat == 0 {
 		sources := [][]float64{
 			{55.75, 37.61}, {39.90, 116.40}, {38.90, -77.03}, {51.50, -0.12},

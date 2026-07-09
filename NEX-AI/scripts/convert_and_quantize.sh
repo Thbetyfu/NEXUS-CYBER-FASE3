@@ -6,7 +6,7 @@ set -e
 
 # Path konfigurasi
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CHECKPOINT_DIR="$BASE_DIR/checkpoints/nex_ai_final"
+CHECKPOINT_DIR="$BASE_DIR/checkpoints/nex_ai_merged"
 OUTPUT_DIR="$BASE_DIR/build"
 LLAMA_CPP_DIR="$BASE_DIR/llama.cpp"
 

@@ -214,6 +214,7 @@ func main() {
 	mux.HandleFunc("/api/blacklist/ban", blacklistBanHandler(telemetry))                       // [NEW: MANUAL/AI BAN IP]
 	mux.HandleFunc("/api/blacklist/unban", blacklistUnbanHandler(telemetry))                   // [NEW: MANUAL UNBAN IP]
 	mux.HandleFunc("/api/audit/verify", auditVerifyHandler())                                  // [NEW: AUDIT LOG INTEGRITY VERIFICATION]
+	mux.HandleFunc("/api/antibodies", antibodiesHandler())                                     // [NEW: NEX-AI SELF-HEAL ANTIBODY AUDIT TRAIL]
 	mux.HandleFunc("/api/system/reset", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

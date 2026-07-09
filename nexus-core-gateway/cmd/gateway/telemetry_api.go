@@ -258,7 +258,7 @@ func aiStatusHandler() http.HandlerFunc {
 	client := ai.NewQwenClient("")
 	return func(w http.ResponseWriter, r *http.Request) {
 		status, latency := client.CheckHealth()
-		json.NewEncoder(w).Encode(map[string]interface{}{"status": status, "latency_ms": latency, "model": "QWEN3-32B"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"status": status, "latency_ms": latency, "model": "NEX-AI Cognitive v1.0"})
 	}
 }
 
@@ -478,8 +478,10 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - /honeystats           : List active attackers trapped in Tarpit\n" +
 				"  - /patches              : Show dynamically loaded virtual patches\n" +
 				"  - /simulate-attack [lvl]: Launch active attack simulation (high/low)\n" +
+				"  - /geoip [IP]           : Lookup geographical info for an IP address\n" +
 				"  - @nexus [query]        : Consult local AI about threats\n" +
 				"  - clear                 : Clear terminal session"
+
 
 		case cmd == "audit" || cmd == "/audit":
 			cmdExec := exec.Command("python", "../scripts/test_mtd_defense.py")
@@ -664,6 +666,30 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				" - PATCH_03: Brute-Force-Blocker  (Active) | Hits: 24\n" +
 				"--------------------------------------------------\n" +
 				"Dynamic Patching Engine running at sub-millisecond reflex speed."
+
+		case strings.HasPrefix(cmd, "geoip ") || strings.HasPrefix(cmd, "/geoip "):
+			parts := strings.Fields(payload.Command)
+			if len(parts) < 2 {
+				response = "[ERROR] Usage: /geoip [IP]"
+				break
+			}
+			ipToLookup := parts[1]
+			ipClean := ipToLookup
+			if idx := strings.Index(ipClean, ":"); idx != -1 {
+				ipClean = ipClean[:idx]
+			}
+			if net.ParseIP(ipClean) == nil {
+				response = fmt.Sprintf("[ERROR] Invalid IP address format: '%s'", ipToLookup)
+				break
+			}
+			country, city, isp, lat, lon := database.GetIPGeoInfo(ipClean)
+			response = fmt.Sprintf("[GEOIP] Lookup Results for %s:\n"+
+				"  - Country  : %s\n"+
+				"  - City     : %s\n"+
+				"  - ISP      : %s\n"+
+				"  - Latitude : %.4f\n"+
+				"  - Longitude: %.4f", ipClean, country, city, isp, lat, lon)
+
 
 		case strings.HasPrefix(cmd, "simulate-attack") || strings.HasPrefix(cmd, "/simulate-attack"):
 			parts := strings.Fields(payload.Command)
@@ -1162,5 +1188,88 @@ func validateDomainHandler(router *proxy.DynamicRouter) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusNotFound) // Kembalikan 404 jika tidak ditemukan
+	}
+}
+
+// antibodiesHandler melayani endpoint GET /api/antibodies untuk SOC Dashboard.
+//
+// Alasan Arsitektural (Why):
+// Endpoint ini memberikan visibilitas penuh kepada operator SOC atas riwayat antibodi zero-day
+// yang telah dipelajari NEX-AI secara otonom. Ini merupakan implementasi dari konsep
+// "Adaptive Immune System Transparency" — operator dapat melihat "memori imunologis" sistem
+// beserta konteks lengkapnya (IP, timestamp, tingkat keyakinan, dan ID gateway instansi).
+// Mendukung pagination via query param ?limit=N&offset=N untuk skalabilitas enterprise.
+func antibodiesHandler() http.HandlerFunc {
+	type AntibodyRecord struct {
+		ID               string  `json:"id"`
+		PayloadSignature string  `json:"payload_signature"`
+		SourceIP         string  `json:"source_ip"`
+		ThreatType       string  `json:"threat_type"`
+		ConfidenceScore  float64 `json:"confidence_score"`
+		VaccinatedAt     string  `json:"vaccinated_at"`
+		InstanceID       string  `json:"instance_id"`
+		IsSharedToRedis  bool    `json:"is_shared_to_redis"`
+	}
+
+	type AntibodiesResponse struct {
+		Status  string           `json:"status"`
+		Total   int64            `json:"total"`
+		Records []AntibodyRecord `json:"records"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		if r.Method != http.MethodGet {
+			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Ambil parameter pagination dari query string
+		limitStr := r.URL.Query().Get("limit")
+		offsetStr := r.URL.Query().Get("offset")
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit <= 0 || limit > 200 {
+			limit = 50
+		}
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil || offset < 0 {
+			offset = 0
+		}
+
+		records, total, dbErr := database.GetAntibodyAudits(limit, offset)
+
+		w.Header().Set("Content-Type", "application/json")
+
+		if dbErr != nil {
+			// Degraded mode: kembalikan respons kosong bukan error 500 agar dashboard tidak crash
+			resp := AntibodiesResponse{Status: "degraded", Total: 0, Records: []AntibodyRecord{}}
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+
+		// Transformasi records ke DTO yang bersih untuk konsumsi frontend
+		dtoRecords := make([]AntibodyRecord, 0, len(records))
+		for _, rec := range records {
+			dtoRecords = append(dtoRecords, AntibodyRecord{
+				ID:               rec.ID.String(),
+				PayloadSignature: rec.PayloadSignature,
+				SourceIP:         rec.SourceIP,
+				ThreatType:       rec.ThreatType,
+				ConfidenceScore:  rec.ConfidenceScore,
+				VaccinatedAt:     rec.VaccinatedAt.Format(time.RFC3339),
+				InstanceID:       rec.InstanceID,
+				IsSharedToRedis:  rec.IsSharedToRedis,
+			})
+		}
+
+		resp := AntibodiesResponse{
+			Status:  "ok",
+			Total:   total,
+			Records: dtoRecords,
+		}
+		json.NewEncoder(w).Encode(resp)
 	}
 }

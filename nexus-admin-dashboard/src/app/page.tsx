@@ -27,6 +27,7 @@ import EmergencyAlarm from '@/components/EmergencyAlarm';
 import WindowFrame from '@/components/WindowFrame';
 import Taskbar from '@/components/Taskbar';
 import BootSequence from '@/components/BootSequence';
+import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
 
 // Config
 import { API_BASE_URL } from '@/config';
@@ -669,7 +670,8 @@ const NCCDashboard = () => {
     "forensic-logs": 13,
     "system-status": 14,
     "mtd-audit": 15,
-    "ip-monitor": 16
+    "ip-monitor": 16,
+    "nex-ai-monitor": 17
   });
 
   const handleFocusWindow = useCallback((id: string) => {
@@ -916,6 +918,13 @@ const NCCDashboard = () => {
             icon={Users} 
             onClick={toggleWindow} 
             isOpen={openWindows.includes("ip-monitor")}
+          />
+          <DesktopIcon 
+            id="nex-ai-monitor" 
+            label="NEX-AI Core" 
+            icon={Shield} 
+            onClick={toggleWindow} 
+            isOpen={openWindows.includes("nex-ai-monitor")}
           />
         </div>
 
@@ -1343,6 +1352,26 @@ const NCCDashboard = () => {
                 blacklist={ipBlacklist} 
                 onRefetch={refetchIpMonitoring} 
               />
+            </WindowFrame>
+          )}
+
+          {/* NEX-AI Neural Core Monitor Window */}
+          {openWindows.includes("nex-ai-monitor") && (
+            <WindowFrame
+              key="nex-ai-monitor"
+              id="nex-ai-monitor"
+              title="NEX-AI Neural Core"
+              icon={<Shield size={14} />}
+              initialX={400}
+              initialY={200}
+              width={750}
+              height={500}
+              zIndex={windowZIndices["nex-ai-monitor"]}
+              isActive={focusedWindow === "nex-ai-monitor"}
+              onFocus={() => handleFocusWindow("nex-ai-monitor")}
+              onClose={() => toggleWindow("nex-ai-monitor")}
+            >
+              <NexAiMonitorWidget />
             </WindowFrame>
           )}
         </AnimatePresence>

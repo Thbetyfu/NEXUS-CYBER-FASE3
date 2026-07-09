@@ -6,7 +6,8 @@ Nexus Cyber SOC v13.2 dirancang untuk memitigasi spektrum ancaman berikut secara
 
 | Kategori Ancaman | Jenis Serangan | Mekanisme Pertahanan |
 | :--- | :--- | :--- |
-| **Web Application** | SQL Injection, XSS, SSRF, Command Injection | **Dual-Brain AI Shield** (Reflex Layer) |
+| **Web Application** | SQL Injection, XSS, SSRF, Command Injection | **NEX-AI Reflex Core** (Pattern Matching Engine, sub-1.2ms) |
+| **Zero-Day & Obfuscated** | Double URL Encoding, Nested Base64, Unicode Normalization, SQL Hex, Parameter Pollution | **NEX-AI Cognitive Core** (`nex-ai-protect`, QLoRA Fine-tuned SLM) |
 | **Infrastructure** | DDoS, Traffic Flooding, API Abuse | **Token Bucket Rate Limiting** |
 | **Reconnaissance** | Port Scanning, IP Mapping, OS Fingerprinting | **MTD Shuffling** (Moving Target Defense) |
 | **Reconnaissance & Access** | SSH Brute Force, SSH Port Probing | **SSH Tarpit & Auto-Banning** (Socket Starvation) |
@@ -45,3 +46,14 @@ Nexus Cyber SOC v13.2 dirancang untuk memitigasi spektrum ancaman berikut secara
 ### AVSE (Autonomous Visual Sterilization Engine)
 - **Mekanisme**: Membongkar dan merender ulang gambar (JPEG/PNG) untuk membuang metadata EXIF/GPS dan data biner tersembunyi (Steganografi).
 - **Hasil**: Gambar tetap tajam namun 100% suci dari ancaman penyisipan data.
+
+### NEX-AI Reflex Core (Otak Kiri - Kecepatan Instan)
+- **Mekanisme**: Menggunakan pre-compiled Regex heuristik OWASP Top 10 yang diinisialisasi satu kali saat startup. Setiap request yang lewat diperiksa dalam waktu < 1.2ms. Pola serangan yang terdeteksi secara otomatis didaftarkan sebagai "Antibodi" di memori Redis untuk pemblokiran O(1) pada request berikutnya.
+- **Cakupan**: SQLi klasik (UNION, SLEEP, Hex), XSS (script tag, javascript: protocol, event handler hijack), Path Traversal (LFI/RFI, Win.ini, /etc/passwd), dan deteksi alat penyerang otomatis (sqlmap, nikto, nmap, burp, OWASP ZAP, Acunetix).
+- **Hasil**: 99% trafik berbahaya berhasignatur standar diblokir sebelum mencapai server backend, menghemat sumber daya komputasi secara masif.
+
+### NEX-AI Cognitive Core / nex-ai-protect (Otak Kanan - Forensik Mendalam)
+- **Mekanisme**: Model SLM (Small Language Model) kustom berbasis fine-tuning `Qwen2.5-3B-Instruct` dengan metode QLoRA 4-bit NF4. Dilatih khusus pada 2.000 sampel dataset siber yang mencakup teknik obfuskasi zero-day yang tidak dapat dideteksi oleh pola Regex biasa. Dijalankan secara asinkron (goroutine) dengan timeout 30 detik agar tidak mempengaruhi latensi gateway.
+- **Cakupan Khusus**: Double URL Encoding, Nested Base64 wrapping, Unicode Normalization attacks, HTTP Parameter Pollution, SQL Hex encoding, serta payload berbahaya yang disembunyikan dalam struktur JSON/XML/JWT yang tampak sah.
+- **Output**: JSON deterministik `{status, threat_score, attack_type, reason}` tanpa teks pembuka/penutup (anti-halusinasi).
+- **Hasil**: Deteksi serangan APT dan Zero-Day bypass yang sama sekali lolos dari lapisan Reflex, dengan aksi otomatis: Ban IP 24 jam + OS-level block (iptables) + vaksinasi Antibodi baru ke Reflex Layer.

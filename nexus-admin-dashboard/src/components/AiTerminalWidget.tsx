@@ -118,16 +118,32 @@ export default function AiTerminalWidget() {
 	const terminalInstanceRef = useRef<any>(null);
 
 	const allCommands = [
+		"help",
+		"/help",
+		"status",
 		"/status",
+		"stats",
 		"/stats",
+		"shuffle",
 		"/shuffle",
+		"verify-audit",
+		"/verify-audit",
+		"ban ",
 		"/ban ",
+		"unban ",
 		"/unban ",
+		"sub ",
 		"/sub ",
+		"unsub ",
 		"/unsub ",
+		"honeystats",
 		"/honeystats",
+		"patches",
 		"/patches",
+		"simulate-attack",
 		"/simulate-attack",
+		"geoip ",
+		"/geoip ",
 		"@nexus ",
 		"clear"
 	];
@@ -285,7 +301,33 @@ export default function AiTerminalWidget() {
 				// Handle Tab Autocomplete
 				if (data === '\t') {
 					const trimmed = cmdBuffer.trim();
-					if (suggestions.length === 0 && trimmed.length > 0) {
+					
+					// Jika input kosong atau hanya diawali '/', tampilkan daftar bantuan
+					if (trimmed === "" || trimmed === "/") {
+						term.write("\r\n\x1b[90mAvailable Commands:\x1b[0m\r\n");
+						const colWidth = 18;
+						let line = "  ";
+						let printed = 0;
+						allCommands.forEach((c) => {
+							const cleanCmd = c.trim();
+							// Tampilkan perintah yang diawali '/' agar visual rapi
+							if (cleanCmd.startsWith("/")) {
+								line += cleanCmd.padEnd(colWidth);
+								printed++;
+								if (printed % 4 === 0) {
+									term.writeln(line);
+									line = "  ";
+								}
+							}
+						});
+						if (line.trim() !== "") {
+							term.writeln(line);
+						}
+						term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + cmdBuffer);
+						return;
+					}
+
+					if (suggestions.length === 0) {
 						suggestions = allCommands.filter(c => c.startsWith(trimmed) && c !== trimmed);
 					}
 
