@@ -233,7 +233,12 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 1. Capture payload dan bersihkan malware visual via AVSE.
 	var body []byte
 	if r.Body != nil {
-		body, _ = io.ReadAll(r.Body)
+		var err error
+		body, err = captureRequestBodyForInspection(r)
+		if err != nil {
+			http.Error(w, "Nexus [413]: Request body exceeds inspection limit.", http.StatusRequestEntityTooLarge)
+			return
+		}
 		
 		// [AVSE - INTELLIGENT MULTIMEDIA FILTERING]
 		// Alasan Keamanan (Why):

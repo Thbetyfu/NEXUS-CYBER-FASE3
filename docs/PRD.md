@@ -1,11 +1,11 @@
 # DOKUMEN KEBUTUHAN PRODUK (PRODUCT REQUIREMENT DOCUMENT - PRD)
-## NEXUS CYBER FASE 2 - AUTONOMOUS TACTICAL DEFENSE GRID
+## NEXUS CYBER - AUTONOMOUS TACTICAL DEFENSE GRID
 
 ---
 
 ## 1. METADATA & KONTEKS GLOBAL
 
-- **Nama Proyek:** Nexus Cyber Fase 2 (Autonomous Tactical Defense Grid & SOC Command Center)
+- **Nama Proyek:** Nexus Cyber (Autonomous Tactical Defense Grid & SOC Command Center)
 - **Versi PRD & Tanggal:** v2.0.0 / 2026-06-29
 - **Target Tech Stack:**
   - **Frontend:** Next.js 14+ (App Router), Tailwind CSS, Zustand, Recharts (untuk dashboard admin) & React + Vite, Tailwind CSS, TypeScript (untuk target website portofolio).
@@ -236,7 +236,7 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
   - Rate Limiting Token Bucket menggunakan Redis distributed lock: **[Sudah ada]**.
 - **Performa (Performance):**
   - **[Belum ada]** Penghitungan formal kebutuhan CPU & RAM minimum sistem untuk melayani beban traffic tinggi di produksi (baru estimasi).
-  - Latensi Reflex AI di bawah 1500ms (Groq API fallback): **[Sudah ada]**.
+  - Latensi Reflex AI lokal di bawah 1500ms pada runtime Ollama internal: **[Sudah ada]**.
 - **Aksesibilitas (Accessibility):**
   - **[Belum ada]** Struktur HTML semantik yang mematuhi standar WCAG 2.1 AA di dasbor admin maupun halaman portfolio (belum ada pengujian accessibility screen reader).
 

@@ -5,32 +5,22 @@ import (
 	"fmt"
 )
 
-// ReasoningEngine bertindak sebagai Facade Pattern (Pola Fasad) yang kompatibel ke belakang (backward-compatible)
+// ReasoningEngine bertindak sebagai Facade Pattern (Pola Fasad) yang menjaga call site gateway tetap stabil
 // untuk mengakses modul Analisis Forensik Mendalam (Reasoning Layer).
 //
 // Alasan Arsitektural (Why):
-// Mengisolasi logika komunikasi OpenRouter/vLLM dari proxy_core.go. Jika backend model AI diubah di masa depan
-// (misalnya bermigrasi dari OpenRouter ke model on-premise lokal), kode inti di proxy_core.go tidak perlu
+// Mengisolasi logika komunikasi local inference dari proxy_core.go. Jika backend model lokal berubah di masa depan
+// (misalnya berpindah dari satu runtime Ollama ke runtime lokal lain), kode inti di proxy_core.go tidak perlu
 // mengalami modifikasi sama sekali (ISO 25010 - Maintainability & Modularity).
 type ReasoningEngine struct {
 	client  *LlamaClient
 	Enabled bool
 }
 
-// NewReasoningEngine mengkonstruksi ReasoningEngine yang didukung oleh LlamaClient (OpenRouter).
-// Parameter `url` dan `model` tetap dipertahankan untuk kompatibilitas fungsi dengan pemanggilan warisan (legacy),
-// namun secara cerdas melakukan penyesuaian model modern di balik layar.
-func NewReasoningEngine(url, model string) *ReasoningEngine {
-	// Alasan Teknis (Why):
-	// Jika sistem lawas masih meneruskan model default "llama3" atau string kosong, secara otomatis
-	// sistem meningkatkan level intelijen ke model "qwen/qwen3-235b-a22b" yang memiliki penalaran forensik
-	// jauh lebih tinggi dalam mendeteksi taktik serangan persisten (APT).
-	if model == "llama3" || model == "" {
-		model = "qwen/qwen3-235b-a22b"
-	}
-
+// NewReasoningEngine mengkonstruksi ReasoningEngine untuk model reasoning lokal aktif.
+func NewReasoningEngine() *ReasoningEngine {
 	return &ReasoningEngine{
-		client:  NewLlamaClient(model),
+		client:  NewLlamaClient(""),
 		Enabled: true,
 	}
 }

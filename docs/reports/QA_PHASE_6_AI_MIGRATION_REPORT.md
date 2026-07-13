@@ -1,3 +1,6 @@
+# ⚠️ SUPERSEDED ARTIFACT
+Dokumen ini adalah catatan historis fase migrasi cloud inference pada 2026-03-20. Isinya dipertahankan apa adanya untuk integritas audit, tetapi **bukan lagi representasi arsitektur aktif**. Arsitektur saat ini menggunakan full local NEX-AI via Ollama.
+
 # 🕵️ QA AUDIT REPORT: PHASE 6 — AI Architecture Migration
 **Standard**: ISO/IEC 27001 + ISO/IEC 25010
 **Scope**: Migrasi Ollama → Cloud Inference (Groq + OpenRouter)

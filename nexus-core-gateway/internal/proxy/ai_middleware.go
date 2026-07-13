@@ -2,9 +2,7 @@
 package proxy
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,13 +31,7 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		if !licensing.IsLicenseValid() {
 			if strings.HasPrefix(r.URL.Path, "/api/") {
 				w.Header().Set("Content-Type", "application/json")
-				origin := r.Header.Get("Origin")
-				if origin != "" {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Access-Control-Allow-Credentials", "true")
-				} else {
-					w.Header().Set("Access-Control-Allow-Origin", "*")
-				}
+				ApplyDashboardCORSHeaders(w, r)
 				w.WriteHeader(http.StatusPaymentRequired)
 				w.Write([]byte(`{"status":"error","message":"Nexus [402]: Subscription Expired. Please renew your license."}`))
 				return
@@ -104,8 +96,13 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		// Pembacaan r.Body mengonsumsi aliran data biner (stream read-once).
 		// Kita menyalin data ke memori, lalu merestorasi r.Body menggunakan `io.NopCloser` agar
 		// handler proxy berikutnya dapat membaca data request secara normal.
-		body, _ := io.ReadAll(r.Body)
-		r.Body = io.NopCloser(bytes.NewBuffer(body))
+		body, err := captureRequestBodyForInspection(r)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			w.Write([]byte(`{"status":"error","message":"Request body exceeds inspection limit."}`))
+			return
+		}
 
 		query, _ := url.QueryUnescape(r.URL.RawQuery)
 		analysisData := query + " " + string(body)

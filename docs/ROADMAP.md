@@ -1,77 +1,78 @@
 # Nexus Cyber Strategic Roadmap
 
-Status Proyek: **NEX-AI Custom Model Phase** - Active Development
+Status Proyek: **NEX-AI Custom Model Milestone** - Active Development
 Versi: **v3.1.0**
 Arsitek: Antigravity
 
 ---
 
-## 🛠️ Phase 1: Initiation of Skills & Knowledge Base (COMPLETED) ✅
+## 🛠️ Milestone 1: Initiation of Skills & Knowledge Base (COMPLETED) ✅
 - [x] Inisiasi Core Directives (`NEXUS_CORE_DIRECTIVES.md`).
 - [x] Konfigurasi `.agents/skills/` (5 Skill Inti).
 
-## 🧱 Phase 2: Roadmap & Architecture Scaffolding (COMPLETED) ✅
-- [x] Ekspansi Roadmap detail (P3 - P10).
+## 🧱 Milestone 2: Roadmap & Architecture Scaffolding (COMPLETED) ✅
+- [x] Ekspansi Roadmap detail (M3 - M10).
 - [x] Tech Stack Specification (Go, Next.js, Docker, Ollama).
 - [x] Directory Scaffolding (`ARCHITECTURE.md`).
 - [x] Otomatisasi Boilerplate (`setup.sh`).
 
-## ⚙️ Phase 3: Core Gateway & Proxy Implementation (COMPLETED) ✅
+## ⚙️ Milestone 3: Core Gateway & Proxy Implementation (COMPLETED) ✅
 - [x] Inisiasi Repository **nexus-core-gateway** (Go).
 - [x] Implementasi Reverse Proxy Layer (HTTP/TCP).
 - [x] Integrasi Logging & Observability (Structured JSON Logs).
 
-## 🧠 Phase 4: Dual-Brain AI Filter (Qwen & Llama 3) (COMPLETED) ✅
+## 🧠 Milestone 4: Dual-Brain AI Filter (Qwen & Llama 3) (COMPLETED) ✅
 - [x] Integrasi Reflex Layer (Qwen) via Local Inference (Ollama).
 - [x] Integrasi Reasoning Layer (Llama 3) untuk Analisis Niat (Nechat).
 - [x] Implementasi AI Orchestrator (Ensemble Logic) v2.5.
 
-## 🌐 Phase 5: Moving Target Defense (MTD) Layer (COMPLETED) ✅
+## 🌐 Milestone 5: Moving Target Defense (MTD) Layer (COMPLETED) ✅
 - [x] Implementasi Dynamic Port-Knocking / IP Shuffling (`mtd_shuffler.go`).
 - [x] Konfigurasi Target Randomization Scheduler.
 - [x] Integrasi MTD Control via Admin Dashboard.
 
-## 🔒 Phase 6: Post-Quantum Cryptography (PQC) Integration (COMPLETED) ✅
+## 🔒 Milestone 6: Post-Quantum Cryptography (PQC) Integration (COMPLETED) ✅
 - [x] Integrasi Pustaka NIST ML-KEM (Kyber-768).
 - [x] Implementasi PQC-Wrapper pada jalur data sensitif.
 - [x] Pengujian "Harvest Now, Decrypt Later" Resilience.
 
-## 🎨 Phase 7: Admin Command Center (Next.js Dashboard) (COMPLETED) ✅
+## 🎨 Milestone 7: Admin Command Center (Next.js Dashboard) (COMPLETED) ✅
 - [x] Inisiasi **nexus-admin-dashboard** (Next.js + Tailwind).
 - [x] Dashboard Visualisasi Real-time (Anomalies, MTD Status).
 - [x] Integrasi API Gateway Control Plane.
 - [x] **MVP Upgrade**: Premium Boot Sequence & Windowing System.
 
-## 🛠️ Phase 8: Autonomous Self-Repair & Rollback (COMPLETED) ✅
+## 🛠️ Milestone 8: Autonomous Self-Repair & Rollback (COMPLETED) ✅
 - [x] Implementasi System Integrity Monitor (Baseline check).
 - [x] Scripting Virtual Patching Otonom (Recursive Self-Repair Skill).
 - [x] Mekanisme Rollback Instan (< 100ms) & Anti-Webshell.
 
-## 🎭 Phase 9: Digital Hallucination (Honeypot Sandbox) (COMPLETED) ✅
+## 🎭 Milestone 9: Digital Hallucination (Honeypot Sandbox) (COMPLETED) ✅
 - [x] Implementasi High-Interaction Honeypot (Port 9090).
 - [x] Mekanisme pengalihan trafik mencurigakan ke Sandbox.
 - [x] Analisis perilaku penyerang di dalam Hallucination Layer.
 
-## 🚀 Phase 10: Integration, Stress Test & Production (COMPLETED) ✅
+## 🚀 Milestone 10: Integration, Stress Test & Production (COMPLETED) ✅
 - [x] Inisiasi **Nexus Core CLI** (`nexus` binary) untuk orkestrasi profesional.
 - [x] Push ke GitHub Repository (Version Control Sync).
 - [x] End-to-End Stress Test (Simulasi Serangan DDoS & Injeksi) -> 17/17 Checks Lulus.
 - [x] Cloud Deployment Sandbox (Local Tunnel & Network Hardening).
 - [x] Final Handover Dokumentasi Operasional ([Laporan Audit](file:///home/taqy/.gemini/antigravity/brain/ca754110-72d4-48a0-b93a-4b25725cef2c/qa_phase_10_stress_test_report.md) berhasil terbit).
 
-## 💰 Phase 11: Commercialization & Two-Tier SaaS Packaging (NEW ROADMAP) 🟠
+## 💰 Milestone 11: Commercialization & Dual-Engine Business Model (UPDATED ROADMAP) 🟠
 *Strategi komersialisasi pertahanan siber otonom untuk monetisasi pasar.*
 
-* **Tier 1: Shared Domain Protection (SaaS WAF)**
-  * [ ] Integrasi rute dynamic proxy multi-tenant untuk penyaringan bersama (*Shared Cloud WAF*).
-  * [x] Enkripsi otomatis *Polymorphic Alien-Language Cryptographic Shield (PACS)* on-the-fly untuk response HTML.
-  * [ ] Otomatisasi pemicu tagihan billing (Midtrans/Stripe) terhubung ke CLI `/sub` dan `/unsub`.
-* **Tier 2: Enterprise Managed SOC (Sewa Seluruh Ekosistem)**
-  * [ ] Orkestrasi dynamic provisioning (Docker API) untuk spin-up instansi terdedikasi per klien.
-  * [x] Mekanisme *Global License Lockout* pada backend Gateway dan layar pengunci premium React Dashboard.
-  * [x] Dashboard Command Center 3D privat, AI Reasoning Engine, dan Sandbox Honeypot eksklusif per penyewa.
+* **Segmen Swasta (B2B SaaS - 5 Tiers)**
+  * [x] Integrasi rute dynamic proxy multi-tenant untuk penyaringan bersama (*Shared Cloud WAF*).
+  * [x] Enkripsi otomatis *Polymorphic HTML Encryption (PACS)* on-the-fly untuk response HTML.
+  * [x] Otomatisasi webhook billing (Midtrans) terhubung ke gateway auto-activation.
+  * [ ] Penyediaan 5 paket langganan (Free, Basic, Pro, Pro+, Ultrasafe) di dashboard dan landing page.
+* **Segmen Pemerintah & Pendidikan (B2G/B2E GovEdu - 4 Tiers)**
+  * [ ] Mekanisme *Lapis 2 Domain Validation* (`.sch.id`, `.ac.id`, `.go.id`) untuk mencegah penyalahgunaan oleh pihak swasta.
+  * [ ] Modul bypass pembayaran online (B2G manual activation via Admin Command Center setelah PO/LKPP terbit).
+  * [ ] Skema Lisensi Software-Only Tahunan per CPU Core untuk penempatan on-premise/hybrid data center vital.
 
-## 🛡️ Phase 12: IP Monitoring & Autonomous Ban Grid (COMPLETED) ✅
+## 🛡️ Milestone 12: IP Monitoring & Autonomous Ban Grid (COMPLETED) ✅
 *Pemantauan lalu lintas IP secara real-time dan orkestrasi pemblokiran aktif di tingkat aplikasi dan kernel.*
 
 * [x] **Modul Pemantauan IP (Live Traffic & Activity Tracker)**: Visualisasi tabel aktivitas real-time dengan Heuristic Threat Score.
@@ -79,7 +80,7 @@ Arsitek: Antigravity
 * [x] **Fitur Auto-Banned AI (AI Autonomous Ban)**: Pemblokiran otomatis 24 jam jika Reflex Layer mendeteksi ancaman > 85 dan Reasoning Layer memvalidasi dengan tingkat keyakinan > 90%.
 * [x] **Multi-Layer Lockout**: Integrasi pemblokiran di tingkat Aplikasi (Redis Blacklist / HTTP 403) dan Driver/Kernel (eBPF map `XDP_DROP` / 0% CPU overhead).
 
-## Phase 13: NEX-AI Custom Model & Branding Eksklusif (COMPLETED) ✅
+## Milestone 13: NEX-AI Custom Model & Branding Eksklusif (COMPLETED) ✅
 *Membangun model kecerdasan buatan siber milik sendiri yang eksklusif dan tidak dapat ditiru kompetitor.*
 
 * [x] **Adversarial Dataset Enrichment (2.000 Sampel)**: Pengayaan dataset latih dengan 5 teknik obfuskasi serangan zero-day (Double URL, nested Base64, Unicode Normalization, SQL Hex, Parameter Pollution) dan 4 jenis trafik benign kompleks (GraphQL, CDATA XML, JWT Auth, Nested JSON).
@@ -93,7 +94,7 @@ Arsitek: Antigravity
 * [x] **GeoIP Lookup Terpadu**: Fungsi `PublishThreat` di `proxy_core.go` terhubung ke `database.GetIPGeoInfo` yang memprioritaskan database lokal MaxMind GeoLite2 sebelum fallback online.
 * [x] **Perintah `/geoip [IP]` di CLI Terminal SOC**: Operator SOC dapat melakukan pencarian lokasi geografis langsung dari terminal AiTerminalWidget dengan perintah `/geoip`.
 * [x] **Unit Test Terdedikasi Dual-Brain AI** (`nex_ai_test.go`): Test suite komprehensif yang memverifikasi: (a) Reflex Core dengan 12 kasus serangan nyata + benchmark latensi, (b) Cognitive Adapter dengan verifikasi parsing output JSON model lokal. Status: **PASS 100%**.
-* [x] **Keamanan Infrastruktur**: Port database Postgres dan Redis dibatasi ke `127.0.0.1`. Routing `/api/*` diproxy internal oleh Caddy.
+* [x] **Keamanan Infrastruktur**: Port database Postgres and Redis dibatasi ke `127.0.0.1`. Routing `/api/*` diproxy internal oleh Caddy.
 
 ---
 *Arsitek: Antigravity (Nexus Lead Security Architect)*

@@ -1,5 +1,5 @@
 # Start from golang alpine base for smallest footprint
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -19,12 +19,12 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/gateway
 
 # Start a new smaller stage
-FROM alpine:latest
+FROM alpine:3.20
 
 WORKDIR /app
 
-# Add certificates for HTTPS (OpenRouter API) and iptables for OS Firewall
-RUN apk --no-cache add ca-certificates tzdata iptables
+# Add runtime certificates, timezone data, and iptables utilities for the local gateway container
+RUN apk --no-cache add ca-certificates tzdata iptables docker-cli
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .

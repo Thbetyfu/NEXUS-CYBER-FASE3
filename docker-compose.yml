@@ -52,6 +52,7 @@ services:
       - "22:2222"   # SSH Tarpit Port
     volumes:
       - ./nexus-core-gateway/geoip:/app/geoip
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - REDIS_URL=redis:6379
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}

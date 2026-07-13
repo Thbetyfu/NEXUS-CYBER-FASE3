@@ -68,3 +68,20 @@ vulnerable-financial-api/financial.db
 nexus-core-gateway/nexus_traffic.log
 nexus-brain-lab/
 NEXUS-CORE-BRAIN.Modelfile
+
+# NEX-AI Private Artifacts
+NEX-AI/checkpoints/
+NEX-AI/build/
+NEX-AI/llama.cpp/
+NEX-AI/*.gguf
+NEX-AI/**/*.gguf
+NEX-AI/**/*.bin
+NEX-AI/**/*.safetensors
+NEX-AI/**/*.pt
+NEX-AI/**/*.pth
+NEX-AI/**/*.onnx
+NEX-AI/**/*.ckpt
+NEX-AI/**/adapter_config.json
+NEX-AI/**/adapter_model.safetensors
+NEX-AI/.cache/
+NEX-AI/cache/

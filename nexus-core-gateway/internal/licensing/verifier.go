@@ -5,6 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,11 +19,19 @@ type LicenseState struct {
 	IsValid      bool
 	PlanType     string
 	LastVerified time.Time
+	LastSuccessfulVerification time.Time
 }
 
 var (
 	currentLicense LicenseState
 	licenseKey     string
+	licenseDomain  string
+	timeNow        = time.Now
+)
+
+const (
+	defaultLicenseGracePeriodMinutes = 360
+	localDevelopmentLicenseKey       = "nexus-cyber-dev"
 )
 
 // InitLicenseVerifier menginisiasi status lisensi awal saat startup gateway.
@@ -27,9 +39,10 @@ var (
 // Alasan Arsitektural (Why):
 // Melakukan verifikasi pertama kali secara sinkron saat booting agar gateway langsung menangguhkan rute
 // jika kunci lisensi tidak valid sejak detik pertama peluncuran.
-func InitLicenseVerifier(key string) {
+func InitLicenseVerifier(domain string, key string) {
 	licenseKey = key
-	verify(key)
+	licenseDomain = domain
+	verify(domain, key)
 }
 
 // IsLicenseValid mengembalikan apakah sistem dalam kondisi terlisensi aktif secara thread-safe.
@@ -56,76 +69,142 @@ func StartLicenseHandshake(interval time.Duration) {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			verify(licenseKey)
+			verify(licenseDomain, licenseKey)
 		}
 	}()
 }
 
-func verify(key string) {
-	if key == "" {
+func verify(domain string, key string) {
+	now := timeNow()
+	if key == "" || domain == "" {
 		currentLicense.mu.Lock()
 		currentLicense.IsValid = false
 		currentLicense.PlanType = ""
+		currentLicense.LastVerified = now
 		currentLicense.mu.Unlock()
 		return
 	}
 
-	// [DEVELOPMENT BYPASS]
-	// Skip external license check for the local development key to avoid DNS lookup issues
-	// or ISP wildcard hijack page redirects in local dev mode.
-	if key == "nexus-cyber-dev" {
+	if isLocalDevelopmentBypass(domain, key) {
 		currentLicense.mu.Lock()
 		currentLicense.IsValid = true
 		currentLicense.PlanType = "premium"
-		currentLicense.LastVerified = time.Now()
+		currentLicense.LastVerified = now
+		currentLicense.LastSuccessfulVerification = now
 		currentLicense.mu.Unlock()
 		return
 	}
 
-	// Simulasi panggil API Server Lisensi Pusat
-	// Di skenario nyata, kita mengirimkan POST request ke https://license.nexus-cyber.com/verify
-	// Agar sistem offline/development tetap dapat berjalan lancar jika tidak ada koneksi internet,
-	// kita menerapkan fail-safe graceful: jika server offline namun key memiliki format tepercaya, kita izinkan.
-	type VerifyPayload struct {
-		Key string `json:"license_key"`
+	// Panggil API Server Lisensi SaaS Lokal
+	// Default ke http://localhost:3000/api/license tapi bisa di-override via env
+	apiEndpoint := os.Getenv("SAAS_LICENSE_API_URL")
+	if apiEndpoint == "" {
+		apiEndpoint = "http://localhost:3000/api/license"
 	}
-	payload := VerifyPayload{Key: key}
+
+	type VerifyPayload struct {
+		Domain     string `json:"domain"`
+		LicenseKey string `json:"licenseKey"`
+	}
+	payload := VerifyPayload{
+		Domain:     domain,
+		LicenseKey: key,
+	}
 	data, _ := json.Marshal(payload)
 
 	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Post("https://license.nexus-cyber.com/verify", "application/json", bytes.NewBuffer(data))
+	resp, err := client.Post(apiEndpoint, "application/json", bytes.NewBuffer(data))
 	
 	currentLicense.mu.Lock()
 	defer currentLicense.mu.Unlock()
+	currentLicense.LastVerified = now
 
 	if err != nil {
-		// [FAIL-SAFE GRACEFUL RUNNING]
-		// Alasan Arsitektural (Why):
-		// Celah koneksi internet atau server lisensi yang sedang down tidak boleh melumpuhkan perlindungan WAF.
-		// Jika key valid secara format ("nexus-cyber-dev" atau panjang karakter tepercaya), kita anggap valid secara fail-safe.
-		if key == "nexus-cyber-dev" || len(key) >= 16 {
-			currentLicense.IsValid = true
-			currentLicense.PlanType = "premium"
-		} else {
-			currentLicense.IsValid = false
-		}
-		currentLicense.LastVerified = time.Now()
+		handleVerificationFailureLocked(now)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		var result struct {
+			Valid    bool   `json:"valid"`
 			Status   string `json:"status"`
-			PlanType string `json:"plan_type"`
+			Plan     string `json:"plan"`
 		}
 		if json.NewDecoder(resp.Body).Decode(&result) == nil {
-			currentLicense.IsValid = result.Status == "active"
-			currentLicense.PlanType = result.PlanType
+			currentLicense.IsValid = result.Valid
+			if result.Valid {
+				currentLicense.PlanType = result.Plan
+				currentLicense.LastSuccessfulVerification = now
+			} else {
+				currentLicense.PlanType = ""
+			}
+		} else {
+			handleVerificationFailureLocked(now)
 		}
+		return
+	}
+
+	if resp.StatusCode >= http.StatusInternalServerError {
+		handleVerificationFailureLocked(now)
 	} else {
 		// Status selain 200 dianggap tidak aktif
 		currentLicense.IsValid = false
+		currentLicense.PlanType = ""
 	}
-	currentLicense.LastVerified = time.Now()
+}
+
+func handleVerificationFailureLocked(now time.Time) {
+	if currentLicense.IsValid && isWithinGraceWindow(now, currentLicense.LastSuccessfulVerification) {
+		return
+	}
+
+	currentLicense.IsValid = false
+	currentLicense.PlanType = ""
+}
+
+func isWithinGraceWindow(now, lastSuccessful time.Time) bool {
+	if lastSuccessful.IsZero() {
+		return false
+	}
+
+	return now.Sub(lastSuccessful) <= licenseGracePeriod()
+}
+
+func licenseGracePeriod() time.Duration {
+	value := strings.TrimSpace(os.Getenv("LICENSE_GRACE_PERIOD_MINUTES"))
+	if value == "" {
+		return time.Duration(defaultLicenseGracePeriodMinutes) * time.Minute
+	}
+
+	minutes, err := strconv.Atoi(value)
+	if err != nil || minutes <= 0 {
+		return time.Duration(defaultLicenseGracePeriodMinutes) * time.Minute
+	}
+
+	return time.Duration(minutes) * time.Minute
+}
+
+func isLocalDevelopmentBypass(domain, key string) bool {
+	return key == localDevelopmentLicenseKey && isLocalDevelopmentDomain(domain)
+}
+
+func isLocalDevelopmentDomain(domain string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(domain))
+	if normalized == "" {
+		return false
+	}
+
+	if strings.Contains(normalized, "://") {
+		parsed, err := url.Parse(normalized)
+		if err == nil {
+			normalized = parsed.Hostname()
+		}
+	}
+
+	if host, _, err := strings.Cut(normalized, ":"); err && host != "" {
+		normalized = host
+	}
+
+	return normalized == "localhost" || normalized == "127.0.0.1" || strings.HasSuffix(normalized, ".localhost")
 }

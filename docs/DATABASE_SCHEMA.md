@@ -131,7 +131,7 @@ Tabel untuk menyimpan daftar IP yang telah diblokir secara permanen atau sementa
 ---
 
 ### 4. `ai_insights` (Laporan Intelijen AI)
-Menyimpan hasil pemikiran dan rekomendasi dari **NEXUS-SOC-BRAIN** (Ollama/Groq) terkait suatu serangan spesifik.
+Menyimpan hasil pemikiran dan rekomendasi dari **NEXUS-SOC-BRAIN** lokal terkait suatu serangan spesifik.
 *   **Tujuan**: Menyimpan pengetahuan (*Knowledge*) AI agar admin bisa meninjau ulang keputusan AI di masa lalu.
 
 | Kolom | Tipe Data | Keterangan |

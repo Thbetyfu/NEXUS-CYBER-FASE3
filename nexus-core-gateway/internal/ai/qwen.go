@@ -7,18 +7,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"net/url"
 	"strings"
 	"time"
 )
 
 // QwenClient mengimplementasikan deteksi ancaman siber cepat (Reflex Layer Fase 1).
-// Memanfaatkan model Qwen-2.5-72b-instruct (atau Qwen3 32B lokal) untuk mencapai kecepatan klasifikasi
-// yang sangat tinggi (ultra-low latency target <50ms jika dijalankan pada Groq/vLLM lokal).
-//
-// Alasan Arsitektural (Why):
-// Kunci API dimuat secara aman dari environment (`AI_PROVIDER_KEY` atau `OPENROUTER_API_KEY`) tanpa
-// hardcoding untuk memenuhi standar kepatuhan UU PDP No. 27/2022 (Data Privacy & Key Hardening).
+// Seluruh request inference diarahkan ke endpoint lokal agar klasifikasi tetap konsisten
+// dengan arsitektur full local AI.
 type QwenClient struct {
 	APIKey   string
 	Model    string
@@ -35,7 +31,7 @@ type QwenResult struct {
 // TrafficMeta menyimpan metadata minimal dari request HTTP untuk dikirim ke AI.
 //
 // Alasan Arsitektural (Why):
-// Mengirim seluruh body request ke AI akan memakan biaya token tinggi dan meningkatkan latency secara eksponensial.
+// Mengirim seluruh body request ke AI akan memperbesar beban inferensi lokal dan meningkatkan latency secara eksponensial.
 // Dengan hanya mengirim metadata penting (≤ 200 token), kita dapat mendeteksi pola serangan dengan akurat
 // sekaligus mempertahankan target performa pemrosesan sub-50ms.
 type TrafficMeta struct {
@@ -46,17 +42,17 @@ type TrafficMeta struct {
 	RequestPattern string `json:"request_pattern"`
 }
 
-type groqRequest struct {
-	Model    string        `json:"model"`
-	Messages []groqMessage `json:"messages"`
+type localAIChatRequest struct {
+	Model    string               `json:"model"`
+	Messages []localAIChatMessage `json:"messages"`
 }
 
-type groqMessage struct {
+type localAIChatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
-type groqResponse struct {
+type localAIChatResponse struct {
 	Choices []struct {
 		Message struct {
 			Content string `json:"content"`
@@ -65,8 +61,8 @@ type groqResponse struct {
 }
 
 // QWEN_SYSTEM_PROMPT mendefinisikan aturan ketat pemindaian ancaman dan melampirkan beberapa contoh few-shot.
-// Few-shot learning menjamin model langsung mengerti format output JSON murni tanpa membuang waktu berpikir
-// (Chain of Thought), mempercepat pemrosesan hingga 4x lipat di infrastruktur Groq/vLLM.
+// Few-shot learning menjaga agar endpoint inference lokal langsung menghasilkan JSON valid
+// tanpa penjelasan tambahan.
 const QWEN_SYSTEM_PROMPT = `You are a real-time network threat classifier.
 Analyze traffic metadata and classify it IMMEDIATELY.
 Respond ONLY with valid JSON. No explanation. No markdown. No preamble.
@@ -93,44 +89,39 @@ INPUT: {"source_ip":"10.0.0.50","port":"8080","protocol":"HTTP","request_pattern
 OUTPUT: {"classification":"SUSPICIOUS","confidence":0.72,"threat_type":"BRUTE_FORCE_ATTEMPT"}`
 
 // NewQwenClient mengkonstruksi client Reflex Layer secara dinamis.
-// Dirancang kompatibel dengan instalasi lokal vLLM untuk kedaulatan data penuh.
+// Dirancang untuk kontrak local-only NEX-AI dengan endpoint inference yang selalu berada di dalam infrastruktur sendiri.
 func NewQwenClient(model string) *QwenClient {
-	apiKey := os.Getenv("AI_PROVIDER_KEY")
-	if apiKey == "" {
-		apiKey = os.Getenv("OPENROUTER_API_KEY") // fallback for older configs
-	}
-
-	endpoint := os.Getenv("AI_PROVIDER_URL")
-	if endpoint == "" {
-		// Default to OpenRouter if no on-premise server is configured
-		endpoint = "https://openrouter.ai/api/v1/chat/completions"
-	}
-
-	envModel := os.Getenv("AI_MODEL_REFLEX")
-	if envModel != "" {
-		model = envModel
-	} else if model == "" {
-		model = "qwen/qwen-2.5-72b-instruct"
-	}
-
 	return &QwenClient{
-		APIKey:   apiKey,
-		Model:    model,
-		Endpoint: endpoint,
+		APIKey:   configuredNexAIAPIKey(),
+		Model:    configuredNexAIReflexModel(model),
+		Endpoint: configuredNexAIEndpoint(),
 	}
 }
 
-// CheckHealth menguji ketersediaan koneksi dan latency ke API eksternal/lokal.
+func inferenceProbeURL(endpoint string) string {
+	parsed, err := url.Parse(endpoint)
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+		return endpoint
+	}
+
+	// Probe host inference yang sama tanpa bergantung pada internet publik.
+	return fmt.Sprintf("%s://%s", parsed.Scheme, parsed.Host)
+}
+
+// CheckHealth menguji ketersediaan koneksi dan latency ke endpoint inference lokal.
 func (q *QwenClient) CheckHealth() (status string, latency int64) {
 	start := time.Now()
 	client := &http.Client{Timeout: 3 * time.Second}
 
-	req, _ := http.NewRequest("GET", "https://google.com", nil) // Simple 204 heartbeat simulation to test outside link
+	req, _ := http.NewRequest("GET", inferenceProbeURL(q.Endpoint), nil)
 	res, err := client.Do(req)
+	if res != nil {
+		defer res.Body.Close()
+	}
 
 	latency = time.Since(start).Milliseconds()
 
-	if err != nil || res.StatusCode >= 400 {
+	if err != nil || (res != nil && res.StatusCode >= http.StatusInternalServerError) {
 		return "OFFLINE", latency
 	}
 	return "ONLINE", latency
@@ -143,9 +134,9 @@ func (q *QwenClient) Classify(meta TrafficMeta) (*QwenResult, error) {
 	userPrompt := fmt.Sprintf("Classify this traffic:\n%s\n\nRespond ONLY with:\n{\"classification\":\"BENIGN|SUSPICIOUS|MALICIOUS\",\"confidence\":0.0-1.0,\"threat_type\":\"string or null\"}",
 		string(trafficJSON))
 
-	payload, _ := json.Marshal(groqRequest{
+	payload, _ := json.Marshal(localAIChatRequest{
 		Model: q.Model,
-		Messages: []groqMessage{
+		Messages: []localAIChatMessage{
 			{Role: "system", Content: QWEN_SYSTEM_PROMPT},
 			{Role: "user", Content: userPrompt},
 		},
@@ -153,25 +144,23 @@ func (q *QwenClient) Classify(meta TrafficMeta) (*QwenResult, error) {
 
 	req, err := http.NewRequest("POST", q.Endpoint, bytes.NewBuffer(payload))
 	if err != nil {
-		return nil, fmt.Errorf("groq_req_build: %v", err)
+		return nil, fmt.Errorf("ai_request_build: %v", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+q.APIKey)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("HTTP-Referer", "https://nexus-cyber.go.id")
-	req.Header.Set("X-Title", "Nexus Cyber SOC Gateway")
 
 	// Anggaran waktu dinaikkan menjadi 1500ms agar request tidak dibatalkan saat antrean API sedang padat.
 	client := &http.Client{Timeout: 1500 * time.Millisecond}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("openrouter_timeout: %v", err)
+		return nil, fmt.Errorf("ai_request_timeout: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	var gResp groqResponse
+	var gResp localAIChatResponse
 	if err := json.Unmarshal(body, &gResp); err != nil || len(gResp.Choices) == 0 {
-		return nil, fmt.Errorf("groq_parse_response: %s", string(body)[:min(len(body), 200)])
+		return nil, fmt.Errorf("ai_parse_response: %s", string(body)[:min(len(body), 200)])
 	}
 
 	rawContent := gResp.Choices[0].Message.Content
@@ -181,9 +170,9 @@ func (q *QwenClient) Classify(meta TrafficMeta) (*QwenResult, error) {
 // Generate menghasilkan tanggapan percakapan teks bebas untuk pembuatan laporan SOC taktis.
 func (q *QwenClient) Generate(prompt string) (string, int64, error) {
 	start := time.Now()
-	payload, _ := json.Marshal(groqRequest{
+	payload, _ := json.Marshal(localAIChatRequest{
 		Model: q.Model,
-		Messages: []groqMessage{
+		Messages: []localAIChatMessage{
 			{Role: "system", Content: "You are a professional Cyber Security Analyst."},
 			{Role: "user", Content: prompt},
 		},
@@ -191,22 +180,20 @@ func (q *QwenClient) Generate(prompt string) (string, int64, error) {
 
 	req, err := http.NewRequest("POST", q.Endpoint, bytes.NewBuffer(payload))
 	if err != nil {
-		return "", 0, err
+		return "", 0, fmt.Errorf("ai_request_build: %v", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+q.APIKey)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("HTTP-Referer", "https://nexus-cyber.go.id")
-	req.Header.Set("X-Title", "Nexus Cyber SOC Gateway")
 
 	client := &http.Client{Timeout: 10 * time.Second} // Timeout lebih longgar untuk kompilasi teks
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", 0, err
+		return "", 0, fmt.Errorf("ai_request_timeout: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	var gResp groqResponse
+	var gResp localAIChatResponse
 	if err := json.Unmarshal(body, &gResp); err != nil || len(gResp.Choices) == 0 {
 		return "", 0, fmt.Errorf("ai_gen_parse_error: %s", string(body))
 	}

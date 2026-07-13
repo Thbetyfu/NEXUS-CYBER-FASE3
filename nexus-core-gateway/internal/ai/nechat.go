@@ -5,12 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
-	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
 )
 
 // NechatClient mengimplementasikan Inti Percakapan SOC (NEXUS-SOC-BRAIN v2.5).
@@ -23,32 +22,25 @@ type NechatClient struct {
 }
 
 func NewNechatClient() *NechatClient {
-	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	endpoint := os.Getenv("AI_PROVIDER_URL")
-	model := os.Getenv("AI_MODEL_REASONING")
-	if model == "" {
-		model = "nexus-brain"
-	}
-
 	return &NechatClient{
-		APIKey:   apiKey,
-		Model:    model,
-		Endpoint: endpoint,
+		APIKey:   configuredNexAIAPIKey(),
+		Model:    configuredNexAIReasoningModel(""),
+		Endpoint: configuredNexAIEndpoint(),
 	}
 }
 
-// Chat mengirimkan riwayat telemetri terkini dan kueri admin ke model bahasa besar (Ollama/OpenRouter).
+// Chat mengirimkan riwayat telemetri terkini dan kueri admin ke model bahasa besar lokal NEX-AI.
 //
 // Alasan Arsitektural (Why):
 // - Membatasi (truncate) konteks telemetri maksimal 2000 karakter terakhir (Optimization) untuk mencegah
-//   kebocoran memori (context bloat) dan menghemat biaya token API.
+//   kebocoran memori (context bloat) dan menjaga inferensi lokal tetap hemat sumber daya.
 // - Menyediakan modul fallback otomatis (generateExpertFallback) yang berbasis Expert System Heuristik
 //   jika model utama luring (offline) atau mengalami timeout, sehingga menjamin keandalan sistem SOC
 //   setiap saat (ISO 25010 - Functional Suitability & Reliability).
 func (n *NechatClient) Chat(logs []logger.TelemetryLog, query string) (string, error) {
 	logsBytes, _ := json.MarshalIndent(logs, "", "  ")
 	logsContext := string(logsBytes)
-	
+
 	// Pembatasan memori konteks untuk stabilitas RAM lokal.
 	if len(logsContext) > 2000 {
 		logsContext = logsContext[len(logsContext)-2000:]
@@ -67,16 +59,16 @@ Bahasa: Indonesia Profesional (Bahasa Intelijen SOC).`
 	userPrompt := fmt.Sprintf("STATUS TELEMETRI SAAT INI:\n%s\n\nPERTANYAAN ADMIN: %s\n\nBerikan analisis mendalam:", logsContext, query)
 
 	reqBody, _ := json.Marshal(map[string]interface{}{
-		"model":    n.Model,
+		"model": n.Model,
 		"messages": []map[string]string{
 			{"role": "system", "content": systemPrompt},
 			{"role": "user", "content": userPrompt},
 		},
 		"stream": false,
 		"options": map[string]interface{}{
-			"num_ctx":     4096, // Ukuran Context Window untuk memori percakapan jangka pendek
-			"temperature": 0.2,  // Fokus & Presisi tinggi (meminimalkan halusinasi data telemetri)
-			"top_p":       0.9,
+			"num_ctx":        4096, // Ukuran Context Window untuk memori percakapan jangka pendek
+			"temperature":    0.2,  // Fokus & Presisi tinggi (meminimalkan halusinasi data telemetri)
+			"top_p":          0.9,
 			"repeat_penalty": 1.2,
 		},
 	})
@@ -87,7 +79,7 @@ Bahasa: Indonesia Profesional (Bahasa Intelijen SOC).`
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	// Batasan timeout 45 detik untuk memberi ruang loading model besar pada RAM server lokal.
 	client := &http.Client{Timeout: 45 * time.Second}
 	resp, err := client.Do(req)
@@ -125,7 +117,7 @@ Bahasa: Indonesia Profesional (Bahasa Intelijen SOC).`
 // yang di-hardcode agar operasional SOC tetap berjalan normal (High-Availability Policy).
 func (n *NechatClient) generateExpertFallback(logs []logger.TelemetryLog, query string) string {
 	q := strings.ToLower(query)
-	
+
 	// Analisis Telemetri Berbasis Aturan (Rule-Based Heuristic)
 	sqli := 0
 	brute := 0
@@ -144,12 +136,12 @@ func (n *NechatClient) generateExpertFallback(logs []logger.TelemetryLog, query 
 	}
 
 	res := "🛡️ **NEXUS EXPERT ANALYST (Operational Mode)**\n\n"
-	
+
 	// Smart Keyword Dispatcher (Penyalur Kata Kunci Cerdas)
 	if strings.Contains(q, "apa") || strings.Contains(q, "siapa") || strings.Contains(q, "tahu") {
 		res += "Saya adalah modul analisis otonom Nexus. Saya memantau trafik secara real-time dan menggunakan MTD (Moving Target Defense) untuk melindungi aset Anda.\n\n"
 	}
-	
+
 	if strings.Contains(q, "website") || strings.Contains(q, "lindung") {
 		res += "Saat ini saya sedang melindungi portal portfolio yang terhubung ke data center simulasi OJK. Sistem MTD aktif merotasi port setiap 60 detik untuk membingungkan penyerang.\n\n"
 	}

@@ -1,17 +1,17 @@
 # Use an official Node runtime as a parent image
-FROM node:20-alpine AS deps
+FROM node:20-alpine3.20 AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:20-alpine AS builder
+FROM node:20-alpine3.20 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:20-alpine3.20 AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

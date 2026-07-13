@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -25,6 +27,8 @@ import (
 
 var domainRegex = regexp.MustCompile(`^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*(:\d+)?$`)
 
+const defaultPaymentWebhookSecret = "dev-payment-webhook-secret"
+
 func isValidDomain(domain string) bool {
 	return domainRegex.MatchString(domain)
 }
@@ -35,6 +39,14 @@ func isValidURL(targetURL string) bool {
 		return false
 	}
 	return u.Scheme == "http" || u.Scheme == "https"
+}
+
+func configuredPaymentWebhookSecret() string {
+	secret := strings.TrimSpace(os.Getenv("NEXUS_PAYMENT_WEBHOOK_SECRET"))
+	if secret == "" {
+		return defaultPaymentWebhookSecret
+	}
+	return secret
 }
 
 type TelemetryResponse struct {
@@ -143,7 +155,7 @@ func reportGenerateHandler(telemetry *logger.Logger) http.HandlerFunc {
 			}
 		}
 		prompt := fmt.Sprintf(`Identitas: Analis SOC Senior. Buat laporan MD formal untuk domain %s. Metrik: Allowed=%s, Diverted=%s, Immune=%s.`, domain, allowedCount, blockedCount, immuneCount)
-		qwen := ai.NewQwenClient("google/gemini-2.0-flash-001")
+		qwen := ai.NewQwenClient("")
 		result, _, _ := qwen.Generate(prompt)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "success", "report_content": result})
@@ -313,7 +325,7 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 
 			// 1. Add to Proxy Router
 			router.AddRoute(payload.Domain, targetURL)
-			
+
 			// 2. Register in Telemetry so it appears in the dropdown immediately
 			telemetry.AddDomain(payload.Domain)
 
@@ -327,7 +339,7 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 func paymentWebhookHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.HandlerFunc {
 	type WebhookPayload struct {
 		Domain   string `json:"domain"`
-		Status   string `json:"status"` // "paid" or "success"
+		Status   string `json:"status"`    // "paid" or "success"
 		PlanType string `json:"plan_type"` // "premium" or "enterprise"
 	}
 
@@ -336,6 +348,18 @@ func paymentWebhookHandler(router *proxy.DynamicRouter, telemetry *logger.Logger
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Method not allowed"})
+			return
+		}
+
+		providedSecret := strings.TrimSpace(r.Header.Get("X-Nexus-Webhook-Secret"))
+		if providedSecret == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Missing webhook secret"})
+			return
+		}
+		if subtle.ConstantTimeCompare([]byte(providedSecret), []byte(configuredPaymentWebhookSecret())) != 1 {
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Invalid webhook secret"})
 			return
 		}
 
@@ -482,7 +506,6 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - @nexus [query]        : Consult local AI about threats\n" +
 				"  - clear                 : Clear terminal session"
 
-
 		case cmd == "audit" || cmd == "/audit":
 			cmdExec := exec.Command("python", "../scripts/test_mtd_defense.py")
 			outputBytes, err := cmdExec.CombinedOutput()
@@ -502,7 +525,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 			response = fmt.Sprintf("[STATUS] MTD Active Port: %d | Next Shuffle: %ds | Backend: ONLINE", port, next)
 
 		case cmd == "stats" || cmd == "/stats":
-			response = fmt.Sprintf("[STATS] Allowed: %d | Blocked: %d | Honeypot: %d", 
+			response = fmt.Sprintf("[STATS] Allowed: %d | Blocked: %d | Honeypot: %d",
 				telemetry.TotalAllowed, telemetry.TotalBlocked, telemetry.TotalHoneypot)
 
 		case cmd == "shuffle" || cmd == "/shuffle":
@@ -515,13 +538,13 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 			}
 			_, verifiedCount, err := logger.VerifyAuditChain(database.DB)
 			if err != nil {
-				response = fmt.Sprintf("[ALERT] INTEGRITY VIOLATION DETECTED!\n" +
-					"  - Verified Records: %d\n" +
-					"  - Error Detail    : %s\n" +
+				response = fmt.Sprintf("[ALERT] INTEGRITY VIOLATION DETECTED!\n"+
+					"  - Verified Records: %d\n"+
+					"  - Error Detail    : %s\n"+
 					"  - Status          : COMPROMISED. The threat log trail has been illegally modified!", verifiedCount, err.Error())
 			} else {
-				response = fmt.Sprintf("[SUCCESS] INTEGRITY VERIFIED (ISO 27001 Annex A.12.4)\n" +
-					"  - Verified Records: %d\n" +
+				response = fmt.Sprintf("[SUCCESS] INTEGRITY VERIFIED (ISO 27001 Annex A.12.4)\n"+
+					"  - Verified Records: %d\n"+
 					"  - Status          : 100%% INTACT. Cryptographic hash chain is valid and untampered.", verifiedCount)
 			}
 		case strings.HasPrefix(cmd, "ban ") || strings.HasPrefix(cmd, "/ban "):
@@ -650,7 +673,6 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 			})
 			response = fmt.Sprintf("[WARNING] [SAAS] Domain %s license revoked! Container destroyed and domain locked.", domainToUnsub)
 
-
 		case cmd == "honeystats" || cmd == "/honeystats":
 			response = "[HONEYPOT-STATUS] Captured Hackers in Sandbox Tarpit:\n" +
 				" - IP: 198.51.100.42  | Stalled: 8s | Status: STARVED (SQL Injection Scan)\n" +
@@ -689,7 +711,6 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - ISP      : %s\n"+
 				"  - Latitude : %.4f\n"+
 				"  - Longitude: %.4f", ipClean, country, city, isp, lat, lon)
-
 
 		case strings.HasPrefix(cmd, "simulate-attack") || strings.HasPrefix(cmd, "/simulate-attack"):
 			parts := strings.Fields(payload.Command)
@@ -823,7 +844,6 @@ func runTestHandler() http.HandlerFunc {
 		json.NewEncoder(w).Encode(response)
 	}
 }
-
 
 // IPMonitoringEntry holds aggregated IP activity metrics
 type IPMonitoringEntry struct {

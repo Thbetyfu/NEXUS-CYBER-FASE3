@@ -15,9 +15,13 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATASET_PATH = os.path.join(BASE_DIR, "dataset", "cyber_security_dataset.json")
 OUTPUT_DIR = os.path.join(BASE_DIR, "checkpoints")
+CACHE_DIR = os.path.join(BASE_DIR, ".cache", "huggingface")
+FINAL_ADAPTER_DIR = os.path.join(OUTPUT_DIR, "nex_ai_final")
+MERGED_DIR = os.path.join(OUTPUT_DIR, "nex_ai_merged")
 
 # Model configuration
 MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"
+MIN_RECOMMENDED_VRAM_GB = 5.5
 
 def format_prompts(batch, tokenizer):
     texts = []
@@ -32,8 +36,43 @@ def format_prompts(batch, tokenizer):
         texts.append(text)
     return {"text": texts}
 
+def ensure_directories():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(CACHE_DIR, exist_ok=True)
+
+    # Keep model downloads and caches private to this workspace.
+    os.environ.setdefault("HF_HOME", CACHE_DIR)
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", os.path.join(CACHE_DIR, "hub"))
+    os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(CACHE_DIR, "transformers"))
+
+def validate_runtime():
+    if not os.path.exists(DATASET_PATH):
+        raise FileNotFoundError(f"Dataset tidak ditemukan: {DATASET_PATH}")
+
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "GPU CUDA tidak terdeteksi. Training QLoRA lokal dihentikan agar tidak memaksa pelatihan CPU yang sangat lambat."
+        )
+
+    gpu_name = torch.cuda.get_device_name(0)
+    total_vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
+    print(f"[NEX-AI] GPU terdeteksi: {gpu_name} ({total_vram_gb:.2f} GiB VRAM)")
+
+    if total_vram_gb < MIN_RECOMMENDED_VRAM_GB:
+        raise RuntimeError(
+            f"VRAM tersedia {total_vram_gb:.2f} GiB, di bawah rekomendasi minimal {MIN_RECOMMENDED_VRAM_GB} GiB untuk QLoRA 3B."
+        )
+
+def validate_dataset(dataset):
+    train_count = len(dataset["train"])
+    if train_count == 0:
+        raise RuntimeError("Dataset kosong. Training dibatalkan.")
+    print(f"[NEX-AI] Dataset siap dilatih dengan {train_count} sampel.")
+
 def main():
     print("[NEX-AI] Memulai proses persiapan pelatihan QLoRA...")
+    ensure_directories()
+    validate_runtime()
     
     # 1. Konfigurasi Kuantisasi 4-bit (NF4)
     bnb_config = BitsAndBytesConfig(
@@ -45,18 +84,21 @@ def main():
     
     # 2. Muat Tokenizer dan Model Dasar
     print(f"[NEX-AI] Mengunduh model dasar: {MODEL_ID}")
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True, cache_dir=CACHE_DIR)
     tokenizer.pad_token = tokenizer.eos_token
     
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_ID,
         quantization_config=bnb_config,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+        cache_dir=CACHE_DIR
     )
     
     # Persiapkan model untuk pelatihan presisi rendah
     model = prepare_model_for_kbit_training(model)
+    model.gradient_checkpointing_enable()
+    model.config.use_cache = False
     
     # 3. Konfigurasi LoRA
     lora_config = LoraConfig(
@@ -75,6 +117,7 @@ def main():
     # 4. Muat dan Tokenisasi Dataset
     print(f"[NEX-AI] Memuat berkas dataset: {DATASET_PATH}")
     dataset = load_dataset("json", data_files=DATASET_PATH)
+    validate_dataset(dataset)
     
     # Format ke chat template Qwen
     dataset = dataset.map(lambda x: format_prompts(x, tokenizer), batched=True)
@@ -97,6 +140,7 @@ def main():
         num_train_epochs=3,
         optim="paged_adamw_8bit",
         fp16=True,
+        gradient_checkpointing=True,
         save_strategy="epoch",
         save_total_limit=2,
         report_to="none",
@@ -115,10 +159,9 @@ def main():
     trainer.train()
     
     # Simpan adapter akhir
-    final_checkpoint_path = os.path.join(OUTPUT_DIR, "nex_ai_final")
-    model.save_pretrained(final_checkpoint_path)
-    tokenizer.save_pretrained(final_checkpoint_path)
-    print(f"[NEX-AI] Pelatihan selesai. Adapter tersimpan di: {final_checkpoint_path}")
+    model.save_pretrained(FINAL_ADAPTER_DIR)
+    tokenizer.save_pretrained(FINAL_ADAPTER_DIR)
+    print(f"[NEX-AI] Pelatihan selesai. Adapter tersimpan di: {FINAL_ADAPTER_DIR}")
 
     # 7. Proses Penggabungan (Merging) LoRA dengan Model Dasar
     print("[NEX-AI] Memulai penggabungan (merging) LoRA adapter dengan model dasar...")
@@ -134,20 +177,20 @@ def main():
         MODEL_ID,
         torch_dtype=torch.float16,
         device_map="cpu",
-        trust_remote_code=True
+        trust_remote_code=True,
+        cache_dir=CACHE_DIR
     )
 
     from peft import PeftModel
     print("[NEX-AI] Memuat LoRA adapter ke model dasar...")
-    peft_model = PeftModel.from_pretrained(base_model, final_checkpoint_path)
+    peft_model = PeftModel.from_pretrained(base_model, FINAL_ADAPTER_DIR)
     
     print("[NEX-AI] Melakukan merge_and_unload...")
     merged_model = peft_model.merge_and_unload()
 
-    merged_dir = os.path.join(OUTPUT_DIR, "nex_ai_merged")
-    print(f"[NEX-AI] Menyimpan model utuh terintegrasi di: {merged_dir}")
-    merged_model.save_pretrained(merged_dir)
-    tokenizer.save_pretrained(merged_dir)
+    print(f"[NEX-AI] Menyimpan model utuh terintegrasi di: {MERGED_DIR}")
+    merged_model.save_pretrained(MERGED_DIR)
+    tokenizer.save_pretrained(MERGED_DIR)
     print("[NEX-AI] Proses penggabungan selesai dengan sukses!")
 
 if __name__ == "__main__":

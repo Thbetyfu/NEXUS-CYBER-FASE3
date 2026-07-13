@@ -1,6 +1,6 @@
 # NEXUS CORE DIRECTIVES
 **Project: Nexus Cyber - Autonomous Database Security Gateway**
-**Status: Phase 13 - NEX-AI Custom Model & Self-Healing AI Pipeline**
+**Status: Milestone 13 - NEX-AI Custom Model & Self-Healing AI Pipeline**
 **Terakhir Diperbarui: 2026-07-09**
 
 Dokumen ini merangkum aturan main utama, arsitektur inti, dan keputusan teknis yang telah ditetapkan untuk sistem Infrastructure/Database Security Gateway yang dibangun sebagai pertahanan vital nasional.

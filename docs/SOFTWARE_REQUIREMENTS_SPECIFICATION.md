@@ -5,7 +5,7 @@
 
 ## 1. Pendahuluan & Ruang Lingkup Sistem
 
-Dokumen Spesifikasi Kebutuhan Perangkat Lunak (SRS) ini merinci seluruh persyaratan teknis, antarmuka, dan arsitektur untuk sistem **Nexus Cyber v13.2 (Fase 2)**.
+Dokumen Spesifikasi Kebutuhan Perangkat Lunak (SRS) ini merinci seluruh persyaratan teknis, antarmuka, dan arsitektur untuk sistem **Nexus Cyber v13.2**.
 
 Sistem terdiri dari empat komponen utama yang saling berinteraksi:
 1.  **Core Gateway (Go)**: Reverse proxy berkinerja tinggi yang menangani penyaringan WAF (Reflex AI), rotasi port MTD, pencarian GeoIP lokal, modul SSH Tarpit, pelaporan AbuseIPDB, dan pemblokiran IP di tingkat aplikasi & eBPF stub.
@@ -55,9 +55,9 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
 *   **Deskripsi**: Gateway harus bertindak sebagai reverse proxy yang mengevaluasi setiap request HTTP masuk.
 *   **Spesifikasi**:
     *   Mengekstrak payload request (headers, query params, request body).
-    *   Mengirimkan ringkasan payload ke Reflex AI filter (Groq Qwen 32B) secara sinkron.
+    *   Mengirimkan ringkasan payload ke Reflex AI filter (NEX-AI Lokal via Ollama) secara sinkron.
     *   Jika dinilai aman, request diteruskan ke situs portofolio.
-    *   Jika dinilai berbahaya, kembalikan HTTP 403 Forbidden secara instan, catat log ancaman ke database PostgreSQL (`threat_logs`), dan jalankan Reasoning AI (OpenRouter Qwen 235B) secara asinkron untuk menulis laporan forensik.
+    *   Jika dinilai berbahaya, kembalikan HTTP 403 Forbidden secara instan, catat log ancaman ke database PostgreSQL (`threat_logs`), dan jalankan Reasoning AI (NEX-AI Lokal via Ollama) secara asinkron untuk menulis laporan forensik.
 
 ### RF-02: Moving Target Defense (MTD) - Port Shuffling
 *   **Deskripsi**: Router gateway harus merotasi port backend target secara berkala untuk mengecoh pemetaan jaringan.

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
@@ -396,6 +397,15 @@ func SeedInitialDomainSubscriptions() {
 		return
 	}
 
+	backendHost := os.Getenv("TARGET_BACKEND_HOST")
+	if backendHost == "" {
+		backendHost = "host.docker.internal"
+	}
+	target := os.Getenv("TARGET_BACKEND")
+	if target == "" {
+		target = fmt.Sprintf("http://%s:3001", backendHost)
+	}
+
 	domains := []string{"localhost", "ojk.localhost", "kemenkeu.localhost", "bi.localhost"}
 	for _, dom := range domains {
 		var count int64
@@ -403,12 +413,12 @@ func SeedInitialDomainSubscriptions() {
 		if count == 0 {
 			sub := models.DomainSubscription{
 				Domain:   dom,
-				OriginIP: "127.0.0.1",
+				OriginIP: target,
 				IsActive: true,
 				PlanType: "premium",
 			}
 			database.DB.Create(&sub)
 		}
 	}
-	fmt.Printf("[SAAS-INIT] Successfully seeded %d dynamic secure domain subscriptions.\n", len(domains))
+	fmt.Printf("[SAAS-INIT] Successfully seeded %d dynamic secure domain subscriptions with target %s.\n", len(domains), target)
 }

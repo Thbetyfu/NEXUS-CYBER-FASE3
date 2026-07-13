@@ -2,16 +2,189 @@
 package proxy
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"html"
+	"io"
+	"math/big"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+const (
+	defaultInspectableBodyLimit int64 = 1 * 1024 * 1024
+	mediaInspectableBodyLimit   int64 = 10 * 1024 * 1024
+)
+
+var (
+	runtimeSessionSecret     string
+	runtimeSessionSecretOnce sync.Once
+)
+
+type browserChallenge struct {
+	Left    int
+	Right   int
+	Target  string
+	Expires int64
+}
+
+func getSessionSecret() string {
+	runtimeSessionSecretOnce.Do(func() {
+		if secret := os.Getenv("NEXUS_SESSION_SECRET"); secret != "" {
+			runtimeSessionSecret = secret
+			return
+		}
+
+		runtimeSessionSecret = generateSecureHexToken(32)
+	})
+
+	return runtimeSessionSecret
+}
+
+func generateSecureHexToken(byteLen int) string {
+	b := make([]byte, byteLen)
+	if _, err := rand.Read(b); err != nil {
+		return GenerateCSRFToken() + GenerateCSRFToken()
+	}
+	return fmt.Sprintf("%x", b)
+}
+
+func envBool(name string) bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(name))) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
+}
+
+func sanitizeRelativeTarget(target string) string {
+	if target == "" || !strings.HasPrefix(target, "/") || strings.HasPrefix(target, "//") {
+		return "/"
+	}
+	return target
+}
+
+func randomIntInRange(min, max int) int {
+	if max <= min {
+		return min
+	}
+
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min+1)))
+	if err != nil {
+		return min
+	}
+
+	return min + int(n.Int64())
+}
+
+func signValue(value, secret string) string {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(value))
+	return base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+}
+
+func buildChallengeToken(challenge browserChallenge, secret string) string {
+	payload := fmt.Sprintf(
+		"%d|%d|%s|%d",
+		challenge.Left,
+		challenge.Right,
+		base64.RawURLEncoding.EncodeToString([]byte(challenge.Target)),
+		challenge.Expires,
+	)
+	return payload + "." + signValue(payload, secret)
+}
+
+func newBrowserChallenge(target string) browserChallenge {
+	return browserChallenge{
+		Left:    randomIntInRange(111, 997),
+		Right:   randomIntInRange(11, 97),
+		Target:  sanitizeRelativeTarget(target),
+		Expires: time.Now().Add(2 * time.Minute).Unix(),
+	}
+}
+
+func verifyChallengeToken(token, answer, secret string) (string, bool) {
+	parts := strings.Split(token, ".")
+	if len(parts) != 2 {
+		return "/", false
+	}
+
+	payload, providedSig := parts[0], parts[1]
+	expectedSig := signValue(payload, secret)
+	if !hmac.Equal([]byte(providedSig), []byte(expectedSig)) {
+		return "/", false
+	}
+
+	payloadParts := strings.Split(payload, "|")
+	if len(payloadParts) != 4 {
+		return "/", false
+	}
+
+	left, err := strconv.Atoi(payloadParts[0])
+	if err != nil {
+		return "/", false
+	}
+
+	right, err := strconv.Atoi(payloadParts[1])
+	if err != nil {
+		return "/", false
+	}
+
+	targetBytes, err := base64.RawURLEncoding.DecodeString(payloadParts[2])
+	if err != nil {
+		return "/", false
+	}
+
+	expires, err := strconv.ParseInt(payloadParts[3], 10, 64)
+	if err != nil || time.Now().Unix() > expires {
+		return "/", false
+	}
+
+	expectedAnswer := strconv.Itoa(left * right)
+	if !hmac.Equal([]byte(answer), []byte(expectedAnswer)) {
+		return "/", false
+	}
+
+	return sanitizeRelativeTarget(string(targetBytes)), true
+}
+
+func inspectionBodyLimit(r *http.Request) int64 {
+	contentType := strings.ToLower(r.Header.Get("Content-Type"))
+	if strings.HasPrefix(contentType, "image/jpeg") ||
+		strings.HasPrefix(contentType, "image/png") ||
+		strings.HasPrefix(contentType, "multipart/form-data") {
+		return mediaInspectableBodyLimit
+	}
+
+	return defaultInspectableBodyLimit
+}
+
+func captureRequestBodyForInspection(r *http.Request) ([]byte, error) {
+	if r.Body == nil {
+		return nil, nil
+	}
+
+	limit := inspectionBodyLimit(r)
+	body, err := io.ReadAll(io.LimitReader(r.Body, limit+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(body)) > limit {
+		return nil, fmt.Errorf("request body exceeds inspection limit of %d bytes", limit)
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+	return body, nil
+}
 
 // BrowserIntegrityCheck mengimplementasikan "CGNAT Bypass JS Challenge" (Pemeriksaan Integritas Peramban).
 //
@@ -21,10 +194,7 @@ import (
 // (Proof-of-Work) yang diselesaikan secara otomatis oleh JavaScript peramban dalam 800ms, kita dapat
 // memverifikasi keaslian browser manusia (user-agent integrity) secara transparan tanpa mengganggu kenyamanan pengguna.
 func BrowserIntegrityCheck(next http.Handler) http.Handler {
-	secret := os.Getenv("NEXUS_SESSION_SECRET")
-	if secret == "" {
-		secret = "default-matrix-key"
-	}
+	secret := getSessionSecret()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// [LAYER_0_PREFLIGHT_GUARD]
@@ -63,22 +233,20 @@ func BrowserIntegrityCheck(next http.Handler) http.Handler {
 		}
 
 		// 3. Kembalikan halaman tantangan (Challenge Page) jika sesi tidak valid/belum terdaftar.
+		challenge := newBrowserChallenge(r.URL.Path)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprint(w, generateChallengeHTML(r.URL.Path))
+		fmt.Fprint(w, generateChallengeHTML(challenge, buildChallengeToken(challenge, secret)))
 	})
 }
 
 // VerifySessionHandler menangani pengiriman jawaban tantangan Proof-of-Work browser.
 //
 // Alasan Arsitektural (Why):
-// - Jika jawaban matematika klien benar (1234 * 5678 = 7006652), sistem menerbitkan cookie otorisasi 24 jam.
+// - Jika jawaban matematika klien benar dan token tantangan masih valid, sistem menerbitkan cookie otorisasi 24 jam.
 // - Cookie diset dengan atribut HttpOnly (mencegah pencurian token via XSS) dan SameSite=Lax (mitigasi CSRF).
 func (np *NexusProxy) VerifySessionHandler(w http.ResponseWriter, r *http.Request) {
-	secret := os.Getenv("NEXUS_SESSION_SECRET")
-	if secret == "" {
-		secret = "default-matrix-key"
-	}
+	secret := getSessionSecret()
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -86,12 +254,9 @@ func (np *NexusProxy) VerifySessionHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	answer := r.FormValue("answer")
-	targetPath := r.FormValue("target")
-	if targetPath == "" {
-		targetPath = "/"
-	}
+	challengeToken := r.FormValue("challenge_token")
 
-	if answer == "7006652" {
+	if targetPath, ok := verifyChallengeToken(challengeToken, answer, secret); ok {
 		expiry := time.Now().Add(24 * time.Hour).Unix()
 		token := generateToken(expiry, secret)
 
@@ -101,6 +266,7 @@ func (np *NexusProxy) VerifySessionHandler(w http.ResponseWriter, r *http.Reques
 			MaxAge:   86400,
 			Path:     "/",
 			HttpOnly: true,
+			Secure:   envBool("SESSION_COOKIE_SECURE"),
 			SameSite: http.SameSiteLaxMode,
 		})
 
@@ -133,7 +299,7 @@ func isValidSession(token, secret string) bool {
 	h.Write([]byte(payload))
 	expectedSig := base64.URLEncoding.EncodeToString(h.Sum(nil))
 
-	if sig != expectedSig {
+	if !hmac.Equal([]byte(sig), []byte(expectedSig)) {
 		return false
 	}
 
@@ -143,7 +309,7 @@ func isValidSession(token, secret string) bool {
 }
 
 // generateChallengeHTML menyintesis visual tantangan peramban bertema Matrix minimalis premium.
-func generateChallengeHTML(target string) string {
+func generateChallengeHTML(challenge browserChallenge, challengeToken string) string {
 	return `<!DOCTYPE html>
 <html>
 <head>
@@ -164,13 +330,13 @@ func generateChallengeHTML(target string) string {
         <p>Please wait while your browser establishes a secure Nexus Session.</p>
         <form id="challenge" action="/api/verify-session" method="POST" style="display:none;">
             <input type="hidden" name="answer" id="answer">
-            <input type="hidden" name="target" value="` + target + `">
+            <input type="hidden" name="challenge_token" value="` + html.EscapeString(challengeToken) + `">
         </form>
     </div>
     <script>
-        // Eksperimen Proof-of-Work Matematis Sederhana (1234 * 5678)
+        // Eksperimen Proof-of-Work Matematis Sederhana berbasis token bertanda tangan.
         setTimeout(() => {
-            const res = 1234 * 5678;
+            const res = ` + strconv.Itoa(challenge.Left) + ` * ` + strconv.Itoa(challenge.Right) + `;
             document.getElementById('answer').value = res;
             document.getElementById('challenge').submit();
         }, 800);
@@ -205,6 +371,7 @@ func CsrfShield(next http.Handler) http.Handler {
 				Value:    csrfToken,
 				Path:     "/",
 				HttpOnly: false, // Must be readable by client JS
+				Secure:   envBool("CSRF_COOKIE_SECURE"),
 				SameSite: http.SameSiteLaxMode,
 			})
 		} else {

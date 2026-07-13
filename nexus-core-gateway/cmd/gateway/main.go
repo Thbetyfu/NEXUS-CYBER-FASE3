@@ -55,16 +55,20 @@ func main() {
 	proxy.SeedInitialDomainSubscriptions()
 
 	// 0b. Initialize Licensing Verifier
+	licenseDomain := os.Getenv("NEXUS_LICENSE_DOMAIN")
+	if licenseDomain == "" {
+		licenseDomain = "localhost"
+	}
 	licenseKey := os.Getenv("NEXUS_LICENSE_KEY")
 	if licenseKey == "" {
 		licenseKey = "nexus-cyber-dev"
 	}
-	licensing.InitLicenseVerifier(licenseKey)
+	licensing.InitLicenseVerifier(licenseDomain, licenseKey)
 	licensing.StartLicenseHandshake(1 * time.Hour)
 
 	// 1. Initialize Intelligence Components
 	filter := ai.NewReflexFilter()
-	reasoning := ai.NewReasoningEngine("http://localhost:11434", "llama3")
+	reasoning := ai.NewReasoningEngine()
 	telemetry, err := logger.NewLogger()
 	if err != nil {
 		log.Fatalf("[NEXUS] Failed to initiate logger: %v", err)
@@ -134,7 +138,7 @@ func main() {
 	if !strings.HasPrefix(sshTarpitPort, ":") {
 		sshTarpitPort = ":" + sshTarpitPort
 	}
-	
+
 	sshTarpit := mtd.NewSSHTarpit(sshTarpitPort, 10*time.Second)
 	sshTarpit.OnAttackerCaught = func(ip string) {
 		// Kirim telemetri kejadian ke dashboard
@@ -148,7 +152,6 @@ func main() {
 		database.BanIP(ip, "SSH brute force probe caught in tarpit", 24*time.Hour)
 	}
 	sshTarpit.Start()
-
 
 	// 4. Setup Initial Backend Target (Mockup OJK Data Center)
 	backendHost := os.Getenv("TARGET_BACKEND_HOST")
@@ -170,9 +173,9 @@ func main() {
 	var gateway *proxy.NexusProxy
 
 	shuffler := mtd.NewTopologyShuffler(
-		backendHost, // baseHost
+		backendHost,       // baseHost
 		[]int{targetPort}, // portPool dinamis sesuai port backend
-		60,          // rotate every 60 seconds
+		60,                // rotate every 60 seconds
 		func(newTarget mtd.TargetBackend) {
 			// Graceful Handoff: Update proxy without dropping in-flight requests
 			if gateway != nil {
@@ -192,6 +195,11 @@ func main() {
 		log.Fatalf("[NEXUS] Failed to initiate proxy: %v", err)
 	}
 
+	// Sync active routes from PostgreSQL to Redis / Cache on boot
+	if err := gateway.Router.SyncFromDatabase(); err != nil {
+		log.Printf("[NEXUS-WARN] Failed to sync dynamic routes from database: %v", err)
+	}
+
 	// 7. Chain: BrowserIntegrity -> TokenBucket -> NexusProxy (defense-in-depth)
 	gatewayHandler := proxy.BrowserIntegrityCheck(rateLimiter.HTTPMiddleware(gateway))
 
@@ -204,7 +212,7 @@ func main() {
 	mux.HandleFunc("/api/ai/status", aiStatusHandler())                                        // Health Check
 	mux.HandleFunc("/api/cli/execute", cliExecuteHandler(telemetry, shuffler, gateway.Router)) // Interactive Terminal CLI
 	mux.HandleFunc("/api/logs", telemetryHandler(shuffler, telemetry, target))                 // Phase 6 requirement
-	mux.HandleFunc("/api/domains", xxxDomainsHandler(telemetry, gateway.Router))                               // Multi-Tenant Workspace Switcher
+	mux.HandleFunc("/api/domains", xxxDomainsHandler(telemetry, gateway.Router))               // Multi-Tenant Workspace Switcher
 	mux.HandleFunc("/api/nechat", nechatHandler(telemetry))                                    // Phase 6 Nechat Assist
 	mux.HandleFunc("/api/panic", panicHandler(shuffler, telemetry))                            // Phase 6 Rescue Protocol
 	mux.HandleFunc("/api/report/generate", reportGenerateHandler(telemetry))                   // [NEW: EXECUTIVE REPORTING]
@@ -243,33 +251,12 @@ func main() {
 	mux.HandleFunc("/api/webhook/payment", paymentWebhookHandler(gateway.Router, telemetry))
 	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler) // CGNAT Bypass Challenge Validator
 	mux.HandleFunc("/api/test/run", runTestHandler())
-	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                 // [NEW: CSRF TOKEN ENDPOINT]
+	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                                 // [NEW: CSRF TOKEN ENDPOINT]
 	mux.HandleFunc("/api/license/validate-domain", validateDomainHandler(gateway.Router)) // [NEW: CADDY TLS VALIDATION ENDPOINT]
-	mux.Handle("/", gatewayHandler)                                     // all other requests go to the proxy
+	mux.Handle("/", gatewayHandler)                                                       // all other requests go to the proxy
 
 	// 9. Root Matrix Shield: Wrap EVERYTHING in AI Intelligence
-	// 3. CORS Shield (Access for Dashboard)
-	corsShield := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			origin := r.Header.Get("Origin")
-			if origin != "" {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Access-Control-Allow-Credentials", "true")
-			} else {
-				w.Header().Set("Access-Control-Allow-Origin", "*")
-			}
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-			w.Header().Set("Access-Control-Allow-Headers", "*")
-
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
-
-	rootShield := corsShield(proxy.CsrfShield(gateway.AIMiddleware(mux)))
+	rootShield := proxy.DashboardCORS(proxy.CsrfShield(gateway.AIMiddleware(mux)))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -299,7 +286,7 @@ func main() {
 func csrfTokenHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		
+
 		// If CORS preflight, return early
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

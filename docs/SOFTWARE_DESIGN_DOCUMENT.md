@@ -86,10 +86,10 @@ sequenceDiagram
     actor Attacker as Penyerang (IP Publik)
     participant Gateway as Go WAF Gateway
     participant Redis as Redis Blacklist Cache
-    participant Reflex as Reflex AI Filter (Groq)
+    participant Reflex as Reflex AI Filter (Local NEX-AI)
     participant Target as Target Web (Portfolio)
     participant Postgres as PostgreSQL (Threat Logs)
-    participant Reasoning as Reasoning AI (OpenRouter)
+    participant Reasoning as Reasoning AI (Local NEX-AI)
 
     Attacker->>Gateway: Kirim request (payload SQL Injection)
     Gateway->>Redis: Cek apakah IP di-blacklist?

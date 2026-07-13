@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
+	"github.com/nexus-cyber/nexus-core-gateway/internal/models"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
 )
 
@@ -67,6 +69,17 @@ func (dr *DynamicRouter) Lookup(host string) (string, bool) {
 		if err == nil && target != "" {
 			dr.updateLocalCache(host, target)
 			return target, true
+		}
+	}
+
+	// 2b. Fallback Pencocokan Tepat ke PostgreSQL Database jika tidak ada di Redis (Tier 3)
+	if database.DB != nil {
+		var sub models.DomainSubscription
+		err := database.DB.Where("domain = ? AND is_active = true", host).First(&sub).Error
+		if err == nil && sub.OriginIP != "" {
+			// Sinkronkan rute kembali ke Redis & Cache Lokal untuk mempercepat request selanjutnya
+			_ = dr.AddRoute(host, sub.OriginIP)
+			return sub.OriginIP, true
 		}
 	}
 
@@ -185,5 +198,30 @@ func (dr *DynamicRouter) RemoveRoute(host string) error {
 	}
 
 	log.Printf("[ROUTER] Mapping removed: %s", host)
+	return nil
+}
+
+// SyncFromDatabase menyelaraskan seluruh rute aktif dari PostgreSQL ke Redis dan Cache Lokal pada saat startup.
+func (dr *DynamicRouter) SyncFromDatabase() error {
+	if database.DB == nil {
+		return nil
+	}
+
+	var subscriptions []models.DomainSubscription
+	err := database.DB.Where("is_active = true").Find(&subscriptions).Error
+	if err != nil {
+		return err
+	}
+
+	for _, sub := range subscriptions {
+		if sub.Domain != "" && sub.OriginIP != "" {
+			err = dr.AddRoute(sub.Domain, sub.OriginIP)
+			if err != nil {
+				log.Printf("[ROUTER-SYNC-WARN] Gagal sinkronisasi rute %s ke Redis: %v", sub.Domain, err)
+			}
+		}
+	}
+
+	log.Printf("[ROUTER-SYNC] Berhasil sinkronisasi %d rute aktif dari PostgreSQL ke Redis/Cache.", len(subscriptions))
 	return nil
 }
