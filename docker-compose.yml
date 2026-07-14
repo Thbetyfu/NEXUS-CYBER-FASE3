@@ -59,6 +59,9 @@ services:
       - AI_PROVIDER_URL=${AI_PROVIDER_URL}
       - AI_PROVIDER_KEY=${AI_PROVIDER_KEY}
       - NEXUS_SESSION_SECRET=${NEXUS_SESSION_SECRET:-super-secret-matrix-key-2026}
+      - TARGET_BACKEND=http://portfolio:3002
+      - REWARD_PASSWORD=${REWARD_PASSWORD:-NexusAccessSecure2026!}
+      - REWARD_LINK=${REWARD_LINK:-https://shopee.co.id/m/shopee-kaget-nexus-success}
     cap_add:
       - NET_ADMIN
     env_file:
@@ -98,6 +101,7 @@ services:
     # Kita TIDAK membuka port portfolio ke publik (Hanya internal Docker)
     # Ini memaksa hacker harus lewat Gateway (8080)
     environment:
+      - PORT=3002
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=nexus_portfolio_app

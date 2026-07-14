@@ -128,6 +128,8 @@ export default function AiTerminalWidget() {
 		"/shuffle",
 		"verify-audit",
 		"/verify-audit",
+		"recovery",
+		"/recovery",
 		"ban ",
 		"/ban ",
 		"unban ",

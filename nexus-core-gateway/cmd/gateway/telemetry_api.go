@@ -495,6 +495,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - shuffle               : Trigger manual topology rotation\n" +
 				"  - /audit                : Run MTD Compliance stress tests (17 checks)\n" +
 				"  - /verify-audit         : Verify cryptographic integrity of threat logs\n" +
+				"  - /recovery             : Trigger self-healing database state recovery (Portfolio target)\n" +
 				"  - /ban [IP]             : Blacklist an attacker IP manually\n" +
 				"  - /unban [IP]           : Restore/unban an IP address\n" +
 				"  - /sub [domain]         : Activate premium SaaS PACS shield for a client\n" +
@@ -753,6 +754,20 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]string{"response": "[NEXUS-AI] Analysis:\n" + reply})
 			return
+
+		case cmd == "recovery" || cmd == "/recovery":
+			targetHost := os.Getenv("TARGET_BACKEND")
+			if targetHost == "" {
+				targetHost = "http://localhost:3002"
+			}
+			resp, err := http.Post(targetHost+"/api/admin/recover", "application/json", nil)
+			if err != nil {
+				response = fmt.Sprintf("[ERROR] Failed to reach portfolio recovery service: %v", err)
+				break
+			}
+			defer resp.Body.Close()
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			response = fmt.Sprintf("[STATUS] Portfolio Recovery Response:\n%s", string(bodyBytes))
 
 		default:
 			response = fmt.Sprintf("[ERROR] Unknown command: '%s'. Type /help for assistance.", cmd)
