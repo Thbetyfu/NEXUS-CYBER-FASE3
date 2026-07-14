@@ -48,7 +48,7 @@ Perusahaan swasta menggunakan biaya operasional (OPEX) bulanan untuk memangkas p
     *   *Ultrasafe*: Rp1.499.000/bln (Domain tak terbatas, 10 TB data transfer, Dedicated container, eBPF Kernel Drops, MTD 1m).
 
 ### 3.2 Penanganan Biaya Operasional (Zero API Cost)
-*   **Inference Full Local**: Reflex Layer (`nex-ai-reflex`) dan Reasoning Layer (`nex-ai-protect`) berjalan lokal via Ollama di kluster/server kita. Seluruh inferensi berlangsung di infrastruktur sendiri tanpa vendor AI cloud, mempertahankan margin kotor hingga **84.1%** pada Lean Stage.
+*   **Inference Full Local**: Reflex Layer (`nex-ai-reflex`) dan Reasoning Layer (`nex-ai-protect`) berjalan lokal via Ollama di kluster/server kita. Seluruh inferensi berlangsung di infrastruktur sendiri tanpa vendor AI cloud, mempertahankan margin kotor hingga **63.1%** pada Lean Stage.
 *   **Caching Redis**: Respon verifikasi lisensi dan request payload identik di-cache penuh untuk menghemat pemanggilan model AI.
 
 ---
