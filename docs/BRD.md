@@ -225,10 +225,10 @@ Setiap simpul gateway saling berkomunikasi. Jika peretas menyerang Klien A dan I
 
 ### 5.1 Biaya Operasional Tetap (Fixed OpEx) Bulanan — HPP Murni
 *   **VPS Biznet GIO Core Hosting** (Gateway, Next.js Dashboard, SaaS Website, Postgres, Redis): **Rp420.000 / bulan**
-*   **Object Storage & Backup** (Cloudflare R2 / VPS Volume): **Rp160.000 / bulan**
+*   **Object Storage & Backup** (Cloudflare R2 Free Tier / Local Backup): **Rp0 / bulan**
 *   **AI Inference** (NEX-AI via Ollama — lokal on-premise, zero API subscription): **Rp0 / bulan**
-*   **Domain & SSL Komersial** (nexus-cyber.id + wildcard SSL): **Rp80.000 / bulan** *(amortisasi tahunan)*
-*   **Total Fixed OpEx (HPP)**: **Rp1.040.000 / bulan**
+*   **Domain & SSL Komersial** (nexus-cyber.id + wildcard SSL): **Rp20.000 / bulan** *(amortisasi domain .id tahunan, SSL gratis)*
+*   **Total Fixed OpEx (HPP)**: **Rp440.000 / bulan**
 
 ### 5.2 Simulasi Pendapatan & Profitabilitas (Target Awal: 10 Klien Swasta)
 
@@ -247,46 +247,46 @@ Asumsi 10 perusahaan swasta terdistribusi realistis: 1 Free (Trial), 4 Basic, 3 
 
 | Tier | Biaya Hosting/Klien | Margin Kotor |
 | :--- | :--- | :--- |
-| Basic & Pro (Shared Nginx) | Rp40.000 / klien | Rp9.000 - Rp109.000 |
-| Pro+ (Medium Container) | Rp80.000 / klien | Rp369.000 |
-| Ultrasafe (Dedicated) | Rp200.000 / klien | Rp1.299.000 |
+| Basic & Pro (Shared Nginx) | Rp10.000 / klien | Rp39.000 - Rp139.000 |
+| Pro+ (Medium Container) | Rp10.000 / klien | Rp439.000 |
+| Ultrasafe (Dedicated) | Rp10.000 / klien | Rp1.489.000 |
 
-*   **Total Biaya Variabel**: (8 * Rp40.000) + Rp80.000 + Rp200.000 = **Rp600.000 / bulan**
+*   **Total Biaya Variabel**: (8 * Rp10.000) + Rp10.000 + Rp10.000 = **Rp100.000 / bulan**
 
 #### Skenario A: Lean Stage (VPS Biznet GIO Downscale, NEX-AI Lokal)
-*   **Fixed OpEx (HPP)**: **Rp240.000 / bulan** *(Object Storage minimal, VPS downscale)*
-*   **Total Pengeluaran**: Rp240.000 + Rp600.000 = **Rp840.000 / bulan**
-*   **Profit Bersih**: Rp2.591.000 - Rp840.000 = **+Rp1.751.000 / bulan**
-*   **Margin Operasional**: **67.6%**
+*   **Fixed OpEx (HPP)**: **Rp310.000 / bulan** *(Object Storage minimal, VPS NEO Lite 2 Cores/8 GB RAM + Domain)*
+*   **Total Pengeluaran**: Rp310.000 + Rp100.000 = **Rp410.000 / bulan**
+*   **Profit Bersih**: Rp2.591.000 - Rp410.000 = **+Rp2.181.000 / bulan**
+*   **Margin Operasional**: **84.1%**
 
-#### Skenario B: Standard Stage (VPS Biznet GIO Full, Domain Aktif)
-*   **Fixed OpEx (HPP)**: **Rp1.040.000 / bulan**
-*   **Total Pengeluaran**: Rp1.040.000 + Rp600.000 = **Rp1.640.000 / bulan**
-*   **Profit Bersih**: Rp2.591.000 - Rp1.640.000 = **+Rp951.000 / bulan**
-*   **Margin Operasional**: **36.7%** *(tetap profit positif sejak klien ke-1)*
+#### Skenario B: Standard Stage (VPS Biznet GIO Full, Domain/SSL Aktif)
+*   **Fixed OpEx (HPP)**: **Rp440.000 / bulan**
+*   **Total Pengeluaran**: Rp440.000 + Rp100.000 = **Rp540.000 / bulan**
+*   **Profit Bersih**: Rp2.591.000 - Rp540.000 = **+Rp2.051.000 / bulan**
+*   **Margin Operasional**: **79.1%** *(tetap sangat profitabel sejak awal)*
 
 ### 5.3 Analisis Break-Even Point (BEP)
-*   **Lean Stage**: BEP tercapai dengan **1 Klien Pro** aktif saja. (Pendapatan Rp149.000 > Fixed OpEx Rp240.000 sudah nyaris impas, ditambah 1 klien Basic cukup melampaui BEP)
-*   **Standard Stage**: BEP tercapai dengan **3 Klien Pro** aktif (Rp447.000 > Rp440.000 pengeluaran gabungan).
-*   **Kesimpulan**: Model ini **tidak pernah defisit** bahkan di Standard Stage sekalipun — berbeda jauh dengan perhitungan sebelumnya yang memasukkan legalitas sebagai OpEx bulanan.
+*   **Lean Stage**: BEP tercapai dengan **3 Klien Pro** aktif (Rp 447.000 > Fixed OpEx Rp 310.000) atau **7 Klien Basic** (Rp 343.000 > Rp 310.000).
+*   **Standard Stage**: BEP tercapai dengan **3 Klien Pro** aktif (Rp 447.000 > Rp 440.000) atau **1 Klien Pro+** (Rp 449.000 > Rp 440.000).
+*   **Kesimpulan**: Model ini **sangat cepat mencapai impas** karena HPP bulanan server yang tetap (*fixed*) sangat terjangkau, dan biaya variabel per klien yang mendekati nol.
 
 ### 5.4 Strategi Operasional Minimum (Lean Stage — Klien < 5)
 Untuk meminimalkan risiko di tahap awal peluncuran:
-1.  **Downscale VPS ke Minimal** (Hemat ~Rp640.000/bln): Alokasi 0.05 vCPU / 128MB RAM per container, PostgreSQL shared gratis.
-2.  **NEX-AI Lokal Penuh**: Tidak ada biaya API inference. Kedua layer AI berjalan di GPU PC pribadi.
-3.  **Domain & Storage Minimal**: Gunakan subdomain gratis (misalnya via Cloudflare Tunnels) di masa trial awal untuk menghindari biaya SSL/domain.
-4.  **Fixed OpEx Minimum**: Turun menjadi **Rp0 / bulan** (bootstrapping penuh dari PC) hingga **Rp160.000 / bulan** (VPS object storage saja).
-5.  **BEP Minimum**: Dengan Lean Stage penuh, **1 klien Basic (Rp49.000/bln) sudah menghasilkan profit** setelah biaya variabel hosting-nya (Rp40.000).
+1.  **Gunakan VPS NEO Lite** (Hemat Rp130.000/bln): Beralih ke spesifikasi VPS 2 Cores / 8 GB RAM seharga Rp290.000 / bulan di awal peluncuran.
+2.  **NEX-AI Lokal Penuh**: Tidak ada biaya API inference. Kedua layer AI berjalan langsung di VPS lokal memanfaatkan Ollama.
+3.  **Domain & Storage Minimal**: Gunakan konfigurasi backup internal dan manfaatkan Cloudflare Tunnels gratis untuk eksposur SSL/domain di masa trial awal.
+4.  **Fixed OpEx Minimum**: Turun menjadi **Rp0 / bulan** (bootstrapping penuh dari PC pribadi) hingga **Rp310.000 / bulan** (sewa VPS minimal + domain).
+5.  **BEP Minimum**: Dengan Lean Stage penuh, **1 klien Basic (Rp49.000/bln) sudah menghasilkan profit operasional** setelah dipotong biaya variabel log/data transfer per klien yang sangat kecil (Rp10.000).
 
 ### 5.5 Opsi Bootstrapping Zero-Cost (PC High-End Lokal + Cloudflare Tunnels)
 Jika ingin memangkas seluruh pengeluaran hosting di tahap awal hingga **Rp0 (Laba Bersih 100%)**, kita dapat memanfaatkan infrastruktur PC High-End pribadi milik Founder sebagai pusat hosting lokal:
 1.  **Metode Deployment**: WAF Gateway, database, dashboard, dan tenant containers dijalankan secara lokal di PC pribadi menggunakan Docker.
 2.  **Expose Publik (Cloudflare Tunnels)**: Menggunakan program `cloudflared` untuk memetakan port lokal ke domain publik secara gratis. Metode ini melewati CGNAT (tidak perlu IP publik statis dari provider internet) dan sangat aman karena menyembunyikan alamat IP rumah di balik jaringan edge Cloudflare.
-3.  **Full Local NEX-AI (Kedua Layer via Ollama)**: Reflex Layer menggunakan model `nex-ai-reflex` dan Reasoning Layer menggunakan model `nex-ai-protect`, keduanya dijalankan lokal via Ollama memanfaatkan GPU pribadi (NVIDIA VRAM). Tidak ada ketergantungan pada provider AI cloud. Konfigurasi dilakukan melalui environment variable: `NEX_AI_ENDPOINT=http://localhost:11434/api/chat`, `NEX_AI_MODEL_REFLEX=nex-ai-reflex`, `NEX_AI_MODEL_REASONING=nex-ai-protect`.
+3.  **Full Local NEX-AI (Kedua Layer via Ollama)**: Reflex Layer menggunakan model `nex-ai-reflex` and Reasoning Layer menggunakan model `nex-ai-protect`, keduanya dijalankan lokal via Ollama memanfaatkan GPU pribadi (NVIDIA VRAM). Tidak ada ketergantungan pada provider AI cloud. Konfigurasi dilakukan melalui environment variable: `NEX_AI_ENDPOINT=http://localhost:11434/api/chat`, `NEX_AI_MODEL_REFLEX=nex-ai-reflex`, `NEX_AI_MODEL_REASONING=nex-ai-protect`.
 4.  **Kelebihan & Kekurangan**:
     *   *Kelebihan*: Modal running cost murni Rp0 (hanya menggunakan listrik rumah & internet yang sudah ada). Margin kotor per klien adalah 100%. Latensi Reflex Layer justru lebih rendah (tidak ada network round trip ke cloud API). Cocok untuk tahap *Alpha/Beta Testing* bersama 1-3 klien awal.
     *   *Kekurangan*: Keandalan sistem (*uptime*) bergantung pada stabilitas listrik rumah dan koneksi internet ISP rumah. Kecepatan upload internet rumah yang asimetris juga membatasi skalabilitas volume trafik besar. Jika salah satu klien terkena DDoS besar, bandwidth internet rumah akan tersaturasi.
-5.  **Rencana Transisi**: Gunakan opsi PC High-End untuk melayani 1-3 klien pilot (uji coba gratis/kerabat). Begitu mendapatkan klien berbayar ke-4, segera migrasikan seluruh database dan container ke model **VPS Biznet GIO Lean Stage (Rp240.000 / bulan)** -- NEX-AI tetap berjalan lokal, VPS hanya untuk hosting WAF Gateway dan database.
+5.  **Rencana Transisi**: Gunakan opsi PC High-End untuk melayani 1-3 klien pilot (uji coba gratis/kerabat). Begitu mendapatkan klien berbayar ke-4, segera migrasikan seluruh database dan container ke model **VPS Biznet GIO Lean Stage (Rp310.000 / bulan)** -- NEX-AI tetap berjalan lokal, VPS hanya untuk hosting WAF Gateway dan database.untuk hosting WAF Gateway dan database.
 
 ---
 
@@ -377,8 +377,8 @@ Asumsi: Dana investasi Rp25.000.000 digunakan selama 12 bulan untuk mencapai 100
 *   **Total Pendapatan Bulanan saat Skala 100 Klien**:
     *(60 * Rp149.000) + (30 * Rp449.000) + (10 * Rp1.499.000) = **Rp36.410.000 / bulan***
 *   **Total Pengeluaran Bulanan (Standard Stage)**:
-    *Rp3.700.000 (OpEx) + Rp(60*40.000 + 30*80.000 + 10*200.000) = Rp3.700.000 + Rp6.800.000 = **Rp10.500.000 / bulan***
-*   **Profit Bersih Bulanan saat Skala 100 Klien**: **+Rp25.910.000 / bulan** (Margin 71.2%)
+    *Rp3.000.000 (OpEx: Kluster 3 VPS Biznet GIO + Object Storage + Admin Support) + Rp(100 * Rp10.000 biaya variabel) = Rp3.000.000 + Rp1.000.000 = **Rp4.000.000 / bulan***
+*   **Profit Bersih Bulanan saat Skala 100 Klien**: **+Rp32.410.000 / bulan** (Margin **89.0%**)
 *   **Payback Period Investasi**: Dana Rp25.000.000 kembali dalam waktu **< 1 bulan** setelah skala 100 klien tercapai.
 
 ---
