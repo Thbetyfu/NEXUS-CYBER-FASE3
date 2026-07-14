@@ -33,26 +33,21 @@ def ensure_prerequisites():
 
 def ensure_llama_cpp():
     if not LLAMA_CPP_DIR.exists():
-        run(["git", "clone", "https://github.com/ggerganov/llama.cpp.git", str(LLAMA_CPP_DIR)])
+        run(["git", "clone", "--depth", "1", "https://github.com/ggerganov/llama.cpp.git", str(LLAMA_CPP_DIR)])
 
     build_dir = LLAMA_CPP_DIR / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
 
-    if sys.platform.startswith("win"):
-        run(
-            [
-                "cmake",
-                "-S",
-                str(LLAMA_CPP_DIR),
-                "-B",
-                str(build_dir),
-                "-DGGML_CUDA=ON",
-            ]
-        )
-        run(["cmake", "--build", str(build_dir), "--config", "Release"])
+    use_cuda = shutil.which("nvcc") is not None
+    cmake_args = ["cmake", "-S", str(LLAMA_CPP_DIR), "-B", str(build_dir)]
+    if use_cuda:
+        print("[NEX-AI] nvcc ditemukan. Mengompilasi llama.cpp dengan akselerasi GPU (CUDA)...")
+        cmake_args.append("-DGGML_CUDA=ON")
     else:
-        run(["cmake", "-S", str(LLAMA_CPP_DIR), "-B", str(build_dir), "-DGGML_CUDA=ON"])
-        run(["cmake", "--build", str(build_dir), "--config", "Release"])
+        print("[NEX-AI] nvcc tidak ditemukan. Mengompilasi llama.cpp menggunakan mode CPU...")
+
+    run(cmake_args)
+    run(["cmake", "--build", str(build_dir), "--config", "Release"])
 
 
 def find_quantize_binary():

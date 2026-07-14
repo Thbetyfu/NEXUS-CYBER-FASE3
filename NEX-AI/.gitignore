@@ -1,0 +1,28 @@
+# Model files (too large for GitHub)
+*.gguf
+*.bin
+*.pt
+*.safetensors
+*.pth
+
+# Checkpoint archives (too large for GitHub - use DVC or external storage)
+nex_ai_checkpoints.zip
+checkpoints/
+build/
+
+# llama.cpp source (clone separately)
+llama.cpp/
+llama_cpp.zip
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Training artifacts
+wandb/
+runs/
+logs/
