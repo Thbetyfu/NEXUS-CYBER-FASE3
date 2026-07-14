@@ -95,7 +95,7 @@ services:
   # Website Portofolio yang akan dijaga oleh Nexus
   portfolio:
     build:
-      context: ./Portfolio-website
+      context: ../Portfolio-website
       dockerfile: Dockerfile
     container_name: target_portfolio
     # Kita TIDAK membuka port portfolio ke publik (Hanya internal Docker)

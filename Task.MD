@@ -1,9 +1,10 @@
-1. dibuat menjadi sesuai uji coba dimana  saya ingin di buat menjadi sesutu website uji ketahanan, jadi dimana website ini akan di deploy lalu Nexus cyber harus bisa mempertahankan website portofolio ini dari serangan cyber, sehingga kekuatan dari nexus cyber ini benar terbukti tetapi belum tau apa saja rencana yang harus di lakukan, dan saya ingin di website portofolionya di tambahkan untuk input gambar, di bagian paling bawah, "tambahkan foto foto kalian" coba pikirkan rencananya, bukti sudah berhasilnya adalah nanti akanada pasword disitu, lalu ketika masuk menggunakan pasword itu maka bisa mendapatkan link dimana link beruba hadiah beruba uang , linknya akan berupa shope kaget (tapi itu nanti akan di pikirkan), jadi yang butuh dikejrakna adlaha:
-
-   1. set pasword
-   2. set arsitektur dan user flownya
+1. dibuat menjadi sesuai uji coba dimana saya ingin di buat menjadi sesutu website uji ketahanan, jadi dimana website ini akan di deploy lalu Nexus cyber harus bisa mempertahankan website portofolio ini dari serangan cyber, sehingga kekuatan dari nexus cyber ini benar terbukti tetapi belum tau apa saja rencana yang harus di lakukan, dan saya ingin di website portofolionya di tambahkan untuk input gambar, di bagian paling bawah, "tambahkan foto foto kalian" coba pikirkan rencananya, bukti sudah berhasilnya adalah nanti akanada pasword disitu, lalu ketika masuk menggunakan pasword itu maka bisa mendapatkan link dimana link beruba hadiah beruba uang , linknya akan berupa shope kaget (tapi itu nanti akan di pikirkan), jadi yang butuh dikejrakna adlaha:
+   - `[x]` set pasword (REWARD_PASSWORD=NexusAccessSecure2026!)
+   - `[x]` set arsitektur dan user flownya (WAF Proxy -> Target Portfolio -> AVSE Sanitization + Vault Bruteforce protection + SOC Dashboard)
 2. apakah nexus cyber ini sudah benar benar bisa di deploy?
+   - `[x]` Ya, sudah diaudit dan diselaraskan pada docker-compose.yml (TARGET_BACKEND=http://portfolio:3002) dan siap dideploy di VPS / Railway (menggunakan external LLM API).
 3. performa CPU dan RAM butuh berapa? apakah sudah optimal?
+   - `[x]` Ya, profil performa didokumentasikan di docs/PERFORMANCE_ESTIMATION.md. Gateway sangat ringan (15-30MB RAM), LLM lokal membutuhkan minimal 4GB-8GB RAM (jika lokal), disarankan cloud LLM API untuk PaaS/Railway.
 
 ---
 
