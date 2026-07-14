@@ -26,12 +26,20 @@ func NewRedisClient() *RedisClientWrapper {
 
 	// Lakukan probe cepat tanpa membuat pool dulu, agar tidak ada goroutine
 	// reconnect yang menggantung di latar belakang saat Redis memang tidak aktif.
-	probeClient := redis.NewClient(&redis.Options{
-		Addr:        redisURL,
-		DialTimeout: 500 * time.Millisecond,
-		ReadTimeout: 500 * time.Millisecond,
-		PoolSize:    1,
-	})
+	// Coba parse sebagai URL penuh (misalnya redis://user:pass@host:port)
+	opt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		// Fallback jika berupa format host:port biasa
+		opt = &redis.Options{
+			Addr: redisURL,
+		}
+	}
+
+	opt.DialTimeout = 500 * time.Millisecond
+	opt.ReadTimeout = 500 * time.Millisecond
+	opt.PoolSize = 1
+
+	probeClient := redis.NewClient(opt)
 
 	var pingErr error
 	for i := 1; i <= 5; i++ {
@@ -53,19 +61,22 @@ func NewRedisClient() *RedisClientWrapper {
 		return &RedisClientWrapper{Enabled: false}
 	}
 
-	// Redis aktif — baru buat pool koneksi penuh.
-	fullClient := redis.NewClient(&redis.Options{
-		Addr:         redisURL,
-		Password:     "",
-		DB:           0,
-		PoolSize:     100,
-		MinIdleConns: 5,
-		DialTimeout:  300 * time.Millisecond,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
-	})
+	// Redis aktif — buat pool koneksi penuh dengan opsi yang di-parse.
+	fullOpt, err := redis.ParseURL(redisURL)
+	if err != nil {
+		fullOpt = &redis.Options{
+			Addr: redisURL,
+		}
+	}
+	fullOpt.PoolSize = 100
+	fullOpt.MinIdleConns = 5
+	fullOpt.DialTimeout = 300 * time.Millisecond
+	fullOpt.ReadTimeout = 1 * time.Second
+	fullOpt.WriteTimeout = 1 * time.Second
 
-	log.Printf("[MTD-REDIS] CONNECTED to Distributed Cache: %s. Using %d connection pool.", redisURL, 100)
+	fullClient := redis.NewClient(fullOpt)
+
+	log.Printf("[MTD-REDIS] CONNECTED to Distributed Cache: %s. Using 100 connection pool.", redisURL)
 	return &RedisClientWrapper{
 		Client:  fullClient,
 		Enabled: true,
