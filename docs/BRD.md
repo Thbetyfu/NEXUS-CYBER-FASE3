@@ -37,7 +37,7 @@ Sejak 2022, BSSN mencatat ribuan situs web pemerintah dan swasta di Indonesia di
 **Nexus Cyber hadir untuk menjawab semua ini**: proteksi AI otonom yang dipasang hanya dengan mengarahkan DNS CNAME — **tanpa mengubah satu baris kode pun**, tanpa biaya enterprise, dan aktif dalam hitungan menit.
 
 ### 1.2 Deskripsi Produk
-**Nexus Cyber** adalah platform WAF & SOC Command Center otonom berbasis kecerdasan buatan dua lapis (*Dual-Brain AI Ensemble*) dan teknologi pertahanan aktif *Moving Target Defense* (MTD). Dengan menggabungkan pemblokiran instan sub-milidetik, perlindungan kode polimorfik (PACS), dan pemulihan visual otomatis (*Autonomous Self-Repair*), Nexus Cyber menawarkan perlindungan setara kelas *Enterprise* dengan biaya infrastruktur yang sangat rendah, dikemas sebagai platform *Multi-Tenant SaaS* siap pakai yang dideploy secara otomatis di **Railway**.
+**Nexus Cyber** adalah platform WAF & SOC Command Center otonom berbasis kecerdasan buatan dua lapis (*Dual-Brain AI Ensemble*) dan teknologi pertahanan aktif *Moving Target Defense* (MTD). Dengan menggabungkan pemblokiran instan sub-milidetik, perlindungan kode polimorfik (PACS), dan pemulihan visual otomatis (*Autonomous Self-Repair*), Nexus Cyber menawarkan perlindungan setara kelas *Enterprise* dengan biaya infrastruktur yang sangat rendah, dikemas sebagai platform *Multi-Tenant SaaS* siap pakai yang dideploy di **VPS Mandiri Biznet GIO**.
 
 ### 1.3 Fitur Kunci Produk
 *   **Dual-Brain AI Shield**: Reflex Layer (penyaringan cepat sub-50ms menggunakan regex & small model lokal) untuk pemblokiran instan, dipadu dengan Reasoning Layer (analisis forensik mendalam niat peretas secara asinkron).
@@ -113,7 +113,7 @@ Nexus Cyber menggunakan pendekatan model bisnis ganda (*Dual-Engine Business Mod
 Segmen swasta beroperasi dengan model **Software as a Service (SaaS)** on-demand mandiri.
 *   **Siklus Pembayaran**: Bulanan atau Tahunan (dengan diskon 15%).
 *   **Metode Pembayaran**: Otomatis melalui Payment Gateway (Midtrans: QRIS, E-Wallet, Kartu Kredit, Transfer Bank Virtual Account).
-*   **Onboarding**: 100% *self-service* dan instan via otomatisasi skrip `provisioner.sh` di Railway dalam <10 detik setelah pembayaran terverifikasi.
+*   **Onboarding**: 100% *self-service* dan instan via otomatisasi skrip `provisioner.sh` di VPS dalam <10 detik setelah pembayaran terverifikasi.
 
 #### Paket Berlangganan Swasta (Tiered Subscription)
 1.  **Free (Uji Coba / Trial)**
@@ -135,7 +135,7 @@ Segmen swasta beroperasi dengan model **Software as a Service (SaaS)** on-demand
 5.  **Ultrasafe (Maximum Isolation)**
     *   **Harga:** Rp1.499.000 / bulan.
     *   **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 10 TB / bulan (Setara ~5.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-    *   **Fitur:** Domain tidak terbatas, dedicated container provisioning di Railway, Full eBPF Kernel Drops (XDP_DROP), MTD Port Shuffling (rotasi 1-menit), custom forensic AI audit logs, SLA Uptime 99,99%.
+    *   **Fitur:** Domain tidak terbatas, dedicated container provisioning di VPS, Full eBPF Kernel Drops (XDP_DROP), MTD Port Shuffling (rotasi 1-menit), custom forensic AI audit logs, SLA Uptime 99,99%.
 
 ---
 
@@ -172,8 +172,8 @@ Biaya variabel langsung per kontainer tenant tetap terjaga rendah berkat efisien
 
 #### A. Klien Swasta (Basic & Pro) & GovEdu (Basic, Pro, Institusi)
 *   **Rata-rata Pendapatan per Klien**: Rp19.000 s.d. Rp149.000 / bulan.
-*   **Biaya Variabel Hosting Langsung (Railway Shared Node)**:
-    *   Railway App Container (0.05 vCPU & 32MB RAM shared): Rp24.000 / bulan
+*   **Biaya Variabel Hosting Langsung (VPS Shared Node)**:
+    *   VPS Shared Container (0.05 vCPU & 32MB RAM shared): Rp24.000 / bulan
     *   Log Storage & Database Write Costs: Rp16.000 / bulan
     *   **Total Biaya Langsung**: Rp40.000 / bulan per tenant.
 *   **Margin Analisis**:
@@ -184,7 +184,7 @@ Biaya variabel langsung per kontainer tenant tetap terjaga rendah berkat efisien
 #### B. Klien Swasta (Pro+) & GovEdu (Volume Dinas)
 *   **Rata-rata Pendapatan**: Rp449.000 (Pro+) s.d. Rp990.000 (GovEdu Volume) / bulan.
 *   **Biaya Variabel Hosting Langsung**:
-    *   Railway Dedicated Container (0.1 vCPU & 128MB RAM): Rp48.000 / bulan
+    *   VPS Dedicated Container (0.1 vCPU & 128MB RAM): Rp48.000 / bulan
     *   Shared Log Database & Storage: Rp32.000 / bulan
     *   **Total Biaya Langsung**: Rp80.000 / bulan.
 *   **Margin Analisis**:
@@ -193,8 +193,8 @@ Biaya variabel langsung per kontainer tenant tetap terjaga rendah berkat efisien
 
 #### C. Klien Swasta Paket Ultrasafe
 *   **Pendapatan per Klien**: Rp1.499.000 / bulan.
-*   **Biaya Variabel Hosting Langsung (Railway Dedicated High-Performance)**:
-    *   Railway Dedicated Container (0.25 vCPU & 256MB RAM): Rp160.000 / bulan
+*   **Biaya Variabel Hosting Langsung (VPS Dedicated High-Performance)**:
+    *   VPS Dedicated Container (0.25 vCPU & 256MB RAM): Rp160.000 / bulan
     *   High-Performance Log Storage & DB Write Costs: Rp40.000 / bulan
     *   **Total Biaya Langsung**: Rp200.000 / bulan.
 *   **Margin Kotor**: **Rp1.299.000 (86.6%)**.
@@ -207,7 +207,7 @@ Untuk mengakuisisi **10 Perusahaan Swasta** pertama secara cepat dengan margin k
 
 ### 4.1 Zero-Touch Onboarding & Self-Service Provisioning
 *   Klien melakukan registrasi, memasukkan nama domain, dan membayar secara otomatis menggunakan QRIS/E-Wallet pada portal SaaS.
-*   Next.js SaaS secara instan memanggil webhook `/api/webhook/payment` pada WAF Gateway untuk memicu skrip `provisioner.sh` di Railway.
+*   Next.js SaaS secara instan memanggil webhook `/api/webhook/payment` pada WAF Gateway untuk memicu skrip `provisioner.sh` di VPS.
 *   Kontainer NGINX + WAF terisolasi klien langsung aktif dalam waktu < 10 detik. Klien hanya perlu mengarahkan DNS CNAME mereka. Proses ini 100% otomatis tanpa perlu konsultasi IT manual, meniadakan Customer Acquisition Cost (CAC) teknis.
 
 ### 4.2 Strategi Penjualan "Buktikan Keandalan" (Active Proof-of-Work)
@@ -224,8 +224,8 @@ Setiap simpul gateway saling berkomunikasi. Jika peretas menyerang Klien A dan I
 > **Catatan Metodologi**: Struktur biaya di bawah hanya mencakup **HPP murni** (Harga Pokok Produksi) — yaitu biaya yang secara langsung diperlukan agar sistem bisa beroperasi dan melayani klien. Biaya legalitas (ISO 27001, MoU BSSN, dll.) dikategorikan sebagai **investasi bisnis satu kali** dan dibahas di Seksi 7 (Use of Funds), bukan sebagai recurring monthly OpEx.
 
 ### 5.1 Biaya Operasional Tetap (Fixed OpEx) Bulanan — HPP Murni
-*   **Railway Core Hosting** (Gateway, Next.js Dashboard, SaaS Website, Postgres, Redis): **Rp800.000 / bulan**
-*   **Object Storage & Backup** (Railway Volume / Cloudflare R2): **Rp160.000 / bulan**
+*   **VPS Biznet GIO Core Hosting** (Gateway, Next.js Dashboard, SaaS Website, Postgres, Redis): **Rp420.000 / bulan**
+*   **Object Storage & Backup** (Cloudflare R2 / VPS Volume): **Rp160.000 / bulan**
 *   **AI Inference** (NEX-AI via Ollama — lokal on-premise, zero API subscription): **Rp0 / bulan**
 *   **Domain & SSL Komersial** (nexus-cyber.id + wildcard SSL): **Rp80.000 / bulan** *(amortisasi tahunan)*
 *   **Total Fixed OpEx (HPP)**: **Rp1.040.000 / bulan**
@@ -243,7 +243,7 @@ Asumsi 10 perusahaan swasta terdistribusi realistis: 1 Free (Trial), 4 Basic, 3 
 | Ultrasafe | 1 | Rp1.499.000 | Rp1.499.000 |
 | **TOTAL PENDAPATAN** | **10** | | **Rp2.591.000 / bulan** |
 
-**Biaya Variabel per Klien (Railway Container Cost):**
+**Biaya Variabel per Klien (VPS Container Cost):**
 
 | Tier | Biaya Hosting/Klien | Margin Kotor |
 | :--- | :--- | :--- |
@@ -253,13 +253,13 @@ Asumsi 10 perusahaan swasta terdistribusi realistis: 1 Free (Trial), 4 Basic, 3 
 
 *   **Total Biaya Variabel**: (8 * Rp40.000) + Rp80.000 + Rp200.000 = **Rp600.000 / bulan**
 
-#### Skenario A: Lean Stage (Railway Downscale, NEX-AI Lokal)
-*   **Fixed OpEx (HPP)**: **Rp240.000 / bulan** *(Object Storage minimal, Railway downscale)*
+#### Skenario A: Lean Stage (VPS Biznet GIO Downscale, NEX-AI Lokal)
+*   **Fixed OpEx (HPP)**: **Rp240.000 / bulan** *(Object Storage minimal, VPS downscale)*
 *   **Total Pengeluaran**: Rp240.000 + Rp600.000 = **Rp840.000 / bulan**
 *   **Profit Bersih**: Rp2.591.000 - Rp840.000 = **+Rp1.751.000 / bulan**
 *   **Margin Operasional**: **67.6%**
 
-#### Skenario B: Standard Stage (Railway Full, Domain Aktif)
+#### Skenario B: Standard Stage (VPS Biznet GIO Full, Domain Aktif)
 *   **Fixed OpEx (HPP)**: **Rp1.040.000 / bulan**
 *   **Total Pengeluaran**: Rp1.040.000 + Rp600.000 = **Rp1.640.000 / bulan**
 *   **Profit Bersih**: Rp2.591.000 - Rp1.640.000 = **+Rp951.000 / bulan**
@@ -272,10 +272,10 @@ Asumsi 10 perusahaan swasta terdistribusi realistis: 1 Free (Trial), 4 Basic, 3 
 
 ### 5.4 Strategi Operasional Minimum (Lean Stage — Klien < 5)
 Untuk meminimalkan risiko di tahap awal peluncuran:
-1.  **Downscale Railway ke Minimal** (Hemat ~Rp640.000/bln): Alokasi 0.05 vCPU / 128MB RAM per container, PostgreSQL shared gratis.
+1.  **Downscale VPS ke Minimal** (Hemat ~Rp640.000/bln): Alokasi 0.05 vCPU / 128MB RAM per container, PostgreSQL shared gratis.
 2.  **NEX-AI Lokal Penuh**: Tidak ada biaya API inference. Kedua layer AI berjalan di GPU PC pribadi.
-3.  **Domain & Storage Minimal**: Gunakan Railway domain gratis (.up.railway.app) di masa trial awal untuk menghindari biaya SSL/domain.
-4.  **Fixed OpEx Minimum**: Turun menjadi **Rp0 / bulan** (bootstrapping penuh dari PC) hingga **Rp160.000 / bulan** (Railway object storage saja).
+3.  **Domain & Storage Minimal**: Gunakan subdomain gratis (misalnya via Cloudflare Tunnels) di masa trial awal untuk menghindari biaya SSL/domain.
+4.  **Fixed OpEx Minimum**: Turun menjadi **Rp0 / bulan** (bootstrapping penuh dari PC) hingga **Rp160.000 / bulan** (VPS object storage saja).
 5.  **BEP Minimum**: Dengan Lean Stage penuh, **1 klien Basic (Rp49.000/bln) sudah menghasilkan profit** setelah biaya variabel hosting-nya (Rp40.000).
 
 ### 5.5 Opsi Bootstrapping Zero-Cost (PC High-End Lokal + Cloudflare Tunnels)
@@ -286,7 +286,7 @@ Jika ingin memangkas seluruh pengeluaran hosting di tahap awal hingga **Rp0 (Lab
 4.  **Kelebihan & Kekurangan**:
     *   *Kelebihan*: Modal running cost murni Rp0 (hanya menggunakan listrik rumah & internet yang sudah ada). Margin kotor per klien adalah 100%. Latensi Reflex Layer justru lebih rendah (tidak ada network round trip ke cloud API). Cocok untuk tahap *Alpha/Beta Testing* bersama 1-3 klien awal.
     *   *Kekurangan*: Keandalan sistem (*uptime*) bergantung pada stabilitas listrik rumah dan koneksi internet ISP rumah. Kecepatan upload internet rumah yang asimetris juga membatasi skalabilitas volume trafik besar. Jika salah satu klien terkena DDoS besar, bandwidth internet rumah akan tersaturasi.
-5.  **Rencana Transisi**: Gunakan opsi PC High-End untuk melayani 1-3 klien pilot (uji coba gratis/kerabat). Begitu mendapatkan klien berbayar ke-4, segera migrasikan seluruh database dan container ke model **Railway Lean Stage (Rp240.000 / bulan)** — NEX-AI tetap berjalan lokal, Railway hanya untuk hosting WAF Gateway dan database.
+5.  **Rencana Transisi**: Gunakan opsi PC High-End untuk melayani 1-3 klien pilot (uji coba gratis/kerabat). Begitu mendapatkan klien berbayar ke-4, segera migrasikan seluruh database dan container ke model **VPS Biznet GIO Lean Stage (Rp240.000 / bulan)** -- NEX-AI tetap berjalan lokal, VPS hanya untuk hosting WAF Gateway dan database.
 
 ---
 
@@ -365,7 +365,7 @@ Untuk mencapai target **100 klien aktif dalam 12 bulan pertama** dan meninggalka
 
 | Alokasi | Nominal | Persentase | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Infrastruktur Railway (Upgrade ke Standard Stage)** | Rp10.000.000 | 40% | Meningkatkan kapasitas Railway (RAM/CPU/Storage) dan menjamin uptime 99.9% untuk 100 klien, serta menyediakan reserved quota database Postgres/Redis. |
+| **Infrastruktur VPS Biznet GIO (Upgrade ke Standard Stage)** | Rp10.000.000 | 40% | Meningkatkan kapasitas VPS (RAM/CPU/Storage) dan menjamin uptime 99.9% untuk 100 klien, serta menyediakan reserved quota database Postgres/Redis. |
 | **Legalitas, Sertifikasi & Kemitraan** | Rp7.500.000 | 30% | Audit sertifikasi ISO 27001 (Rp5.000.000), pengurusan MoU BSSN (Rp1.500.000), dan biaya legalitas entitas perusahaan (Rp1.000.000). |
 | **Akuisisi Klien B2B & Pemasaran** | Rp7.500.000 | 30% | Biaya kemitraan demonstrasi teknis ke komunitas startup dan FinTech Indonesia, pembuatan materi penjualan profesional, dan pemeliharaan domain/SSL komersial selama 1 tahun. |
 | **TOTAL** | **Rp25.000.000** | **100%** | Modal kerja 12 bulan menuju 100 klien aktif. |
@@ -455,8 +455,8 @@ Visi jangka panjang Nexus Cyber adalah menjadi lapisan pertahanan siber standar 
 *   **Fokus**: Validasi produk, akuisisi testimoni awal, dan pengumpulan data trafik real-world.
 
 ### 10.2 Tahap 2: Lean Stage (Bulan 4-12, Klien 10-100)
-*   **Infrastruktur**: Migrasi ke Railway Core Cluster (Fixed OpEx Rp480.000-Rp800.000/bulan).
-*   **Kapasitas**: Melayani 100 klien di Node tunggal Railway dengan multi-tenant Docker isolation.
+*   **Infrastruktur**: Migrasi ke VPS Biznet GIO Core Cluster (Fixed OpEx Rp350.000-Rp420.000/bulan).
+*   **Kapasitas**: Melayani 100 klien di Node tunggal VPS dengan multi-tenant Docker isolation.
 *   **Fokus**: Mengaktifkan provisionig kontainer otonom via `provisioner.sh`, memperoleh sertifikasi ISO 27001, dan memperluas fungsionalitas dashboard SOC.
 
 ### 10.3 Tahap 3: Regional Scale (Bulan 12-24, Klien 100-1.000)
@@ -474,8 +474,8 @@ Visi jangka panjang Nexus Cyber adalah menjadi lapisan pertahanan siber standar 
 | Tahap | Rentang Waktu | Target Klien | Est. Pendapatan / Bulan | Infrastructure |
 | :--- | :--- | :--- | :--- | :--- |
 | **Bootstrapping** | Bln 1-3 | 1 - 10 | Rp0 - Rp2.600.000 | PC Lokal + Cloudflare Tunnels |
-| **Lean Stage** | Bln 4-12 | 10 - 100 | Rp2.600.000 - Rp36.400.000 | Railway Single Node |
-| **Regional Scale** | Thn 1-2 | 100 - 1.000 | Rp36.400.000 - Rp400.000.000 | Railway Multi-Region + Anycast CDN |
+| **Lean Stage** | Bln 4-12 | 10 - 100 | Rp2.600.000 - Rp36.400.000 | VPS Biznet GIO Single Node |
+| **Regional Scale** | Thn 1-2 | 100 - 1.000 | Rp36.400.000 - Rp400.000.000 | VPS Multi-Region + Anycast CDN |
 | **Enterprise Grid** | Thn 3-5 | 1.000+ | Rp400.000.000+ | Hybrid AWS/GCP + On-Premise PDN |
 
 ### 10.6 Strategi Keberlanjutan 10 Tahun & Defensive Moat (Barrier to Entry)

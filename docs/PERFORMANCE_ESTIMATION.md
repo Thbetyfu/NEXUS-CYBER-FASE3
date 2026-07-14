@@ -1,10 +1,10 @@
 # Estimasi Profil Performa Resource: Nexus Cyber WAF & AI
 
-Dokumen ini mendefinisikan estimasi profil performa CPU & RAM untuk modul gerbang pertahanan otonom (WAF Gateway) dan server kecerdasan buatan (LLM/Ollama) demi menjamin stabilitas deployment di lingkungan produksi (VPS / Cloud).
+Dokumen ini mendefinisikan estimasi profil performa CPU & RAM untuk modul gerbang pertahanan otonom (WAF Gateway) dan server kecerdasan buatan (LLM/Ollama) demi menjamin stabilitas deployment di lingkungan produksi (VPS Biznet GIO / Hetzner).
 
 ---
 
-## 📊 1. Profil Konsumsi Resource (Per Komponen)
+## 1. Profil Konsumsi Resource (Per Komponen)
 
 | Komponen | Bahasa / Stack | RAM (Idle) | RAM (Load Tinggi) | Karakteristik CPU |
 | :--- | :--- | :--- | :--- | :--- |
@@ -18,26 +18,44 @@ Dokumen ini mendefinisikan estimasi profil performa CPU & RAM untuk modul gerban
 
 ---
 
-## ⚙️ 2. Pilihan Skenario Server & Kebutuhan Biaya
+## 2. Skenario Deployment: Full Local AI (VPS Mandiri)
 
-### Skenario A: Full Local AI (VPS Mandiri - DigitalOcean / Hetzner)
-Menjalankan seluruh container (termasuk Ollama + model nex-ai Q4_K_M) secara lokal di satu server VPS.
-*   **Minimum Spek**: 2 Cores CPU, **4 GB RAM** (Sangat mepet, rawan OOM jika traffic ramai).
-*   **Rekomendasi Spek**: **4 Cores CPU, 8 GB RAM**, SSD storage minimum 25 GB.
-*   **Estimasi Biaya**: ~$15 - $24 / bulan.
-*   **Kelebihan**: Privasi data 100% lokal, tidak ada biaya API per token.
+Karena Nexus Cyber menggunakan arsitektur **Full Local AI** (Ollama + model `nex-ai` lokal tanpa API LLM eksternal), seluruh komponen termasuk inferensi AI dijalankan di satu server VPS mandiri.
 
-### Skenario B: Server Ringkas + Cloud LLM API (Railway / Cloud Run)
-Menyewa server PaaS (seperti Railway) untuk menjalankan WAF Gateway, Dashboard, Postgres, & Redis. Inferensi AI diarahkan secara eksternal menggunakan model API cloud (seperti OpenRouter / DeepSeek / Groq).
-*   **Minimum Spek**: **512 MB - 1 GB RAM** untuk Gateway & Dashboard (Sangat murah!).
-*   **Rekomendasi Spek**: 2 GB RAM (untuk semua layanan database & dashboard).
-*   **Estimasi Biaya**: ~$5 - $10 / bulan + biaya token LLM API yang sangat murah (misalnya DeepSeek v3 hanya $0.14 per 1 juta token).
-*   **Kelebihan**: Sangat hemat biaya server bulanan, performa respon super cepat karena dilayani infrastruktur API raksasa.
+### Spesifikasi VPS Rekomendasi
+
+| Parameter | Minimum | Rekomendasi |
+| :--- | :--- | :--- |
+| **CPU** | 2 Cores | **4 Cores** |
+| **RAM** | 4 GB (mepet, rawan OOM) | **8 GB** |
+| **Storage** | 25 GB SSD | **60 - 80 GB SSD** |
+| **OS** | Ubuntu 22.04+ / Debian 12+ | Ubuntu 24.04 LTS |
+| **Bandwidth** | Unmetered / 20 TB | Unmetered |
+
+### Estimasi Biaya Bulanan per Provider
+
+| Provider | Paket | Spesifikasi | Estimasi Biaya |
+| :--- | :--- | :--- | :--- |
+| **Biznet GIO (Rekomendasi)** | NEO Lite / NEO Virtual Compute | 4 Cores, 8 GB RAM, 60 GB SSD | **Rp350.000 - Rp420.000 / bulan** |
+| **IDCloudHost** | Cloud VPS | 4 Cores, 8 GB RAM, 80 GB SSD | **Rp280.000 - Rp320.000 / bulan** |
+| **Hetzner (Internasional)** | CPX31 (AMD) | 4 Cores, 8 GB RAM, 160 GB SSD | **Rp235.000 / bulan** |
+
+### Keunggulan VPS Mandiri vs PaaS
+
+| Parameter | VPS Mandiri (Biznet GIO) | PaaS (Railway) |
+| :--- | :--- | :--- |
+| **Biaya untuk 8 GB RAM** | Rp350.000 - Rp420.000 / bulan | ~Rp850.000 - Rp1.000.000 / bulan |
+| **eBPF/XDP Kernel Blocking** | **Didukung penuh** (root access) | Tidak didukung (sandbox) |
+| **Full Local AI (Ollama)** | **Didukung penuh** | Sangat mahal (RAM dihitung per GB) |
+| **Kontrol Infrastruktur** | Penuh (`docker compose up -d`) | Terbatas (UI dashboard) |
 
 ---
 
-## 🚀 3. Rekomendasi Deployment Produksi (Nexus Cyber)
-Untuk rilis awal, **Skenario B (Railway + External API)** sangat disarankan karena:
-1.  Menghindari crash Out-Of-Memory (OOM) pada VPS murah.
-2.  Proses inisialisasi dan scaling container di Railway jauh lebih fleksibel.
-3.  WAF Gateway tetap memberikan perlindungan maksimal dengan memblokir ancaman secara instan di level aplikasi menggunakan cache RAM lokal (O(1) local blacklist lookup) meskipun fitur kernel driver (eBPF) tidak aktif di PaaS.
+## 3. Rekomendasi Deployment Produksi (Nexus Cyber)
+
+Untuk deployment produksi, **VPS Mandiri Biznet GIO (4 Cores / 8 GB RAM)** sangat disarankan karena:
+1.  Mendukung fitur keamanan kernel (eBPF/XDP) secara penuh untuk pemblokiran IP di level driver.
+2.  Inferensi AI lokal berjalan stabil tanpa risiko Out-Of-Memory (OOM) dengan alokasi RAM yang lega.
+3.  Latency akses dari pengunjung Indonesia sangat rendah (~10-30ms) karena data center berada di Jakarta.
+4.  Deployment cukup dengan satu perintah `docker compose up -d --build` tanpa konfigurasi dashboard PaaS.
+5.  Biaya bulanan jauh lebih hemat dibandingkan PaaS untuk skenario Full Local AI.

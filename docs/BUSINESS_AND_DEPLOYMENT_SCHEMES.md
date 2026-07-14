@@ -11,7 +11,7 @@ Skema penawaran produk Nexus Cyber dibedakan secara tegas antara sektor **Pemeri
 | :--- | :--- | :--- |
 | **Model Bisnis** | Lisensi Per-Core CPU Tahunan (ditagih tahunan penuh di muka, mengikuti siklus APBD/APBN/BOS). | Langganan Bulanan/Tahunan (*Software as a Service - SaaS*) via Midtrans. |
 | **Pengadaan & Penjualan** | Melalui **e-Katalog LKPP** (Pengadaan Langsung < Rp200 juta) atau kontrak dinas volume. | *Self-service* mandiri, pembayaran instan QRIS/VA, auto-provisioning container dalam < 10 detik. |
-| **Lokasi Deployment** | Pusat Data Nasional (PDN), *On-Premise Private Cloud*, atau server lokal sekolah (Air-Gapped). | Multi-tenant Docker cluster di cloud komersial (Railway / AWS). |
+| **Lokasi Deployment** | Pusat Data Nasional (PDN), *On-Premise Private Cloud*, atau server lokal sekolah (Air-Gapped). | Multi-tenant Docker cluster di VPS Mandiri (Biznet GIO / Hetzner). |
 | **Cognitive Core (AI)** | **NEX-AI Lokal penuh** via Ollama (`nex-ai-protect` 3B Q4_K_M) dijalankan offline pada server lokal / GPU lokal. | **NEX-AI Lokal** via Ollama pada dedicated node untuk meminimalkan biaya running cost (API Cost = Rp0). |
 | **Threat Intelligence** | Jaringan Nasional (Blacklist IP lokal BSSN & data insiden siber kolektif terenkripsi). | Redis Pub/Sub realtime blacklist sync antarsimpul gateway (Collective Network Moat). |
 | **Kepatuhan Hukum** | PP No. 71/2019 (PSTE), UU PDP No. 27/2022, Audit Keuangan BPK. | UU PDP, POJK POJK No. 11/SEC/2022 (untuk FinTech). |
@@ -40,7 +40,7 @@ Instansi vital (seperti Pusat Data Nasional / PDN) memiliki jaringan terputus to
 
 ### 3.1 Model Bisnis (SaaS Multi-Tenant)
 Perusahaan swasta menggunakan biaya operasional (OPEX) bulanan untuk memangkas pengeluaran modal di awal.
-*   **Multi-Tenant Gateway**: WAF terdistribusi otonom. Klien mengarahkan rekaman DNS CNAME ke gerbang proxy Nexus Cyber di Railway.
+*   **Multi-Tenant Gateway**: WAF terdistribusi otonom. Klien mengarahkan rekaman DNS CNAME ke gerbang proxy Nexus Cyber di VPS Biznet GIO.
 *   **Paket Berlangganan Swasta**:
     *   *Basic*: Rp49.000/bln (Batas 1 Domain, 100 GB visitor data transfer, Reflex AI).
     *   *Pro*: Rp149.000/bln (Batas 3 Domain, 500 GB data transfer, Reflex AI + PACS + MTD 60m).
