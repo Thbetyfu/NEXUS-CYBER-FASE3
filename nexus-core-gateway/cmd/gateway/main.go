@@ -51,6 +51,10 @@ func main() {
 		HandleLicenseCLI(os.Args[1:])
 		return
 	}
+	if len(os.Args) > 1 && os.Args[1] == "audit" {
+		HandleAuditCLI(os.Args[1:])
+		return
+	}
 	fmt.Println("[NEXUS] NEXUS CYBER GATEWAY - ENTERPRISE PRODUCTION INITIALIZING...")
 
 	ctx, cancel := context.WithCancel(context.Background())

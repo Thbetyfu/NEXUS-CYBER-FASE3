@@ -48,6 +48,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
     { id: "ai-terminal", icon: Cpu, label: "AI Cortex" },
     { id: "system-status", icon: Terminal, label: "Terminal" },
     { id: "forensic-logs", icon: Activity, label: "Forensic" },
+    { id: "compliance-audit", icon: ShieldAlert, label: "Compliance" },
     { id: "license-manager", icon: ShieldCheck, label: "Licensing" },
     { id: "metrics", icon: Shield, label: "Metrics" },
   ];

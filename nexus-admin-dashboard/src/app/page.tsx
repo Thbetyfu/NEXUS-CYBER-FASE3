@@ -29,6 +29,7 @@ import Taskbar from '@/components/Taskbar';
 import BootSequence from '@/components/BootSequence';
 import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
 import LicenseManagerWidget from '@/components/LicenseManagerWidget';
+import ComplianceWidget from '@/components/ComplianceWidget';
 
 // Config
 import { API_BASE_URL } from '@/config';
@@ -1391,6 +1392,26 @@ const NCCDashboard = () => {
               onClose={() => toggleWindow("license-manager")}
             >
               <LicenseManagerWidget />
+            </WindowFrame>
+          )}
+
+          {/* Compliance Audit & BSSN Threat Intel Window */}
+          {openWindows.includes("compliance-audit") && (
+            <WindowFrame
+              key="compliance-audit"
+              id="compliance-audit"
+              title="BSSN Threat Intel & Sovereign Compliance Exporter"
+              icon={<ShieldAlert size={14} />}
+              initialX={300}
+              initialY={100}
+              width={840}
+              height={580}
+              zIndex={windowZIndices["compliance-audit"] || 21}
+              isActive={focusedWindow === "compliance-audit"}
+              onFocus={() => handleFocusWindow("compliance-audit")}
+              onClose={() => toggleWindow("compliance-audit")}
+            >
+              <ComplianceWidget />
             </WindowFrame>
           )}
         </AnimatePresence>
