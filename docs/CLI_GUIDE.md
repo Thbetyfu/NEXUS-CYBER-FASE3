@@ -18,6 +18,8 @@ Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarm
 | `/simulate-attack [high/low]` | Mensimulasikan serangan siber ke sistem. |
 | `@nexus [query]` | Melakukan query/tanya jawab konsultasi siber ke AI Reasoning. |
 | `clear` | Membersihkan layar terminal SOC Command CLI. |
+| `gateway license generate` | [Go Binary CLI] Membuat Kunci Lisensi Terenkripsi HMAC (5-Tier, CPU Cores, B2G PO). |
+| `gateway license verify` | [Go Binary CLI] Memverifikasi integritas & batas lisensi secara offline. |
 
 ## Audit & Pengujian
 
