@@ -44,6 +44,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
   }, []);
 
   const apps = [
+    { id: "wargame-sim", icon: ShieldAlert, label: "War Room" },
     { id: "threat-map", icon: Globe, label: "Threat Map" },
     { id: "ai-terminal", icon: Cpu, label: "AI Cortex" },
     { id: "system-status", icon: Terminal, label: "Terminal" },

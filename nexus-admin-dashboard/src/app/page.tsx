@@ -30,6 +30,7 @@ import BootSequence from '@/components/BootSequence';
 import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
 import LicenseManagerWidget from '@/components/LicenseManagerWidget';
 import ComplianceWidget from '@/components/ComplianceWidget';
+import WarGameWidget from '@/components/WarGameWidget';
 
 // Config
 import { API_BASE_URL } from '@/config';
@@ -1412,6 +1413,26 @@ const NCCDashboard = () => {
               onClose={() => toggleWindow("compliance-audit")}
             >
               <ComplianceWidget />
+            </WindowFrame>
+          )}
+
+          {/* Full War Room Live War Game Window */}
+          {openWindows.includes("wargame-sim") && (
+            <WindowFrame
+              key="wargame-sim"
+              id="wargame-sim"
+              title="War Room Live War Game Simulator"
+              icon={<ShieldAlert size={14} />}
+              initialX={250}
+              initialY={80}
+              width={860}
+              height={600}
+              zIndex={windowZIndices["wargame-sim"] || 22}
+              isActive={focusedWindow === "wargame-sim"}
+              onFocus={() => handleFocusWindow("wargame-sim")}
+              onClose={() => toggleWindow("wargame-sim")}
+            >
+              <WarGameWidget />
             </WindowFrame>
           )}
         </AnimatePresence>

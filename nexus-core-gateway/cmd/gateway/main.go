@@ -55,6 +55,10 @@ func main() {
 		HandleAuditCLI(os.Args[1:])
 		return
 	}
+	if len(os.Args) > 1 && (os.Args[1] == "sim" || os.Args[1] == "simulate") {
+		HandleSimCLI(os.Args[1:])
+		return
+	}
 	fmt.Println("[NEXUS] NEXUS CYBER GATEWAY - ENTERPRISE PRODUCTION INITIALIZING...")
 
 	ctx, cancel := context.WithCancel(context.Background())
