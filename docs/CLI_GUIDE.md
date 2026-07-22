@@ -22,6 +22,7 @@ Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarm
 | `gateway license verify` | [Go Binary CLI] Memverifikasi integritas & batas lisensi secara offline. |
 | `gateway audit export` | [Go Binary CLI] Menjana Laporan Audit Kepatuhan (ISO 27001, PCI-DSS, UU PDP) format Markdown/JSON. |
 | `gateway audit sync-bssn` | [Go Binary CLI] Sinkronisasi & injeksi memori feed ancaman siber kolektif BSSN/ID-CERT. |
+| `gateway sim` | [Go Binary CLI] Memicu simulasi perang siber live (DDoS, SQLi, Ransomware, Botnet) & auto-recovery. |
 
 ## Audit & Pengujian
 
