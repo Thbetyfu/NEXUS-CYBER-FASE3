@@ -100,37 +100,58 @@ Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 
 ---
 
-## 🚀 Cara Menjalankan (Quick Start)
+## 🚀 Cara Menjalankan (Quick Start & Deployment)
 
-### 1. Menyalakan Sistem
+Detail lengkap panduan penyebaran sistem dapat dibaca pada [📖 Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
 
-Gunakan script kendali terpadu di folder `scripts/`:
+### 💻 Opsi 1: Menyalakan di PC Lokal (Gratis / Demo)
+
+* **Windows PowerShell**:
+  ```powershell
+  .\scripts\deploy\local\deploy-local-pc.ps1
+  ```
+* **Linux / WSL / macOS**:
+  ```bash
+  bash scripts/deploy/local/deploy-local-pc.sh
+  ```
+* **Publikasi ke Internet Gratis (Cloudflare Tunnel)** — di terminal terpisah:
+  ```powershell
+  # Windows
+  .\scripts\tunnel\nexus-tunnel.ps1
+  # Linux / WSL
+  bash scripts/tunnel/nexus-tunnel.sh
+  ```
+
+---
+
+### ☁️ Opsi 2: Menyalakan di Cloud VPS (Biznet Gio / Hetzner / DigitalOcean)
+
+Jalankan perintah 1-klik di VPS Ubuntu 22.04 LTS Anda:
 
 ```bash
-./scripts/nexus-ignite.sh
+sudo bash scripts/deploy/vps/deploy-biznet-gio.sh
 ```
 
-### 2. Mematikan Sistem
+---
+
+### 🛑 Mematikan Sistem
 
 ```bash
-./scripts/nexus-kill.sh
+bash scripts/ops/nexus-kill.sh
 ```
 
-### 3. Melakukan Audit Keamanan & Pemulihan Mandiri
+---
+
+### 🧪 Melakukan Audit Keamanan & Pemulihan Mandiri
 
 Jalankan alat uji terpadu untuk memverifikasi komponen MTD:
 ```bash
-python scripts/test_mtd_defense.py
+python scripts/tests/test_mtd_shuffle.py
 ```
 
 Uji fitur pemulihan mandiri otonom (Self-Repair):
 ```bash
-python scripts/test_self_repair.py
-```
-
-Uji skenario simulasi krisis & penyelamatan:
-```bash
-python scripts/rescue_scenario_simulator.py
+python scripts/tests/test_self_repair.py
 ```
 
 ---

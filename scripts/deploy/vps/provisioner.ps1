@@ -72,6 +72,9 @@ if ($Action -eq "up") {
 
     Set-Content -Path "$TempDir\html\index.html" -Value $HtmlContent
 
+    # Ensure docker network exists
+    docker network create nexus-tenant-net 2>$null
+
     $ComposeContent = @"
 version: '3.8'
 services:
@@ -82,7 +85,13 @@ services:
       - "$Port:80"
     volumes:
       - ./html:/usr/share/nginx/html:ro
+    networks:
+      - nexus-tenant-net
     restart: always
+
+networks:
+  nexus-tenant-net:
+    external: true
 "@
 
     Set-Content -Path $ComposeFile -Value $ComposeContent

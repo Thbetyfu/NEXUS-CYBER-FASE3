@@ -125,7 +125,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "3000:3000"
+      - "3001:3000"  # Port 3001 publik -> Port 3000 internal Next.js (sesuai aturan port project)
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

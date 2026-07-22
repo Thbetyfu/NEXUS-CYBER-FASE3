@@ -29,3 +29,40 @@ Gunakan alur kerja ini ketika mengembangkan fitur baru (seperti modul AI, sistem
 1. **Clean Code & Dead Code Audit**: Hapus sisa variabel/fungsi/import sementara, pastikan tidak ada logika ganda (*duplicate code/DRY*).
 2. **Port & Resource Check**: Cek konektivitas port dan pastikan tidak ada port *development* yang menyimpang dari aturan (3001/3002). Pastikan semua resource handles ditutup (`defer Close()`).
 3. **Pembersihan & Dokumentasi**: Lakukan *cleanup* file sementara (*temporary files*) dan perbarui `docs/CAPABILITIES.md` atau `ROADMAP.md` jika fitur tersebut menandai selesainya sebuah tahap pengembangan besar.
+
+---
+
+### 🌐 Langkah 6: Deployment & Launch Workflow
+
+Jika sistem atau fitur baru siap disebarkan ke lingkungan produksi atau pengujian publik:
+
+#### A. Deployment PC Lokal (Opsi Gratis / Demo):
+1. **Windows**: Jalankan `.\scripts\deploy\local\deploy-local-pc.ps1`.
+2. **Linux / WSL / Mac**: Jalankan `bash scripts/deploy/local/deploy-local-pc.sh`.
+3. **Publikasi Gratis via Cloudflare Tunnel** (terminal terpisah):
+   ```bash
+   # Linux / WSL
+   bash scripts/tunnel/nexus-tunnel.sh
+   # Windows
+   .\scripts\tunnel\nexus-tunnel.ps1
+   ```
+
+#### B. Deployment Cloud VPS (Opsi Biznet Gio / Hetzner / DigitalOcean):
+1. SSH ke VPS Ubuntu 22.04 LTS Anda (`ssh root@<IP_VPS>`).
+2. Jalankan skrip otomatisasi 1-klik terpadu:
+   ```bash
+   sudo bash scripts/deploy/vps/deploy-biznet-gio.sh
+   ```
+3. Skrip akan otomatis mengonfigurasi Docker Engine, SWAP memory 2GB, UFW firewall, dan menyalakan seluruh sistem di port 3001 (Dashboard), 8080 (WAF Gateway), 9090 (Honeypot), dan 2222 (SSH Tarpit).
+
+#### C. Referensi Cepat Struktur Skrip:
+```
+scripts/
+├── deploy/
+│   ├── local/    ← deploy-local-pc.ps1 / .sh
+│   └── vps/      ← deploy-biznet-gio.sh, provisioner.sh / .ps1
+├── tunnel/       ← nexus-tunnel.ps1 / .sh (Cloudflare Tunnel)
+├── ops/          ← nexus-ignite.sh, nexus-kill.sh
+├── init/         ← setup.sh / .ps1 (scaffolding awal)
+└── tests/        ← test_*.py, nexus_system_audit.py
+```

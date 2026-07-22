@@ -72,6 +72,11 @@ func (dr *DynamicRouter) Lookup(host string) (string, bool) {
 		}
 	}
 
+	// Fallback ke cache RAM lokal jika Redis tidak memiliki entri terdaftar
+	if exists {
+		return entry.TargetURL, true
+	}
+
 	// 2b. Fallback Pencocokan Tepat ke PostgreSQL Database jika tidak ada di Redis (Tier 3)
 	if database.DB != nil {
 		var sub models.DomainSubscription

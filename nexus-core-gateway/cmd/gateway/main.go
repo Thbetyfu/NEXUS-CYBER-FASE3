@@ -37,7 +37,10 @@ func loadEnv() {
 		}
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) == 2 {
-			os.Setenv(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+			key := strings.TrimSpace(parts[0])
+			val := strings.TrimSpace(parts[1])
+			val = strings.Trim(val, `"'`)
+			os.Setenv(key, val)
 		}
 	}
 }
@@ -65,6 +68,7 @@ func main() {
 	}
 	licensing.InitLicenseVerifier(licenseDomain, licenseKey)
 	licensing.StartLicenseHandshake(1 * time.Hour)
+	proxy.StartGracePeriodTeardownWorker(ctx, 12*time.Hour)
 
 	// 1. Initialize Intelligence Components
 	filter := ai.NewReflexFilter()

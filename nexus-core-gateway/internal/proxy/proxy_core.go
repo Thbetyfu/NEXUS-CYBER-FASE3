@@ -83,9 +83,11 @@ func NewNexusProxy(
 
 	// Inisialisasi rute standard di tabel dinamis.
 	np.Router.AddRoute("localhost", target)
+	np.Router.AddRoute("127.0.0.1", target)
 	np.Router.AddRoute("ojk.localhost", target)
 	np.Router.AddRoute("kemenkeu.localhost", target)
 	np.Router.AddRoute("bi.localhost", target)
+	np.Router.AddRoute("*", target)
 	
 	// Jalankan sinkronisasi background antibodi imun.
 	np.StartImmunitySync()

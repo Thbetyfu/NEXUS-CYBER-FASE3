@@ -75,6 +75,9 @@ if [ "$ACTION" == "up" ]; then
 </html>
 EOF
 
+    # Ensure docker network exists
+    docker network create nexus-tenant-net 2>/dev/null || true
+
     # Create docker-compose.yml
     cat <<EOF > "$COMPOSE_FILE"
 version: '3.8'
@@ -86,7 +89,13 @@ services:
       - "$PORT:80"
     volumes:
       - ./html:/usr/share/nginx/html:ro
+    networks:
+      - nexus-tenant-net
     restart: always
+
+networks:
+  nexus-tenant-net:
+    external: true
 EOF
 
     # Start the container

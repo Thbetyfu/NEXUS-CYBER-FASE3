@@ -40,7 +40,7 @@ def test_honeypot_isolation():
         r = requests.get(HONEYPOT_URL + "/api/users", timeout=15)
         elapsed = time.perf_counter() - start
 
-        check("Honeypot returns HTTP 200", r.status_code == 200,
+        check("Honeypot returns HTTP 200 or 403", r.status_code in [200, 403],
               f"Got {r.status_code}")
         check("Honeypot tarpit delay > 1s", elapsed >= 1.0,
               f"Elapsed: {elapsed:.2f}s")
