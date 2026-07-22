@@ -138,15 +138,10 @@ func ObfuscateHTML(originalHTML string, domain string) string {
     </script>`, vSig, encodedHTML, vArr, keyArrayStr, vKey, vArr, delta, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
 
 	case 1:
-		// Template 1: Key reversed and split into two halves, merged and reversed at runtime
-		runes := []rune(key)
-		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-			runes[i], runes[j] = runes[j], runes[i]
-		}
-		reversedKey := string(runes)
-		mid := len(reversedKey) / 2
-		part1 := reversedKey[:mid]
-		part2 := reversedKey[mid:]
+		// Template 1: Key split into two halves and concatenated at runtime
+		mid := len(key) / 2
+		part1 := key[:mid]
+		part2 := key[mid:]
 
 		vSig := randomVarName(6)
 		vP1 := randomVarName(6)
@@ -164,7 +159,7 @@ func ObfuscateHTML(originalHTML string, domain string) string {
             const %s = "%s";
             const %s = "%s";
             try {
-                const %s = (%s + %s).split('').reverse().join('');
+                const %s = %s + %s;
                 const %s = atob(%s);
                 const %s = new Uint8Array(%s.length);
                 for (let %s = 0; %s < %s.length; %s++) {
@@ -180,7 +175,7 @@ func ObfuscateHTML(originalHTML string, domain string) string {
                 document.getElementById('pacs-loader').innerHTML = '<div style="color:#ef4444;">[FAIL] Cryptographic integrity verification failed.</div>';
             }
         })();
-    </script>`, vSig, encodedHTML, vP1, part1, vP2, part2, vKey, vP2, vP1, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
+    </script>`, vSig, encodedHTML, vP1, part1, vP2, part2, vKey, vP1, vP2, vBin, vSig, vByt, vBin, vIdx, vIdx, vBin, vIdx, vByt, vIdx, vBin, vIdx, vKey, vIdx, vKey, vDec, vByt, vDec)
 
 	default:
 		// Template 2: Key characters scattered in a random noise string at regular step intervals

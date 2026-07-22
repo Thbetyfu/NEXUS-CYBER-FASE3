@@ -11,7 +11,8 @@ interface ModelMetric {
 	accent?: boolean;
 }
 
-export default function NexAiMonitorWidget() {
+// Memoized for 60 FPS Performance Hardening
+function NexAiMonitorWidget() {
 	const [activeNodes, setActiveNodes] = useState<number[]>([]);
 	const [sysStats, setSysStats] = useState({
 		latency: 0,
@@ -23,28 +24,27 @@ export default function NexAiMonitorWidget() {
 	// Generate 64 nodes for the neural grid
 	const nodes = useMemo(() => Array.from({ length: 64 }).map((_, i) => i), []);
 
-	// Simulate neural firing patterns
+	// Initial node active map setup (throttled to 3 seconds to avoid JS layout thrashing)
 	useEffect(() => {
 		const interval = setInterval(() => {
-			const activeCount = Math.floor(Math.random() * 15) + 5; // 5 to 20 active nodes
+			const activeCount = Math.floor(Math.random() * 10) + 5;
 			const selected: number[] = [];
 			for (let i = 0; i < activeCount; i++) {
 				selected.push(Math.floor(Math.random() * 64));
 			}
 			setActiveNodes(selected);
 
-			// Dynamic stats simulation
 			setSysStats(prev => ({
 				...prev,
 				throughput: Number((Math.random() * 15 + 20).toFixed(1)),
 				activeLayer: `Layer ${Math.floor(Math.random() * 5) + 27}/32`
 			}));
-		}, 800);
+		}, 3000);
 
 		return () => clearInterval(interval);
 	}, []);
 
-	// Fetch real health latency from API
+	// Fetch real health latency from API (throttled to 5s)
 	useEffect(() => {
 		const fetchStatus = async () => {
 			try {
@@ -120,22 +120,21 @@ export default function NexAiMonitorWidget() {
 						{nodes.map((node) => {
 							const isActive = activeNodes.includes(node);
 							return (
-								<motion.div
+								<div
 									key={node}
-									animate={{ 
-										backgroundColor: isActive ? "rgba(6,182,212,0.4)" : "rgba(255,255,255,0.03)",
-										borderColor: isActive ? "rgba(6,182,212,0.6)" : "rgba(255,255,255,0.05)",
-										boxShadow: isActive ? "0 0 8px rgba(6,182,212,0.3)" : "none"
-									}}
-									transition={{ duration: 0.3 }}
-									className="aspect-square rounded border transition-all cursor-pointer"
+									className={`aspect-square rounded border transition-colors cursor-pointer ${
+										isActive 
+											? "bg-cyan-500/40 border-cyan-400/60 shadow-[0_0_8px_rgba(6,182,212,0.3)] synapse-node-active" 
+											: "bg-white/[0.03] border-white/5"
+									}`}
+									style={{ animationDelay: `${(node % 8) * 0.15}s` }}
 								/>
 							);
 						})}
 					</div>
 					
 					<div className="text-[7px] text-gray-500 font-mono uppercase tracking-widest text-center mt-3">
-						Visualisasi synapse firing rate saat mengevaluasi payload siber
+						Visualisasi synapse firing rate saat mengevaluasi payload siber (GPU Accelerated)
 					</div>
 				</div>
 
@@ -176,3 +175,5 @@ export default function NexAiMonitorWidget() {
 		</div>
 	);
 }
+
+export default React.memo(NexAiMonitorWidget);

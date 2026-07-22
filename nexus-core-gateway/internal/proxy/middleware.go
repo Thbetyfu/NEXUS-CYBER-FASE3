@@ -197,6 +197,18 @@ func BrowserIntegrityCheck(next http.Handler) http.Handler {
 	secret := getSessionSecret()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// [BYPASS LOCALHOST DASHBOARD]
+		// Pengunjung lokal pada localhost/127.0.0.1 (Admin SOC Dashboard) dibebaskan dari tantangan JS
+		// agar dasbor Command Center langsung terbuka secara instan tanpa mengalami challenge loop.
+		host := r.Host
+		if strings.Contains(host, ":") {
+			host = strings.Split(host, ":")[0]
+		}
+		if host == "localhost" || host == "127.0.0.1" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// [LAYER_0_PREFLIGHT_GUARD]
 		// Alasan Teknis (Why):
 		// Mengizinkan metode OPTIONS untuk bypass pemeriksaan integritas guna mendukung kelancaran komunikasi CORS

@@ -15,9 +15,9 @@ var INJECTION_PATTERNS = []string{
 	"system prompt",
 	"assistant:",
 	"<|im_start|>", "<|im_end|>", // Token penanda struktur khusus untuk Qwen/Alibaba Models
-	"<|begin_of_text|>", "<|end_of_text|>", // Token instruksi fundamental untuk Llama/Meta Models
-	"[INST]", "[/INST]", // Sintaks pemisah instruksi untuk model instruksi Llama
-	"<<SYS>>", "<</SYS>>", // Penanda sistem bawaan Llama
+	"<|begin_of_text|>", "<|end_of_text|>", // Token instruksi fundamental untuk NEX-AI/Meta Models
+	"[INST]", "[/INST]", // Sintaks pemisah instruksi untuk model LLM
+	"<<SYS>>", "<</SYS>>", // Penanda sistem bawaan LLM
 	"jailbreak", "DAN mode", // Teknik eksploitasi jailbreak umum
 	"pretend you are", "act as if", // Rekayasa sosial berbasis peran
 	"disregard all",

@@ -437,17 +437,19 @@ export default function AiTerminalWidget() {
 	}, []);
 
 	return (
-		<div className="bg-[#030507] border border-cyan-900/30 rounded-xl flex flex-col shadow-[0_0_15px_rgba(6,182,212,0.05)] overflow-hidden h-full relative">
-			<div className="bg-[#05080c] px-4 py-2 border-b border-cyan-900/30 flex items-center justify-between sticky top-0 z-10 shrink-0">
-				<h3 className="text-xs font-semibold text-cyan-500 uppercase tracking-widest flex items-center gap-2">
-					<TerminalIcon className="w-4 h-4" /> Nexus Core Terminal
-				</h3>
+		<div className="bg-[#030507] flex flex-col h-full w-full relative overflow-hidden">
+			{/* Top Status Bar (Integrasi Seamless Tanpa Title Duplikat) */}
+			<div className="bg-[#05080c]/80 px-3 py-1.5 border-b border-cyan-900/20 flex items-center justify-between sticky top-0 z-10 shrink-0 backdrop-blur-sm">
+				<div className="flex items-center gap-2 text-[10px] text-cyan-500/80 font-mono tracking-widest uppercase">
+					<TerminalIcon className="w-3.5 h-3.5 text-cyan-400" />
+					<span>TTY / DEVTMPFS / SYS_LOGS</span>
+				</div>
 				<div className="flex items-center gap-2">
-					{aiStatus.state === 'ONLINE' ? (
+					{aiStatus.state === 'ONLINE' || aiStatus.state === 'REFLEX_ACTIVE' ? (
 						<>
 							<span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
 							<span className="text-[10px] text-emerald-400 font-mono font-bold tracking-tighter">
-								{aiStatus.model}: ONLINE ({aiStatus.latency}ms)
+								{aiStatus.model}: ONLINE {aiStatus.state === 'REFLEX_ACTIVE' ? '(REFLEX_MODE)' : `(${aiStatus.latency}ms)`}
 							</span>
 						</>
 					) : aiStatus.state === 'INITIALIZING' ? (
@@ -467,7 +469,7 @@ export default function AiTerminalWidget() {
 				</div>
 			</div>
 			{/* Kontainer Xterm Mount */}
-			<div className="flex-1 p-2 bg-[#030507] overflow-hidden" ref={containerRef} style={{ minHeight: '300px' }} />
+			<div className="flex-1 p-2 bg-[#030507] overflow-hidden" ref={containerRef} style={{ minHeight: '250px' }} />
 		</div>
 	);
 }

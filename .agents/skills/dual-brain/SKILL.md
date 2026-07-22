@@ -1,17 +1,17 @@
 ---
 name: dual-brain
-description: Ensemble AI Architecture for Nexus Cyber (Qwen + Llama 3)
+description: Ensemble AI Architecture for Nexus Cyber (NEX-AI Reflex + NEX-AI Protect)
 ---
 
 # 🧠 Skill: Dual-Brain (Ensemble AI)
 
 ## Objective
-Implementasikan arsitektur Ensemble AI tertutup untuk filter trafik massal dan anomali dasar.
+Implementasikan arsitektur Ensemble AI kustom untuk filter trafik massal dan analisis anomali mendalam.
 
 ## Workflow
-1. **Reflex Layer (Qwen)**: Model skala kecil dan cepat untuk filtrasi real-time.
-2. **Reasoning Layer (Llama 3)**: Model penalaran kontekstual untuk anomali yang mencurigakan.
+1. **Reflex Layer (NEX-AI Reflex)**: Model skala kecil dan cepat (`nex-ai-reflex`) untuk filtrasi real-time sub-milidetik.
+2. **Reasoning Layer (NEX-AI Protect)**: Model penalaran kontekstual kustom (`nex-ai-protect`) untuk analisis ancaman terobfuskasi & zero-day.
 
 ## Constraints
-* Dilarang menggunakan model AI tunggal.
+* Dilarang menggunakan model AI tunggal / vendor cloud external.
 * Interaksi antar layer harus melalui protokol tertutup.

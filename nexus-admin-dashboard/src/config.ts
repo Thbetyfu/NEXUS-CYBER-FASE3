@@ -12,4 +12,4 @@ const IS_PROD = process.env.NODE_ENV === "production";
 // Mode 1 (Development): Mengarah ke localhost:8080 untuk kenyamanan debug lokal.
 // Mode 2 (Production): Mengarah ke IP/Domain publik Gateway melalui variabel lingkungan (NEXT_PUBLIC_API_URL),
 //                      atau menggunakan relative path ("") jika dasbor di-deploy di bawah domain yang sama (Nginx/Gateway Proxy).
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (IS_PROD ? "" : "http://localhost:8080");
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";

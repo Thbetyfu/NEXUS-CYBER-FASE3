@@ -21,7 +21,7 @@ Setiap perancangan logika analitik trafik WAJIB menggunakan arsitektur **Dual-Br
 ### Otak Kanan: NEX-AI Cognitive Core (Model Kustom Eksklusif)
 - **Nama Model di Ollama Registry**: `nex-ai-protect`
 - **Model Dasar (Base Model)**: `Qwen2.5-3B-Instruct` (open-source, Alibaba Cloud)
-- **Implementasi**: `internal/ai/reasoning_engine.go`, `internal/ai/llama.go`
+- **Implementasi**: `internal/ai/reasoning_engine.go`, `internal/ai/cognitive_core.go`
 - **Tugas**: Analisis forensik mendalam dan terstruktur terhadap trafik yang lolos dari Otak Kiri, termasuk deteksi zero-day bypass dan serangan terobfuskasi.
 - **Mode Eksekusi**: **Asinkron** (goroutine latar belakang, timeout 30 detik) agar tidak menambah latensi pada koneksi klien yang sah.
 - **Output**: JSON deterministik dengan skema `{status, threat_score, attack_type, reason}`.

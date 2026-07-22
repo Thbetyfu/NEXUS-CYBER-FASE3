@@ -24,8 +24,10 @@ services:
     container_name: nexus_postgres
     environment:
       POSTGRES_USER: nexus
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: nexus_cyber
+    env_file:
+      - production.env
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -65,7 +67,7 @@ services:
     cap_add:
       - NET_ADMIN
     env_file:
-      - .env
+      - production.env
     depends_on:
       redis:
         condition: service_healthy
@@ -86,7 +88,7 @@ services:
     environment:
       - NODE_ENV=production
     env_file:
-      - .env
+      - production.env
     depends_on:
       - gateway
     restart: always
@@ -105,9 +107,11 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=nexus_portfolio_app
-      - DB_PASSWORD=portfolio_secure_pass
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=nexus_cyber
-      - DB_ADMIN_DSN=postgres://nexus:password@postgres:5432/nexus_cyber?sslmode=disable
+      - DB_ADMIN_DSN=postgres://nexus:${POSTGRES_PASSWORD}@postgres:5432/nexus_cyber?sslmode=disable
+    env_file:
+      - production.env
     depends_on:
       postgres:
         condition: service_healthy

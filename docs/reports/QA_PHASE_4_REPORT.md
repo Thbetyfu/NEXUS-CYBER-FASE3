@@ -7,16 +7,16 @@
 
 ## 1. Dual-Brain Workflow Audit
 - **Reflex Layer (L1-Sync)**: Tetap memblokir serangan massal (SQLi/XSS standar) dengan latensi < 1ms.
-- **Reasoning Layer (L2-Async)**: Payload yang lolos dari L1 (seperti `SEL/**/ECT`) diteruskan ke Llama 3 secara asinkron. Ini memastikan **Zero-Latency Impact** pada trafik utama.
+- **Reasoning Layer (L2-Async)**: Payload yang lolos dari L1 (seperti `SEL/**/ECT`) diteruskan ke NEX-AI secara asinkron. Ini memastikan **Zero-Latency Impact** pada trafik utama.
 - **Result**: Ancaman yang sebelumnya lolos kini terdeteksi sebagai `MALICIOUS_DETECTED_REASONING` di log telemetri.
 
-## 2. Intent Analysis (Llama 3 Prompting)
+## 2. Intent Analysis (NEX-AI Prompting)
 - **Prompt Integrity**: Instruksi terbatas pada output 'MALICIOUS' atau 'LEGITIMATE' untuk efisiensi parsing.
-- **Context Awareness**: Llama 3 mampu memahami bahwa penggunaan komentar di tengah perintah SQL adalah teknik obfuscation, bukan trafik normal.
+- **Context Awareness**: NEX-AI mampu memahami bahwa penggunaan komentar di tengah perintah SQL adalah teknik obfuscation, bukan trafik normal.
 
 ## 3. Resilience & Fallback (ISO 27001)
 - **Ollama Timeout**: Sistem diset dengan timeout 5 detik untuk API AI.
-- **Fail-Open Policy**: Jika Reasoning Engine (Llama 3) mengalami timeout atau crash, sistem **TIDAK** memblokir trafik (High Availability). Ini mencegah False Positive masif jika infrastruktur AI terganggu.
+- **Fail-Open Policy**: Jika Reasoning Engine (NEX-AI) mengalami timeout atau crash, sistem **TIDAK** memblokir trafik (High Availability). Ini mencegah False Positive masif jika infrastruktur AI terganggu.
 - **Alerting**: Kegagalan AI dicatat di log sistem untuk audit manual.
 
 ## 4. Performance KPI

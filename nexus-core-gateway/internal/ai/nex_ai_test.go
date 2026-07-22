@@ -166,7 +166,7 @@ func TestCognitiveCore_OtakKanan_Adapter(t *testing.T) {
 	}`
 
 	// 1. Test Malicious conversion
-	resultMal, err := ParseLlamaResponse(maliciousRaw)
+	resultMal, err := ParseCognitiveResponse(maliciousRaw)
 	if err != nil {
 		t.Fatalf("Failed to parse malicious raw: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestCognitiveCore_OtakKanan_Adapter(t *testing.T) {
 	}
 
 	// 2. Test Benign conversion
-	resultBen, err := ParseLlamaResponse(benignRaw)
+	resultBen, err := ParseCognitiveResponse(benignRaw)
 	if err != nil {
 		t.Fatalf("Failed to parse benign raw: %v", err)
 	}
@@ -231,7 +231,7 @@ func TestSelfHealing_AutoVaccination(t *testing.T) {
 		"attack_type": "ZERO_DAY_BYPASS",
 		"reason": "Nested Base64 obfuscated SLEEP-based SQL injection detected via semantic analysis."
 	}`
-	result, err := ParseLlamaResponse(cognitiveOutput)
+	result, err := ParseCognitiveResponse(cognitiveOutput)
 	if err != nil {
 		t.Fatalf("Cognitive Core parse failed: %v", err)
 	}

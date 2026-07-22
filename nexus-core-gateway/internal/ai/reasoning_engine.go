@@ -13,21 +13,21 @@ import (
 // (misalnya berpindah dari satu runtime Ollama ke runtime lokal lain), kode inti di proxy_core.go tidak perlu
 // mengalami modifikasi sama sekali (ISO 25010 - Maintainability & Modularity).
 type ReasoningEngine struct {
-	client  *LlamaClient
+	client  *CognitiveCoreClient
 	Enabled bool
 }
 
 // NewReasoningEngine mengkonstruksi ReasoningEngine untuk model reasoning lokal aktif.
 func NewReasoningEngine() *ReasoningEngine {
 	return &ReasoningEngine{
-		client:  NewLlamaClient(""),
+		client:  NewCognitiveCoreClient(""),
 		Enabled: true,
 	}
 }
 
 // AnalyzeIntent adalah antarmuka utama yang dipanggil oleh proxy_core.go.
 // Menghasilkan analisis forensik terstruktur secara asinkron dari model AI tingkat tinggi.
-func (re *ReasoningEngine) AnalyzeIntent(payload string) (*LlamaForensicResult, error) {
+func (re *ReasoningEngine) AnalyzeIntent(payload string) (*CognitiveForensicResult, error) {
 	if !re.Enabled {
 		return nil, fmt.Errorf("reasoning engine disabled")
 	}

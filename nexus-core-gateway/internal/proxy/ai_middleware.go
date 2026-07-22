@@ -194,7 +194,7 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		// [LAYER 3: AI COGNITIVE REASONING AUDIT]
 		// Alasan Arsitektural (Why):
 		// Analisis Kognitif Asinkron (Async Background Task).
-		// Model reasoning (seperti Llama) memerlukan waktu komputasi intensif (timeout 30 detik) untuk memahami intensi peretas.
+		// Model reasoning (seperti NEX-AI) memerlukan waktu komputasi intensif (timeout 30 detik) untuk memahami intensi peretas.
 		// Menjalankannya secara sinkron akan memacetkan koneksi klien dan meningkatkan latency gerbang secara ekstrem.
 		// Solusinya, request aman dilewatkan ke backend utama (sub-millisecond HTTP PASS), sementara audit mendalam
 		// dieksekusi di background goroutine secara terisolasi. Jika terkonfirmasi serangan canggih (APT),

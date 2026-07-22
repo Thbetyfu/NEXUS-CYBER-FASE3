@@ -283,7 +283,7 @@ func UnbanIP(ip string) {
 		Update("is_active", false)
 }
 
-// SaveAIInsight menyimpan hasil analisis forensik kustom dari Llama/Qwen ke database.
+// SaveAIInsight menyimpan hasil analisis forensik kustom dari NEX-AI ke database.
 //
 // Alasan Arsitektural (Why):
 // Hasil pemikiran AI (AI Insight) disimpan dalam tabel terpisah yang berelasi One-to-One dengan ThreatLog.

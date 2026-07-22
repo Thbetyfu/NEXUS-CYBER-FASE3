@@ -11,7 +11,7 @@
 
 # 1. Routing Nexus Command Center (Next.js Admin Dashboard)
 # Sesuai untuk akses administrasi tersentralisasi
-admin.nexus-cyber.local, localhost:3000 {
+:3000 {
     # Alihkan request API WAF Gateway ke container gateway secara internal
     handle /api/* {
         reverse_proxy gateway:8080
@@ -33,7 +33,7 @@ admin.nexus-cyber.local, localhost:3000 {
     reverse_proxy gateway:8080
 }
 
-# 3. HTTP-to-HTTPS Redirect
+# 3. Routing HTTP (SEMENTARA UNTUK IP PUBLIC)
 :80 {
-    redir https://{host}{uri}
+    reverse_proxy gateway:8080
 }

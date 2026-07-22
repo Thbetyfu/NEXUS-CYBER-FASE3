@@ -7,7 +7,7 @@ Dokumen ini memvisualisasikan struktur folder dan spesifikasi teknologi yang dig
 ### 1. Backend Defense (nexus-core-gateway)
 - **Language**: **Go (Golang)**. Dipilih karena performa tinggi, konkurensi aman, dan ekosistem library keamanan yang matang.
 - **Framework**: Standard library `net/http` & `httputil` untuk proxy, Gin/Fiber untuk API internal.
-- **AI Integration**: gRPC/REST untuk Qwen (Reflex) dan Llama 3 (Reasoning).
+- **AI Integration**: gRPC/REST untuk Qwen (Reflex) dan NEX-AI (Reasoning).
 - **PQC Library**: `circl` (Cloudflare) atau bindings ML-KEM NIST.
 - **Database**: **Redis** (Real-time MTD Tracking) & **PostgreSQL** (Metadata/Audit Log).
 - **Self-Repair Engine**: Modul pemulihan mandiri `repair` dengan pemindaian integritas berbasis hash SHA-256 dan RAM cache untuk restorasi file instan (<100ms).
@@ -25,7 +25,7 @@ Dokumen ini memvisualisasikan struktur folder dan spesifikasi teknologi yang dig
 
 ### 3. AI Layers (Dual-Brain)
 - **Reflex Layer**: Qwen (Optimization for speed).
-- **Reasoning Layer**: Llama 3 (Optimization for context/intent).
+- **Reasoning Layer**: NEX-AI (Optimization for context/intent).
 
 ---
 

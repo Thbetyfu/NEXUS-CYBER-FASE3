@@ -100,8 +100,8 @@ func main() {
 	}
 
 	// 2. MTD: Token Bucket Rate Limiter (closes GAP-004)
-	// 5 burst capacity, 5 req/sec sustained rate to allow synchronous testing to fail properly
-	rateLimiter := mtd.NewTokenBucket(5, 5)
+	// 100 burst capacity, 50 req/sec sustained rate for stable web operations and Red Team protection
+	rateLimiter := mtd.NewTokenBucket(100, 50)
 	rateLimiter.OnRateLimit = func(r *http.Request) {
 		tLog := logger.TelemetryLog{
 			Timestamp:    time.Now(),

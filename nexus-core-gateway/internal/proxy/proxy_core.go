@@ -3,6 +3,7 @@ package proxy
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -308,23 +309,48 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hapus Accept-Encoding dari request agar upstream tidak membalas dengan gzip
+	r.Header.Del("Accept-Encoding")
+
 	dynProxy := httputil.NewSingleHostReverseProxy(remote)
+	dynProxy.Transport = &http.Transport{
+		DisableCompression: true,
+	}
+
 	dynProxy.ModifyResponse = func(resp *http.Response) error {
 		// Deteksi tipe konten HTML untuk pengacakan sandi visual (PACS)
 		contentType := resp.Header.Get("Content-Type")
 		if strings.Contains(contentType, "text/html") {
-			bodyBytes, err := io.ReadAll(resp.Body)
+			var reader io.Reader = resp.Body
+			if resp.Header.Get("Content-Encoding") == "gzip" {
+				gzReader, err := gzip.NewReader(resp.Body)
+				if err == nil {
+					defer gzReader.Close()
+					reader = gzReader
+				}
+			}
+
+			bodyBytes, err := io.ReadAll(reader)
 			if err != nil {
 				return err
 			}
 			resp.Body.Close()
 
-			// Jalankan transpilasi biner alien
-			obfuscated := ObfuscateHTML(string(bodyBytes), host)
+			// Hapus header kompresi karena body dikirim ulang sebagai plain-text uncompressed
+			resp.Header.Del("Content-Encoding")
 
-			resp.Body = io.NopCloser(strings.NewReader(obfuscated))
-			resp.ContentLength = int64(len(obfuscated))
-			resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(obfuscated)))
+			// Hanya terapkan obfuscation PACS jika target adalah domain publik yang dilindungi (e.g. ojk.localhost).
+			// Untuk dasbor internal Command Center (localhost), kirimkan HTML steril mentah agar React hydration lancar.
+			var finalHTML string
+			if host == "localhost" || host == "127.0.0.1" {
+				finalHTML = string(bodyBytes)
+			} else {
+				finalHTML = ObfuscateHTML(string(bodyBytes), host)
+			}
+
+			resp.Body = io.NopCloser(strings.NewReader(finalHTML))
+			resp.ContentLength = int64(len(finalHTML))
+			resp.Header.Set("Content-Length", fmt.Sprintf("%d", len(finalHTML)))
 		}
 		return nil
 	}

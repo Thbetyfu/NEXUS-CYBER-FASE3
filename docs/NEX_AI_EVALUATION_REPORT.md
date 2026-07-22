@@ -141,7 +141,7 @@ NEX-AI/
    - Default model: `nex-ai-reflex`
    - Kontrak runtime dipusatkan ke `NEX_AI_ENDPOINT` dan `NEX_AI_MODEL_REFLEX`
 
-2. **`nexus-core-gateway/internal/ai/llama.go`** (Reasoning Layer):
+2. **`nexus-core-gateway/internal/ai/cognitive_core.go`** (Reasoning Layer):
    - Default endpoint: `http://localhost:11434/api/chat`
    - Default model: `nex-ai-protect`
    - Kontrak runtime dipusatkan ke `NEX_AI_ENDPOINT` dan `NEX_AI_MODEL_REASONING`

@@ -23,9 +23,9 @@ Arsitek: Antigravity
 - [x] Implementasi Reverse Proxy Layer (HTTP/TCP).
 - [x] Integrasi Logging & Observability (Structured JSON Logs).
 
-### Milestone 4: Dual-Brain AI Filter (Qwen & Llama 3) (COMPLETED) ✅
+### Milestone 4: Dual-Brain AI Filter (Qwen & NEX-AI) (COMPLETED) ✅
 - [x] Integrasi Reflex Layer (Qwen) via Local Inference (Ollama).
-- [x] Integrasi Reasoning Layer (Llama 3) untuk Analisis Niat (Nechat).
+- [x] Integrasi Reasoning Layer (NEX-AI) untuk Analisis Niat (Nechat).
 - [x] Implementasi AI Orchestrator (Ensemble Logic) v2.5.
 
 ### Milestone 5: Moving Target Defense (MTD) Layer (COMPLETED) ✅

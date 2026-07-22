@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestParseLlamaResponse_Standard(t *testing.T) {
+func TestParseCognitiveResponse_Standard(t *testing.T) {
 	rawJSON := `{
 		"threat_verdict": "CONFIRMED_MALICIOUS",
 		"attacker_intent": "SQL Injection attempt",
@@ -16,7 +16,7 @@ func TestParseLlamaResponse_Standard(t *testing.T) {
 		"forensic_summary": "User attempted UNION select to steal admin passwords."
 	}`
 
-	result, err := ParseLlamaResponse(rawJSON)
+	result, err := ParseCognitiveResponse(rawJSON)
 	if err != nil {
 		t.Fatalf("Failed to parse standard response: %v", err)
 	}
@@ -32,7 +32,7 @@ func TestParseLlamaResponse_Standard(t *testing.T) {
 	}
 }
 
-func TestParseLlamaResponse_LocalNexAi(t *testing.T) {
+func TestParseCognitiveResponse_LocalNexAi(t *testing.T) {
 	rawJSON := `{
 		"status": "MALICIOUS",
 		"threat_score": 0.98,
@@ -40,7 +40,7 @@ func TestParseLlamaResponse_LocalNexAi(t *testing.T) {
 		"reason": "Mendeteksi bypass WAF dengan double url encoding."
 	}`
 
-	result, err := ParseLlamaResponse(rawJSON)
+	result, err := ParseCognitiveResponse(rawJSON)
 	if err != nil {
 		t.Fatalf("Failed to parse local response: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestParseLlamaResponse_LocalNexAi(t *testing.T) {
 	}
 }
 
-func TestParseLlamaResponse_LocalNexAiBenign(t *testing.T) {
+func TestParseCognitiveResponse_LocalNexAiBenign(t *testing.T) {
 	rawJSON := `{
 		"status": "BENIGN",
 		"threat_score": 0.05,
@@ -70,7 +70,7 @@ func TestParseLlamaResponse_LocalNexAiBenign(t *testing.T) {
 		"reason": "Lalu lintas normal."
 	}`
 
-	result, err := ParseLlamaResponse(rawJSON)
+	result, err := ParseCognitiveResponse(rawJSON)
 	if err != nil {
 		t.Fatalf("Failed to parse local benign response: %v", err)
 	}

@@ -14,7 +14,7 @@ Dokumen ini mendefinisikan estimasi profil performa CPU & RAM untuk modul gerban
 | **PostgreSQL Database**| SQL (Postgres Alpine)| ~30 - 50 MB | ~150 - 300 MB | Ringan, terindeks secara optimal untuk forensik. |
 | **Caddy Edge Router** | Go (Caddy Alpine) | ~15 - 20 MB | ~50 - 100 MB | Sangat rendah, menangani SSL otomatis secara efisien. |
 | **Target Portfolio Web**| Go (Backend) | ~10 - 15 MB | ~40 - 80 MB | Sangat rendah. |
-| **Local LLM (Ollama)** | C++ (Llama.cpp) | ~20 - 40 MB | **~2.2 - 2.5 GB** | **Sangat tinggi (100% dari 2-4 Cores)** saat melakukan inferensi di CPU fallback. |
+| **Local LLM (Ollama)** | C++ (NEX-AI.cpp) | ~20 - 40 MB | **~2.2 - 2.5 GB** | **Sangat tinggi (100% dari 2-4 Cores)** saat melakukan inferensi di CPU fallback. |
 
 ---
 

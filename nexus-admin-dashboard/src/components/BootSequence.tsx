@@ -25,14 +25,14 @@ export default function BootSequence({ onComplete }: { onComplete: () => void })
 
   useEffect(() => {
     if (currentStep >= steps.length) {
-      const timer = setTimeout(() => onComplete(), 1000);
+      const timer = setTimeout(() => onComplete(), 150);
       return () => clearTimeout(timer);
     }
 
     // Update status of current step
     setSteps(prev => prev.map((s, i) => i === currentStep ? { ...s, status: "loading" } : s));
 
-    const duration = 1200 + Math.random() * 800; // Randomize speed a bit
+    const duration = 150 + Math.random() * 100; // Fast 200ms step duration
     const timer = setTimeout(() => {
       setSteps(prev => prev.map((s, i) => i === currentStep ? { ...s, status: "complete" } : s));
       setCurrentStep(prev => prev + 1);

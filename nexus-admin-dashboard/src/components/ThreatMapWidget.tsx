@@ -37,7 +37,7 @@ const INITIAL_SENTINELS: SentinelNode[] = [
     { id: "cloud", name: "JW_FRANKFURT", lat: 50.11, lng: 8.68, label: "cloud-storage", status: 'online', lastAttackTime: 0 },
 ];
 
-export default function ThreatMapWidget() {
+function ThreatMapWidget() {
     const [threats, setThreats] = useState<Threat[]>([]);
     const [sentinels, setSentinels] = useState<SentinelNode[]>(INITIAL_SENTINELS);
     const [mounted, setMounted] = useState(false);
@@ -271,3 +271,5 @@ export default function ThreatMapWidget() {
         </div>
     );
 }
+
+export default React.memo(ThreatMapWidget);

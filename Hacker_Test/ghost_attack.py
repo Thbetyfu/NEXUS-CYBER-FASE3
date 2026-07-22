@@ -89,7 +89,7 @@ def attack_time_based_blind():
 
 # ──────────────────────────────────────────────────────────────
 # ATTACK 3: ZERO-SHOT PROMPT INJECTION
-# Mencoba memanipulasi Llama 3 dengan bahasa alami halus.
+# Mencoba memanipulasi NEX-AI dengan bahasa alami halus.
 # ──────────────────────────────────────────────────────────────
 def attack_prompt_injection():
     section_header("ATTACK 3: ZERO-SHOT PROMPT INJECTION")

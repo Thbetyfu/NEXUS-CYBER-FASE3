@@ -172,6 +172,19 @@ func (tb *PerIPTokenBucket) allowLocal(ip string) bool {
 // Mengembalikan status HTTP 429 Too Many Requests disertai header Retry-After jika batas tercapai.
 func (tb *PerIPTokenBucket) HTTPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// [BYPASS STATIC ASSETS]
+		// Pemuatan aset statis Next.js (seperti JS chunks, CSS, font, favicon) dibebaskan dari rate limiter
+		// agar inisialisasi React client-side di dasbor SOC tidak terblokir saat request paralel bersamaan.
+		if strings.HasPrefix(r.URL.Path, "/_next/") ||
+			strings.HasPrefix(r.URL.Path, "/static/") ||
+			strings.HasPrefix(r.URL.Path, "/favicon.ico") ||
+			strings.HasSuffix(r.URL.Path, ".js") ||
+			strings.HasSuffix(r.URL.Path, ".css") ||
+			strings.HasSuffix(r.URL.Path, ".woff2") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		realIP := getRealIP(r)
 		if !tb.Allow(realIP) {
 			log.Printf("[MTD-RATELIMIT] IP THROTTLED (Redis Integration Active): %s (real) / %s (remote) — >%.0f req/s",

@@ -177,7 +177,7 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
   return { logs, metrics, history, shufflerData, ebpfData, isLive, isUnlicensed }
 }
 
-function useAIEvents(url: string, intervalMs: number = 1000) {
+function useAIEvents(url: string, intervalMs: number = 3000) {
   const [events, setEvents] = useState<AIEventLog[]>([]);
   useEffect(() => {
     let pollingActive = true;
@@ -220,7 +220,7 @@ export interface BlacklistItem {
    Menggunakan Promise.all untuk mengambil data secara paralel dari endpoint /api/ip-monitoring
    dan /api/blacklist guna meminimalkan RTT (Round Trip Time) koneksi HTTP ke gateway control plane.
 */
-function useIPMonitoring(intervalMs: number = 2000) {
+function useIPMonitoring(intervalMs: number = 4000) {
   const [entries, setEntries] = useState<IPMonitoringEntry[]>([]);
   const [blacklist, setBlacklist] = useState<BlacklistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,8 +265,8 @@ interface DesktopIconProps {
   isOpen: boolean;
 }
 
-// Sub-component: Desktop Icon
-const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: DesktopIconProps) => (
+// Sub-component: Desktop Icon (Memoized for 60 FPS)
+const DesktopIcon = React.memo(({ id, label, icon: Icon, onClick, isOpen }: DesktopIconProps) => (
   <motion.button
     whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
     whileTap={{ scale: 0.95 }}
@@ -288,17 +288,15 @@ const DesktopIcon = ({ id, label, icon: Icon, onClick, isOpen }: DesktopIconProp
       {label}
     </span>
   </motion.button>
-)
+));
 
 /*
-   IPMonitorConsole Component
+   IPMonitorConsole Component (Memoized for 60 FPS)
    Alasan Arsitektural (Why):
    Menyediakan antarmuka visual terpadu bagi analis SOC untuk melacak anomali per-IP,
    melihat riwayat User-Agent, serta memicu/mencabut pemblokiran firewall secara asinkron.
-   Fitur pemblokiran dilengkapi dengan konfirmasi ganda (double-confirm) untuk mencegah
-   kesalahan operasional (human error) yang dapat mengisolasi node administrator internal secara tidak sengaja.
 */
-const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonitoringEntry[], blacklist: BlacklistItem[], onRefetch: () => void }) => {
+const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entries: IPMonitoringEntry[], blacklist: BlacklistItem[], onRefetch: () => void }) => {
   const [activeTab, setActiveTab] = useState<"live" | "blacklist">("live");
   const [banTarget, setBanTarget] = useState<string | null>(null);
   const [banHours, setBanHours] = useState<number>(24);
@@ -623,7 +621,7 @@ const IPMonitorConsole = ({ entries, blacklist, onRefetch }: { entries: IPMonito
       </div>
     </div>
   );
-};
+});
 
 const NCCDashboard = () => {
   const [activeDomain, setActiveDomain] = useState<string>('all');

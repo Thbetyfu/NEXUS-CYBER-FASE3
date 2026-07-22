@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-// LlamaClient mengimplementasikan Reasoning Layer (Pemberi Keputusan Forensik Fase 2).
+// CognitiveCoreClient mengimplementasikan Reasoning Layer (Pemberi Keputusan Forensik Fase 2).
 // Seluruh request inference dijaga tetap lokal agar analisis forensik tidak bergantung pada vendor cloud.
-type LlamaClient struct {
+type CognitiveCoreClient struct {
 	APIKey   string
 	Model    string
 	Endpoint string
@@ -26,8 +26,8 @@ type MitigationAction struct {
 	Parameters map[string]interface{} `json:"parameters"`  // Parameter dinamis tambahan (seperti durasi IP block)
 }
 
-// LlamaForensicResult menyimpan respon analisis forensik terstruktur dari Reasoning Layer NEX-AI.
-type LlamaForensicResult struct {
+// CognitiveForensicResult menyimpan respon analisis forensik terstruktur dari Reasoning Layer NEX-AI.
+type CognitiveForensicResult struct {
 	ThreatVerdict     string             `json:"threat_verdict"` // Verdict: CONFIRMED_MALICIOUS | FALSE_POSITIVE | ADVANCED_PERSISTENT
 	AttackerIntent    string             `json:"attacker_intent"`
 	AttackVector      string             `json:"attack_vector"`
@@ -50,10 +50,10 @@ type SystemState struct {
 	CurrentAlertLevel string `json:"current_alert_level"`
 }
 
-// LLAMA_SYSTEM_PROMPT mendikte kepribadian, misi, dan kontrak output dari Reasoning Layer.
+// NEX_AI_SYSTEM_PROMPT mendikte kepribadian, misi, dan kontrak output dari Reasoning Layer.
 // Insting AI diarahkan untuk melindungi infrastruktur vital Indonesia (OJK, Bank Indonesia)
 // serta mematuhi UU Pelindungan Data Pribadi (UU PDP) No. 27/2022.
-const LLAMA_SYSTEM_PROMPT = `You are an expert cybersecurity analyst for Indonesia's critical 
+const NEX_AI_SYSTEM_PROMPT = `You are an expert cybersecurity analyst for Indonesia's critical 
 digital infrastructure. You receive escalated threats that have been pre-screened 
 by a rapid classifier (Qwen3 32B).
 
@@ -66,12 +66,12 @@ Your job:
 Think step by step internally, but your FINAL response must be ONLY valid JSON.
 Indonesian context: Protect PDNS, BI, OJK infrastructure. Comply with UU PDP No. 27/2022.`
 
-// NewLlamaClient mengkonstruksi client LlamaClient secara dinamis.
+// NewCognitiveCoreClient mengkonstruksi client CognitiveCoreClient secara dinamis.
 //
 // Alasan Arsitektural (Why):
 // Seluruh reasoning dijaga pada endpoint inferensi lokal agar analisis forensik tidak pernah keluar ke vendor eksternal.
-func NewLlamaClient(model string) *LlamaClient {
-	return &LlamaClient{
+func NewCognitiveCoreClient(model string) *CognitiveCoreClient {
+	return &CognitiveCoreClient{
 		APIKey:   configuredNexAIAPIKey(),
 		Model:    configuredNexAIReasoningModel(model),
 		Endpoint: configuredNexAIEndpoint(),
@@ -87,7 +87,7 @@ type LocalNexAiResult struct {
 }
 
 // MapToForensicResult mengubah hasil analisis lokal menjadi struktur standar gateway (Adapter Pattern).
-func (local *LocalNexAiResult) MapToForensicResult() *LlamaForensicResult {
+func (local *LocalNexAiResult) MapToForensicResult() *CognitiveForensicResult {
 	verdict := "FALSE_POSITIVE"
 	if local.Status == "MALICIOUS" {
 		verdict = "CONFIRMED_MALICIOUS"
@@ -104,7 +104,7 @@ func (local *LocalNexAiResult) MapToForensicResult() *LlamaForensicResult {
 		})
 	}
 
-	return &LlamaForensicResult{
+	return &CognitiveForensicResult{
 		ThreatVerdict:     verdict,
 		AttackerIntent:    "Exploitation attempt detected via local SLM classification",
 		AttackVector:      local.AttackType,
@@ -120,7 +120,7 @@ func (local *LocalNexAiResult) MapToForensicResult() *LlamaForensicResult {
 // Fungsi ini didesain agar dijalankan secara asinkron (goroutine) dengan context budget 30 detik.
 // Proses ini sengaja tidak memblokir (non-blocking) arus request trafik utama pengguna demi menjamin
 // tingkat kelancaran respons aplikasi (low latency proxy) tetap optimal.
-func (l *LlamaClient) AnalyzeEscalatedThreat(qwenResult *QwenResult, payload string, ctx AttackContext) (*LlamaForensicResult, error) {
+func (l *CognitiveCoreClient) AnalyzeEscalatedThreat(qwenResult *QwenResult, payload string, ctx AttackContext) (*CognitiveForensicResult, error) {
 	var systemPrompt string
 	var userPrompt string
 
@@ -158,11 +158,11 @@ func (l *LlamaClient) AnalyzeEscalatedThreat(qwenResult *QwenResult, payload str
 	}
 
 	rawContent := orResp.Choices[0].Message.Content
-	return ParseLlamaResponse(rawContent)
+	return ParseCognitiveResponse(rawContent)
 }
 
 // AnalyzeIntent adalah antarmuka pembungkus ramah warisan (legacy) untuk proxy_core.go.
-func (l *LlamaClient) AnalyzeIntent(payload string) (*LlamaForensicResult, error) {
+func (l *CognitiveCoreClient) AnalyzeIntent(payload string) (*CognitiveForensicResult, error) {
 	ctx := AttackContext{
 		AttackHistory: []map[string]interface{}{},
 		ThreatIntel:   map[string]interface{}{},
@@ -171,8 +171,8 @@ func (l *LlamaClient) AnalyzeIntent(payload string) (*LlamaForensicResult, error
 	return l.AnalyzeEscalatedThreat(nil, payload, ctx)
 }
 
-// ParseLlamaResponse mengekstrak respon JSON Llama secara tangguh menggunakan 3-Stage Parser.
-func ParseLlamaResponse(raw string) (*LlamaForensicResult, error) {
+// ParseCognitiveResponse mengekstrak respon JSON NEX-AI secara tangguh menggunakan 3-Stage Parser.
+func ParseCognitiveResponse(raw string) (*CognitiveForensicResult, error) {
 	raw = strings.TrimSpace(raw)
 	var jsonStr string
 
@@ -204,13 +204,13 @@ func ParseLlamaResponse(raw string) (*LlamaForensicResult, error) {
 		return localResult.MapToForensicResult(), nil
 	}
 
-	// Unmarshal standar ke LlamaForensicResult
-	var result LlamaForensicResult
+	// Unmarshal standar ke CognitiveForensicResult
+	var result CognitiveForensicResult
 	if err := json.Unmarshal([]byte(jsonStr), &result); err == nil {
 		return &result, nil
 	}
 
-	return nil, fmt.Errorf("llama_parse_error: %s", raw[:min2(len(raw), 200)])
+	return nil, fmt.Errorf("cognitive_parse_error: %s", raw[:min2(len(raw), 200)])
 }
 
 func min2(a, b int) int {

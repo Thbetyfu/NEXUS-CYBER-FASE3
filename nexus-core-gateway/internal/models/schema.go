@@ -85,7 +85,7 @@ type AIInsight struct {
 	Base
 	ThreatLogID       uuid.UUID `gorm:"type:uuid;index"`
 	ThreatLog         ThreatLog `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	AIModel           string    `gorm:"type:varchar(100)"` // Qwen/Qwen3-235B atau Llama3
+	AIModel           string    `gorm:"type:varchar(100)"` // Qwen/Qwen3-235B atau NEX-AI Reasoning
 	AnalysisText      string    `gorm:"type:text"`         // Ulasan intensi peretas dan analisa APT
 	RecommendedAction string    `gorm:"type:varchar(255)"` // Mitigasi spesifik (misal: "BLOCK_IP")
 }
