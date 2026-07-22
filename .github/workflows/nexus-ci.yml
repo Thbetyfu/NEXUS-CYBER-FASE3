@@ -1,4 +1,4 @@
-name: Nexus Cyber CI/CD Pipeline
+name: Nexus Cyber CI/CD Core Pipeline
 
 on:
   push:
@@ -8,10 +8,10 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Backend Go WAF Gateway - Compilation & Unit Testing
+  # 1. Backend Go WAF Gateway - Build, Quality & Unit Test Coverage
   # ---------------------------------------------------------------------------
   gateway-test:
-    name: 🛡️ Go WAF Gateway Build & Unit Tests
+    name: 🛡️ Go WAF Gateway Build & Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -23,20 +23,32 @@ jobs:
           go-version: '1.22'
           cache-dependency-path: nexus-core-gateway/go.sum
 
-      - name: Install Go Dependencies
+      - name: Install Dependencies
         run: |
           cd nexus-core-gateway
           go mod download
+
+      - name: Static Analysis & Code Vet
+        run: |
+          cd nexus-core-gateway
+          go vet ./...
 
       - name: Compile Gateway Binary
         run: |
           cd nexus-core-gateway
           go build -v ./cmd/gateway
 
-      - name: Run Go Unit & Integration Test Suite
+      - name: Run Test Suite with Coverage
         run: |
           cd nexus-core-gateway
-          go test -v ./...
+          go test -v -coverprofile=coverage.out ./...
+
+      - name: Upload Go Test Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-coverage-report
+          path: nexus-core-gateway/coverage.out
+          retention-days: 14
 
   # ---------------------------------------------------------------------------
   # 2. Frontend Next.js SOC Command Center - Build & Typecheck
@@ -55,21 +67,26 @@ jobs:
           cache: 'npm'
           cache-dependency-path: nexus-admin-dashboard/package-lock.json
 
-      - name: Install Node Dependencies
+      - name: Install Dependencies
         run: |
           cd nexus-admin-dashboard
           npm ci || npm install
 
-      - name: Compile Next.js Production Build
+      - name: TypeScript Type Checking
+        run: |
+          cd nexus-admin-dashboard
+          npx tsc --noEmit
+
+      - name: Next.js Production Build
         run: |
           cd nexus-admin-dashboard
           npm run build
 
   # ---------------------------------------------------------------------------
-  # 3. Security & Automation Python Test Suite
+  # 3. Security & Defense Engine Test Suite (Python Matrix)
   # ---------------------------------------------------------------------------
   security-tests:
-    name: 🧪 Security & Automation Python Test Suite
+    name: 🧪 Security & Defense Python Test Suite
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -80,25 +97,48 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Python Test Dependencies
+      - name: Install Test Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pytest
 
-      - name: Execute Scaffold & Unit Test Suite
+      - name: Run Scaffold Integrity Test
         run: |
           python scripts/tests/test_scaffold.py
 
+      - name: Run MTD Shuffle Defense Test
+        run: |
+          python scripts/tests/test_mtd_shuffle.py
+
+      - name: Run Autonomous Self-Repair Test
+        run: |
+          python scripts/tests/test_self_repair.py
+
+      - name: Run NEX-AI Intelligence Test
+        run: |
+          python scripts/tests/test_intelligence.py
+
   # ---------------------------------------------------------------------------
-  # 4. Infrastructure & Docker Compose Schema Audit
+  # 4. Infrastructure & Docker Containers Audit
   # ---------------------------------------------------------------------------
   docker-validation:
-    name: 🐳 Docker Compose & Infrastructure Audit
+    name: 🐳 Docker Infrastructure & Image Build Audit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Validate Docker Compose Configuration
         run: |
           docker compose config --quiet
+
+      - name: Test Build Gateway Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nexus-core-gateway
+          file: ./nexus-core-gateway/Dockerfile
+          push: false
+          tags: nexus-cyber/gateway:test

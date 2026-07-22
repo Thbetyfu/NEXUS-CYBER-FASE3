@@ -1,0 +1,52 @@
+name: Nexus Cyber Automated Binary Release Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Cross-Compile Gateway Binary for Linux, Windows, & macOS
+  # ---------------------------------------------------------------------------
+  build-binaries:
+    name: 📦 Build & Package Multi-Platform Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            output_name: nexus-gateway-linux-amd64
+          - goos: windows
+            goarch: amd64
+            output_name: nexus-gateway-windows-amd64.exe
+          - goos: darwin
+            goarch: arm64
+            output_name: nexus-gateway-darwin-arm64
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: nexus-core-gateway/go.sum
+
+      - name: Build Binary (${{ matrix.goos }}/${{ matrix.goarch }})
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          cd nexus-core-gateway
+          go build -ldflags="-s -w" -o ../bin/${{ matrix.output_name }} ./cmd/gateway
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output_name }}
+          path: bin/${{ matrix.output_name }}
+          retention-days: 30
