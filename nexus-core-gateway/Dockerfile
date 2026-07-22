@@ -1,5 +1,5 @@
-# Start from golang alpine base for smallest footprint
-FROM golang:1.25-alpine AS builder
+# Start from golang 1.22 alpine base
+FROM golang:1.22-alpine AS builder
 
 WORKDIR /app
 
@@ -28,7 +28,6 @@ RUN apk --no-cache add ca-certificates tzdata iptables docker-cli
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
 
 # Expose port 8080 and 9090
 EXPOSE 8080 9090

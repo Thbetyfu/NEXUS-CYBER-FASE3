@@ -11,6 +11,7 @@ Validates:
 import json
 import re
 import time
+import sys
 
 # ─────────────────────────────────────────────
 # SECTION 1: Prompt Injection Sanitizer (PORT dari Go)
@@ -94,14 +95,14 @@ def run_tests():
         nonlocal passed, failed, total
         total += 1
         if condition:
-            print(f"  ✅ PASS  | {label}")
+            print(f"  [PASS] | {label}")
             passed += 1
         else:
-            print(f"  ❌ FAIL  | {label} | {detail}")
+            print(f"  [FAIL] | {label} | {detail}")
             failed += 1
 
     print("\n" + "="*60)
-    print("\U0001f9e0 NEXUS INTELLIGENCE LAYER - VALIDATION TEST")
+    print("NEXUS INTELLIGENCE LAYER - VALIDATION TEST")
     print("="*60)
 
     # --- Test 1: Sanitization ---
@@ -151,12 +152,18 @@ def run_tests():
 
     # --- Summary ---
     print("\n" + "="*60)
-    print(f"📊 RESULTS: {passed}/{total} PASSED | {failed} FAILED")
+    print(f"RESULTS: {passed}/{total} PASSED | {failed} FAILED")
     if failed == 0:
-        print("🎉 ALL TESTS PASSED. INTELLIGENCE LAYER: VALIDATED ✅")
+        print("ALL TESTS PASSED. INTELLIGENCE LAYER: VALIDATED [PASS]")
     else:
-        print("⚠️  SOME TESTS FAILED. REVIEW REQUIRED.")
+        print("SOME TESTS FAILED. REVIEW REQUIRED.")
     print("="*60 + "\n")
+    if failed > 0:
+        sys.exit(1)
 
 if __name__ == "__main__":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
     run_tests()
