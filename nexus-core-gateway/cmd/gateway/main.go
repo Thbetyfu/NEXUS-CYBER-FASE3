@@ -82,7 +82,7 @@ func main() {
 	// Initialize System Integrity Monitor (Phase 8)
 	monitoredDir := os.Getenv("INTEGRITY_MONITORED_DIR")
 	if monitoredDir == "" {
-		monitoredDir = "../playground/vulnerable-ojk-portal/templates"
+		monitoredDir = "../Portfolio-website"
 	}
 	integrityMonitor, err := repair.NewIntegrityMonitor(monitoredDir, telemetry)
 	if err != nil {

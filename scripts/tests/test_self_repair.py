@@ -6,8 +6,8 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
-TARGET_FILE = os.path.join(PROJECT_ROOT, "playground", "vulnerable-ojk-portal", "templates", "index.html")
-UNAUTHORIZED_FILE = os.path.join(PROJECT_ROOT, "playground", "vulnerable-ojk-portal", "templates", "unauthorized_test_file.txt")
+TARGET_FILE = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "Portfolio-website", "index.html"))
+UNAUTHORIZED_FILE = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "Portfolio-website", "unauthorized_test_file.txt"))
 
 # ANSI Colors
 RED = '\033[91m'
