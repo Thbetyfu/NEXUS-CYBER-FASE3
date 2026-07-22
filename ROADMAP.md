@@ -88,6 +88,14 @@ Arsitek: Antigravity
 - [x] **Branding Imersif NEX-AI di Dashboard**: Widget tensor model dan aktivitas synaptik node AI real-time.
 - [x] **GeoIP Lookup Terpadu**: Integrasi pencarian lokasi IP (MaxMind DB + ip-api.com) ketika IP diblacklist atau divisualisasikan.
 
+### Milestone 14: Collective Threat Intelligence & Sovereign Compliance Exporter (COMPLETED) ✅
+*Jaringan intelijen ancaman siber privat nasional BSSN/ID-CERT dan generator laporan audit kepatuhan otomatis.*
+- [x] **STIX 2.1 / TAXII 2.1 Standardized Format**: Format payload standar nasional untuk pelaporan sinyal ancaman siber.
+- [x] **Encrypted Syslog TLS Reporter (RFC 5424)**: Pengiriman telemetri terenkripsi ke SIEM internal bank/instansi.
+- [x] **BSSN Collective Threat Feed Sync**: Sinkronisasi & injeksi blacklist kolektif BSSN ke memori RAM/Redis gateway.
+- [x] **Automated Multi-Framework Evaluator**: Penilaian otomatis terhadap `ISO/IEC 27001:2022`, `PCI-DSS v4.0`, `UU PDP No. 27/2022`, dan `ISO 25010`.
+- [x] **1-Click Audit Report Exporter**: Penjana laporan audit format Markdown & JSON via UI Dashboard SOC (`ComplianceWidget.tsx`) dan CLI Subcommand (`gateway audit export`).
+
 ---
 
 ## 🚀 Rencana Sprint & Milestone (Fase 2 Dev Testbed)

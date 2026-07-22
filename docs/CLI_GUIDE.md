@@ -20,6 +20,8 @@ Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarm
 | `clear` | Membersihkan layar terminal SOC Command CLI. |
 | `gateway license generate` | [Go Binary CLI] Membuat Kunci Lisensi Terenkripsi HMAC (5-Tier, CPU Cores, B2G PO). |
 | `gateway license verify` | [Go Binary CLI] Memverifikasi integritas & batas lisensi secara offline. |
+| `gateway audit export` | [Go Binary CLI] Menjana Laporan Audit Kepatuhan (ISO 27001, PCI-DSS, UU PDP) format Markdown/JSON. |
+| `gateway audit sync-bssn` | [Go Binary CLI] Sinkronisasi & injeksi memori feed ancaman siber kolektif BSSN/ID-CERT. |
 
 ## Audit & Pengujian
 
