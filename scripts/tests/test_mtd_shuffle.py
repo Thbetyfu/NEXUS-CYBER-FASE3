@@ -90,7 +90,7 @@ def test_rate_limiter():
 
     def fire():
         try:
-            r = requests.get(BASE_URL + "/get?q=normal", timeout=3)
+            r = requests.get(BASE_URL + "/", timeout=3)
             if r.status_code == 429:
                 throttled.append(1)
             elif r.status_code == 200:
@@ -125,7 +125,7 @@ def test_graceful_handoff():
 
     for i in range(30):
         try:
-            r = requests.get(BASE_URL + "/get?q=legitimate_traffic", timeout=5)
+            r = requests.get(BASE_URL + "/", timeout=5)
             if r.status_code in [200, 429]:
                 successes.append(1)
             else:

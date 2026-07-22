@@ -47,6 +47,10 @@ func loadEnv() {
 
 func main() {
 	loadEnv()
+	if len(os.Args) > 1 && os.Args[1] == "license" {
+		HandleLicenseCLI(os.Args[1:])
+		return
+	}
 	fmt.Println("[NEXUS] NEXUS CYBER GATEWAY - ENTERPRISE PRODUCTION INITIALIZING...")
 
 	ctx, cancel := context.WithCancel(context.Background())

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,10 +16,12 @@ import (
 
 // LicenseState merepresentasikan kondisi lisensi secara global di dalam memori secara thread-safe.
 type LicenseState struct {
-	mu           sync.RWMutex
-	IsValid      bool
-	PlanType     string
-	LastVerified time.Time
+	mu                         sync.RWMutex
+	IsValid                    bool
+	PlanType                   string
+	CpuCores                   int
+	IsB2G                      bool
+	LastVerified               time.Time
 	LastSuccessfulVerification time.Time
 }
 
@@ -35,10 +38,6 @@ const (
 )
 
 // InitLicenseVerifier menginisiasi status lisensi awal saat startup gateway.
-//
-// Alasan Arsitektural (Why):
-// Melakukan verifikasi pertama kali secara sinkron saat booting agar gateway langsung menangguhkan rute
-// jika kunci lisensi tidak valid sejak detik pertama peluncuran.
 func InitLicenseVerifier(domain string, key string) {
 	licenseKey = key
 	licenseDomain = domain
@@ -52,18 +51,24 @@ func IsLicenseValid() bool {
 	return currentLicense.IsValid
 }
 
-// GetPlanType mengembalikan tipe plan lisensi saat ini (e.g. "premium", "enterprise").
+// GetPlanType mengembalikan tipe plan lisensi saat ini (e.g. "free", "basic", "pro", "pro_plus", "ultrasafe").
 func GetPlanType() string {
 	currentLicense.mu.RLock()
 	defer currentLicense.mu.RUnlock()
+	if currentLicense.PlanType == "" {
+		return TierFree
+	}
 	return currentLicense.PlanType
 }
 
+// GetLicenseDetails mengembalikan rincian lisensi saat ini.
+func GetLicenseDetails() (isValid bool, plan string, cores int, isB2G bool) {
+	currentLicense.mu.RLock()
+	defer currentLicense.mu.RUnlock()
+	return currentLicense.IsValid, currentLicense.PlanType, currentLicense.CpuCores, currentLicense.IsB2G
+}
+
 // StartLicenseHandshake meluncurkan goroutine asinkron yang melakukan verifikasi berkala (handshake).
-//
-// Alasan Arsitektural (Why):
-// - Verifikasi berkala secara asinkron mencegah penundaan (latency) saat memproses request pengguna sah.
-// - Menjamin pembaruan instan jika status langganan dicabut (REVOKED) oleh server pusat tanpa memerlukan restart gateway.
 func StartLicenseHandshake(interval time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)
@@ -79,24 +84,41 @@ func verify(domain string, key string) {
 	if key == "" || domain == "" {
 		currentLicense.mu.Lock()
 		currentLicense.IsValid = false
-		currentLicense.PlanType = ""
+		currentLicense.PlanType = TierFree
 		currentLicense.LastVerified = now
 		currentLicense.mu.Unlock()
 		return
 	}
 
-	if isLocalDevelopmentBypass(domain, key) {
+	// 1. Cek Kunci Lisensi Terenkripsi PQC/HMAC (Offline Verification)
+	secretKey := os.Getenv("NEXUS_LICENSE_SECRET")
+	claims, err := ParseAndVerifyLicenseKey(key, domain, runtime.NumCPU(), secretKey)
+	if err == nil && claims != nil {
 		currentLicense.mu.Lock()
 		currentLicense.IsValid = true
-		currentLicense.PlanType = "premium"
+		currentLicense.PlanType = claims.Tier
+		currentLicense.CpuCores = claims.CpuCores
+		currentLicense.IsB2G = claims.IsB2G
 		currentLicense.LastVerified = now
 		currentLicense.LastSuccessfulVerification = now
 		currentLicense.mu.Unlock()
 		return
 	}
 
-	// Panggil API Server Lisensi SaaS Lokal
-	// Default ke http://localhost:3000/api/license tapi bisa di-override via env
+	// 2. Local Development Bypass Check
+	if isLocalDevelopmentBypass(domain, key) {
+		currentLicense.mu.Lock()
+		currentLicense.IsValid = true
+		currentLicense.PlanType = TierUltrasafe
+		currentLicense.CpuCores = runtime.NumCPU()
+		currentLicense.IsB2G = IsGovernmentOrEduDomain(domain)
+		currentLicense.LastVerified = now
+		currentLicense.LastSuccessfulVerification = now
+		currentLicense.mu.Unlock()
+		return
+	}
+
+	// 3. Panggil API Server Lisensi SaaS Online/Remote
 	apiEndpoint := os.Getenv("SAAS_LICENSE_API_URL")
 	if apiEndpoint == "" {
 		apiEndpoint = "http://localhost:3000/api/license"
@@ -114,7 +136,7 @@ func verify(domain string, key string) {
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Post(apiEndpoint, "application/json", bytes.NewBuffer(data))
-	
+
 	currentLicense.mu.Lock()
 	defer currentLicense.mu.Unlock()
 	currentLicense.LastVerified = now
@@ -130,14 +152,18 @@ func verify(domain string, key string) {
 			Valid    bool   `json:"valid"`
 			Status   string `json:"status"`
 			Plan     string `json:"plan"`
+			Cores    int    `json:"cores"`
+			IsB2G    bool   `json:"is_b2g"`
 		}
 		if json.NewDecoder(resp.Body).Decode(&result) == nil {
 			currentLicense.IsValid = result.Valid
 			if result.Valid {
 				currentLicense.PlanType = result.Plan
+				currentLicense.CpuCores = result.Cores
+				currentLicense.IsB2G = result.IsB2G
 				currentLicense.LastSuccessfulVerification = now
 			} else {
-				currentLicense.PlanType = ""
+				currentLicense.PlanType = TierFree
 			}
 		} else {
 			handleVerificationFailureLocked(now)
@@ -148,9 +174,8 @@ func verify(domain string, key string) {
 	if resp.StatusCode >= http.StatusInternalServerError {
 		handleVerificationFailureLocked(now)
 	} else {
-		// Status selain 200 dianggap tidak aktif
 		currentLicense.IsValid = false
-		currentLicense.PlanType = ""
+		currentLicense.PlanType = TierFree
 	}
 }
 
@@ -160,7 +185,7 @@ func handleVerificationFailureLocked(now time.Time) {
 	}
 
 	currentLicense.IsValid = false
-	currentLicense.PlanType = ""
+	currentLicense.PlanType = TierFree
 }
 
 func isWithinGraceWindow(now, lastSuccessful time.Time) bool {

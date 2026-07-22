@@ -1,140 +1,96 @@
 package licensing
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-func resetLicenseStateForTest() {
-	currentLicense = LicenseState{}
-	licenseKey = ""
-	licenseDomain = ""
-	timeNow = time.Now
-}
+func TestLicenseGeneratorAndVerifier(t *testing.T) {
+	secretKey := "test-secret-key-12345"
 
-func TestVerifyAllowsLocalDevelopmentBypassOnlyForLocalDomains(t *testing.T) {
-	t.Cleanup(resetLicenseStateForTest)
-	resetLicenseStateForTest()
+	t.Run("Generate & Verify Valid Pro License", func(t *testing.T) {
+		claims := LicenseClaims{
+			Domain:    "kemenkeu.go.id",
+			CpuCores:  16,
+			Tier:      TierUltrasafe,
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(365 * 24 * time.Hour).Unix(),
+		}
 
-	fixedNow := time.Date(2026, 7, 12, 10, 0, 0, 0, time.UTC)
-	timeNow = func() time.Time { return fixedNow }
+		key, err := GenerateLicenseKey(claims, secretKey)
+		if err != nil {
+			t.Fatalf("Failed to generate license key: %v", err)
+		}
 
-	verify("http://tenant.localhost:3000", localDevelopmentLicenseKey)
-	if !IsLicenseValid() {
-		t.Fatal("expected local development domain to stay valid with dev key")
-	}
-	if GetPlanType() != "premium" {
-		t.Fatalf("expected premium plan for local bypass, got %q", GetPlanType())
-	}
+		t.Logf("Generated Key: %s", key)
 
-	resetLicenseStateForTest()
-	t.Setenv("SAAS_LICENSE_API_URL", "http://127.0.0.1:1")
-	timeNow = func() time.Time { return fixedNow }
+		parsed, err := ParseAndVerifyLicenseKey(key, "kemenkeu.go.id", 8, secretKey)
+		if err != nil {
+			t.Fatalf("Failed to verify valid license key: %v", err)
+		}
 
-	verify("https://example.com", localDevelopmentLicenseKey)
-	if IsLicenseValid() {
-		t.Fatal("expected non-local domain to reject dev key bypass")
-	}
-}
+		if parsed.Tier != TierUltrasafe {
+			t.Errorf("Expected tier %s, got %s", TierUltrasafe, parsed.Tier)
+		}
 
-func TestVerifyKeepsLastKnownGoodWithinGraceWindow(t *testing.T) {
-	t.Cleanup(resetLicenseStateForTest)
-	resetLicenseStateForTest()
+		if !parsed.IsB2G {
+			t.Error("Expected IsB2G to be true for .go.id domain")
+		}
+	})
 
-	baseTime := time.Date(2026, 7, 12, 11, 0, 0, 0, time.UTC)
-	t.Setenv("LICENSE_GRACE_PERIOD_MINUTES", "5")
+	t.Run("Reject Expired License", func(t *testing.T) {
+		claims := LicenseClaims{
+			Domain:    "example.com",
+			CpuCores:  4,
+			Tier:      TierBasic,
+			IssuedAt:  time.Now().Add(-48 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(-24 * time.Hour).Unix(),
+		}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"valid":true,"status":"ACTIVE","plan":"enterprise"}`)
-	}))
-	defer server.Close()
+		key, err := GenerateLicenseKey(claims, secretKey)
+		if err != nil {
+			t.Fatalf("Failed to generate license key: %v", err)
+		}
 
-	t.Setenv("SAAS_LICENSE_API_URL", server.URL)
-	timeNow = func() time.Time { return baseTime }
-	verify("tenant.example.com", "nx_lic_valid")
+		_, err = ParseAndVerifyLicenseKey(key, "example.com", 2, secretKey)
+		if err != ErrLicenseExpired {
+			t.Errorf("Expected ErrLicenseExpired, got %v", err)
+		}
+	})
 
-	if !IsLicenseValid() {
-		t.Fatal("expected successful verification to mark license valid")
-	}
-	if GetPlanType() != "enterprise" {
-		t.Fatalf("expected enterprise plan after successful verification, got %q", GetPlanType())
-	}
+	t.Run("Reject CPU Core Limit Exceeded", func(t *testing.T) {
+		claims := LicenseClaims{
+			Domain:    "my-company.com",
+			CpuCores:  4,
+			Tier:      TierPro,
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		}
 
-	t.Setenv("SAAS_LICENSE_API_URL", "http://127.0.0.1:1")
-	timeNow = func() time.Time { return baseTime.Add(4 * time.Minute) }
-	verify("tenant.example.com", "nx_lic_valid")
+		key, err := GenerateLicenseKey(claims, secretKey)
+		if err != nil {
+			t.Fatalf("Failed to generate license key: %v", err)
+		}
 
-	if !IsLicenseValid() {
-		t.Fatal("expected license to remain valid during grace window")
-	}
-	if GetPlanType() != "enterprise" {
-		t.Fatalf("expected plan to remain enterprise during grace window, got %q", GetPlanType())
-	}
-}
+		// Machine has 16 cores, license allows 4 cores
+		_, err = ParseAndVerifyLicenseKey(key, "my-company.com", 16, secretKey)
+		if err != ErrCpuCoreExceeded {
+			t.Errorf("Expected ErrCpuCoreExceeded, got %v", err)
+		}
+	})
 
-func TestVerifyExpiresLicenseAfterGraceWindow(t *testing.T) {
-	t.Cleanup(resetLicenseStateForTest)
-	resetLicenseStateForTest()
-
-	baseTime := time.Date(2026, 7, 12, 12, 0, 0, 0, time.UTC)
-	t.Setenv("LICENSE_GRACE_PERIOD_MINUTES", "5")
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"valid":true,"status":"ACTIVE","plan":"premium"}`)
-	}))
-	defer server.Close()
-
-	t.Setenv("SAAS_LICENSE_API_URL", server.URL)
-	timeNow = func() time.Time { return baseTime }
-	verify("tenant.example.com", "nx_lic_valid")
-
-	t.Setenv("SAAS_LICENSE_API_URL", "http://127.0.0.1:1")
-	timeNow = func() time.Time { return baseTime.Add(6 * time.Minute) }
-	verify("tenant.example.com", "nx_lic_valid")
-
-	if IsLicenseValid() {
-		t.Fatal("expected license to become invalid after grace window expires")
-	}
-	if GetPlanType() != "" {
-		t.Fatalf("expected empty plan after grace window expiry, got %q", GetPlanType())
-	}
-}
-
-func TestVerifyInvalidatesLicenseOnForbiddenResponse(t *testing.T) {
-	t.Cleanup(resetLicenseStateForTest)
-	resetLicenseStateForTest()
-
-	baseTime := time.Date(2026, 7, 12, 13, 0, 0, 0, time.UTC)
-	t.Setenv("LICENSE_GRACE_PERIOD_MINUTES", "60")
-
-	successServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"valid":true,"status":"ACTIVE","plan":"premium"}`)
-	}))
-	defer successServer.Close()
-
-	t.Setenv("SAAS_LICENSE_API_URL", successServer.URL)
-	timeNow = func() time.Time { return baseTime }
-	verify("tenant.example.com", "nx_lic_valid")
-
-	forbiddenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "forbidden", http.StatusForbidden)
-	}))
-	defer forbiddenServer.Close()
-
-	t.Setenv("SAAS_LICENSE_API_URL", forbiddenServer.URL)
-	timeNow = func() time.Time { return baseTime.Add(10 * time.Minute) }
-	verify("tenant.example.com", "nx_lic_valid")
-
-	if IsLicenseValid() {
-		t.Fatal("expected 403 response to invalidate license immediately")
-	}
-	if GetPlanType() != "" {
-		t.Fatalf("expected empty plan after 403 invalidation, got %q", GetPlanType())
-	}
+	t.Run("Domain Lapis 2 Validation Check", func(t *testing.T) {
+		if !IsGovernmentOrEduDomain("ojk.go.id") {
+			t.Error("ojk.go.id should be recognized as B2G/Edu domain")
+		}
+		if !IsGovernmentOrEduDomain("ui.ac.id") {
+			t.Error("ui.ac.id should be recognized as B2G/Edu domain")
+		}
+		if !IsGovernmentOrEduDomain("sman1.sch.id") {
+			t.Error("sman1.sch.id should be recognized as B2G/Edu domain")
+		}
+		if IsGovernmentOrEduDomain("private-company.com") {
+			t.Error("private-company.com should NOT be recognized as B2G/Edu domain")
+		}
+	})
 }

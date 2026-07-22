@@ -28,6 +28,7 @@ import WindowFrame from '@/components/WindowFrame';
 import Taskbar from '@/components/Taskbar';
 import BootSequence from '@/components/BootSequence';
 import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
+import LicenseManagerWidget from '@/components/LicenseManagerWidget';
 
 // Config
 import { API_BASE_URL } from '@/config';
@@ -1370,6 +1371,26 @@ const NCCDashboard = () => {
               onClose={() => toggleWindow("nex-ai-monitor")}
             >
               <NexAiMonitorWidget />
+            </WindowFrame>
+          )}
+
+          {/* Commercial License Manager Window */}
+          {openWindows.includes("license-manager") && (
+            <WindowFrame
+              key="license-manager"
+              id="license-manager"
+              title="License & Commercial Subscription Engine"
+              icon={<Lock size={14} />}
+              initialX={350}
+              initialY={120}
+              width={820}
+              height={560}
+              zIndex={windowZIndices["license-manager"] || 20}
+              isActive={focusedWindow === "license-manager"}
+              onFocus={() => handleFocusWindow("license-manager")}
+              onClose={() => toggleWindow("license-manager")}
+            >
+              <LicenseManagerWidget />
             </WindowFrame>
           )}
         </AnimatePresence>
