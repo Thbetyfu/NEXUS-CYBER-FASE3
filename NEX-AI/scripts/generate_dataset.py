@@ -434,37 +434,37 @@ def generate_zeroday_bypass_adversarial(count=200):
 # ------------------------------------------------------------------------------
 
 def main():
-    print("[NEX-AI] Memulai proses Peningkatan Kualitas Dataset (Adversarial & Benign Enrichment)...")
+    print("[NEX-AI] Memulai proses Peningkatan Kualitas Dataset V2.0 (5.000 Sampel Adversarial & Benign Enrichment)...")
     
     all_samples = []
     
-    # 1. Tambah data Benign (normal) - Porsi paling besar untuk mengurangi false positives (Total 1000 sampel)
-    benign_samples = generate_complex_benign(1000)
+    # 1. Tambah data Benign (normal) - Porsi paling besar untuk mengurangi false positives (Total 2500 sampel)
+    benign_samples = generate_complex_benign(2500)
     all_samples.extend(benign_samples)
     print(f"[NEX-AI] Terbentuk {len(benign_samples)} sampel benign (termasuk GraphQL, XML, JSON, dan JWT).")
     
-    # 2. Tambah data SQLi (200 sampel)
-    sqli_samples = generate_sqli_adversarial(200)
+    # 2. Tambah data SQLi (500 sampel)
+    sqli_samples = generate_sqli_adversarial(500)
     all_samples.extend(sqli_samples)
     print(f"[NEX-AI] Terbentuk {len(sqli_samples)} sampel SQLi (termasuk adversarial mutations).")
     
-    # 3. Tambah data XSS (200 sampel)
-    xss_samples = generate_xss_adversarial(200)
+    # 3. Tambah data XSS (500 sampel)
+    xss_samples = generate_xss_adversarial(500)
     all_samples.extend(xss_samples)
     print(f"[NEX-AI] Terbentuk {len(xss_samples)} sampel XSS (termasuk adversarial mutations).")
     
-    # 4. Tambah data Path Traversal (200 sampel)
-    traversal_samples = generate_path_traversal_adversarial(200)
+    # 4. Tambah data Path Traversal (500 sampel)
+    traversal_samples = generate_path_traversal_adversarial(500)
     all_samples.extend(traversal_samples)
     print(f"[NEX-AI] Terbentuk {len(traversal_samples)} sampel Path Traversal (termasuk double URL encode).")
     
-    # 5. Tambah data Command Injection (200 sampel)
-    cmd_samples = generate_command_injection_adversarial(200)
+    # 5. Tambah data Command Injection (500 sampel)
+    cmd_samples = generate_command_injection_adversarial(500)
     all_samples.extend(cmd_samples)
     print(f"[NEX-AI] Terbentuk {len(cmd_samples)} sampel Command Injection (termasuk base64 wraps).")
     
-    # 6. Tambah data Zero-Day / Bypass (200 sampel)
-    bypass_samples = generate_zeroday_bypass_adversarial(200)
+    # 6. Tambah data Zero-Day / Bypass (500 sampel)
+    bypass_samples = generate_zeroday_bypass_adversarial(500)
     all_samples.extend(bypass_samples)
     print(f"[NEX-AI] Terbentuk {len(bypass_samples)} sampel Zero-Day Bypass.")
     
