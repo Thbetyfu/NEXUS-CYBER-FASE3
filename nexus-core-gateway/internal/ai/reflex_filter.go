@@ -2,6 +2,7 @@
 package ai
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -17,6 +18,7 @@ type ReflexFilter struct {
 	sqliPatterns      []*regexp.Regexp
 	xssPatterns       []*regexp.Regexp
 	traversalPatterns []*regexp.Regexp
+	rcePatterns       []*regexp.Regexp
 	headerPatterns    []*regexp.Regexp
 	// Regex untuk membersihkan komentar SQL sebelum matching (GAP-001)
 	sqlCommentStrip   *regexp.Regexp
@@ -24,32 +26,24 @@ type ReflexFilter struct {
 }
 
 // NewReflexFilter menginisialisasi Regex bawaan untuk memindai payload request.
-//
-// Alasan Arsitektural (Why):
-// Pola Regex di-compile di awal (singleton-like initialization) menggunakan regexp.MustCompile.
-// Meng-compile regex di setiap request (in-flight request) akan membebani memori dan CPU (CPU spikes),
-// sehingga inisialisasi di awal wajib dilakukan untuk stabilitas produksi.
 func NewReflexFilter() *ReflexFilter {
 	// Pola SQL Injection Umum (Union select, comment bypass, sleep based timing attack, hex encoding)
 	sqliRegex := []*regexp.Regexp{
 		regexp.MustCompile(`(?i)(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE).*`),
 		regexp.MustCompile(`(?i)' OR '.*'='`),
 		regexp.MustCompile(`(?i)" OR ".*"="`),
+		regexp.MustCompile(`(?i)'\s*OR\s*1=1`),
 		regexp.MustCompile(`(?i)--`),
+		regexp.MustCompile(`(?i)#`),
 		regexp.MustCompile(`(?i);`),
 		regexp.MustCompile(`(?i)0x[0-9a-fA-F]+`),
 		regexp.MustCompile(`(?i)SLEEP\s*\(`),
-		// [GAP-001 FIX] Mendeteksi BENCHMARK() sebagai pengganti SLEEP() pada timing attack
-		// Alasan (Why): Penyerang menggunakan BENCHMARK(N, SHA1(1)) untuk menggantikan SLEEP()
-		// karena ia tidak masuk dalam pola SLEEP\( yang umum.
 		regexp.MustCompile(`(?i)BENCHMARK\s*\(`),
-		// [GAP-001 FIX] Mendeteksi WAITFOR DELAY (MSSQL timing attack)
 		regexp.MustCompile(`(?i)WAITFOR\s+DELAY`),
-		// [GAP-001 FIX] Mendeteksi pg_sleep (PostgreSQL timing attack)
 		regexp.MustCompile(`(?i)pg_sleep\s*\(`),
 	}
 
-	// Pola Cross-Site Scripting (XSS) (HTML script injection, element handler hijack, javascript scheme)
+	// Pola Cross-Site Scripting (XSS)
 	xssRegex := []*regexp.Regexp{
 		regexp.MustCompile(`(?i)<script.*?>.*?</script.*?>`),
 		regexp.MustCompile(`(?i)on\w+\s*=\s*".*?"`),
@@ -61,34 +55,35 @@ func NewReflexFilter() *ReflexFilter {
 
 	// Pola Path Traversal & File Access (LFI/RFI)
 	traversalRegex := []*regexp.Regexp{
-		regexp.MustCompile(`(?i)\.{2,}[/\\]`), // Mendeteksi ../ atau ..\ (Directory traversal)
+		regexp.MustCompile(`(?i)\.{2,}[/\\]`), // Mendeteksi ../ atau ..\
 		regexp.MustCompile(`(?i)%2e%2e%2f`),   // Mendeteksi URL encoded traversal
 		regexp.MustCompile(`(?i)/etc/passwd`),  // Lokasi sensitif Linux
 		regexp.MustCompile(`(?i)/etc/shadow`),
-		regexp.MustCompile(`(?i)C:\\`), // Drive utama Windows
+		regexp.MustCompile(`(?i)/var/log/`),
+		regexp.MustCompile(`(?i)php://`),      // PHP Stream wrappers
+		regexp.MustCompile(`(?i)C:\\`),        // Drive utama Windows
 		regexp.MustCompile(`(?i)win\.ini`),
 	}
 
-	// [GAP-003 FIX] Pola pemindaian HTTP Header berbahaya
-	//
-	// Alasan Arsitektural (Why):
-	// Simulasi Red Team (INTELLIGENCE_GAP.md GAP-003) membuktikan bahwa header seperti
-	// X-Forwarded-For, X-Custom-IP-Authorization, dan header injeksi sosial TIDAK diperiksa
-	// oleh Reflex sebelumnya. Penyerang dapat menyematkan payload berbahaya, override IP palsu,
-	// atau mencoba social engineering melalui header untuk mengelabui backend.
+	// Pola Command Injection / RCE
+	rceRegex := []*regexp.Regexp{
+		regexp.MustCompile(`(?i);\s*(cat|id|whoami|ls|pwd|wget|curl|nc|bash|sh|powershell)`),
+		regexp.MustCompile(`(?i)\|\s*(cat|id|whoami|ls|pwd|wget|curl|nc|bash|sh)`),
+		regexp.MustCompile(`(?i)&&\s*(cat|id|whoami|ls|pwd|wget|curl|nc|bash|sh)`),
+		regexp.MustCompile("(?i)`[^`]*(whoami|id|cat|wget|curl|sh|bash)[^`]*`"),
+		regexp.MustCompile(`(?i)\$\((whoami|id|cat|wget|curl|sh|bash)\)`),
+		regexp.MustCompile(`(?i)sh\s+-c\s+`),
+	}
+
+	// Pola pemindaian HTTP Header berbahaya
 	headerRegex := []*regexp.Regexp{
-		// Deteksi injeksi IP spoofing melalui header X-Forwarded-For
 		regexp.MustCompile(`(?i)X-Forwarded-For:\s*127\.0\.0\.1`),
 		regexp.MustCompile(`(?i)X-Forwarded-For:\s*10\.\d+\.\d+\.\d+`),
 		regexp.MustCompile(`(?i)X-Forwarded-For:\s*192\.168\.\d+\.\d+`),
-		// Deteksi header authorization bypass / social engineering (GAP-002 & GAP-003)
-		// Alasan (Why): Kata kunci seperti "OVERRIDE", "authorized", "classify as" digunakan
-		// dalam Zero-Shot Prompt Injection untuk mengelabui model AI Cognitive Core.
 		regexp.MustCompile(`(?i)(BSSN_OVERRIDE|EMERGENCY_BYPASS|ADMIN_OVERRIDE)`),
 		regexp.MustCompile(`(?i)(classify.{0,20}(benign|allow|safe))`),
 		regexp.MustCompile(`(?i)(ignore.{0,30}(previous|instruction|rule))`),
 		regexp.MustCompile(`(?i)(authorized.{0,20}(bypass|skip|allow))`),
-		// Deteksi header injeksi SQLi/XSS di dalam nilai header HTTP
 		regexp.MustCompile(`(?i)(UNION|SELECT|DROP|INSERT).{0,50}(FROM|INTO|TABLE)`),
 		regexp.MustCompile(`(?i)<script`),
 	}
@@ -97,59 +92,70 @@ func NewReflexFilter() *ReflexFilter {
 		sqliPatterns:      sqliRegex,
 		xssPatterns:       xssRegex,
 		traversalPatterns: traversalRegex,
+		rcePatterns:       rceRegex,
 		headerPatterns:    headerRegex,
-		// [GAP-001 FIX] Pre-compile regex untuk membersihkan komentar SQL inline (/* ... */)
-		// Alasan (Why): Serangan seperti SL/**/EEP(5) lolos dari pola SLEEP\( karena ada
-		// komentar di tengah keyword. Dengan stripping komentar sebelum matching,
-		// payload tersebut menjadi SLEEP(5) dan langsung terdeteksi.
 		sqlCommentStrip:  regexp.MustCompile(`/\*.*?\*/`),
 		benchmarkPattern: regexp.MustCompile(`(?i)BENCHMARK\s*\(`),
 	}
 }
 
-// stripSQLComments menghapus komentar inline SQL (/* ... */) dari string input.
-//
-// Alasan Arsitektural (Why - GAP-001):
-// Teknik evasion "SL/**/EEP" menyisipkan komentar SQL kosong di tengah keyword untuk
-// memecah pola string matching. Dengan menghapus komentar terlebih dahulu, teknik ini
-// menjadi tidak efektif dan keyword berbahaya kembali terekspos untuk dideteksi.
 func (f *ReflexFilter) stripSQLComments(data string) string {
 	return f.sqlCommentStrip.ReplaceAllString(data, "")
 }
 
 // InspectRequest memindai string input untuk mencari pola eksploitasi dasar.
-// Mengembalikan status ancaman (bool) dan jenis ancaman jika terdeteksi.
 func (f *ReflexFilter) InspectRequest(data string) (isThreat bool, threatType string) {
-	// [GAP-001 FIX] Bersihkan komentar SQL sebelum lowercase dan matching
-	// Alasan (Why): Tanpa stripping ini, "SL/**/EEP(5)" tidak cocok dengan pola SLEEP\(.
-	// Setelah stripping menjadi "SLEEP(5)" yang langsung cocok.
-	data = f.stripSQLComments(data)
+	// Recursive URL Unescape (hingga 5 iterasi) untuk membongkar obfuskasi multi-layered URL percent encoding
+	decoded := data
+	for i := 0; i < 5; i++ {
+		if !strings.Contains(decoded, "%") {
+			break
+		}
+		if unescaped, err := url.QueryUnescape(decoded); err == nil && unescaped != decoded {
+			decoded = unescaped
+		} else {
+			break
+		}
+	}
 
-	// Konversi input ke lowercase sekali saja untuk menghemat CPU dibanding mencocokkan case-insensitive berulang kali.
-	data = strings.ToLower(data)
+	// Bersihkan komentar SQL sebelum lowercase dan matching
+	decoded = f.stripSQLComments(decoded)
+	decoded = strings.ToLower(decoded)
 
 	// 1. Pemindaian SQLi
 	for _, p := range f.sqliPatterns {
-		if p.MatchString(data) {
+		if p.MatchString(decoded) {
 			return true, "SQL_INJECTION_DETECTED"
 		}
 	}
 
-	// 2. Pemindaian Path Traversal
+	// 2. Pemindaian Path Traversal / LFI
 	for _, p := range f.traversalPatterns {
-		if p.MatchString(data) {
+		if p.MatchString(decoded) {
 			return true, "PATH_TRAVERSAL_DETECTED"
 		}
 	}
 
-	// 3. Pemindaian XSS
+	// 3. Pemindaian Command Injection / RCE
+	for _, p := range f.rcePatterns {
+		if p.MatchString(decoded) {
+			return true, "RCE_COMMAND_INJECTION_DETECTED"
+		}
+	}
+
+	// 4. Pemindaian XSS
 	for _, p := range f.xssPatterns {
-		if p.MatchString(data) {
+		if p.MatchString(decoded) {
 			return true, "XSS_DETECTED"
 		}
 	}
 
 	return false, ""
+}
+
+func urlQueryUnescape(s string) (string, error) {
+	// Full recursive percent unescape for double URL encoding bypasses
+	return url.QueryUnescape(s)
 }
 
 // InspectHeaders memeriksa kumpulan header HTTP untuk mendeteksi injeksi, spoofing IP,

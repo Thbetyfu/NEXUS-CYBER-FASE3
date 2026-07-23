@@ -281,11 +281,11 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
 	}
 
-	// [BYPASS INTERNAL CHAT APIS]
+	// [BYPASS INTERNAL SOC CHAT API ONLY]
 	// Alasan Teknis (Why):
-	// Diskusi admin dengan modul asisten AI mengenai celah SQLi/XSS tidak boleh disaring atau disanitasi oleh gateway,
-	// karena akan menyebabkan kegagalan respon chat admin (False Positive Lockout).
-	if len(r.URL.Path) >= 5 && r.URL.Path[:5] == "/api/" {
+	// Hanya diskusi admin dengan modul asisten AI (/api/nechat) yang dibebaskan dari pemindaian WAF.
+	// Rute API aplikasi publik lainnya (/api/login, /api/user, /api/test, dll) WAJIB dipindai 100%.
+	if r.URL.Path == "/api/nechat" || r.URL.Path == "/api/chat" {
 		np.getProxy().ServeHTTP(w, r)
 		return
 	}
