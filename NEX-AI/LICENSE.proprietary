@@ -1,0 +1,28 @@
+==================================================================
+NEXUS CYBER - PROPRIETARY CYBER MODEL & DATASET LICENSE (NON-OPEN-SOURCE)
+==================================================================
+COPYRIGHT (C) 2026 THOIRQ & NEXUS CYBER ARCHITECTURE. ALL RIGHTS RESERVED.
+
+1. PROPRIETARY & CONFIDENTIAL NOTICE
+   All machine learning models, model weights, GGUF quantized binaries
+   (including nex_ai_q4_k_m.gguf), fine-tuning checkpoints, Modelfiles,
+   adversarial datasets (cyber_security_dataset.json), and inference scripts
+   contained within this NEX-AI repository are the exclusive, proprietary,
+   and confidential property of NEXUS CYBER.
+
+2. NON-OPEN-SOURCE RESTRICTION
+   NEX-AI IS STRICTLY NOT OPEN-SOURCE SOFTWARE.
+   No license is granted to copy, distribute, sublicense, sell, publish,
+   mirror, fork, or publicly host any part of NEX-AI or its derived weights
+   on public model hubs (including Hugging Face, GitHub, Kaggle, or Ollama Library)
+   without prior explicit written authorization from the copyright holder.
+
+3. KEDAULATAN SIBER & HAK CIPTA EKSKLUSIF
+   Model NEX-AI dikembangkan khusus untuk menjadi komponen "Otak Pertahanan Otonom"
+   internal ekosistem Nexus Cyber (Cyber Command Center & WAF Gateway).
+   Setiap penggunaan oleh pihak ketiga atau publikasi ke luar secara ilegal
+   merupakan pelanggaran hak cipta dan hak kedaulatan perangkat lunak siber.
+
+==================================================================
+UNAUTHORIZED COPYING, REDISTRIBUTION, OR RE-LICENSING IS STRICTLY PROHIBITED.
+==================================================================
