@@ -90,13 +90,17 @@ type AIInsight struct {
 	RecommendedAction string    `gorm:"type:varchar(255)"` // Mitigasi spesifik (misal: "BLOCK_IP")
 }
 
-// DomainSubscription memetakan tabel `domain_subscriptions` untuk kontrol lisensi SaaS WAF terpusat.
+// DomainSubscription memetakan tabel `domain_subscriptions` untuk kontrol lisensi SaaS WAF terpusat
+// serta pendaftaran notifikasi Telegram Multi-Tenant per-domain.
 type DomainSubscription struct {
 	Base
-	Domain   string `gorm:"type:varchar(255);uniqueIndex"`
-	OriginIP string `gorm:"type:varchar(255)"`
-	IsActive bool   `gorm:"type:boolean;default:true"`
-	PlanType string `gorm:"type:varchar(50);default:'premium'"`
+	Domain          string     `gorm:"type:varchar(255);uniqueIndex"`
+	OriginIP        string     `gorm:"type:varchar(255)"`
+	IsActive        bool       `gorm:"type:boolean;default:true"`
+	PlanType        string     `gorm:"type:varchar(50);default:'premium'"`
+	TelegramChatID  string     `gorm:"type:varchar(100)"` // Chat ID / Channel ID Telegram milik pemilik domain
+	TelegramEnabled bool       `gorm:"type:boolean;default:true"` // Status aktif/non-aktifkan notifikasi Telegram per domain
+	LastAlertSentAt *time.Time `gorm:"type:timestamp"`    // Timestamp tracking untuk debounce/cooldown filter 15 menit
 }
 
 // AntibodyAudit memetakan tabel `antibody_audits` sebagai audit trail terstruktur untuk setiap antibodi

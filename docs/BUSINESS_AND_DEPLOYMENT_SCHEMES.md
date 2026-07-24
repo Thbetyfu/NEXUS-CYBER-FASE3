@@ -1,60 +1,70 @@
-# 🏢 SKEMA BISNIS & ARSITEKTUR DEPLOYMENT: PEMERINTAH/PENDIDIKAN VS SWASTA
-Panduan Penjualan, Lisensi, dan Penempatan Infrastruktur Nexus Cyber untuk Sektor Publik (GovEdu) dan Swasta
+# 🏢 SKEMA BISNIS & ARSITEKTUR DEPLOYMENT: B2G VS B2B ENTERPRISE VS B2B MICRO SAAS
+Panduan Penjualan, Lisensi, Penempatan Infrastruktur, dan Monetisasi Nexus Cyber untuk Sektor Publik (GovEdu), Korporasi Swasta (B2B Enterprise), dan UMKM (B2B Micro SaaS)
+
+> [!IMPORTANT]
+> **KLASIFIKASI MODEL DEPLOYMENT & STRUKTUR HARGA**:
+> 1. **B2G Government & Public Schools (Self-Hosted)**: Dideploy **100% Self-Hosted di server fisik instansi/sekolah sendiri / PDN**. Data siber 100% di dalam jaringan lokal. Pengadaan via **SIPLah & E-Katalog LKPP (APBD/APBN/BOS)**.
+> 2. **B2B Enterprise Swasta (Self-Hosted)**: Dideploy **100% Self-Hosted di Data Center / Server Fisik milik swasta besar sendiri**. Menggunakan **Enterprise Contract License Tahunan**.
+> 3. **B2B Micro & SME / UMKM (Managed Cloud Proxy)**: Tanpa server sendiri, cukup **mengarahkan DNS CNAME** ke Cloud Proxy Nexus Cyber. Langganan bulanan/tahunan SaaS murah (**Paket UMKM Rp19.000/bulan**).
 
 ---
 
-## 1. Perbandingan Strategis: Pemerintah/Pendidikan vs Swasta
+## 1. Perbandingan Strategis 3 Skema Deployment
 
-Skema penawaran produk Nexus Cyber dibedakan secara tegas antara sektor **Pemerintah & Pendidikan (GovEdu)** dan **Swasta (Private Enterprise)** karena perbedaan regulasi, kedaulatan data, kepatuhan anggaran daerah, dan model penyerapan anggaran belanja masing-masing sektor.
-
-| Aspek | Sektor Pemerintah & Pendidikan (B2G/B2E) | Sektor Swasta (B2B SaaS) |
-| :--- | :--- | :--- |
-| **Model Bisnis** | Lisensi Per-Core CPU Tahunan (ditagih tahunan penuh di muka, mengikuti siklus APBD/APBN/BOS). | Langganan Bulanan/Tahunan (*Software as a Service - SaaS*) via Midtrans. |
-| **Pengadaan & Penjualan** | Melalui **e-Katalog LKPP** (Pengadaan Langsung < Rp200 juta) atau kontrak dinas volume. | *Self-service* mandiri, pembayaran instan QRIS/VA, auto-provisioning container dalam < 10 detik. |
-| **Lokasi Deployment** | Pusat Data Nasional (PDN), *On-Premise Private Cloud*, atau server lokal sekolah (Air-Gapped). | Multi-tenant Docker cluster di VPS Mandiri (Biznet GIO / Hetzner). |
-| **Cognitive Core (AI)** | **NEX-AI Lokal penuh** via Ollama (`nex-ai-protect` 3B Q4_K_M) dijalankan offline pada server lokal / GPU lokal. | **NEX-AI Lokal** via Ollama pada dedicated node untuk meminimalkan biaya running cost (API Cost = Rp0). |
-| **Threat Intelligence** | Jaringan Nasional (Blacklist IP lokal BSSN & data insiden siber kolektif terenkripsi). | Redis Pub/Sub realtime blacklist sync antarsimpul gateway (Collective Network Moat). |
-| **Kepatuhan Hukum** | PP No. 71/2019 (PSTE), UU PDP No. 27/2022, Audit Keuangan BPK. | UU PDP, POJK POJK No. 11/SEC/2022 (untuk FinTech). |
+| Aspek Arsitektural & Bisnis | 🏛️ B2G Govt & Public School (Self-Hosted) | 🏢 B2B Enterprise Swasta (Self-Hosted) | 🏪 B2B Micro & UMKM (Cloud Proxy SaaS) |
+| :--- | :--- | :--- | :--- |
+| **Target Pengguna** | Kemenkes, KAI, Disdik, SMAN 1 Samarinda, Unmul. | Bank Swasta, Korporasi Besar, RS Swasta Besar. | UMKM Retail (WIN Electronic), Startup, Toko Online. |
+| **Lokasi Deployment** | **Self-Hosted On-Premise** di Server Fisik / VM Sendiri / PDN. | **Self-Hosted On-Premise** di Private Data Center Sendiri. | **Cloud Multi-Tenant Proxy Cluster** (Biznet GIO/Hetzner). |
+| **Cara Integrasi** | Middleware dipasang langsung di server fisik lokal instansi. | Middleware dipasang langsung di atas VM/Server Swasta. | Klien mengubah rekaman **DNS CNAME** domain ke Proxy SaaS. |
+| **Kedaulatan Data** | **100% Local Air-Gapped** di server fisik instansi. | **100% Local Data Sovereignty** di Data Center swasta. | Trafik disaring di Cloud Proxy sebelum ke origin server. |
+| **Push Alert Telegram** | **Group CSIRT Internal Dinas/Sekolah** / Syslog SIEM. | **Group Alert SOC Swasta** / Syslog SIEM. | **Bot Multi-Tenant Alert per Domain** (Zero COGS). |
+| **Skema Harga & Bayar** | Lisensi Tahunan via **SIPLah / E-Katalog (APBD/BOS)**. | **Annual Enterprise Contract License** (CAPEX Invoice). | **Monthly/Annual OPEX SaaS** (Starter Rp19.000/bln). |
 
 ---
 
-## 2. Skema Sektor Pemerintah & Pendidikan (B2G / B2E Model)
+## 2. Skema Sektor Publik & Sekolah Negeri (B2G Self-Hosted)
 
-### 2.1 Model Lisensi & Penentuan Harga (Core-Based Annual Licensing)
-Instansi pemerintah menggunakan mekanisme belanja modal (CAPEX) tahunan. Model berlangganan bulanan otomatis ditolak oleh birokrasi anggaran.
-*   **Annual Core License**: Lisensi tahunan software yang dipasang di server milik instansi/sekolah, dikenakan per-vCPU Core.
-*   **Paket Khusus GovEdu (Ditagih tahunan penuh di muka)**:
-    *   *GovEdu Basic (SD/SMP/SMA Negeri)*: Rp19.000 / bulan (Ditagih **Rp228.000 / tahun**).
-    *   *GovEdu Pro (Dinas Kab/Kota Kecil)*: Rp49.000 / bulan (Ditagih **Rp588.000 / tahun**).
-    *   *GovEdu Institusi (PTN/Pemda)*: Rp149.000 / bulan (Ditagih **Rp1.788.000 / tahun**).
-    *   *GovEdu Volume (Dinas Pendidikan)*: **Rp990.000 / bulan** (Ditagih **Rp11.880.000 / tahun** untuk melindungi hingga 50 domain sekolah secara terpusat).
+### 2.1 Arsitektur & Kedaulatan Data
+- Software `nexus-core-gateway` dipasang sebagai *Appliance Transparan (Zero-Code Middleware)* di atas server/VM milik sekolah/dinas sendiri.
+- Data Dapodik, NIK Siswa, dan NIK Guru tetap 100% di dalam infrastruktur lokal (Menjamin *Data Sovereignty* UU PDP No. 27/2022 & Permenkominfo No. 5/2021).
 
-### 2.2 Arsitektur Terisolasi Penuh (Air-Gapped & Offline Updates)
-Instansi vital (seperti Pusat Data Nasional / PDN) memiliki jaringan terputus total dari internet luar demi keamanan:
-*   **WAF Core**: Menggunakan modul **NEX-AI** lokal yang dieksekusi di server GPU lokal menggunakan Ollama.
-*   **Offline Update Bundles**: Ruleset penyerangan baru, daftar blacklist IP siber, dan bobot model (*model weights*) baru NEX-AI dibundel dalam berkas terenkripsi `.bin` / tarball. Admin IT instansi mengunduh berkas ini secara bulanan dari portal Nexus Cyber lalu mengunggahnya secara manual ke dasbor lokal WAF.
+### 2.2 Model Penentuan Harga B2G (CAPEX Tahunan via E-Katalog/SIPLah)
+*   **GovEdu Basic (Sekolah Negeri SD/SMP/SMA)**: **Rp228.000 / tahun** per server sekolah (Lisensi On-Premise).
+*   **GovEdu Pro (Dinas / UPTD Kab/Kota)**: **Rp588.000 / tahun** per node server.
+*   **GovEdu Enterprise (Kementerian / PTN)**: **Rp1.788.000 / tahun** per cluster node.
+*   **GovEdu Central (Disdik Terpusat 50 Domain)**: **Rp11.880.000 / tahun**.
 
 ---
 
-## 3. Skema Sektor Swasta (B2B SaaS Model)
+## 3. Skema Sektor Swasta Besar (B2B Enterprise Self-Hosted)
 
-### 3.1 Model Bisnis (SaaS Multi-Tenant)
-Perusahaan swasta menggunakan biaya operasional (OPEX) bulanan untuk memangkas pengeluaran modal di awal.
-*   **Multi-Tenant Gateway**: WAF terdistribusi otonom. Klien mengarahkan rekaman DNS CNAME ke gerbang proxy Nexus Cyber di VPS Biznet GIO.
-*   **Paket Berlangganan Swasta**:
-    *   *Basic*: Rp49.000/bln (Batas 1 Domain, 100 GB visitor data transfer, Reflex AI).
-    *   *Pro*: Rp149.000/bln (Batas 3 Domain, 500 GB data transfer, Reflex AI + PACS + MTD 60m).
-    *   *Pro+*: Rp449.000/bln (Batas 10 Domain, 2 TB data transfer, Dual-Brain AI + PACS + MTD 10m + AVSE).
-    *   *Ultrasafe*: Rp1.499.000/bln (Domain tak terbatas, 10 TB data transfer, Dedicated container, eBPF Kernel Drops, MTD 1m).
+### 3.1 Arsitektur Private Data Center Swasta
+Perusahaan swasta besar (Bank Swasta, Korporasi Gede) memiliki Data Center fisik sendiri dan dilarang membuang data nasabah ke proxy publik.
+- **Enterprise Appliance Installation**: Dipasang langsung di atas VM/Docker/Kubernetes milik swasta.
+- **Private SOC Alert**: Integrasi notifikasi langsung ke SIEM SOC Swasta / Slack / Telegram Enterprise.
 
-### 3.2 Penanganan Biaya Operasional (Zero API Cost)
-*   **Inference Full Local**: Reflex Layer (`nex-ai-reflex`) dan Reasoning Layer (`nex-ai-protect`) berjalan lokal via Ollama di kluster/server kita. Seluruh inferensi berlangsung di infrastruktur sendiri tanpa vendor AI cloud, mempertahankan margin kotor hingga **63.1%** pada Lean Stage.
-*   **Caching Redis**: Respon verifikasi lisensi dan request payload identik di-cache penuh untuk menghemat pemanggilan model AI.
+### 3.2 Model Penentuan Harga B2B Enterprise (Annual Contract License)
+*   **Enterprise Standard (1 Server Node)**: **Rp2.499.000 / tahun**.
+*   **Enterprise Cluster (Multi-Node Cluster)**: **Rp8.999.000 / tahun**.
+*   **Enterprise Unlimited**: **Rp24.999.000 / tahun** (Termasuk SLA Support 24/7 & Incident Forensic Report).
 
 ---
 
-## 4. Rekomendasi Peta Jalan Regulasi & Komersialisasi 10 Tahun
+## 4. Skema Sektor UMKM & Swasta Kecil (B2B Micro Cloud Proxy SaaS)
 
-1.  **LKPP e-Katalog Onboarding (Tahun 1)**: Daftarkan paket GovEdu di e-Katalog LKPP pada kategori *Perangkat Lunak Keamanan Informasi* untuk memfasilitasi pengadaan langsung oleh Pemda & Dinas Pendidikan.
-2.  **Sertifikasi Kepatuhan Negara (Tahun 3-5)**: Mengajukan evaluasi produk untuk mendapatkan sertifikasi internasional **Common Criteria EAL2+** serta **Sertifikat Keamanan Produk dari BSSN**.
-3.  **Dampak Kedaulatan Siber**: Menjadikan Nexus Cyber sebagai WAF standar pertahanan siber dalam negeri untuk seluruh ekosistem PDN (Pusat Data Nasional), Bank Pembangunan Daerah (BPD), dan Universitas Negeri di Indonesia, menciptakan keunggulan kompetitif jangka panjang yang tidak bisa diintervensi oleh pemain asing seperti Cloudflare.
+### 4.1 Arsitektur Managed CNAME Proxy (Tanpa Server Sendiri)
+UMKM retail seperti **Toko WIN Electronic (Bapak Tjhin Fui Men)** tidak memiliki server fisik.
+- **Praktis CNAME Routing**: Cukup ubah DNS CNAME domain (misal: `winingtronik.com` -> `proxy.nexus-cyber.com`). Proteksi otonom langsung aktif.
+- **Dynamic Telegram Alert (Zero COGS / HPP = Rp 0)**: Push alert dikirim via Bot Telegram gratis `@NexusCyberAlertBot` per-domain tanpa biaya kirim.
+
+### 4.2 Model Penentuan Harga B2B Micro SaaS (OPEX Monthly/Annual)
+*   **Starter UMKM (Calon Klien 1: WIN Electronic)**: **Rp19.000 / bulan** (Ditagih Tahunan **Rp228.000 / tahun**, WTP validated oleh Tjhin Fui Men, komitmen komersialisasi).
+*   **Pro Swasta (3 Domain)**: **Rp49.000 / bulan** (Ditagih Tahunan **Rp588.000 / tahun**).
+*   **Pro+ Swasta (10 Domain)**: **Rp149.000 / bulan** (Ditagih Tahunan **Rp1.788.000 / tahun**).
+
+---
+
+## 5. Peta Jalan Komersialisasi 10 Tahun
+1.  **LKPP e-Katalog & SIPLah Onboarding (Tahun 1)**: Daftarkan lisensi GovEdu di E-Katalog LKPP & SIPLah untuk sekolah negeri & dinas.
+2.  **Sertifikasi Keamanan BSSN (Tahun 3)**: Mengajukan evaluasi sertifikasi produk keamanan informasi BSSN & ISO 27001.
+3.  **Resiliensi Kedaulatan Digital (Tahun 5+)**: Menjadikan Nexus Cyber sebagai perisai WAF standar nasional untuk PDN, BPD Swasta/Pemerintah, dan UMKM Indonesia.

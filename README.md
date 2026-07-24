@@ -63,6 +63,7 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 * **Log Persistensi & Audit**: Penyimpanan log anomali dan jejak audit secara terstruktur dalam database **PostgreSQL** (`threat_logs`, `mtd_audit_trail`, `intel_blacklist`, `ai_insights`) serta **Redis** untuk *in-memory caching* dan *rate limiting*.
 * **Local GeoIP City Lookup**: Resolusi offline koordinat geografis peretas secara lokal menggunakan basis data MaxMind City `.mmdb` dengan fallback dinamis ke API online `ip-api.com`.
 * **AbuseIPDB Async Reporting**: Publikasi IP penyerang yang terblokir secara asinkron (goroutine) ke portal intelijen reputasi global AbuseIPDB.
+* **Multi-Tenant Telegram Push Alerts (Zero COGS)**: Pengiriman notifikasi insiden serangan secara langsung ke HP pemilik domain per-tenant via Telegram Bot Resmi (`@NexusCyberAlertBot`). Fitur ini menggunakan API Telegram 100% Gratis (HPP = Rp 0), dilengkapi *Debounce Cooldown Filter* (15 menit per domain) untuk mencegah kehabisan tenaga HP dari serangan DDoS, serta menyertakan tautan **Google Maps** lokasi hacker.
 
 ### 9. Fitur Pengujian Simulasi & Ketahanan Riil (Testing & Simulation Mode)
 
@@ -104,28 +105,21 @@ Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 
 Detail lengkap panduan penyebaran sistem dapat dibaca pada [📖 Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
 
-### 💻 Opsi 1: Menyalakan di PC Lokal (Gratis / Demo)
-
+### 🏛️ Skema 1: Deployment B2G / GovEdu (Self-Hosted On-Premise / PDN)
+*Dipasang 100% di server/Pusat Data milik Instansi Pemerintah/Sekolah itu sendiri:*
 * **Windows PowerShell**:
   ```powershell
   .\scripts\deploy\local\deploy-local-pc.ps1
   ```
-* **Linux / WSL / macOS**:
+* **Linux / WSL / Ubuntu Server**:
   ```bash
   bash scripts/deploy/local/deploy-local-pc.sh
-  ```
-* **Publikasi ke Internet Gratis (Cloudflare Tunnel)** — di terminal terpisah:
-  ```powershell
-  # Windows
-  .\scripts\tunnel\nexus-tunnel.ps1
-  # Linux / WSL
-  bash scripts/tunnel/nexus-tunnel.sh
   ```
 
 ---
 
-### ☁️ Opsi 2: Menyalakan di Cloud VPS (Biznet Gio / Hetzner / DigitalOcean)
-
+### 🏢 Skema 2: Deployment B2B SaaS (Cloud Multi-Tenant Proxy Cluster)
+*Dipasang di Cloud VPS milik Nexus Cyber untuk melayani banyak klien swasta via DNS CNAME:*
 Jalankan perintah 1-klik di VPS Ubuntu 22.04 LTS Anda:
 
 ```bash

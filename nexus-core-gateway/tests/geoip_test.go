@@ -23,8 +23,7 @@ func TestIPGeoInfoLookups(t *testing.T) {
 
 	for _, tc := range tests {
 		country, city, isp, lat, lon := database.GetIPGeoInfo(tc.ip)
-		t.Logf("[GEO-TEST-RESULT] IP: %-15s => Negara: %-15s | Kota: %-10s | ISP: %-18s | Lat: %-8.4f | Lon: %-8.4f", 
-			tc.ip, country, city, isp, lat, lon)
+		t.Logf("[GEO-TEST-RESULT] IP: %-15s => Negara: %-15s | Kota: %-12s | ISP: %-20s | Lat: %.4f  | Lon: %.4f", tc.ip, country, city, isp, lat, lon)
 
 		if country == "Unknown" {
 			t.Logf("[SKIP] External GeoIP lookup returned Unknown for IP: %s (rate-limited or offline)", tc.ip)

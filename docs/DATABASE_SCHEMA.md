@@ -12,75 +12,6 @@ Skema database Nexus Cyber dirancang **secara spesifik** untuk memenuhi klausul 
 1. **Klausul A.12.4.1 (Event Logging)**: Mewajibkan sistem merekam kejadian keamanan secara rinci. Tabel `threat_logs` memastikan setiap upaya serangan (IP, Waktu, Payload) tercatat rapi sebagai alat bukti investigasi forensik.
 2. **Klausul A.12.4.2 (Protection of Log Information)**: Log fasilitas harus dilindungi dari perusakan. Menyimpan log di dalam database terpisah (PostgreSQL) mencegah penyerang ("hacker") menghapus jejak mereka, yang sering terjadi jika log hanya disimpan di file teks lokal.
 3. **Klausul A.12.4.3 (Administrator & Operator Logs)**: Mewajibkan adanya *audit trail* (jejak rekam) atas perubahan sistem. Tabel `mtd_audit_trail` membuktikan kepada auditor keamanan bahwa fitur otonom (pemutaran port MTD) aktif dan tercatat secara resmi.
-4. **Klausul A.16.1 (Incident Management)**: Mewajibkan organisasi memiliki prosedur respons insiden. Tabel `intel_blacklist` dan `ai_insights` memungkinkan administrator untuk mengambil keputusan cepat berdasarkan data ancaman historis.
-
----
-
-## 🗺️ Entity-Relationship Diagram (ERD)
-
-```mermaid
-erDiagram
-    THREAT_LOGS ||--o{ AI_INSIGHTS : "analyzed_by"
-    INTEL_BLACKLIST }|--o| THREAT_LOGS : "triggered_by"
-    ANTIBODY_AUDITS }|--o| THREAT_LOGS : "generated_from"
-
-    THREAT_LOGS {
-        uuid id PK
-        timestamp created_at
-        string source_ip
-        string endpoint
-        string method
-        string status
-        string threat_type
-        int severity
-        text payload_sample
-        string user_agent
-    }
-
-    MTD_AUDIT_TRAIL {
-        uuid id PK
-        timestamp created_at
-        int old_port
-        int new_port
-        string trigger_reason
-        string status
-    }
-
-    INTEL_BLACKLIST {
-        uuid id PK
-        string ip_address
-        string reason
-        timestamp added_at
-        timestamp expires_at
-        boolean is_active
-    }
-
-    AI_INSIGHTS {
-        uuid id PK
-        uuid threat_log_id FK
-        timestamp created_at
-        string ai_model
-        text analysis_text
-        string recommended_action
-    }
-
-    ANTIBODY_AUDITS {
-        uuid id PK
-        timestamp created_at
-        string payload_signature
-        string source_ip
-        string threat_type
-        decimal confidence_score
-        timestamp vaccinated_at
-        string instance_id
-        boolean is_shared_to_redis
-    }
-```
-
----
-
-## 📊 Detail Tabel
-
 ### 1. `threat_logs` (Forensik Serangan)
 Tabel utama untuk merekam seluruh anomali dan serangan yang ditangkap oleh Nexus Gateway.
 *   **Tujuan**: Audit keamanan, analisis pola serangan historis, dan pelaporan (*Reporting*).
@@ -159,5 +90,22 @@ Tabel untuk mencatat setiap kali **NEX-AI Cognitive Core** (`nex-ai-protect`) me
 | `confidence_score`| `DECIMAL(4,3)`| Nilai tingkat keyakinan (confidence score) model AI (0.000 - 1.000). |
 | `vaccinated_at` | `TIMESTAMP` | Waktu eksak antibodi diinjeksikan ke Reflex Layer. |
 | `instance_id` | `VARCHAR(100)`| Identitas mesin/node gateway yang melakukan deteksi pertama. |
-| `is_shared_to_redis`| `BOOLEAN` | Menunjukkan apakah antibodi berhasil disiarkan ke kluster Redis. |
+---
+
+### 6. `domain_subscriptions` (Lisensi SaaS & Notifikasi Telegram Multi-Tenant)
+Tabel untuk mengelola pendaftaran domain terproteksi, kunci lisensi SaaS, serta pemetaan Chat ID Telegram untuk notifikasi terisolasi per domain (Multi-Tenant).
+*   **Tujuan**: Kontrol lisensi B2B/B2G dan routing pengiriman Notifikasi Push Telegram instan per-domain (Zero COGS).
+
+| Kolom | Tipe Data | Keterangan |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Primary Key. |
+| `created_at` | `TIMESTAMP` | Waktu domain pertama kali didaftarkan. |
+| `domain` | `VARCHAR(255)` | Alamat domain terdaftar (Unique Index, misal: `tokosaya.com`). |
+| `origin_ip` | `VARCHAR(255)` | Alamat IP server asal (origin server) milik klien. |
+| `is_active` | `BOOLEAN` | Status lisensi domain (TRUE = Terproteksi). |
+| `plan_type` | `VARCHAR(50)` | Jenis paket langganan (Basic, Pro, Pro+, Ultrasafe). |
+| `telegram_chat_id`| `VARCHAR(100)`| ID Telegram Chat / Channel penerima notifikasi khusus domain ini. |
+| `telegram_enabled`| `BOOLEAN` | Switch pengaktifan notifikasi Telegram per domain (TRUE = Active). |
+| `last_alert_sent_at`| `TIMESTAMP`| Timestamp tracking untuk filter cooldown debounce 15 menit. |
+
 

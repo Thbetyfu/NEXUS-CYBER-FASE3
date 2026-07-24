@@ -24,12 +24,26 @@
 - **Problem Statement:** Mitigasi serangan siber (DDoS, SQL Injection, XSS, Defacement) di level gateway sering kali memakan resource CPU/RAM tinggi di layer aplikasi, lambat memproses ancaman secara kognitif, dan sulit memulihkan visual web secara mandiri tanpa downtime. Selain itu, belum ada sistem monetisasi sewa langganan (multi-tenant WAF) yang terintegrasi secara otomatis, serta belum adanya lingkungan pengujian ketahanan portofolio web yang terpadu.
 - **Product Vision:** Membangun ekosistem pertahanan siber otonom (SOC) terintegrasi yang menggabungkan mitigasi super cepat (Reflex AI Layer) dengan analisis mendalam (Reasoning AI Layer), Moving Target Defense (MTD) untuk rotasi port acak, Honeypot tarpit, proteksi visual steganografi, dan paywall proteksi multi-tenant SaaS yang dikendalikan penuh dari panel web dashboard Command Center modern.
 
+### 1.3 Target Pengguna & 3 Skema Deployment
+
+1. **B2G Government & Public Schools (Self-Hosted On-Premise / PDN)**:
+   - **Target**: Kementerian (Kemenkes), BUMN (KAI), **Dinas Pendidikan & UPTD Sekolah Negeri (SMAN 1 Samarinda)**, Perguruan Tinggi Negeri (Unmul/Telkom University).
+   - **Deployment**: **100% Self-Hosted On-Premise / Local PDN di Server Fisik Sendiri**. Zero-Code Middleware Proxy di depan web server lokal instansi. Data sensitif (NIK, Dapodik, NIK Guru) tetap 100% lokal (*Data Sovereignty*). Lisensi Kontrak Tahunan via **SIPLah & E-Katalog LKPP**.
+2. **B2B Enterprise Swasta (Self-Hosted On-Premise / Private Data Center)**:
+   - **Target**: Bank Swasta Besar (BCA/Mandiri Swasta), Rumah Sakit Swasta Besar, Korporasi Swasta Gede yang **memiliki Data Center / Server Sendiri**.
+   - **Deployment**: **100% Self-Hosted On-Premise di Private Server Swasta**. Enterprise Contract License Tahunan dengan integrasi SIEM & Slack/Telegram SOC.
+3. **B2B Micro & SME / UMKM (Managed Cloud Proxy SaaS)**:
+   - **Target**: UMKM Retail (**Toko WIN Electronic - Bapak Tjhin Fui Men**), Startup, Toko Swasta Kecil, & Web Hosting Swasta tanpa server sendiri.
+   - **Deployment**: **Multi-Tenant Cloud SaaS Proxy (CNAME Routing)** dengan fitur push alert Telegram per-domain (**Paket Starter UMKM Rp19.000/bulan** ditagih tahunan Rp228.000/tahun).
+
 ### 2.2 Target Pengguna (User Personas)
-1. **Role: SOC Administrator (Security Operator)**
-   - Deskripsi: Mengawasi metrik lalu lintas real-time, meninjau log serangan AI, memicu rotasi port darurat (Emergency Shuffle), memblokir/membuka IP secara manual, serta mengelola lisensi domain klien.
-2. **Role: Tenant / Client Website (Owner)**
-   - Deskripsi: Pemilik domain eksternal yang mendaftarkan situsnya ke gerbang WAF Nexus Cyber agar mendapat perlindungan visual obfuskasi (PACS) dan sanitasi berkas (AVSE).
-3. **Role: Attacker (Hacker/Bot Umpan)**
+1. **Role: SOC Administrator (Security Operator / CSIRT Dinas / SOC Swasta)**
+   - Deskripsi: Mengawasi metrik lalu lintas real-time, meninjau log serangan AI, memicu rotasi port darurat (Emergency Shuffle), memblokir/membuka IP secara manual, serta menerima notifikasi insiden via Telegram Group CSIRT (B2G/Enterprise Self-Hosted) atau Multi-Tenant Alert (B2B Micro).
+2. **Role: Tenant Swasta B2B Micro / UMKM (E-Commerce / Retail Owner)**
+   - Deskripsi: Pemilik domain bisnis swasta yang menggunakan skema **Cloud SaaS Multi-Tenant Proxy**. Cukup mengarahkan DNS CNAME dan menerima notifikasi push Telegram otomatis per domain di HP tanpa perlu mengurus server.
+3. **Role: Admin Instansi Pemerintah B2G / Enterprise (Pemda / Diskominfo / Sekolah / Bank Swasta)**
+   - Deskripsi: Penanggung jawab IT sektor publik/enterprise yang menggunakan skema **Self-Hosted On-Premise** di server lokal instansi / Data Center swasta. Seluruh data & AI lokal berjalan di dalam jaringan instansi (Lokal Air-Gapped / Outbound Telegram Alert).
+4. **Role: Attacker (Hacker / Bot Umpan)**
    - Deskripsi: Pihak asing yang memindai port atau mencoba melakukan eksploitasi, yang secara otomatis dialihkan ke Isolated Honeypot/Tarpit untuk diisolasi dan dianalisis intensinya.
 
 ---
@@ -213,6 +227,9 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
 | `origin_ip` | String | Required | IP server backend client asli |
 | `is_active` | Boolean | Default: true | Status keaktifan perlindungan (Paywall) |
 | `plan_type` | String | Default: 'premium' | Tipe paket langganan (premium/enterprise)|
+| `telegram_chat_id`| String | Nullable | ID Telegram Chat/Channel milik pemilik domain (Multi-tenant) |
+| `telegram_enabled`| Boolean | Default: true | Switch aktifasi notifikasi Telegram per domain |
+| `last_alert_sent_at`| DateTime | Nullable | Timestamp cooldown filter 15 menit per domain |
 | `created_at` | DateTime | Default: now() | Tanggal pendaftaran |
 
 ### Entitas 3: `intel_blacklists` (PostgreSQL)

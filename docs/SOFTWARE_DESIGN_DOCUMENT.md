@@ -3,9 +3,9 @@
 
 ---
 
-## 1. Desain Arsitektur Sistem (High-Level Design)
-
-Sistem Nexus Cyber menggunakan pola desain **Microservices Loosely-Coupled** yang memisahkan antara lapisan *Data Plane* (WAF Gateway di Go) dengan *Control Plane* (SOC Dashboard di Next.js).
+Sistem Nexus Cyber menggunakan pola desain **Microservices Loosely-Coupled** yang memisahkan antara lapisan *Data Plane* (WAF Gateway di Go) dengan *Control Plane* (SOC Dashboard di Next.js), serta mendukung 2 Topologi Deployment:
+- **Mode B2B SaaS (Cloud Multi-Tenant)**: Gateway berjalan di Cloud Proxy Cluster kita. Klien swasta mengarahkan CNAME domain mereka ke proxy kita. Notifikasi Telegram di-route secara dinamis ke HP masing-masing pemilik domain per-tenant.
+- **Mode B2G GovEdu (Self-Hosted On-Premise)**: Gateway dipasang 100% di server/Pusat Data (PDN) milik instansi pemerintah/sekolah itu sendiri. Seluruh data & AI lokal berjalan di dalam infrastruktur dinas tanpa keluar internet, notifikasi dikirim ke Telegram Group CSIRT Dinas.
 
 Komponen utama:
 1.  **Reverse Proxy & Router Layer**: Menerima request HTTP publik, memeriksa kecocokan domain client premium, memproses payload di WAF middleware, dan meneruskan request ke backend target.
@@ -14,7 +14,7 @@ Komponen utama:
     *   **HTTP Honeypot**: Server HTTP independen yang berjalan di port `:9090` untuk mendeteksi penyerang web scanning.
     *   **SSH Tarpit**: Listener TCP independen yang mendeteksi probe SSH di port `:2222`.
 4.  **Local GeoIP Reader**: Pembaca database biner `.mmdb` MaxMind untuk pencarian negara secara offline dengan performa super cepat.
-5.  **AbuseIPDB Reporter**: Goroutine asinkron yang melakukan post request payload ancaman ke portal internasional AbuseIPDB.
+5.  **Threat Reporter & Telegram Dispatcher**: Goroutine asinkron untuk pengiriman alert instan ke Telegram (Multi-Tenant per-domain di B2B, Group CSIRT di B2G) serta AbuseIPDB/Syslog SIEM.
 
 ---
 
@@ -168,6 +168,40 @@ sequenceDiagram
         else Terdeteksi file tidak dikenal (Anti-Webshell)
             Monitor->>Disk: Hapus file ilegal (Webshell) dari disk
             Monitor->>Log: Catat penghapusan file ilegal
+        end
+    end
+```
+
+### 3.4 Alur Router Notifikasi Telegram Multi-Tenant per Domain (Zero COGS)
+Diagram ini menjelaskan alur dispatching pesan ancaman secara dinamis ke akun Telegram masing-masing pemilik domain dengan fitur *debounce cooldown filter*:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Attacker as Penyerang (IP Publik)
+    participant Gateway as Go WAF Gateway
+    participant Reporter as TelegramBotReporter (Go Goroutine)
+    participant DB as PostgreSQL (domain_subscriptions)
+    participant Telegram as Official Telegram Bot API (@NexusCyberAlertBot)
+    actor Client as HP Klien B2B (Pemilik Domain)
+
+    Attacker->>Gateway: Kirim payload serangan ke domain target (misal: tokosaya.com)
+    Gateway->>Gateway: Deteksi ancaman & Ban IP penyerang
+    Gateway->>Reporter: Panggil ReportThreatForDomain("tokosaya.com", IP, categories, comment)
+    
+    go Goroutine Asinkron (Zero Latency Overhead)
+        Reporter->>DB: Query GetDomainTelegramConfig("tokosaya.com")
+        DB-->>Reporter: Return ChatID ("98765432"), Enabled (True), LastAlertSentAt
+        
+        alt TelegramEnabled == False
+            Note over Reporter: Discard notification (Owner disabled alerts)
+        else Debounce Filter Active (< 15 Min)
+            Note over Reporter: Discard notification (Prevent DDoS spamming HP)
+        else Debounce Filter Passed (> 15 Min)
+            Reporter->>DB: Update last_alert_sent_at timestamp
+            Reporter->>Reporter: Format Markdown Alert + GeoIP Google Maps Link
+            Reporter->>Telegram: HTTP POST /botToken/sendMessage (chat_id="98765432")
+            Telegram-->>Client: Push Notification langsung di HP Klien!
         end
     end
 ```

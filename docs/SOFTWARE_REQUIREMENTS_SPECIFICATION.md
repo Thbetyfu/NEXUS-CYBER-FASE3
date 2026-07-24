@@ -5,12 +5,14 @@
 
 ## 1. Pendahuluan & Ruang Lingkup Sistem
 
-Dokumen Spesifikasi Kebutuhan Perangkat Lunak (SRS) ini merinci seluruh persyaratan teknis, antarmuka, dan arsitektur untuk sistem **Nexus Cyber v13.2**.
+Dokumen Spesifikasi Kebutuhan Perangkat Lunak (SRS) ini merinci seluruh persyaratan teknis, antarmuka, dan arsitektur untuk sistem **Nexus Cyber v13.2**, yang mendukung dua skema deployment terpisah:
+- **Mode B2B (Swasta SaaS)**: Cloud Multi-Tenant Proxy (Klien mengarahkan DNS CNAME).
+- **Mode B2G (GovEdu On-Premise)**: Self-Hosted di server/Pusat Data Nasional (PDN) milik instansi tanpa pengiriman data keluar.
 
 Sistem terdiri dari empat komponen utama yang saling berinteraksi:
-1.  **Core Gateway (Go)**: Reverse proxy berkinerja tinggi yang menangani penyaringan WAF (Reflex AI), rotasi port MTD, pencarian GeoIP lokal, modul SSH Tarpit, pelaporan AbuseIPDB, dan pemblokiran IP di tingkat aplikasi & eBPF stub.
+1.  **Core Gateway (Go)**: Reverse proxy berkinerja tinggi yang menangani penyaringan WAF (Reflex AI), rotasi port MTD, pencarian GeoIP lokal, modul SSH Tarpit, pelaporan AbuseIPDB/Telegram, dan pemblokiran IP di tingkat aplikasi & eBPF stub.
 2.  **Next.js Dashboard**: Dasbor kendali SOC berbasis web yang menerima visualisasi telemetri real-time via Server-Sent Events (SSE) dan mengirimkan perintah CLI ke gateway via API terenkripsi.
-3.  **Protected Target (Portfolio-website)**: Situs web yang dilindungi (portofolio) yang berada di balik rute proxy gateway.
+3.  **Protected Target (Website Klien/Dinas)**: Situs web yang dilindungi (portofolio/web dinas) yang berada di balik rute proxy gateway.
 4.  **Database & Cache (PostgreSQL/Redis)**: Menyimpan status audit pertahanan, daftar blacklist IP, log anomali, serta state MTD shuffler.
 
 ```text
@@ -95,6 +97,14 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
     *   Menangani tombol Backspace (`\u007F`), tombol Tab untuk autocompletion daftar perintah, dan tombol Arrow Up/Down untuk riwayat perintah.
     *   Mendengarkan event stream SSE `/api/ai/stream` dan mencetaknya langsung ke terminal dengan format warna ANSI escape.
 
+### RF-07: Notifikasi Push Telegram Multi-Tenant per Domain (Zero COGS)
+*   **Deskripsi**: Sistem WAF harus mendukung pendaftaran Telegram Chat ID secara terpisah per domain untuk pengiriman notifikasi pesan ancaman instan langsung ke HP klien B2B/B2G.
+*   **Spesifikasi**:
+    *   Menggunakan 1 Official Bot Telegram (`@NexusCyberAlertBot`) dengan **API Telegram 100% Gratis** tanpa batas pengiriman pesan.
+    *   Memetakan entitas domain `tokosaya.com` ke `telegram_chat_id` penerima spesifik di database `domain_subscriptions`.
+    *   Menerapkan *Debounce Cooldown Filter* (maksimal 1 notifikasi per 15 menit per domain) untuk mencegah kehabisan tenaga/spam pada HP klien saat diserang DDoS.
+    *   Pesan Telegram menyertakan data GeoIP lengkap (Negara, Kota, ISP) beserta link lokasi **Google Maps** aktif penyerang.
+
 ---
 
 ## 3. Spesifikasi Antarmuka API Gateway
@@ -138,6 +148,24 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
     {
       "status": "success",
       "message": "IP 8.8.8.8 banned for 24h"
+    }
+    ```
+
+### 3.4 Registrasi Notifikasi Telegram per Domain (`/api/domain/telegram/pair`)
+*   **Metode**: `POST`
+*   **Request Payload**:
+    ```json
+    {
+      "domain": "tokosaya.com",
+      "telegram_chat_id": "98765432",
+      "telegram_enabled": true
+    }
+    ```
+*   **Response Payload (200 OK)**:
+    ```json
+    {
+      "status": "success",
+      "message": "Telegram notification paired for domain tokosaya.com"
     }
     ```
 

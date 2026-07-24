@@ -49,8 +49,27 @@ func TestInitThreatReporter(t *testing.T) {
 		}
 	})
 
+	t.Run("Initialize Telegram Bot Mode", func(t *testing.T) {
+		os.Setenv("THREAT_INTEL_PROVIDER", "telegram")
+		os.Setenv("TELEGRAM_BOT_TOKEN", "test-token-123")
+		os.Setenv("TELEGRAM_CHAT_ID", "test-chat-456")
+		database.InitThreatReporter()
+
+		reporter, ok := database.ActiveThreatReporter.(*database.TelegramBotReporter)
+		if !ok {
+			t.Fatal("Expected ActiveThreatReporter to be of type *database.TelegramBotReporter")
+		}
+		if reporter.BotToken != "test-token-123" {
+			t.Errorf("Expected BotToken to be 'test-token-123', got '%s'", reporter.BotToken)
+		}
+		if reporter.ChatID != "test-chat-456" {
+			t.Errorf("Expected ChatID to be 'test-chat-456', got '%s'", reporter.ChatID)
+		}
+	})
+
 	t.Run("Initialize Unknown Fallback Mode", func(t *testing.T) {
 		os.Setenv("THREAT_INTEL_PROVIDER", "invalid-provider-name")
+		os.Unsetenv("TELEGRAM_BOT_TOKEN")
 		database.InitThreatReporter()
 
 		_, ok := database.ActiveThreatReporter.(*database.LocalOnlyReporter)
@@ -79,6 +98,17 @@ func TestThreatReporterExecution(t *testing.T) {
 		err := reporter.ReportThreat("8.8.8.8", []int{18}, "Brute force simulation")
 		if err != nil {
 			t.Errorf("Expected no error from SyslogSIEMReporter start, got %v", err)
+		}
+	})
+
+	t.Run("TelegramBotReporter Execution (Mock Multi-Tenant Domain Alert)", func(t *testing.T) {
+		reporter := &database.TelegramBotReporter{
+			BotToken: "mock-bot-token",
+			ChatID:   "mock-chat-id",
+		}
+		err := reporter.ReportThreatForDomain("tokosaya.com", "1.2.3.4", []int{18}, "Test Multi-Tenant Alert")
+		if err != nil {
+			t.Errorf("Expected no error from ReportThreatForDomain dispatch, got %v", err)
 		}
 	})
 }

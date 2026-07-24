@@ -121,18 +121,39 @@ func IsIPBlacklisted(ip string) bool {
 // 3. Menyimpan data di PostgreSQL guna memenuhi klausul log audit ISO 27001 untuk pelaporan kepatuhan keamanan (ISMS).
 // GeoIPResponse models the json response of the ip-api.com lookup API.
 type GeoIPResponse struct {
-	Status      string  `json:"status"`
-	Country     string  `json:"country"`
-	City        string  `json:"city"`
-	ISP         string  `json:"isp"`
-	Lat         float64 `json:"lat"`
-	Lon         float64 `json:"lon"`
+	Status     string  `json:"status"`
+	Country    string  `json:"country"`
+	RegionName string  `json:"regionName"`
+	City       string  `json:"city"`
+	Zip        string  `json:"zip"`
+	ISP        string  `json:"isp"`
+	Lat        float64 `json:"lat"`
+	Lon        float64 `json:"lon"`
 }
 
-// GetIPGeoInfo performs dynamic GeoIP lookup for an IP address.
+type NominatimResponse struct {
+	DisplayName string `json:"display_name"`
+}
+
+// GetIPGeoInfo melakukan penelusuran data lokasi geografis (GeoIP) dan ISP secara real-time berbasis API.
+//
+// Alasan Arsitektural & Kepatuhan (Why):
+// - Fungsi ini mengimplementasikan rantai fallback 2-tingkat: pertama memeriksa database lokal GeoLite2 MaxMind,
+//   kemudian beralih ke API real-time ip-api.com jika database lokal tidak tersedia.
+// - Menghindari penyerapan data pribadi PII statis sesuai regulasi UU No. 27/2022 (UU PDP) dengan hanya mengolah
+//   metadata lokasi jaringan (Negara, Kota, ISP, dan Koordinat Lintang/Bujur) secara in-memory.
 func GetIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
+	// Jika IP adalah localhost / IP privat lokal, tanyakan IP publik WAN asli dari mesin saat ini secara real-time
 	if ip == "127.0.0.1" || ip == "localhost" || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") {
-		return "Indonesia", "Bandung", "Telkom Indonesia", -6.9175, 107.6191
+		client := &http.Client{Timeout: 3 * time.Second}
+		resp, err := client.Get("http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp")
+		if err == nil {
+			defer resp.Body.Close()
+			var geo GeoIPResponse
+			if err := json.NewDecoder(resp.Body).Decode(&geo); err == nil && geo.Status == "success" {
+				return geo.Country, geo.City, geo.ISP, geo.Lat, geo.Lon
+			}
+		}
 	}
 
 	// 1. Coba pencarian lokal dengan database GeoLite2 MaxMind jika tersedia
@@ -162,12 +183,9 @@ func GetIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
 		}
 	}
 
-	// Log warning bahwa database lokal mmdb absen atau gagal dibaca, fallback ke API online
-	log.Printf("[GEOIP-WARN] Local mmdb database not found or unreadable. Falling back to online API for IP: %s", ip)
-
-	// 2. Fallback ke API online ip-api.com
+	// Fallback ke API online ip-api.com
 	client := &http.Client{Timeout: 3 * time.Second}
-	resp, err := client.Get("http://ip-api.com/json/" + ip)
+	resp, err := client.Get("http://ip-api.com/json/" + ip + "?fields=status,country,regionName,city,zip,lat,lon,isp")
 	if err != nil {
 		return "Unknown", "Unknown", "Unknown", 0.0, 0.0
 	}
@@ -364,3 +382,72 @@ func GetAntibodyAudits(limit, offset int) ([]models.AntibodyAudit, int64, error)
 
 	return records, total, result.Error
 }
+
+// GetDomainTelegramConfig mengambil konfigurasi Telegram Chat ID dan status aktif per domain.
+// Mendukung fallback Graceful Degraded Mode jika DB nil.
+func GetDomainTelegramConfig(domain string) (chatID string, enabled bool, lastAlert *time.Time, err error) {
+	if DB == nil || domain == "" {
+		return "", false, nil, fmt.Errorf("database not initialized or domain empty")
+	}
+
+	var sub models.DomainSubscription
+	err = DB.Where("domain = ? AND is_active = true", domain).First(&sub).Error
+	if err != nil {
+		return "", false, nil, err
+	}
+
+	return sub.TelegramChatID, sub.TelegramEnabled, sub.LastAlertSentAt, nil
+}
+
+// UpdateDomainTelegramConfig mendaftarkan atau memperbarui Chat ID dan status aktif Notifikasi Telegram per domain.
+func UpdateDomainTelegramConfig(domain string, chatID string, enabled bool) error {
+	if DB == nil {
+		return fmt.Errorf("database not initialized")
+	}
+
+	var sub models.DomainSubscription
+	err := DB.Where("domain = ?", domain).First(&sub).Error
+	if err != nil {
+		// Jika domain belum ada di DB, buat entri baru
+		sub = models.DomainSubscription{
+			Base:            models.Base{ID: uuid.New()},
+			Domain:          domain,
+			IsActive:        true,
+			PlanType:        "premium",
+			TelegramChatID:  chatID,
+			TelegramEnabled: enabled,
+		}
+		return DB.Create(&sub).Error
+	}
+
+	return DB.Model(&sub).Updates(map[string]interface{}{
+		"telegram_chat_id": chatID,
+		"telegram_enabled": enabled,
+	}).Error
+}
+
+// ShouldSendTelegramAlert memeriksa apakah notifikasi untuk domain ini sudah melewati batas cooldown debounce 15 menit.
+func ShouldSendTelegramAlert(domain string) bool {
+	if DB == nil {
+		return true // Default: kirim jika DB tidak tersedia
+	}
+
+	var sub models.DomainSubscription
+	err := DB.Where("domain = ?", domain).First(&sub).Error
+	if err != nil {
+		return true
+	}
+
+	if sub.LastAlertSentAt != nil {
+		// Debounce 15 menit per domain untuk mencegah spam notifikasi saat ada DDoS
+		if time.Since(*sub.LastAlertSentAt) < 15*time.Minute {
+			return false
+		}
+	}
+
+	// Update timestamp pengiriman alert terakhir
+	now := time.Now()
+	DB.Model(&sub).Update("last_alert_sent_at", &now)
+	return true
+}
+

@@ -55,11 +55,29 @@ func InitThreatReporter() {
 			log.Println("[REPORTER-INIT] Threat reporter initialized: AbuseIPDB API v2")
 		}
 
+	case "telegram":
+		botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+		chatID := os.Getenv("TELEGRAM_CHAT_ID")
+		if botToken == "" || chatID == "" {
+			ActiveThreatReporter = &LocalOnlyReporter{}
+		} else {
+			ActiveThreatReporter = &TelegramBotReporter{BotToken: botToken, ChatID: chatID}
+			log.Println("[REPORTER-INIT] Threat reporter initialized: Telegram Bot Push Alerts")
+		}
+
 	case "local":
 		ActiveThreatReporter = &LocalOnlyReporter{}
 
 	default:
-		ActiveThreatReporter = &LocalOnlyReporter{}
+		// Jika TELEGRAM_BOT_TOKEN diset, gunakan Telegram secara otomatis
+		botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+		chatID := os.Getenv("TELEGRAM_CHAT_ID")
+		if botToken != "" && chatID != "" {
+			ActiveThreatReporter = &TelegramBotReporter{BotToken: botToken, ChatID: chatID}
+			log.Println("[REPORTER-INIT] Threat reporter auto-initialized: Telegram Bot Push Alerts")
+		} else {
+			ActiveThreatReporter = &LocalOnlyReporter{}
+		}
 	}
 }
 
@@ -171,7 +189,160 @@ func (r *SyslogSIEMReporter) ReportThreat(ip string, categories []int, comment s
 	return nil
 }
 
-// --- 3. IMPLEMENTASI LOCAL ONLY REPORTER (FALLBACK) ---
+// --- 3. IMPLEMENTASI TELEGRAM BOT REPORTER (INSTANT PUSH ALERTS - MULTI-TENANT B2B/B2G) ---
+
+type TelegramBotReporter struct {
+	BotToken string
+	ChatID   string // Default global Chat ID (fallback)
+}
+
+func (r *TelegramBotReporter) ReportThreat(ip string, categories []int, comment string) error {
+	return r.ReportThreatForDomain("", ip, categories, comment)
+}
+
+// ReportThreatForDomain mengirimkan notifikasi push Telegram secara dinamis ke Chat ID pemilik domain spesifik.
+func (r *TelegramBotReporter) ReportThreatForDomain(domain string, ip string, categories []int, comment string) error {
+	if r.BotToken == "" {
+		log.Printf("[TELEGRAM-WARN] TELEGRAM_BOT_TOKEN not configured. Skipping alert for IP: %s", ip)
+		return nil
+	}
+
+	targetChatID := r.ChatID
+
+	// Multi-tenant resolution: Cek apakah domain memiliki Telegram Chat ID khusus
+	if domain != "" {
+		customChatID, enabled, _, err := GetDomainTelegramConfig(domain)
+		if err == nil && !enabled {
+			// Notifikasi dimatikan oleh pemilik domain
+			return nil
+		}
+		if err == nil && customChatID != "" {
+			targetChatID = customChatID
+		}
+
+		// Terapkan Cooldown Debounce (15 menit per domain) untuk cegah spam/DDoS
+		if !ShouldSendTelegramAlert(domain) {
+			log.Printf("[TELEGRAM-DEBOUNCE] Cooldown active for domain %s. Skipping alert dispatch.", domain)
+			return nil
+		}
+	}
+
+	if targetChatID == "" {
+		log.Printf("[TELEGRAM-WARN] No Chat ID available for domain '%s' or fallback. Skipping alert.", domain)
+		return nil
+	}
+
+	// Normalisasi IP
+	if idx := strings.Index(ip, ":"); idx != -1 {
+		ip = ip[:idx]
+	}
+
+	go func() {
+		endpoint := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", r.BotToken)
+
+		// Dynamic Real-time GeoIP Lookup
+		country, city, isp, lat, lon := GetIPGeoInfo(ip)
+		gmapsURL := fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%.6f,%.6f", lat, lon)
+
+		domainLabel := domain
+		if domainLabel == "" {
+			domainLabel = "System Gateway"
+		}
+
+		messageText := fmt.Sprintf("🚨 *NEXUS CYBER ALERT - %s*\n\n"+
+			"🔒 *IP Penyerang*: `%s`\n"+
+			"🌐 *Domain Target*: `%s`\n"+
+			"🌍 *Wilayah*: `%s, %s`\n"+
+			"📡 *ISP*: `%s`\n"+
+			"🗺️ *Google Maps*: %s\n"+
+			"⚠️ *Kategori Serangan*: `%v` (%s)\n"+
+			"⏱️ *Waktu*: `%s`\n\n"+
+			"🛡️ _Status: Auto-Banned & Protected by Dual-Brain AI (Zero COGS)_",
+			domainLabel, ip, domainLabel, city, country, isp, gmapsURL, categories, comment, time.Now().Format("2006-01-02 15:04:05 MST"))
+
+		payload := map[string]string{
+			"chat_id":    targetChatID,
+			"text":       messageText,
+			"parse_mode": "Markdown",
+		}
+
+		jsonPayload, err := json.Marshal(payload)
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to marshal Telegram payload: %v", err)
+			return
+		}
+
+		req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonPayload))
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to create HTTP request: %v", err)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to send Telegram notification: %v", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			log.Printf("[TELEGRAM-SUCCESS] Multi-tenant push alert dispatched for domain '%s' (ChatID: %s).", domainLabel, targetChatID)
+		} else {
+			log.Printf("[TELEGRAM-ERROR] Telegram API returned status %d.", resp.StatusCode)
+		}
+	}()
+
+	return nil
+}
+
+// SendCustomMessage mengirimkan pesan notifikasi kustom langsung ke Telegram Admin.
+func (r *TelegramBotReporter) SendCustomMessage(messageText string) error {
+	if r.BotToken == "" || r.ChatID == "" {
+		return nil
+	}
+
+	go func() {
+		endpoint := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", r.BotToken)
+		payload := map[string]string{
+			"chat_id":    r.ChatID,
+			"text":       messageText,
+			"parse_mode": "Markdown",
+		}
+
+		jsonPayload, err := json.Marshal(payload)
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to marshal Telegram payload: %v", err)
+			return
+		}
+
+		req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonPayload))
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to create HTTP request: %v", err)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Printf("[TELEGRAM-ERROR] Failed to send Telegram notification: %v", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			log.Printf("[TELEGRAM-SUCCESS] Custom Telegram alert dispatched.")
+		} else {
+			log.Printf("[TELEGRAM-ERROR] Telegram API returned status %d.", resp.StatusCode)
+		}
+	}()
+
+	return nil
+}
+
+// --- 4. IMPLEMENTASI LOCAL ONLY REPORTER (FALLBACK) ---
 
 type LocalOnlyReporter struct{}
 

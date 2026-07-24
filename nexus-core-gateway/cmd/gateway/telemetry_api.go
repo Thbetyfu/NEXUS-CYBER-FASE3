@@ -719,8 +719,10 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - Country  : %s\n"+
 				"  - City     : %s\n"+
 				"  - ISP      : %s\n"+
-				"  - Latitude : %.4f\n"+
-				"  - Longitude: %.4f", ipClean, country, city, isp, lat, lon)
+				"  - Latitude : %.6f\n"+
+				"  - Longitude: %.6f\n"+
+				"  - GMaps    : https://www.google.com/maps/search/?api=1&query=%.6f,%.6f",
+				ipClean, country, city, isp, lat, lon, lat, lon)
 
 		case strings.HasPrefix(cmd, "simulate-attack") || strings.HasPrefix(cmd, "/simulate-attack"):
 			parts := strings.Fields(payload.Command)

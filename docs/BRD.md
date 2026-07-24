@@ -111,71 +111,74 @@ Segmen kedua adalah **institusi publik** — sekolah negeri, universitas, dan pe
 
 ---
 
-## 3. BUSINESS MODEL (MODEL BISNIS & UNIT ECONOMICS)
+## 3. BUSINESS MODEL (MODEL BISNIS, TIERING & UNIT ECONOMICS)
 
-Nexus Cyber menggunakan pendekatan model bisnis ganda (*Dual-Engine Business Model*) untuk memaksimalkan penetrasi di dua pasar yang memiliki karakteristik dan siklus keuangan yang sangat berbeda:
-
----
-
-### 3.1 Model Bisnis Segmen Swasta (B2B SaaS Subscription)
-
-Segmen swasta beroperasi dengan model **Software as a Service (SaaS)** on-demand mandiri.
-
-* **Siklus Pembayaran**: Bulanan atau Tahunan (dengan diskon 15%).
-* **Metode Pembayaran**: Otomatis melalui Payment Gateway (Midtrans: QRIS, E-Wallet, Kartu Kredit, Transfer Bank Virtual Account).
-* **Onboarding**: 100% *self-service* dan instan via otomatisasi skrip `provisioner.sh` di VPS dalam <10 detik setelah pembayaran terverifikasi.
-
-#### Paket Berlangganan Swasta (Tiered Subscription)
-
-1. **Free (Uji Coba / Trial)**
-   * **Harga:** Rp0 / bulan (7 hari trial).
-   * **Fitur:** Batas 1 Domain, Reflex AI Layer (<50ms), standard logging.
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 10 GB / bulan (Setara ~5.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-2. **Basic (Lite Protection)**
-   * **Harga:** Rp19.000 / bulan.
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 100 GB / bulan (Setara ~50.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Batas 1 Domain, Reflex AI Layer, basic port defense, standard logging.
-3. **Pro (Standard Defense)**
-   * **Harga:** Rp79.000 / bulan.
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 500 GB / bulan (Setara ~250.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Batas 3 Domain, Reflex AI Layer + PACS (Polymorphic HTML Encryption) + MTD Port Shuffling (rotasi 60-menit), standard logging.
-4. **Pro+ (Advanced Security)**
-   * **Harga:** Rp199.000 / bulan.
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 2 TB / bulan (Setara ~1.000.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Batas 10 Domain, Dual-Brain AI Ensemble + PACS + MTD Port Shuffling (rotasi 10-menit) + AVSE Uploader Shield, dashboard forensik penuh.
-5. **Ultrasafe (Maximum Isolation)**
-   * **Harga:** Rp599.000 / bulan.
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 10 TB / bulan (Setara ~5.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Domain tidak terbatas, dedicated container provisioning di VPS, Full eBPF Kernel Drops (XDP_DROP), MTD Port Shuffling (rotasi 1-menit), custom forensic AI audit logs, SLA Uptime 99,99%.
+Nexus Cyber menggunakan pendekatan model bisnis bertingkat tiga (*Triple-Tier Business Model*) untuk memenuhi kebutuhan arsitektur dan anggaran dari tiga segmen pasar utama:
 
 ---
 
-### 3.2 Model Bisnis Segmen Pemerintah & Pendidikan (B2G/B2E Contract & Volume)
+### 3.1 Skema Sektor Pemerintah & Sekolah Negeri (B2G Self-Hosted On-Premise / PDN)
 
-Segmen instansi publik (sekolah, universitas, Pemda) tidak menggunakan kartu kredit atau QRIS bulanan. Mereka menggunakan model **lisensi kontrak tahunan** (*Annual Contract*) yang menyesuaikan siklus anggaran APBD/APBN/BOS.
+Segmen instansi publik (Sekolah Negeri, Universitas Negeri, Dinas, Kementerian) wajib menyimpan data sensitif (NIK, Dapodik) di server lokal. Pengadaan dilakukan menggunakan **lisensi kontrak tahunan (Annual CAPEX)** yang menyesuaikan siklus anggaran APBD/APBN/BOS.
 
-* **Siklus Pembayaran**: Dibayar penuh di muka untuk masa kontrak 12 bulan (atau termin sesuai kesepakatan SP2D daerah).
-* **Metode Pengadaan**: Pengadaan Langsung non-tender (untuk kontrak < Rp200 juta/tahun) melalui platform **e-Katalog LKPP** atau Purchase Order resmi.
-* **Onboarding**: Dibantu setup DNS awal oleh tim teknis kami (karena keterbatasan tim IT internal mereka) setelah kontrak/PO ditandatangani.
+* **Siklus Pembayaran**: Dibayar penuh di muka untuk masa kontrak 12 bulan via APBD/APBN/BOS.
+* **Metode Pengadaan**: Melalui e-Katalog LKPP & SIPLah (Pengadaan Langsung).
+* **Model Deployment**: **100% Self-Hosted On-Premise / Intranet PDN di Server Fisik Sendiri**.
 
-#### Paket Berlangganan GovEdu (Tiered Government & Education)
-
-1. **GovEdu Basic (Sekolah Negeri / SD / SMP / SMA)**
-   * **Harga:** Rp19.000 / bulan (Ditagih tahunan: **Rp228.000 / tahun** per sekolah).
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 20 GB / bulan (Setara ~10.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Batas 1 Domain, Reflex AI Block, XSS/SQLi/DDoS Basic, defacement alert.
-2. **GovEdu Pro (Dinas Kab/Kota Skala Kecil)**
-   * **Harga:** Rp49.000 / bulan (Ditagih tahunan: **Rp588.000 / tahun**).
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 100 GB / bulan (Setara ~50.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
+#### Paket Lisensi GovEdu (B2G Annual CAPEX via SIPLah/E-Katalog):
+1. **GovEdu Basic (Sekolah Negeri SD/SMP/SMA)**
+   * **Harga:** **Rp19.000 / bulan** (Ditagih tahunan: **Rp228.000 / tahun** per server sekolah).
+   * **Fitur:** Batas 1 Domain, Reflex AI Block, eBPF Kernel Drops, XSS/SQLi/DDoS Basic, defacement alert.
+2. **GovEdu Pro (Dinas Kab/Kota / UPTD Skala Kecil)**
+   * **Harga:** **Rp49.000 / bulan** (Ditagih tahunan: **Rp588.000 / tahun** per node server).
    * **Fitur:** Batas 3 Domain, Reflex AI + PACS Enkripsi HTML + MTD Port Shuffling.
 3. **GovEdu Institusi (PTN / Pemda Provinsi / Kampus)**
-   * **Harga:** Rp149.000 / bulan (Ditagih tahunan: **Rp1.788.000 / tahun**).
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Maksimal 500 GB / bulan (Setara ~250.000 kunjungan halaman; *Bukan kuota penyimpanan website*).
-   * **Fitur:** Batas 10 Domain, Full Pro+ Features, dashboard SOC multi-admin terpusat.
-4. **GovEdu Volume (Lisensi Kolektif Dinas Pendidikan)**
+   * **Harga:** **Rp149.000 / bulan** (Ditagih tahunan: **Rp1.788.000 / tahun** per cluster node).
+   * **Fitur:** Batas 10 Domain, Full Dual-Brain AI Features, dashboard SOC multi-admin terpusat.
+4. **GovEdu Central (Lisensi Terpusat Dinas Pendidikan)**
    * **Harga:** **Rp990.000 / bulan** (Ditagih tahunan: **Rp11.880.000 / tahun**).
-   * **Volume Kunjungan Pengunjung (Transfer Data):** Akumulasi hingga 2 TB / bulan untuk seluruh sub-domain.
    * **Fitur:** Mengamankan hingga 50 domain sekolah secara kolektif di bawah kendali 1 dashboard Dinas Pendidikan, laporan insiden siber bulanan otomatis dikirim ke Kepala Dinas.
+
+---
+
+### 3.2 Skema Sektor Swasta Besar (B2B Enterprise Self-Hosted On-Premise)
+
+Perusahaan swasta kelas atas (Bank Swasta, Korporasi Besar, Rumah Sakit Swasta Besar) memiliki Data Center/Server fisik sendiri dan dilarang melewatkan data pengguna ke proxy publik.
+
+* **Siklus Pembayaran**: Kontrak Tahunan (*Annual Enterprise Contract License*).
+* **Model Deployment**: **100% Self-Hosted On-Premise di Private Server/VM Swasta**.
+
+#### Paket Lisensi B2B Enterprise (Annual Contract):
+1. **Enterprise Standard (1 Server Node)**
+   * **Harga:** **Rp208.250 / bulan** (Ditagih tahunan: **Rp2.499.000 / tahun**).
+   * **Fitur:** 1 Node On-Premise, Dual-Brain AI, MTD, AVSE Uploader Shield, Private Slack/Telegram Alert.
+2. **Enterprise Cluster (Multi-Node Cluster)**
+   * **Harga:** **Rp749.916 / bulan** (Ditagih tahunan: **Rp8.999.000 / tahun**).
+   * **Fitur:** Up to 5 Cluster Nodes, Dedicated Support, SIEM RFC-5424 Integration, Audit Trail Log.
+3. **Enterprise Unlimited**
+   * **Harga:** **Rp2.083.250 / bulan** (Ditagih tahunan: **Rp24.999.000 / tahun**).
+   * **Fitur:** Unlimited Cluster Nodes, Post-Quantum Cryptography (ML-KEM), 24/7 SLA Dedicated Engineering, Incident Forensics Report.
+
+---
+
+### 3.3 Skema Sektor UMKM & Swasta Kecil (B2B Micro Cloud Proxy SaaS)
+
+UMKM retail (seperti **Toko WIN Electronic - Bapak Tjhin Fui Men**), Startup, dan toko online swasta kecil **TIDAK memiliki server fisik sendiri**. Mereka menggunakan model **Managed Cloud SaaS Proxy (CNAME DNS Routing)**.
+
+* **Siklus Pembayaran**: Bulanan atau Tahunan (opsi bayar fleksibel).
+* **Model Deployment**: **Cloud Multi-Tenant Proxy Cluster (CNAME Routing, Tanpa Instalasi Hardware)**.
+* **Dynamic Telegram Alert**: Push Alert Telegram Multi-Tenant per domain (**Zero COGS / HPP = Rp 0**).
+
+#### Paket Berlangganan B2B Micro SaaS (OPEX Monthly/Annual):
+1. **Starter UMKM (Calon Klien 1: WIN Electronic)**
+   * **Harga:** **Rp19.000 / bulan** (Ditagih tahunan: **Rp228.000 / tahun**).
+   * **Fitur:** Batas 1 Domain, Reflex AI Layer (<50ms), CNAME Routing, Zero-Code Onboarding, Telegram Bot Alert. (WTP Validated oleh Tjhin Fui Men, tahap komitmen komersialisasi).
+2. **Pro Swasta (Standard Defense - 3 Domain)**
+   * **Harga:** **Rp49.000 / bulan** (Ditagih tahunan: **Rp588.000 / tahun**).
+   * **Fitur:** Batas 3 Domain, Reflex AI Layer + PACS (Polymorphic HTML Encryption) + MTD Port Shuffling (rotasi 60-menit).
+3. **Pro+ Swasta (Advanced Security - 10 Domain)**
+   * **Harga:** **Rp149.000 / bulan** (Ditagih tahunan: **Rp1.788.000 / tahun**).
+   * **Fitur:** Batas 10 Domain, Dual-Brain AI Ensemble + PACS + MTD Port Shuffling (rotasi 10-menit) + AVSE Uploader Shield.
 
 ---
 
