@@ -389,7 +389,7 @@ func (np *NexusProxy) PublishThreat(ip string, threatType string) {
 	}
 
 	// Gunakan pencarian geografis standar terpadu (MaxMind DB + ip-api.com fallback)
-	country, _, _, _, ipLat, ipLng := database.GetIPGeoInfo(cleanIP)
+	country, _, _, ipLat, ipLng := database.GetIPGeoInfo(cleanIP)
 	if country != "Unknown" && ipLat != 0 {
 		lat = ipLat
 		lng = ipLng

@@ -6,63 +6,85 @@ on:
   pull_request:
     branches: [ main, master ]
   schedule:
+    # Run security audit automatically every Monday at 00:00 UTC
     - cron: '0 0 * * 1'
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Gosec - Go Static Application Security Testing (SAST)
+  # ---------------------------------------------------------------------------
   gosec-sast:
-    name: Gosec Security Code Audit
+    name: 🔍 Gosec Security Code Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-      - name: Run gosec
-        working-directory: nexus-core-gateway
-        env:
-          CGO_ENABLED: '0'
-        run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@v2.21.4
-          gosec -no-fail ./...
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt=sarif -out=gosec.sarif ./...'
+          working-directory: nexus-core-gateway
+
+  # ---------------------------------------------------------------------------
+  # 2. Govulncheck - Official Go Dependency Vulnerability Scanner
+  # ---------------------------------------------------------------------------
   govulncheck-scan:
-    name: Go Module Dependency CVE Scan
+    name: 📦 Go Module Dependency CVE Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.22
+        uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-      - name: Run govulncheck
-        working-directory: nexus-core-gateway
-        env:
-          CGO_ENABLED: '0'
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
-          govulncheck ./... || true
 
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run Dependency Vulnerability Scan
+        run: |
+          cd nexus-core-gateway
+          govulncheck ./... || echo "Vulnerability scan completed with findings."
+
+  # ---------------------------------------------------------------------------
+  # 3. Trivy - Secret Leak & Repository Vulnerability Scan
+  # ---------------------------------------------------------------------------
   trivy-secret-scan:
-    name: Trivy Secret Leak & Misconfig Audit
+    name: 🔑 Trivy Secret Leak & Misconfig Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@0.28.0
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Secret & Misconfig Scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          scan-type: fs
-          scan-ref: .
+          scan-type: 'fs'
+          scan-ref: '.'
           hide-progress: true
-          format: table
+          format: 'table'
           exit-code: '0'
           ignore-unfixed: true
 
+  # ---------------------------------------------------------------------------
+  # 4. NPM Audit - Frontend Security Dependency Scan
+  # ---------------------------------------------------------------------------
   npm-audit:
-    name: NPM Frontend Vulnerability Scan
+    name: 🛡️ NPM Frontend Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Run NPM Security Audit
-        working-directory: nexus-admin-dashboard
-        run: npm audit --audit-level=high || true
+        run: |
+          cd nexus-admin-dashboard
+          npm audit --audit-level=high || echo "NPM audit completed with warnings."
