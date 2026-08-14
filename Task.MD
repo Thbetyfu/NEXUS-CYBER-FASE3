@@ -36,3 +36,5 @@ Rencana kerja strategis untuk mengubah seluruh infrastruktur Nexus Cyber menjadi
   * Buat skrip asinkron yang meluncurkan kontainer Docker-Compose baru secara terisolasi (Gateway + Dashboard + PostgreSQL) untuk setiap penyewa (*tenant*) baru.
 * [ ] **Task 7: Integrasi Midtrans/Stripe Webhook**
   * Sambungkan gerbang pembayaran otomatis ke skrip penyediaan kontainer untuk aktivasi instan setelah klien berhasil melakukan pembayaran bulanan.
+
+  buat versi Auto deploynya jika di jalankan di server on promise, sehingga mudah dan tak butuh banyak lagi maintenece dan mudah di pahami oleh orang awam

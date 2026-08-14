@@ -1,6 +1,8 @@
 # 🕹️ Command Center CLI Guide
 
-Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarmuka Command Center:
+Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarmuka Command Center dan Terminal Backend:
+
+## 1. Perintah Konsol SOC Dashboard (Xterm.js Terminal)
 
 | Perintah | Deskripsi Teknis |
 | :--- | :--- |
@@ -15,48 +17,50 @@ Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarm
 | `/unsub [domain]` | Mencabut lisensi premium dan mengunci situs klien. |
 | `/honeystats` | Menampilkan log IP penyerang yang terjebak di honeypot. |
 | `/patches` | Menampilkan daftar virtual patch antibodi yang aktif di RAM. |
-| `/simulate-attack [high/low]` | Mensimulasikan serangan siber ke sistem. |
+| `/wargame [scenario]` | Memicu simulasi perang siber live melalui engine **NEX-RED**. |
 | `@nexus [query]` | Melakukan query/tanya jawab konsultasi siber ke AI Reasoning. |
 | `clear` | Membersihkan layar terminal SOC Command CLI. |
-| `gateway license generate` | [Go Binary CLI] Membuat Kunci Lisensi Terenkripsi HMAC (5-Tier, CPU Cores, B2G PO). |
-| `gateway license verify` | [Go Binary CLI] Memverifikasi integritas & batas lisensi secara offline. |
-| `gateway audit export` | [Go Binary CLI] Menjana Laporan Audit Kepatuhan (ISO 27001, PCI-DSS, UU PDP) format Markdown/JSON. |
-| `gateway audit sync-bssn` | [Go Binary CLI] Sinkronisasi & injeksi memori feed ancaman siber kolektif BSSN/ID-CERT. |
-| `gateway sim` | [Go Binary CLI] Memicu simulasi perang siber live (DDoS, SQLi, Ransomware, Botnet) & auto-recovery. |
-
-## Audit & Pengujian
-
-Untuk memverifikasi dan menguji komponen keamanan, gunakan skrip pengujian berikut:
-
-1. **Stress-test MTD & Gateway**:
-   ```bash
-   python scripts/test_mtd_defense.py
-   ```
-
-2. **Pengujian Pemulihan Mandiri (Self-Repair)**:
-   ```bash
-   python scripts/test_self_repair.py
-   ```
-
-3. **Simulator Skenario Krisis & Penyelamatan**:
-   ```bash
-   python scripts/rescue_scenario_simulator.py
-   ```
 
 ---
 
-## 💻 Terminal Interaktif Command Center (Xterm.js Engine)
+## 2. Perintah Binary Gateway Go (`gateway`)
 
-Mulai versi 13.2, antarmuka terminal Command Center menggunakan emulator **Xterm.js** berkinerja tinggi, yang menggantikan baris masukan teks biasa. Terminal ini memiliki kemampuan:
+| Perintah | Deskripsi Teknis |
+| :--- | :--- |
+| `gateway license generate` | Membuat Kunci Lisensi Terenkripsi HMAC (5-Tier, CPU Cores, B2G PO). |
+| `gateway license verify` | Memverifikasi integritas & batas lisensi secara offline. |
+| `gateway audit export` | Menjana Laporan Audit Kepatuhan (ISO 27001, PCI-DSS, UU PDP) format Markdown/JSON. |
+| `gateway audit sync-bssn` | Sinkronisasi & injeksi memori feed ancaman siber kolektif BSSN/ID-CERT. |
+| `gateway sim` | Memicu simulasi mitigasi perang siber live (DDoS, SQLi, Defacement). |
 
-1. **Dukungan Key Hooks & Shortcuts**:
-   * Menangkap ketukan kunci secara langsung (fokus instan pada area terminal).
-   * **Backspace**: Menghapus karakter input secara fungsional.
-   * **Arrow Up/Down**: Menavigasi riwayat perintah (*command history*) dari memori `localStorage` admin.
-2. **Tab Autocomplete**:
-   * Menekan tombol **Tab** akan secara otomatis mencocokkan input dengan perintah terdaftar dan melakukan autocompletion langsung pada prompt.
-3. **ANSI Color Rendering**:
-   * Setiap output logs dan telemetri yang mengalir dari Server-Sent Events (SSE) dikonversi secara dinamis menjadi kode warna ANSI untuk mempermudah identifikasi (misal: warna hijau untuk `[PASS]` dan merah tebal untuk `[FAIL]`).
-4. **Command Execution Output**:
-   * Command `clear` akan memicu pembersihan total layar terminal virtual secara instan.
-   * Perintah umum akan menampilkan output aslinya langsung di baris konsol.
+---
+
+## 3. Perintah Autonomous Red Team (`NEX-RED CLI`)
+
+| Perintah | Deskripsi Teknis |
+| :--- | :--- |
+| `python NEX-RED/nexred.py scan -m hybrid` | Menjalankan audit White-Box (kode) & Black-Box (dinamis) sekaligus. |
+| `python NEX-RED/nexred.py scan -m whitebox -r .` | Menjalankan audit kode sumber lokal (AST & Route mapping). |
+| `python NEX-RED/nexred.py scan -m blackbox -u http://127.0.0.1:8080` | Menjalankan penetrasi dinamis terhadap URL endpoint aktif. |
+| `python NEX-RED/nexred.py scan -s sqli` | Menjalankan skenario serangan bertarget khusus (SQLi / DDoS / Defacement). |
+| `python NEX-RED/nexred.py bridge -p 3002` | Menjalankan REST API Daemon untuk interkoneksi Dasbor & Gateway. |
+
+---
+
+## 4. Pengujian & Verifikasi Otomatis
+
+Untuk memverifikasi modul secara terisolasi:
+
+```bash
+# 1. Menjalankan Unit Test NEX-RED
+python -m unittest discover -s NEX-RED/tests
+
+# 2. Menjalankan Audit Sistem Nexus
+python scripts/tests/nexus_system_audit.py
+
+# 3. Menjalankan Uji Moving Target Defense
+python scripts/tests/test_mtd_shuffle.py
+
+# 4. Menjalankan Uji Self-Repair Rollback
+python scripts/tests/test_self_repair.py
+```

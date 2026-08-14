@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nex-red"
+version = "4.0.0"
+description = "Nexus Cyber white-box AST and live posture validation engine"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Nexus Cyber Security Team", email = "secops@nexuscyber.id" }
+]
+keywords = ["security", "pentesting", "red-team", "autonomous-agents", "white-box", "black-box"]
+dependencies = [
+    "requests>=2.31.0",
+    "pydantic>=2.5.0",
+    "urllib3>=2.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+
+[project.scripts]
+nexred = "nexred:main"

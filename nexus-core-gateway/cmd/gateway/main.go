@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -180,9 +181,19 @@ func main() {
 		target = fmt.Sprintf("http://%s:3001", backendHost)
 	}
 
-	// Mengurai port dari URL TARGET_BACKEND secara dinamis
+	// Parse origin URL so https://host is not mistaken for "port" after the scheme colon.
 	targetPort := 80
-	if idx := strings.LastIndex(target, ":"); idx != -1 && idx > 5 {
+	targetScheme := "http"
+	if parsedTarget, err := url.Parse(target); err == nil && parsedTarget.Scheme != "" {
+		targetScheme = strings.ToLower(parsedTarget.Scheme)
+		if parsedTarget.Port() != "" {
+			fmt.Sscanf(parsedTarget.Port(), "%d", &targetPort)
+		} else if targetScheme == "https" {
+			targetPort = 443
+		} else {
+			targetPort = 80
+		}
+	} else if idx := strings.LastIndex(target, ":"); idx != -1 && idx > 5 {
 		fmt.Sscanf(target[idx+1:], "%d", &targetPort)
 	}
 
@@ -193,7 +204,12 @@ func main() {
 		[]int{targetPort}, // portPool dinamis sesuai port backend
 		60,                // rotate every 60 seconds
 		func(newTarget mtd.TargetBackend) {
-			// Graceful Handoff: Update proxy without dropping in-flight requests
+			// Public HTTPS origins (e.g. Vercel) must stay on the original URL.
+			// MTD URL() is http://host:port and would break TLS reverse-proxy.
+			if targetScheme == "https" {
+				log.Printf("[MTD] HTTPS origin pinned (%s); port shuffle does not rewrite the public origin", target)
+				return
+			}
 			if gateway != nil {
 				if err := gateway.UpdateTarget(newTarget.URL()); err != nil {
 					log.Printf("[MTD] Handoff failed: %v", err)

@@ -1,0 +1,35 @@
+# Overlay: origin lokal (playground/Portofolio-Thoriq) jika Vercel tidak dipakai.
+# Dipakai oleh START-OFFLINE.bat / start.sh --offline
+
+services:
+  portfolio:
+    build:
+      context: ../playground/Portofolio-Thoriq
+      dockerfile: Dockerfile
+    container_name: nexus-local-portfolio
+    environment:
+      PORT: "3002"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: nexus_portfolio_app
+      DB_PASSWORD: portfolio_secure_pass
+      DB_NAME: nexus_cyber
+      DB_ADMIN_DSN: postgres://nexus:${POSTGRES_PASSWORD:-nexus_local_dev_only}@postgres:5432/nexus_cyber?sslmode=disable
+    expose:
+      - "3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  gateway:
+    environment:
+      TARGET_BACKEND: http://portfolio:3002
+      TARGET_BACKEND_HOST: portfolio
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      portfolio:
+        condition: service_started

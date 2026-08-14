@@ -1,0 +1,91 @@
+name: nexus-local
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: nexus-local-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: nexus-local-postgres
+    environment:
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus_local_dev_only}
+      POSTGRES_DB: nexus_cyber
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus_cyber"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build:
+      context: ../nexus-core-gateway
+      dockerfile: Dockerfile
+    container_name: nexus-local-gateway
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ../nexus-core-gateway/geoip:/app/geoip
+    environment:
+      REDIS_URL: redis:6379
+      POSTGRES_DSN: postgres://nexus:${POSTGRES_PASSWORD:-nexus_local_dev_only}@postgres:5432/nexus_cyber?sslmode=disable
+      TARGET_BACKEND: ${TARGET_BACKEND:-https://portfolio-website-three-ruddy-65.vercel.app}
+      TARGET_BACKEND_HOST: ${TARGET_BACKEND_HOST:-portfolio-website-three-ruddy-65.vercel.app}
+      NEXUS_LICENSE_KEY: ${NEXUS_LICENSE_KEY:-nexus-cyber-dev}
+      NEXUS_LICENSE_DOMAIN: ${NEXUS_LICENSE_DOMAIN:-localhost}
+      NEXUS_SESSION_SECRET: ${NEXUS_SESSION_SECRET:-nexus-local-session-change-me}
+      REWARD_PASSWORD: ${REWARD_PASSWORD:-NexusAccessSecure2026!}
+      REWARD_LINK: ${REWARD_LINK:-https://shopee.co.id/m/shopee-kaget-nexus-success}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_PROVIDER_URL: ${AI_PROVIDER_URL:-}
+      AI_PROVIDER_KEY: ${AI_PROVIDER_KEY:-}
+      SSH_TARPIT_PORT: "2222"
+      HONEYPOT_PORT: "9090"
+    cap_add:
+      - NET_ADMIN
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: nexus-local-caddy
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  caddy_data:
+  caddy_config:

@@ -15,6 +15,7 @@ Komponen utama:
     *   **SSH Tarpit**: Listener TCP independen yang mendeteksi probe SSH di port `:2222`.
 4.  **Local GeoIP Reader**: Pembaca database biner `.mmdb` MaxMind untuk pencarian negara secara offline dengan performa super cepat.
 5.  **Threat Reporter & Telegram Dispatcher**: Goroutine asinkron untuk pengiriman alert instan ke Telegram (Multi-Tenant per-domain di B2B, Group CSIRT di B2G) serta AbuseIPDB/Syslog SIEM.
+6.  **NEX-RED Offensive Validation Engine**: Sub-sistem Red Team otonom berbasis multi-agent (White-box AST flow & Black-box dynamic swarm) dengan REST daemon pada port `:3004`.
 
 ---
 
@@ -67,6 +68,18 @@ erDiagram
         string ai_model
         text analysis_text
         string recommended_action
+    }
+
+    PENTEST_FINDINGS {
+        uuid id PK
+        string scan_id
+        string target_url
+        string vulnerability_title
+        string severity
+        string cwe_id
+        text proof_of_concept
+        string status
+        timestamp created_at
     }
 
     THREAT_LOGS ||--o{ AI_INSIGHTS : "analyzed_by"

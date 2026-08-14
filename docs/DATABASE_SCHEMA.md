@@ -108,4 +108,26 @@ Tabel untuk mengelola pendaftaran domain terproteksi, kunci lisensi SaaS, serta 
 | `telegram_enabled`| `BOOLEAN` | Switch pengaktifan notifikasi Telegram per domain (TRUE = Active). |
 | `last_alert_sent_at`| `TIMESTAMP`| Timestamp tracking untuk filter cooldown debounce 15 menit. |
 
+---
+
+### 7. `pentest_findings` (Hasil Validasi Celah NEX-RED)
+Tabel untuk menyimpan seluruh hasil pengujian dan temuan eksploitasi otonom dari **NEX-RED**.
+*   **Tujuan**: Rekam jejak audit kerentanan, verifikasi Proof-of-Exploitation (PoC), dan integrasi perbaikan mandiri.
+
+| Kolom | Tipe Data | Keterangan |
+| :--- | :--- | :--- |
+| `id` | `UUID` | Primary Key. |
+| `scan_id` | `VARCHAR(64)` | ID Unik Pemindaian NEX-RED (Index). |
+| `target_url` | `TEXT` | URL target pengujian. |
+| `target_repo` | `TEXT` | Path repositori kode yang diaudit. |
+| `vulnerability_title`| `VARCHAR(255)`| Judul kerentanan (misal: "SQL Injection"). |
+| `severity` | `VARCHAR(32)` | Tingkat bahaya (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFO`). |
+| `cwe_id` | `VARCHAR(32)` | Kode CWE standar (misal: `CWE-89`). |
+| `owasp_category` | `VARCHAR(64)` | Kategori OWASP Top 10. |
+| `proof_of_concept` | `TEXT` | Bukti langkah eksploitasi nyata (PoC reproducible). |
+| `remediation_advice`| `TEXT` | Saran penambalan keamanan bagi developer. |
+| `status` | `VARCHAR(32)` | Status (`VERIFIED_EXPLOITABLE`, `MITIGATED_BY_NEXUS`). |
+| `created_at` | `TIMESTAMP` | Stempel waktu temuan tercatat. |
+
+
 

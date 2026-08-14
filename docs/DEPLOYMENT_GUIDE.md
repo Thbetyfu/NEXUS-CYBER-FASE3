@@ -13,7 +13,11 @@ Dokumen ini menyediakan panduan resmi untuk men-deploy **Nexus Cyber Fase 2** da
 - **Performa**: Memanfaatkan CPU & RAM tinggi dari PC lokal.
 - **AI Model**: Mendukung jalannya model AI lokal `nex-ai-protect` via Ollama.
 
-### Mode A: Docker Compose (Disarankan — semua service aktif)
+### Mode 1-klik (disarankan untuk demo laptop)
+
+Folder **`deploy-local/`** di root repo: double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Lihat [`deploy-local/README.md`](../deploy-local/README.md).
+
+### Mode A: Docker Compose root (stack lengkap termasuk dashboard)
 
 Pastikan **Docker Desktop** sudah aktif, lalu:
 

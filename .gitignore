@@ -128,6 +128,10 @@ botnet_results.json
 nexus-brain-lab/
 NEXUS-CORE-BRAIN.Modelfile
 
+# NEX-RED generated artifacts
+NEX-RED/reports/
+NEX-RED/workspaces/
+
 # NEX-AI Private Artifacts
 NEX-AI/checkpoints/
 NEX-AI/build/

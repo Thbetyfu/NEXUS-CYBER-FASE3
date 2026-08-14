@@ -1,4 +1,4 @@
-# 🛡️ Nexus-Cyber tahap 2
+# 🛡️ Nexus-Cyber tahap 3
 
 **Autonomous Tactical Defense Grid & Geospatial Threat Intelligence Command Center**
 
@@ -81,6 +81,14 @@ Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang 
 * **IP Activity Monitoring**: API `/api/ip-monitoring` untuk agregasi data lalu lintas per IP (jumlah request, aktivitas URL/endpoint, status ban, dan user agent).
 * **Blacklist Control**: API `/api/blacklist/ban` dan `/api/blacklist/unban` untuk kontrol pemblokiran IP otonom maupun manual oleh admin.
 
+### 12. NEX-RED Autonomous Red Team Engine (Purple Team Grid)
+
+* **White-Box Code-Aware AST Flow**: Analisis jalur *source code* secara otomatis untuk memetakan *untrusted sinks*, SQLi, dan kerentanan logika sebelum rilis produksi.
+* **Dynamic Black-Box Swarm Prober**: Meniru perilaku peretas luar untuk menguji ketahanan WAF, MTD, dan Honeypot Nexus.
+* **Deterministic Proof-by-Exploitation**: Validasi temuan otomatis berbasis PoC untuk menjamin 0% *false positive*.
+* **Gateway Bridge Daemon**: Integrasi langsung via REST API (`127.0.0.1:3002`) untuk orkestrasi real-time dari Go Gateway dan Dasbor Next.js.
+
+
 ---
 
 ## 📂 Dokumentasi Proyek
@@ -104,6 +112,10 @@ Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 ## 🚀 Cara Menjalankan (Quick Start & Deployment)
 
 Detail lengkap panduan penyebaran sistem dapat dibaca pada [📖 Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
+
+### 🖱️ Lab laptop 1 klik (`deploy-local/`)
+
+Double-click **`deploy-local/START.bat`** (Docker Desktop harus sudah running). Pengunjung membuka **http://127.0.0.1** (atau IP LAN laptop ini). Origin default adalah portofolio Vercel di belakang WAF. Panduan: [`deploy-local/README.md`](./deploy-local/README.md).
 
 ### 🏛️ Skema 1: Deployment B2G / GovEdu (Self-Hosted On-Premise / PDN)
 *Dipasang 100% di server/Pusat Data milik Instansi Pemerintah/Sekolah itu sendiri:*

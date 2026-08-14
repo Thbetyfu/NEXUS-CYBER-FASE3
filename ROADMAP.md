@@ -103,6 +103,14 @@ Arsitek: Antigravity
 - [x] **Cyber War Room Dashboard Widget**: Widget UI interaktif (`WarGameWidget.tsx`) dengan animasi status eksekusi perang siber.
 - [x] **CLI War Game Subsystem**: Subcommand `gateway sim --type=all` pada binary Go Gateway.
 
+### Milestone 16: NEX-RED Autonomous Red Team Engine Fusion (COMPLETED) ✅
+*Peleburan kemampuan White-Box (Shannon AST & Flow Mapping) dan Black-Box (Strix Dynamic Swarm) ke dalam engine Red Team otonom tunggal.*
+- [x] **NEX-RED Core Package (`NEX-RED/`)**: Arsitektur modular berorientasi objek (Python) yang mencakup Whitebox, Blackbox, Exploit Validator, dan Report Generator.
+- [x] **Proof-of-Exploitation (PoC) Validator**: Verifikasi deterministik untuk mencegah *false positive* sebelum dimasukkan ke dalam laporan akhir.
+- [x] **Nexus Gateway Bridge Daemon**: REST API Server (`127.0.0.1:3002`) untuk interkoneksi langsung dengan Go Gateway & Next.js SOC Dashboard.
+- [x] **Legacy Cleanup & Deprecation**: Pembersihan total folder eksperimen usang (`Hacker_Test/`, `shannon-main/`, `strix-main/`) untuk memastikan prinsip *Zero Dead Code* dan *Zero Duplication (DRY)*.
+
+
 ---
 
 ## 🚀 Rencana Sprint & Milestone (Fase 2 Dev Testbed)
