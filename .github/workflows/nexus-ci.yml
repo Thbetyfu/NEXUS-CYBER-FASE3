@@ -24,24 +24,28 @@ jobs:
           cache-dependency-path: nexus-core-gateway/go.sum
 
       - name: Install Dependencies
-        run: |
-          cd nexus-core-gateway
-          go mod download
+        working-directory: nexus-core-gateway
+        env:
+          CGO_ENABLED: '0'
+        run: go mod download
 
       - name: Static Analysis & Code Vet
-        run: |
-          cd nexus-core-gateway
-          go vet ./...
+        working-directory: nexus-core-gateway
+        env:
+          CGO_ENABLED: '0'
+        run: go vet ./...
 
       - name: Compile Gateway Binary
-        run: |
-          cd nexus-core-gateway
-          go build -v ./cmd/gateway
+        working-directory: nexus-core-gateway
+        env:
+          CGO_ENABLED: '0'
+        run: go build -v ./cmd/gateway
 
       - name: Run Test Suite with Coverage
-        run: |
-          cd nexus-core-gateway
-          go test -v -coverprofile=coverage.out ./...
+        working-directory: nexus-core-gateway
+        env:
+          CGO_ENABLED: '0'
+        run: go test -count=1 -coverprofile=coverage.out ./...
 
       - name: Upload Go Test Coverage Artifact
         uses: actions/upload-artifact@v4
@@ -68,19 +72,14 @@ jobs:
           cache-dependency-path: nexus-admin-dashboard/package-lock.json
 
       - name: Install Dependencies
-        run: |
-          cd nexus-admin-dashboard
-          npm ci || npm install
+        working-directory: nexus-admin-dashboard
+        run: npm ci || npm install
 
-      - name: TypeScript Type Checking
-        run: |
-          cd nexus-admin-dashboard
-          npx tsc --noEmit
-
-      - name: Next.js Production Build
-        run: |
-          cd nexus-admin-dashboard
-          npm run build
+      - name: Production build (includes typecheck)
+        working-directory: nexus-admin-dashboard
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build
 
   # ---------------------------------------------------------------------------
   # 3. Security & Defense Engine Test Suite (Python Matrix)
@@ -162,8 +161,13 @@ jobs:
           echo "FROM alpine:latest" > ../Portfolio-website/Dockerfile
 
       - name: Validate Docker Compose Configuration
-        run: |
-          docker compose config --quiet
+        env:
+          POSTGRES_PASSWORD: ci-only
+          DB_PASSWORD: ci-only
+          OPENROUTER_API_KEY: ci-only
+          AI_PROVIDER_URL: http://127.0.0.1:9
+          AI_PROVIDER_KEY: ci-only
+        run: docker compose config --quiet
 
       - name: Validate deploy-local Compose
         run: |
