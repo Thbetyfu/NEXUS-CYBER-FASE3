@@ -109,6 +109,12 @@ Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
 
 ---
 
+## CI (tes sebelum masuk `main`)
+
+- **GitHub Actions**: `.github/workflows/nexus-ci.yml` — jalan otomatis di setiap push/PR ke `main` (Go gateway, NEX-RED, skrip pertahanan, dashboard, Docker).
+- **GitLab CI**: `.gitlab-ci.yml` — pipeline yang sama jika repo di-import ke GitLab.
+- **Sebelum `git push` di laptop**: `.\scripts\ci\install-hooks.ps1` sekali, lalu hook menolak push jika tes NEX-RED/Go gagal.
+
 ## 🚀 Cara Menjalankan (Quick Start & Deployment)
 
 Detail lengkap panduan penyebaran sistem dapat dibaca pada [📖 Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).

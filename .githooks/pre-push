@@ -1,0 +1,25 @@
+#!/bin/sh
+# Installed to .git/hooks/pre-push — blocks git push if local tests fail.
+root=$(git rev-parse --show-toplevel)
+cd "$root" || exit 1
+
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  echo "[pre-push] Python tidak ditemukan."
+  exit 1
+fi
+
+echo "[pre-push] Menjalankan tes sebelum push..."
+"$PY" -m unittest discover -s NEX-RED/tests -v || exit 1
+
+if command -v go >/dev/null 2>&1; then
+  (cd nexus-core-gateway && go vet ./... && go test ./...) || exit 1
+else
+  echo "[pre-push] Go tidak ada di PATH; tes gateway dilewati di mesin ini (CI tetap menguji)."
+fi
+
+echo "[pre-push] OK"
+exit 0
