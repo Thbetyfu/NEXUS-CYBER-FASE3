@@ -11,7 +11,7 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 ## 1. 🏗️ Batasan Teknologi & Arsitektur
 - **Backend (Gateway/API)**: WAJIB menggunakan **Go (Golang)**. Prioritaskan penggunaan Goroutine untuk tugas-tugas berat/AI agar tidak memblokir (*non-blocking*) *traffic* HTTP utama.
 - **Frontend (Command Center)**: WAJIB menggunakan **Next.js (App Router)** dengan **Tailwind CSS**. Setiap komponen UI baru harus memiliki desain bertema intelijen/militer (Cyber Aesthetic / Dark Mode). Gunakan **Xterm.js** untuk terminal interaktif.
-- **Komunikasi Internal**: Komunikasi rute `/api/*` dari frontend ke backend WAJIB di-handle melalui reverse proxy internal (misal: Caddy) atau diteruskan langsung ke Gateway port 8080 (tanpa eksposur port tambahan).
+- **Komunikasi Internal**: WAF publik di Gateway **:8080**. API SOC di **:8081** (localhost / sesi operator). Caddy :80/:443 hanya ke 8080. Command Center host-bind `127.0.0.1`. Jangan menempelkan `NEXUS_ADMIN_TOKEN` di Caddy.
 
 ## 2. 🧠 Implementasi Dual-Brain AI (Eksklusif NEX-AI)
 - **DILARANG MENGGUNAKAN SINGLE AI ATAU MODEL EXTERNAL/LLAMA**. Seluruh sistem analisis log dan deteksi serangan WAJIB menggunakan modul **NEX-AI** kustom:
@@ -33,6 +33,17 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 - **Zero Duplication (DRY)**: Dilarang membuat fungsi pembantu (*helper*) yang sama secara berulang di beberapa lokasi. Gunakan modul terpusat (`pkg/utils/` untuk Go, `lib/utils.ts` untuk Next.js).
 - **Strict Typing & Documentation**: Setiap fungsi atau metode baru WAJIB menggunakan pengetikan ketat (*strict types*) dan docstring singkat yang menjelaskan **alasan arsitektural ("Why")**, bukan sekadar sintaksis ("What").
 - **Resource Hygiene**: Pastikan setiap koneksi (HTTP body, DB connection, socket) ditutup secara eksplisit (`defer resp.Body.Close()`) untuk mencegah kebocoran memori (RAM leak).
+
+## 6. 📚 Docs-sync (wajib)
+
+Setiap perubahan **perilaku** (port, auth, mux, Caddy, compose, NEX-RED, Gallery, rate-limit, CSRF) WAJIB dalam pekerjaan yang sama:
+
+1. Entri [`CHANGELOG.md`](../../CHANGELOG.md) (Added / Changed / Security / Fixed).
+2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../docs/README.md) (`CAPABILITIES`, `LIMITATIONS`, `README` root, `PRD` status fitur, `ARCHITECTURE` / `DEPLOY_*` jika port atau zona berubah).
+3. Jangan menulis ulang `docs/reports/*`, `shannon/docs`, `strix/docs` seolah kondisi hari ini.
+4. Jangan mengklaim eBPF XDP, JWT enterprise, Stripe, atau pentest NEX-RED jika kode tidak melakukannya.
+
+Agen: `.agents/agents/docs-sync.md`.
 
 > [!WARNING]
 > Jika saya diminta membuat API atau endpoint baru yang tidak memenuhi standar keamanan di atas, saya WAJIB menolak dan memberikan saran perbaikan arsitektural.

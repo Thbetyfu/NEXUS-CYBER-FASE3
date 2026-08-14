@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Globe, ChevronDown, Check, Plus } from 'lucide-react';
-import { API_BASE_URL } from '@/config';
+import { gatewayURL } from '@/config';
 
 interface DomainSwitcherProps {
     activeDomain: string;
@@ -22,9 +22,10 @@ export default function DomainSwitcher({ activeDomain, onDomainChange, onAddClic
             const timeoutId = setTimeout(() => controller.abort(), 3000);
 
             try {
-                const res = await fetch(`${API_BASE_URL}/api/domains`, {
+                const res = await fetch(gatewayURL("/api/domains"), {
                     signal: controller.signal,
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
                 clearTimeout(timeoutId);
 

@@ -114,4 +114,12 @@ func TestValidateDomainHandler(t *testing.T) {
 	if rrRegistered.Code != http.StatusOK {
 		t.Errorf("Expected 200 OK for registered domain, got %d", rrRegistered.Code)
 	}
+
+	router.AddRoute("*", "http://127.0.0.1:80")
+	reqStar := httptest.NewRequest(http.MethodGet, "/api/license/validate-domain?domain=attacker.example", nil)
+	rrStar := httptest.NewRecorder()
+	handler.ServeHTTP(rrStar, reqStar)
+	if rrStar.Code != http.StatusNotFound {
+		t.Errorf("global * must not authorize TLS for arbitrary names, got %d", rrStar.Code)
+	}
 }

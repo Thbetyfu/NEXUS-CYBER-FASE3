@@ -1,7 +1,7 @@
 # NEXUS CORE DIRECTIVES
 **Project: Nexus Cyber - Autonomous Database Security Gateway**
-**Status: Milestone 13 - NEX-AI Custom Model & Self-Healing AI Pipeline**
-**Terakhir Diperbarui: 2026-07-09**
+**Status: Milestone 13 + control plane 8081 (2026-08-15)**
+**Terakhir Diperbarui: 2026-08-15**
 
 Dokumen ini merangkum aturan main utama, arsitektur inti, dan keputusan teknis yang telah ditetapkan untuk sistem Infrastructure/Database Security Gateway yang dibangun sebagai pertahanan vital nasional.
 
@@ -117,9 +117,9 @@ Gatekeeper kualitas kode dan arsitektur berdasarkan standar ISO/IEC 25010 & 2700
 ## Catatan Keamanan Infrastruktur (Security Hardening Notes)
 
 - **Port Database**: Postgres (5432) dan Redis (6379) WAJIB terikat ke `127.0.0.1` saja, tidak boleh di-expose ke `0.0.0.0`. Kepatuhan ISO 27001.
-- **Port Dev Server**: Hanya port `3001` dan `3002` yang diizinkan untuk dev server biasa. Port kontainer MTD bersifat dinamis di atas `3003`.
-- **API Keys**: Semua kunci API WAJIB disimpan sebagai environment variable. Dilarang keras di-hardcode.
-- **Routing Internal**: Rute `/api/*` WAJIB ditangani Caddy Proxy secara internal (reverse proxy ke `gateway:8080`) untuk mencegah CORS dan menyederhanakan resolusi domain klien.
+- **Port Dev Server**: Command Center `127.0.0.1:3001`. Origin lab portofolio internal `3002`. NEX-RED bridge `127.0.0.1:3004`. Jangan publish SOC ke `0.0.0.0`.
+- **API Keys**: Semua kunci API WAJIB disimpan sebagai environment variable. Dilarang keras di-hardcode. Token admin tidak di `NEXT_PUBLIC_*` dan tidak di query string.
+- **Routing**: Caddy hanya mem-proxy situs ke `gateway:8080`. API SOC (telemetry, CLI, ban, reset) ke `127.0.0.1:8081`. Caddy **dilarang** `header_up` `NEXUS_ADMIN_TOKEN`.
 - **GeoIP Lookup**: Pencarian lokasi geografis IP penyerang diprioritaskan ke database lokal MaxMind GeoLite2 sebelum fallback ke API online `ip-api.com`.
 
 ---

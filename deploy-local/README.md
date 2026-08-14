@@ -15,7 +15,7 @@ Blue team menyalakan **Mobile Hotspot Windows**. Red team join Wi-Fi itu, lalu m
 | Peran | Folder | 1 klik |
 | --- | --- | --- |
 | Blue team (jaga situs + hotspot) | [`blue-team/`](./blue-team/README.md) | `blue-team\START.bat` |
-| Red team (join Wi-Fi, buka WAF) | [`red-team/`](./red-team/README.md) | `red-team\JOIN.bat` |
+| Red team (join Wi-Fi, buka WAF) | [`red-team/`](./red-team/README.md) | `red-team\JOIN.bat` lalu `CHECK.bat` + [`red-team/CHECKLIST.md`](./red-team/CHECKLIST.md) |
 
 Urutan: blue team dulu sampai kartu lab muncul → red team join `NEXUS-BLUE-LAB` → `JOIN.bat`. Password default lab: `NexusBlue1` (ubah di `.env`).
 
@@ -27,6 +27,15 @@ Urutan: blue team dulu sampai kartu lab muncul → red team join `NEXUS-BLUE-LAB
 
 Tidak perlu Go, Node, atau Python untuk mode default.
 
+## Laptop pengembangan (Windows Security)
+
+Dialog **Allow / Don't allow** yang berulang (Firewall, Defender yang memindai `go`/`node`/`docker`, SmartScreen pada `.bat`) bisa dipasang **sekali**:
+
+1. Double-click [`ALLOW-DEV-LAPTOP.bat`](./ALLOW-DEV-LAPTOP.bat)
+2. Tekan **Yes** di UAC (hanya saat itu)
+
+Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap tersimpan. **Tombol UAC Administrator** saat `blue-team\START.bat` (hotspot) tidak bisa dihilangkan oleh aplikasi — biarkan stack nyala, jangan START berulang setiap edit kode. Port SOC `8081`/`3001` **tidak** dibuka ke jaringan.
+
 ## Windows — 1 klik
 
 1. Buka folder `deploy-local`.
@@ -37,7 +46,7 @@ Tidak perlu Go, Node, atau Python untuk mode default.
 
 | File | Fungsi |
 | --- | --- |
-| `START.bat` | Nyalakan stack, origin = Vercel |
+| `ALLOW-DEV-LAPTOP.bat` | Sekali: firewall lab + Defender tidak tanya terus |
 | `START-OFFLINE.bat` | Sama, origin = `playground/Portofolio-Thoriq` (tanpa Vercel) |
 | `STATUS.bat` | Lihat kontainer hidup/mati |
 | `STOP.bat` | Matikan stack (data Postgres tetap di volume Docker) |
@@ -59,12 +68,19 @@ chmod +x start.sh stop.sh status.sh
 | Layanan | Port di laptop | Catatan |
 | --- | --- | --- |
 | Caddy | **80** (semua interface) | Pintu masuk pengunjung |
-| Gateway WAF | **8080** | Pintu langsung, sama seperti lewat Caddy |
+| Gateway WAF | **8080** | Pintu langsung, sama seperti lewat Caddy (bukan API SOC) |
+| SOC admin | **127.0.0.1:8081** | Ban/reset/CLI — hanya laptop blue team |
 | Honeypot | 9090 | Umpan scanner |
 | Postgres | 127.0.0.1:5432 | Tidak dibuka ke LAN |
 | Redis | 127.0.0.1:6379 | Tidak dibuka ke LAN |
 
 Dashboard SOC Next.js **tidak** ikut di stack ini (image dashboard butuh `output: 'standalone'` yang belum diaktifkan). SSH tarpit **tidak** dipasang di port 22 Windows.
+
+Jika Anda menjalankan dasbor di laptop (`npm run dev -p 3001`) sambil stack `deploy-local` hidup:
+
+- `NEXT_PUBLIC_API_URL=http://127.0.0.1:8081`
+- Login memakai `NEXUS_ADMIN_TOKEN` dari `deploy-local/.env` (bukan variabel `NEXT_PUBLIC_*`)
+- Port 8081 hanya `127.0.0.1` — red team di hotspot tidak bisa membuka SOC
 
 ## Origin
 

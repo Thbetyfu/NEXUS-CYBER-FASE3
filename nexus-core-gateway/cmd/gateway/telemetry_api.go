@@ -8,7 +8,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -32,14 +31,6 @@ const defaultPaymentWebhookSecret = "dev-payment-webhook-secret"
 
 func isValidDomain(domain string) bool {
 	return domainRegex.MatchString(domain)
-}
-
-func isValidURL(targetURL string) bool {
-	u, err := url.Parse(targetURL)
-	if err != nil {
-		return false
-	}
-	return u.Scheme == "http" || u.Scheme == "https"
 }
 
 func configuredPaymentWebhookSecret() string {
@@ -307,10 +298,12 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 				w.Write([]byte(`{"status":"error","message":"Invalid Domain format"}`))
 				return
 			}
-			if payload.TargetURL != "auto" && !isValidURL(payload.TargetURL) {
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte(`{"status":"error","message":"Invalid Target URL format"}`))
-				return
+			if payload.TargetURL != "auto" {
+				if err := proxy.ValidateProxyOrigin(payload.TargetURL); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": err.Error()})
+					return
+				}
 			}
 
 			targetURL := payload.TargetURL
@@ -1226,10 +1219,8 @@ func validateDomainHandler(router *proxy.DynamicRouter) http.HandlerFunc {
 			domain = strings.Split(domain, ":")[0]
 		}
 
-		// Cari domain di routing table
-		_, found := router.Lookup(domain)
-		if found {
-			w.WriteHeader(http.StatusOK) // Kembalikan 200 OK untuk mengizinkan SSL
+		if router.HasExplicitRoute(domain) {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 

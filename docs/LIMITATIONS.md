@@ -1,21 +1,29 @@
 # ⚠️ Nexus Cyber Limitations
 
-Meskipun Nexus Cyber adalah sistem pertahanan otonom yang sangat tangguh, ada beberapa area yang secara teknis berada di luar cakupan perlindungan Gateway:
+Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-15.
 
-## 1. Social Engineering (Faktor Manusia)
-Nexus bisa memblokir skrip jahat, tapi ia tidak bisa mencegah jika seorang karyawan memberikan password-nya secara sukarela karena tertipu telepon phishing atau pesan WhatsApp palsu.
+## Di luar cakupan (umum)
 
-## 2. Physical Security (Keamanan Fisik)
-Nexus tidak bisa melindungi jika seseorang datang langsung ke ruang server Anda dan mencabut kabel listrik atau mencuri harddisk secara fisik.
+1. **Rekayasa sosial** — WAF tidak menghentikan karyawan yang menyerahkan sandi.
+2. **Akses fisik** — cabut listrik, curi disk, konsol server.
+3. **Insider** dengan shell pada host — bypass gateway.
+4. **Celah CPU/firmware** (Spectre, dll.).
+5. **Email** — bukan gerbang SMTP/malware lampiran.
+6. **Pemulihan baris database** — self-repair hanya file template yang dipantau, bukan PITR Postgres.
 
-## 3. Insider Threat (Ancaman Orang Dalam)
-Jika seorang Admin yang sudah memiliki akses penuh memutuskan untuk menghapus database secara sengaja dari dalam terminal server (bukan lewat gateway), Nexus tidak akan mendeteksinya.
+## Batasan yang ada di kode (penting untuk demo)
 
-## 4. Hardware-Level Vulnerabilities
-Serangan seperti Spectre atau Meltdown yang menyerang kelemahan pada chipset CPU adalah ranah firmware dan hardware vendor.
+7. **Bukan WAF “AI penuh” pada setiap request.** Reflex = regex. Model reasoning tidak wajib hidup; tanpa Ollama/API, filtrasi tetap regex.
+8. **Bukan DDoS kernel.** `ebpf_stub.go` tidak `XDP_DROP`.
+9. **Bukan PQC ke browser pengunjung.** Jangan klaim MitM-proof end-to-end.
+10. **Command Center bukan benteng publik.** SOC di `127.0.0.1` + cookie operator. Hotspot red team hanya boleh menembak situs di `:80`, bukan dasbor.
+11. **Lisensi lab** memakai kunci development (`nexus-cyber-dev`) — lockout 402 tidak mewakili produksi berbayar.
+12. **Membuka origin Vercel langsung melewati Nexus.** Bukti WAF hanya lewat Caddy/IP laptop.
+13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi; tidak ada proof-by-exploitation.
+14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
+15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
+16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi.
 
-## 5. Email-Specific Attacks
-Nexus menjaga trafik web (HTTP/TCP), tapi ia bukan sistem Email Security. Ia tidak memindai lampiran email yang berisi virus (malware) yang dikirim langsung ke kotak masuk pengguna.
+## Yang sengaja ditunda
 
-## 6. Database Transactional Data Recovery (Pemulihan Data Basis Data Dinamis)
-Meskipun Nexus Cyber memiliki fitur *Self-Repair* untuk mengembalikan berkas visual situs statis/templat yang ter-deface ke kondisi steril, sistem ini **tidak memulihkan rekaman data dinamis basis data** (seperti tabel transaksi, log data user) yang terlanjur terhapus jika penyerang membobol masuk langsung ke basis data backend (bypass gateway). Pemulihan data dinamis semacam itu tetap membutuhkan mekanisme replikasi basis data atau pencadangan eksternal (PITR).
+Webhook pembayaran fail-closed / Midtrans-Stripe orkestrasi: tidak dikerjakan sampai pemilik meminta (lihat CHANGELOG Unreleased).

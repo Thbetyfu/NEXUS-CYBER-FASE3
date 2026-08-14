@@ -1,6 +1,8 @@
 # 📄 SOFTWARE DESIGN DOCUMENT (SWD)
 ## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
 
+Pembaruan 2026-08-15: Control plane SOC = listener terpisah `:8081` + cookie operator. Data plane = `:8080`. eBPF di dokumen desain lama = **target**, bukan driver aktif. Provisioner SaaS / Stripe = belum.
+
 ---
 
 Sistem Nexus Cyber menggunakan pola desain **Microservices Loosely-Coupled** yang memisahkan antara lapisan *Data Plane* (WAF Gateway di Go) dengan *Control Plane* (SOC Dashboard di Next.js), serta mendukung 2 Topologi Deployment:
@@ -172,7 +174,7 @@ sequenceDiagram
     Attacker->>Disk: Unggah webshell / modifikasi index.html (Defacement)
     
     loop Siklus Monitor Integritas (Setiap 2 Detik)
-        Monitor->>Disk: Pindai direktori templates/ & hitung hash SHA-256
+        Monitor->>Disk: Pindai direktori terpantau & hitung hash BLAKE3
         Monitor->>RAM: Bandingkan hash dengan RAM baseline steril
         alt Terdeteksi ketidakcocokan hash (Modifikasi/Deface)
             Monitor->>RAM: Salin ulang file visual steril asli dari RAM

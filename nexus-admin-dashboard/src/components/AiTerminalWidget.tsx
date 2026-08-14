@@ -7,7 +7,7 @@
 */
 import React, { useEffect, useState, useRef } from 'react';
 import { Terminal as TerminalIcon, ServerOff, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '@/config';
+import { gatewayURL } from '@/config';
 
 interface AIEventLog {
 	timestamp: string;
@@ -154,7 +154,7 @@ export default function AiTerminalWidget() {
 	useEffect(() => {
 		const fetchStatus = async () => {
 			try {
-				const res = await fetch(`${API_BASE_URL}/api/ai/status`);
+				const res = await fetch(gatewayURL("/api/ai/status"), { credentials: "include" });
 				const data = await res.json();
 				setAiStatus({ state: data.status, latency: data.latency_ms, model: data.model });
 			} catch (err) {
@@ -255,10 +255,10 @@ export default function AiTerminalWidget() {
 						term.write("\x1b[90mExecuting command...\x1b[0m\r\n");
 						
 						try {
-							const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
+							const tokenRes = await fetch(gatewayURL("/api/csrf-token"), { credentials: "include" });
 							const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" };
 
-							const res = await fetch(`${API_BASE_URL}/api/cli/execute`, {
+							const res = await fetch(gatewayURL("/api/cli/execute"), {
 								method: 'POST',
 								headers: { 
 									'Content-Type': 'application/json',
@@ -384,7 +384,7 @@ export default function AiTerminalWidget() {
 
 			// Setup SSE untuk event streaming live logs ke Xterm
 			const connectSSE = () => {
-				eventSource = new EventSource(`${API_BASE_URL}/api/ai/stream`);
+				eventSource = new EventSource(gatewayURL("/api/ai/stream"), { withCredentials: true });
 
 				eventSource.onmessage = (e) => {
 					if (e.data === ': heartbeat') return;

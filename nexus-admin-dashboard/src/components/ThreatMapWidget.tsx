@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_BASE_URL } from '@/config';
+import { gatewayURL } from '@/config';
 import { Activity, Globe, Crosshair, RefreshCw } from 'lucide-react';
 
 interface Threat {
@@ -44,7 +44,7 @@ function ThreatMapWidget() {
 
     useEffect(() => {
         const timeoutId = setTimeout(() => setMounted(true), 0);
-        const eventSource = new EventSource(`${API_BASE_URL}/api/stream/threats`);
+        const eventSource = new EventSource(gatewayURL("/api/stream/threats"), { withCredentials: true });
 
         eventSource.onmessage = (event) => {
             try {

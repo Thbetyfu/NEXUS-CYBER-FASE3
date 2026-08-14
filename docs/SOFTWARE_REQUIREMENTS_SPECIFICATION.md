@@ -1,6 +1,8 @@
 # 📄 SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
 ## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
 
+Pembaruan 2026-08-15: data plane `:8080`, control plane `:8081`. eBPF = stub. CLI SOC hanya di mux admin.
+
 ---
 
 ## 1. Pendahuluan & Ruang Lingkup Sistem
@@ -16,37 +18,18 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
 4.  **Database & Cache (PostgreSQL/Redis)**: Menyimpan status audit pertahanan, daftar blacklist IP, log anomali, serta state MTD shuffler.
 
 ```text
-       +-------------------------------------------------+
-       |              Internet / Attacker                |
-       +--------------------+----------------------------+
-                            |
-           Port 80/443 (HTTP) | Port 22 (SSH Probe)
-                            v
-       +--------------------+----------------------------+
-       |                  Caddy Edge                     |
-       +--------------------+----------------------------+
-                            |
-           Redirect Port 8080| Port 2222
-                            v
-       +--------------------+----------------------------+
-       |             Go Core Gateway (WAF)               |
-       |  - Reflex Filter       - SSH Tarpit (:2222)     |
-       |  - GeoIP Local/Online  - Redis Blacklist Cache  |
-       +-------+--------------------+--------------------+
-               |                    |
-       Reads logs & blacklist     Proxies allowed traffic
-               v                    v
-       +-------+-------+    +-------+-------+
-       |  PostgreSQL   |    | Target Web    |
-       |  & Redis      |    | (Portfolio)   |
-       +-------+-------+    +---------------+
-               ^
-       Pulls telemetry & controls gateway
-               |
-       +-------+-------+
-       |   Next.js     |
-       |   Dashboard   |
-       +---------------+
+       Internet / hotspot red team
+                 |
+            Caddy :80/:443
+                 |
+          Gateway WAF :8080  ----> origin (HTTP atau HTTPS)
+                 |
+          Honeypot :9090   SSH tarpit :2222 (compose root saja)
+
+       Operator laptop (bukan hotspot):
+          Next.js 127.0.0.1:3001  -->  Gateway SOC 127.0.0.1:8081
+                 |
+          PostgreSQL / Redis (127.0.0.1)
 ```
 
 ---
@@ -110,8 +93,9 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
 ## 3. Spesifikasi Antarmuka API Gateway
 
 ### 3.1 Eksekusi Perintah CLI (`/api/cli/execute`)
-*   **Metode**: `POST`
-*   **Autentikasi**: Memerlukan validasi cookie sesi dan CSRF token (`X-CSRF-Token` header).
+*   **Listener**: control plane (`ADMIN_LISTEN`, default `127.0.0.1:8081`). **Bukan** WAF `:8080`.
+*   **Metode**: `POST` (GET ditolak)
+*   **Autentikasi**: cookie `nexus_admin_token` atau header `X-Nexus-Admin-Token`, plus CSRF (`X-CSRF-Token`) pada metode berubah.
 *   **Request Payload**:
     ```json
     {

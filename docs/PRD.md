@@ -1,17 +1,19 @@
 # DOKUMEN KEBUTUHAN PRODUK (PRODUCT REQUIREMENT DOCUMENT - PRD)
 ## NEXUS CYBER - AUTONOMOUS TACTICAL DEFENSE GRID
 
+**Status implementasi (selaras kode, 2026-08-15):** WAF `:8080` + SOC `:8081`, CSRF gateway ada, sesi operator cookie (bukan JWT enterprise), autoban vault 5× aktif, Gallery portofolio ada, eBPF stub, pembayaran webhook fail-closed **ditunda**. Visi SaaS/B2G di bawah tetap sebagai produk; jangan dibaca seolah sudah lengkap di repo.
+
 ---
 
 ## 1. METADATA & KONTEKS GLOBAL
 
 - **Nama Proyek:** Nexus Cyber (Autonomous Tactical Defense Grid & SOC Command Center)
-- **Versi PRD & Tanggal:** v2.0.0 / 2026-06-29
+- **Versi PRD & Tanggal:** v2.1.0 / 2026-08-15
 - **Target Tech Stack:**
   - **Frontend:** Next.js 14+ (App Router), Tailwind CSS, Zustand, Recharts (untuk dashboard admin) & React + Vite, Tailwind CSS, TypeScript (untuk target website portofolio).
   - **Backend / API:** Go (Golang) Standard Library (sebagai high-performance WAF API Gateway) & Node.js/Python (untuk backend tiruan/mock target).
   - **Database & ORM:** PostgreSQL dengan GORM & Redis untuk distributed caching/rate-limiting.
-  - **Autentikasi:** Remote License Verification (`NEXUS_LICENSE_KEY`), JWT, dan Session Verification (CGNAT Bypass Challenge).
+  - **Autentikasi:** `NEXUS_LICENSE_KEY` (lisensi), cookie `nexus_admin_token` / header `X-Nexus-Admin-Token` di control plane, challenge sesi situs. **Bukan** JWT RBAC enterprise.
 - **Arsitektur & Standar Kode:** SOLID Principles, Clean Architecture, Go standard project layout, React component-driven development, type safety dengan TypeScript & Go type structures.
 - **Peran AI (AI Persona Prompts):**
   > Bertindaklah sebagai Senior Full-Stack Developer, Software Architect, dan QA Engineer berpengalaman. Semua respons, struktur kode, skema database, dan pengujian yang Anda hasilkan nanti harus mematuhi batasan teknologi dan standar yang didefinisikan dalam dokumen ini tanpa pengecualian.
@@ -181,23 +183,20 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
 - **Kriteria Penerimaan (Acceptance Criteria):**
   - **Skenario 1: Rollback Defacement Otomatis**
     - **Given:** Hacker memodifikasi file template visual situs.
-    - **When:** `IntegrityMonitor` mendeteksi ketidakcocokan hash SHA-256.
+    - **When:** `IntegrityMonitor` mendeteksi ketidakcocokan hash BLAKE3.
     - **Then:** Sistem secara otomatis melakukan rollback visual dari RAM steril ke disk, memulihkan visual situs ke kondisi normal seketika (~600µs).
 
 ### Fitur ID: F-09 - Fitur Uji Ketahanan Web Portfolio (Uploader & Password Reward)
 - **Status:**
-  - Input Gambar & Password Reward di Portfolio-website: **[Belum ada]** (Belum dibuat visual input filenya di komponen portfolio client).
-  - Integrasi Autoban IP di WAF saat gagal tebak password >= 5 kali: **[Dinonaktifkan Sementara / Dikomentari]** di `resistance_handlers.go` (Kode pemblokiran database di baris 204-211 dan baris 284-311 dinonaktifkan sementara/dikomentari).
-- **User Story:** Sebagai Tester, saya ingin dapat menggunakan form unggah gambar dan mengisi password rahasia di bagian bawah situs portofolio untuk mendapatkan link Shopee Kaget, serta memverifikasi bahwa WAF akan memblokir IP saya jika saya melakukan brute force password.
+  - Gallery `#gallery` (unggah + vault password): **[Sudah ada]** di `playground/Portofolio-Thoriq`.
+  - AVSE unggah + penyimpanan foto tamu di gateway (`/api/photos`): **[Sudah ada]**.
+  - Autoban IP setelah ≥5 password salah: **[Sudah ada]** (`getCleanIP` + `SplitHostPort`).
+- **User Story:** Sebagai Tester, saya ingin form unggah dan password hadiah di Gallery, serta WAF memblokir IP setelah brute force.
 - **Aturan Bisnis:**
-  - Form input gambar & password diletakkan di bagian paling bawah halaman portofolio (di bawah Testimonial/Contact).
-  - Jika password benar, link Shopee Kaget dibuka. Jika salah, counter kegagalan IP ditambahkan.
-  - *[Dinonaktifkan Sementara]* IP otomatis diblokir secara permanen di database blacklist jika gagal memasukkan password sebanyak 5 kali.
-- **Kriteria Penerimaan (Acceptance Criteria):**
-  - **Skenario 1: Pengisian Password Salah**
-    - **Given:** Tester memasukkan password salah pada kolom reward.
-    - **When:** Tester mengklik tombol "Unlock".
-    - **Then:** Sistem mengembalikan pesan error percobaan `Incorrect Password. Attempt X of 5`. Namun, jika gagal 5 kali, status IP tetap aktif (tidak diblokir) karena baris kode pemblokiran masih dikomentari di backend gateway.
+  - Navigasi portofolio punya item Gallery. Password dari `REWARD_PASSWORD`.
+  - Password benar → tautan hadiah. Salah → counter per IP. Lima kali → blacklist.
+- **Kriteria Penerimaan:**
+  - **Skenario 1:** Password salah → pesan percobaan. Setelah 5 gagal, request berikutnya dari IP itu ditolak WAF.
 
 ---
 
@@ -249,7 +248,7 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
 
 - **Keamanan (Security):**
   - **[Belum ada]** Validasi input terpusat menggunakan library parser formal seperti `Zod` (di dashboard/portfolio) atau `Joi`.
-  - **[Belum ada]** Proteksi ketat CSRF di level WAF gateway (baru perlindungan paywall & obfuskasi PACS).
+  - CSRF di gateway (`CsrfShield`) pada metode berubah: **[Sudah ada]**. Validasi Zod terpusat di seluruh dasbor: **[Sebagian / belum merata]**.
   - Rate Limiting Token Bucket menggunakan Redis distributed lock: **[Sudah ada]**.
 - **Performa (Performance):**
   - **[Belum ada]** Penghitungan formal kebutuhan CPU & RAM minimum sistem untuk melayani beban traffic tinggi di produksi (baru estimasi).
@@ -270,20 +269,19 @@ Di dokumen tertulis bahwa PACS mengacak HTML menjadi format Base64.
 Saat ini fitur eBPF masih berstatus Stub (simulasi).
 * **Realitanya:** Jika terjadi serangan DDoS bervolume tinggi yang memanfaatkan Zero-Day di level jaringan, Reflex AI Layer Anda (meskipun latensinya di bawah 50ms) akan mengalami resource exhaustion. Tanpa pembuangan paket langsung di level kernel (`XDP_DROP` real), tumpukan goroutine pada Go gateway akan kewalahan menangani antrean soket TCP yang masuk. Fitur F-03 ini harus dinaikkan statusnya dari stub menjadi prioritas utama.
 
-### 7.3 Batasan Self-Repair Berbasis SHA-256
-Memantau hash SHA-256 pada RAM sangat bagus untuk menjaga integritas berkas di disk.
+### 7.3 Batasan Self-Repair Berbasis Hash Berkas
+Memantau hash **BLAKE3** pada baseline RAM menjaga integritas berkas di folder yang dikonfigurasi.
 * **Realitanya:** Kebanyakan serangan Zero-Day modern (seperti Remote Code Execution / RCE) mengeksploitasi runtime memory atau memicu reverse shell langsung dari proses memori aplikasi, tanpa memodifikasi berkas visual atau berkas di disk sama sekali. Jadi, visual situs Anda akan terlihat 100% aman dan lolos verifikasi SHA-256, padahal di latar belakang server Anda sudah dikendalikan oleh penyerang.
 
-### 7.4 Absennya Validasi Input Terpusat (Zod/Joi) & CSRF
-Di bagian batasan non-fungsional, disebutkan bahwa validasi input terpusat dan proteksi CSRF belum ada.
-* **Realitanya:** Sehebat apa pun AI menganalisis ancaman, pintu masuk terbesar bagi Zero-Day sering kali adalah celah logika sederhana (seperti Type Inversion, Prototype Pollution, atau Insecure Deserialization). Tanpa strict input parsing (seperti Zod), penyerang bisa mengirimkan payload aneh yang lolos dari pemindaian regex Reflex AI namun merusak komponen backend.
+### 7.4 Validasi input dasbor vs CSRF gateway
+CSRF token di WAF **sudah ada**. Validasi skema Zod di setiap form dasbor **belum merata**. Celah logika (tipe aneh, prototype pollution di JS origin) tetap di luar jangkauan regex Reflex.
 
 ---
 
 ## 8. 🚀 REKOMENDASI LANGKAH SELANJUTNYA
 Untuk membuat PRD ini menjadi senjata yang siap tempur di dunia nyata, pertimbangkan langkah-langkah berikut:
 
-1. **Aktifkan kembali Fitur F-09 (Autoban IP):** Jangan biarkan kode pemblokiran di database tetap dikomentari. Batasan 5 kali gagal tebak password adalah benteng fundamental.
+1. **F-09 autoban:** sudah aktif di kode (2026-08). Prioritas berikutnya: webhook pembayaran fail-closed (ditunda pemilik).
 2. **Tingkatkan PACS:** Ubah dari sekadar Base64 menjadi enkripsi dinamis berbasis token waktu pendek yang dikombinasikan dengan teknik runtime JavaScript-obfuscation yang berubah di setiap request.
 3. **Tambahkan Runtime Application Self-Protection (RASP):** Selain memantau berkas statis (F-08), tambahkan pemicu untuk memantau aktivitas mencurigakan pada proses sistem operasi (misalnya, jika proses aplikasi web tiba-tiba menjalankan perintah `bin/sh`).
 
@@ -306,6 +304,6 @@ Ini adalah jawaban mutlak untuk melompati batasan SHA-256. Dengan menaikkan stat
 
 ---
 
-*Dokumen disusun sejujur-jujurnya berdasarkan audit kode program riil dan dokumentasi repositori `Nexus-Cyber-Fase2` per tanggal 29 Juni 2026.*
+*Status fitur diselaraskan dengan kode 15 Agustus 2026. Visi produk (SaaS CNAME, eBPF real, Qwen 235B) yang belum ada di repo tetap ditandai stub/belum.*
 
 ---

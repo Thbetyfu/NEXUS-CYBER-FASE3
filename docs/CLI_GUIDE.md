@@ -1,66 +1,48 @@
-# 🕹️ Command Center CLI Guide
+# Command Center CLI Guide
 
-Berikut adalah daftar perintah yang bisa digunakan oleh Admin SOC melalui antarmuka Command Center dan Terminal Backend:
+Pembaruan 2026-08-15. Perintah SOC lewat dasbor ke **`127.0.0.1:8081`** (`POST`, sesi operator). Bukan port WAF `:8080`.
 
-## 1. Perintah Konsol SOC Dashboard (Xterm.js Terminal)
+## 1. Konsol SOC (Xterm.js)
 
-| Perintah | Deskripsi Teknis |
+Perintah dikirim ke `/api/cli/execute` di control plane. Daftar di bawah mengikuti handler CLI gateway; jika perintah tidak dikenali, terminal menampilkan bantuan.
+
+| Perintah | Peran |
 | :--- | :--- |
-| `/help` | Menampilkan daftar perintah bantuan yang tersedia. |
-| `/status` | Memeriksa status rotasi port MTD & kesehatan backend. |
-| `/stats` | Menampilkan total trafik allowed, blocked, dan honeypot. |
-| `/shuffle` | Memicu rotasi port backend MTD secara manual seketika. |
-| `/audit` | Menjalankan stress-test kepatuhan MTD (17 checks). |
-| `/ban [IP]` | Memasukkan IP penyerang ke daftar hitam permanen. |
-| `/unban [IP]` | Memulihkan kembali IP dari daftar hitam. |
-| `/sub [domain]` | Mendaftarkan lisensi premium SaaS PACS untuk klien. |
-| `/unsub [domain]` | Mencabut lisensi premium dan mengunci situs klien. |
-| `/honeystats` | Menampilkan log IP penyerang yang terjebak di honeypot. |
-| `/patches` | Menampilkan daftar virtual patch antibodi yang aktif di RAM. |
-| `/wargame [scenario]` | Memicu simulasi perang siber live melalui engine **NEX-RED**. |
-| `@nexus [query]` | Melakukan query/tanya jawab konsultasi siber ke AI Reasoning. |
-| `clear` | Membersihkan layar terminal SOC Command CLI. |
+| `/help` | Bantuan |
+| `/status` | Kesehatan gateway / MTD |
+| `/stats` | Trafik allowed / blocked / honeypot |
+| `/shuffle` | Rotasi MTD manual (origin HTTP) |
+| `/audit` | Audit kepatuhan MTD |
+| `/ban [IP]` | Blacklist |
+| `/unban [IP]` | Cabut blacklist |
+| `/sub [domain]` | Langganan lisensi domain |
+| `/unsub [domain]` | Cabut langganan |
+| `/honeystats` | Statistik honeypot |
+| `/patches` | Virtual patch di memori |
+| `/wargame [scenario]` | Memicu NEX-RED lewat adapter (bukan swarm pentest) |
+| `@nexus [query]` | Query reasoning (jika model dikonfigurasi) |
+| `clear` | Bersihkan layar |
 
----
+## 2. Binary gateway
 
-## 2. Perintah Binary Gateway Go (`gateway`)
+Subperintah `license` / `audit` / `sim` mengikuti `nexus-core-gateway/cmd`. Jalankan dari direktori modul Go. Jangan menganggap semua subperintah ada di image Docker lab.
 
-| Perintah | Deskripsi Teknis |
-| :--- | :--- |
-| `gateway license generate` | Membuat Kunci Lisensi Terenkripsi HMAC (5-Tier, CPU Cores, B2G PO). |
-| `gateway license verify` | Memverifikasi integritas & batas lisensi secara offline. |
-| `gateway audit export` | Menjana Laporan Audit Kepatuhan (ISO 27001, PCI-DSS, UU PDP) format Markdown/JSON. |
-| `gateway audit sync-bssn` | Sinkronisasi & injeksi memori feed ancaman siber kolektif BSSN/ID-CERT. |
-| `gateway sim` | Memicu simulasi mitigasi perang siber live (DDoS, SQLi, Defacement). |
+## 3. NEX-RED
 
----
-
-## 3. Perintah Autonomous Red Team (`NEX-RED CLI`)
-
-| Perintah | Deskripsi Teknis |
-| :--- | :--- |
-| `python NEX-RED/nexred.py scan -m hybrid` | Menjalankan audit White-Box (kode) & Black-Box (dinamis) sekaligus. |
-| `python NEX-RED/nexred.py scan -m whitebox -r .` | Menjalankan audit kode sumber lokal (AST & Route mapping). |
-| `python NEX-RED/nexred.py scan -m blackbox -u http://127.0.0.1:8080` | Menjalankan penetrasi dinamis terhadap URL endpoint aktif. |
-| `python NEX-RED/nexred.py scan -s sqli` | Menjalankan skenario serangan bertarget khusus (SQLi / DDoS / Defacement). |
-| `python NEX-RED/nexred.py bridge -p 3002` | Menjalankan REST API Daemon untuk interkoneksi Dasbor & Gateway. |
-
----
-
-## 4. Pengujian & Verifikasi Otomatis
-
-Untuk memverifikasi modul secara terisolasi:
+Black-box = probe JSON jinak + recon header, **bukan** payload exploit.
 
 ```bash
-# 1. Menjalankan Unit Test NEX-RED
-python -m unittest discover -s NEX-RED/tests
+python NEX-RED/nexred.py scan -m whitebox -r .
+python NEX-RED/nexred.py scan -m hybrid -u http://127.0.0.1 -r . --no-llm
+python NEX-RED/nexred.py bridge -p 3004
+```
 
-# 2. Menjalankan Audit Sistem Nexus
+Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_benchmark`
+
+## 4. Tes lain
+
+```bash
 python scripts/tests/nexus_system_audit.py
-
-# 3. Menjalankan Uji Moving Target Defense
 python scripts/tests/test_mtd_shuffle.py
-
-# 4. Menjalankan Uji Self-Repair Rollback
 python scripts/tests/test_self_repair.py
 ```

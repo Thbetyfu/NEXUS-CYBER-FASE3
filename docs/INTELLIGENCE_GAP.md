@@ -1,4 +1,7 @@
 # INTELLIGENCE GAP ANALYSIS REPORT
+
+**Arsip 2026-03-19.** Jangan diperlakukan sebagai hasil tes lab 2026-08.
+
 ## Nexus Cyber — Ghost Attack Simulation Results
 **Author**: Senior Red Teamer (Internal Penetration Test)
 **Date**: 2026-03-19 22:50 WIB

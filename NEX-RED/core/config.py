@@ -28,7 +28,9 @@ class NexRedConfig(BaseModel):
     default_timeout: int = 60
     max_file_bytes: int = 524288
     max_files: int = 2500
-    user_agent: str = "NEX-RED/4.0 (Nexus Cyber Security Validation)"
+    user_agent: str = Field(
+        default_factory=lambda: os.getenv("NEX_RED_USER_AGENT", "NEX-RED/5.0 (Nexus Cyber Security Validation)")
+    )
 
     ai_provider: str = Field(default_factory=lambda: os.getenv("NEX_AI_PROVIDER", "ollama"))
     ai_base_url: str = Field(default_factory=lambda: os.getenv("NEX_AI_BASE_URL", "http://127.0.0.1:11434"))
@@ -39,6 +41,8 @@ class NexRedConfig(BaseModel):
     )
     llm_timeout_seconds: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_LLM_TIMEOUT", "20")))
     max_llm_reviews: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LLM_REVIEWS", "15")))
+    live_target: str = Field(default_factory=lambda: os.getenv("NEX_RED_LIVE_TARGET", "http://127.0.0.1"))
+    max_live_steps: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LIVE_STEPS", "20")))
 
 
 config = NexRedConfig()

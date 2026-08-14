@@ -1,6 +1,8 @@
-# 🗄️ Nexus Cyber Database Schema
+# Nexus Cyber Database Schema
 
-Dokumen ini mendeskripsikan skema basis data relasional (PostgreSQL) yang digunakan oleh **Nexus Cyber Security System** untuk kebutuhan persistensi data jangka panjang, audit forensik, dan intelijen ancaman (*Threat Intelligence*). Skema ini dirancang agar mematuhi standar keamanan internasional ISO 27001.
+Skema **target** PostgreSQL untuk audit. Tabel di bawah harus dicek ulang terhadap migrasi GORM di `nexus-core-gateway` sebelum dianggap kontrak produksi. ISO 27001 di sini adalah *desain*, bukan sertifikat.
+
+---
 
 ---
 

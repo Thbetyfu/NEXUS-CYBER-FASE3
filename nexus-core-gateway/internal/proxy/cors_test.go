@@ -61,7 +61,7 @@ func TestDashboardCORSHandlesPreflightWithExplicitHeaders(t *testing.T) {
 	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != "http://127.0.0.1:3000" {
 		t.Fatalf("expected trusted origin on preflight, got %q", got)
 	}
-	if got := rr.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, X-CSRF-Token, X-Nexus-Webhook-Secret" {
+	if got := rr.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, X-CSRF-Token, X-Nexus-Webhook-Secret, X-Nexus-Admin-Token" {
 		t.Fatalf("unexpected allowed headers value: %q", got)
 	}
 	if got := rr.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, OPTIONS, PUT, DELETE" {

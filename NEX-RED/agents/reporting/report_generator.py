@@ -28,6 +28,7 @@ class ReportGenerator:
             f"- **Findings:** {result.vulnerabilities_found}",
             f"- **Defensive blocks observed:** {result.vulnerabilities_mitigated_by_nexus}",
             f"- **LLM verification used:** {result.llm_used}",
+            f"- **Live HTTP checks:** {result.live_checks_run}",
             "",
             "## Findings",
         ]
@@ -45,6 +46,7 @@ class ReportGenerator:
                         f"- **CWE:** {finding.cwe_id} | **OWASP:** {finding.owasp_category}",
                         f"- **Location:** `{finding.target_endpoint}`",
                         f"- **Source:** `{finding.source.value}` | **Confidence:** {finding.confidence:.2f} | **LLM:** {finding.verified_by_llm}",
+                        f"- **Live verdict:** `{finding.live_verdict.value if finding.live_verdict else 'sast_only'}`",
                         f"- **Evidence:** `{finding.proof_of_concept}`",
                         f"- **Remediation:** {finding.remediation}",
                         "",

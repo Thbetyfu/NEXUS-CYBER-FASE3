@@ -34,6 +34,22 @@ class FindingSource(str, Enum):
     LLM_VERIFIED = "LLM_VERIFIED"
     RECON = "RECON"
     WAF_PROBE = "WAF_PROBE"
+    LIVE_HTTP = "LIVE_HTTP"
+
+
+class LiveVerdict(str, Enum):
+    SAST_ONLY = "sast_only"
+    CONFIRMED = "confirmed"
+    REJECTED = "rejected"
+    MITIGATED_BY_NEXUS = "mitigated_by_nexus"
+
+
+class JobStatus(str, Enum):
+    QUEUED = "QUEUED"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    PARTIAL = "PARTIAL"
 
 
 class AttackPhase(str, Enum):
@@ -72,6 +88,7 @@ class VulnerabilityFinding(BaseModel):
     confidence: float = 0.5
     verified_by_llm: bool = False
     evidence: List[Evidence] = Field(default_factory=list)
+    live_verdict: Optional[LiveVerdict] = None
 
 
 class ScanTarget(BaseModel):
@@ -98,3 +115,4 @@ class ScanResult(BaseModel):
     status: str = "COMPLETED"
     files_analyzed: int = 0
     llm_used: bool = False
+    live_checks_run: int = 0

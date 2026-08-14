@@ -29,7 +29,7 @@ type RouteEntry struct {
 // - Tier 2: Penyimpanan terdistribusi Redis Hash untuk sinkronisasi antar-node gateway.
 type DynamicRouter struct {
 	cache map[string]RouteEntry
-	mu    sync.RWMutex // Lock baca/tulis yang dioptimalkan untuk performa tinggi pada konkurensi tinggi
+	mu    sync.RWMutex  // Lock baca/tulis yang dioptimalkan untuk performa tinggi pada konkurensi tinggi
 	ttl   time.Duration // Durasi hidup cache memori lokal sebelum divalidasi ulang ke Redis
 }
 
@@ -50,6 +50,17 @@ func NewDynamicRouter(cacheTTL time.Duration) *DynamicRouter {
 // 3. Jika pencocokan tepat gagal, dilakukan pencarian rekursif wildcard (misal `*.example.com`) untuk mendukung Shared WAF.
 // 4. Jika tetap tidak ditemukan, pencarian diarahkan ke global wildcard (`*`) sebagai gerbang fallback universal.
 func (dr *DynamicRouter) Lookup(host string) (string, bool) {
+	return dr.lookupHost(host, true)
+}
+
+// HasExplicitRoute is true when host matches an exact or tenant-wildcard route.
+// The global "*" catch-all is ignored so Caddy on-demand TLS cannot mint certs for arbitrary names.
+func (dr *DynamicRouter) HasExplicitRoute(host string) bool {
+	_, ok := dr.lookupHost(host, false)
+	return ok
+}
+
+func (dr *DynamicRouter) lookupHost(host string, allowGlobalStar bool) (string, bool) {
 	// 1. Periksa Pencocokan Tepat di Cache RAM Lokal (Tier 1)
 	dr.mu.RLock()
 	entry, exists := dr.cache[host]
@@ -92,7 +103,7 @@ func (dr *DynamicRouter) Lookup(host string) (string, bool) {
 	parts := strings.Split(host, ".")
 	for i := 0; i < len(parts)-1; i++ {
 		wildcardHost := "*." + strings.Join(parts[i+1:], ".")
-		
+
 		// Cek di Cache RAM Lokal
 		dr.mu.RLock()
 		wEntry, wExists := dr.cache[wildcardHost]
@@ -111,6 +122,10 @@ func (dr *DynamicRouter) Lookup(host string) (string, bool) {
 				return target, true
 			}
 		}
+	}
+
+	if !allowGlobalStar {
+		return "", false
 	}
 
 	// 4. Pencocokan Global Fallback (e.g., "*") untuk Shared WAF universal

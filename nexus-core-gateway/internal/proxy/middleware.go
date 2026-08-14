@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/nexus-cyber/nexus-core-gateway/pkg/utils"
 )
 
 const (
@@ -200,11 +202,8 @@ func BrowserIntegrityCheck(next http.Handler) http.Handler {
 		// [BYPASS LOCALHOST DASHBOARD]
 		// Pengunjung lokal pada localhost/127.0.0.1 (Admin SOC Dashboard) dibebaskan dari tantangan JS
 		// agar dasbor Command Center langsung terbuka secara instan tanpa mengalami challenge loop.
-		host := r.Host
-		if strings.Contains(host, ":") {
-			host = strings.Split(host, ":")[0]
-		}
-		if host == "localhost" || host == "127.0.0.1" {
+		host := utils.RequestHost(r.Host)
+		if utils.IsLoopbackRequestHost(host) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -217,7 +216,7 @@ func BrowserIntegrityCheck(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// [LAYER_0_WHITELIST_GUARD]
 		// Alasan Teknis (Why):
 		// Rute API internal (`/api/`) dibebaskan dari tantangan JS karena dipanggil secara programatik

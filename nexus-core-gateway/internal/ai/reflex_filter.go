@@ -2,9 +2,14 @@
 package ai
 
 import (
+	"html"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // ReflexFilter mengimplementasikan Filter Refleks Cepat (Phase 1 Heuristics) di bawah arsitektur Hybrid Intelligence.
@@ -21,8 +26,10 @@ type ReflexFilter struct {
 	rcePatterns       []*regexp.Regexp
 	headerPatterns    []*regexp.Regexp
 	// Regex untuk membersihkan komentar SQL sebelum matching (GAP-001)
-	sqlCommentStrip   *regexp.Regexp
-	benchmarkPattern  *regexp.Regexp
+	sqlCommentStrip *regexp.Regexp
+	jsUnicodeEscape *regexp.Regexp
+	jsHexEscape     *regexp.Regexp
+	benchmarkPattern *regexp.Regexp
 }
 
 // NewReflexFilter menginisialisasi Regex bawaan untuk memindai payload request.
@@ -94,33 +101,95 @@ func NewReflexFilter() *ReflexFilter {
 		traversalPatterns: traversalRegex,
 		rcePatterns:       rceRegex,
 		headerPatterns:    headerRegex,
-		sqlCommentStrip:  regexp.MustCompile(`/\*.*?\*/`),
+		sqlCommentStrip:  regexp.MustCompile(`(?s)/\*.*?\*/`),
+		jsUnicodeEscape:  regexp.MustCompile(`\\u([0-9a-fA-F]{4})`),
+		jsHexEscape:      regexp.MustCompile(`\\x([0-9a-fA-F]{2})`),
 		benchmarkPattern: regexp.MustCompile(`(?i)BENCHMARK\s*\(`),
 	}
 }
 
 func (f *ReflexFilter) stripSQLComments(data string) string {
-	return f.sqlCommentStrip.ReplaceAllString(data, "")
+	out := data
+	for i := 0; i < 5; i++ {
+		next := f.sqlCommentStrip.ReplaceAllString(out, "")
+		if next == out {
+			return out
+		}
+		out = next
+	}
+	return out
+}
+
+func decodeHexRune(hex string) (rune, bool) {
+	n, err := strconv.ParseUint(hex, 16, 32)
+	if err != nil || n == 0 {
+		return 0, false
+	}
+	r := rune(n)
+	if !utf8.ValidRune(r) {
+		return 0, false
+	}
+	return r, true
+}
+
+func (f *ReflexFilter) decodeJSEscapes(data string) string {
+	out := f.jsUnicodeEscape.ReplaceAllStringFunc(data, func(m string) string {
+		sub := f.jsUnicodeEscape.FindStringSubmatch(m)
+		if len(sub) < 2 {
+			return m
+		}
+		r, ok := decodeHexRune(sub[1])
+		if !ok {
+			return m
+		}
+		return string(r)
+	})
+	return f.jsHexEscape.ReplaceAllStringFunc(out, func(m string) string {
+		sub := f.jsHexEscape.FindStringSubmatch(m)
+		if len(sub) < 2 {
+			return m
+		}
+		r, ok := decodeHexRune(sub[1])
+		if !ok {
+			return m
+		}
+		return string(r)
+	})
+}
+
+func percentUnescapeRound(s string) string {
+	if !strings.Contains(s, "%") {
+		return s
+	}
+	unescaped, err := url.QueryUnescape(s)
+	if err != nil || unescaped == s {
+		return s
+	}
+	return unescaped
+}
+
+// NormalizeForInspect meratakan obfuskasi dangkal sebelum regex.
+// Alasan: Reflex harus menilai bentuk kanonik (percent-encoding berlapis, entitas HTML,
+// \uXXXX, komentar SQL, NFKC), bukan string mentah yang mudah diubah ejaannya.
+func (f *ReflexFilter) NormalizeForInspect(data string) string {
+	decoded := data
+	for i := 0; i < 6; i++ {
+		next := percentUnescapeRound(decoded)
+		next = f.decodeJSEscapes(next)
+		next = html.UnescapeString(next)
+		next = f.stripSQLComments(next)
+		next = norm.NFKC.String(next)
+		if next == decoded {
+			break
+		}
+		decoded = next
+	}
+	return strings.ToLower(decoded)
 }
 
 // InspectRequest memindai string input untuk mencari pola eksploitasi dasar.
 func (f *ReflexFilter) InspectRequest(data string) (isThreat bool, threatType string) {
-	// Recursive URL Unescape (hingga 5 iterasi) untuk membongkar obfuskasi multi-layered URL percent encoding
-	decoded := data
-	for i := 0; i < 5; i++ {
-		if !strings.Contains(decoded, "%") {
-			break
-		}
-		if unescaped, err := url.QueryUnescape(decoded); err == nil && unescaped != decoded {
-			decoded = unescaped
-		} else {
-			break
-		}
-	}
-
-	// Bersihkan komentar SQL sebelum lowercase dan matching
-	decoded = f.stripSQLComments(decoded)
-	decoded = strings.ToLower(decoded)
+	decoded := f.NormalizeForInspect(data)
 
 	// 1. Pemindaian SQLi
 	for _, p := range f.sqliPatterns {
@@ -153,25 +222,13 @@ func (f *ReflexFilter) InspectRequest(data string) (isThreat bool, threatType st
 	return false, ""
 }
 
-func urlQueryUnescape(s string) (string, error) {
-	// Full recursive percent unescape for double URL encoding bypasses
-	return url.QueryUnescape(s)
-}
-
 // InspectHeaders memeriksa kumpulan header HTTP untuk mendeteksi injeksi, spoofing IP,
 // dan upaya social engineering terhadap model AI Cognitive Core.
-//
-// Alasan Arsitektural (Why - GAP-003):
-// Laporan Red Team (INTELLIGENCE_GAP.md) mengidentifikasi bahwa header HTTP sepenuhnya
-// lolos dari pemeriksaan Reflex sebelumnya. Penyerang dapat menyematkan payload berbahaya
-// atau instruksi injeksi prompt AI di dalam nilai header untuk memanipulasi gateway.
-// Fungsi ini memindai seluruh pasangan header:nilai sekaligus untuk mempertahankan
-// latensi pemrosesan seminimal mungkin.
 func (f *ReflexFilter) InspectHeaders(headers map[string][]string) (isThreat bool, threatType string) {
 	for name, values := range headers {
 		for _, val := range values {
-			// Gabungkan nama header + nilai untuk pemindaian kontekstual
-			combined := strings.ToLower(name + ": " + val)
+			normalizedVal := f.NormalizeForInspect(val)
+			combined := strings.ToLower(name) + ": " + normalizedVal
 
 			for _, p := range f.headerPatterns {
 				if p.MatchString(combined) {

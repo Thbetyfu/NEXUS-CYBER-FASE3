@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Globe, Shield, X, Plus, Loader2 } from "lucide-react"
-import { API_BASE_URL } from '@/config'
+import { gatewayURL } from '@/config'
 import { z } from "zod"
 
 const routeSchema = z.object({
@@ -45,10 +45,10 @@ export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteMo
 
         try {
             // Fetch CSRF Token
-            const tokenRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" })
+            const tokenRes = await fetch(gatewayURL("/api/csrf-token"), { credentials: "include" })
             const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" }
 
-            const res = await fetch(`${API_BASE_URL}/api/routes`, {
+            const res = await fetch(gatewayURL("/api/routes"), {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",

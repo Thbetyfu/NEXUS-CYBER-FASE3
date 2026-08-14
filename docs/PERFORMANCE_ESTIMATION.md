@@ -1,6 +1,8 @@
 # Estimasi Profil Performa Resource: Nexus Cyber WAF & AI
 
-Dokumen ini mendefinisikan estimasi profil performa CPU & RAM untuk modul gerbang pertahanan otonom (WAF Gateway) dan server kecerdasan buatan (LLM/Ollama) demi menjamin stabilitas deployment di lingkungan produksi (VPS Biznet GIO / Hetzner).
+Angka di bawah adalah **estimasi**, bukan hasil load-test produksi. eBPF/XDP **tidak** mengurangi CPU di lab saat ini (modul stub). Reasoning LLM hanya memakai RAM besar jika Ollama/`nex-ai-protect` benar-benar dijalankan.
+
+Dokumen ini memperkirakan CPU & RAM gateway vs Ollama untuk perencanaan VPS.
 
 ---
 
@@ -45,7 +47,7 @@ Karena Nexus Cyber menggunakan arsitektur **Full Local AI** (Ollama + model `nex
 | Parameter | VPS Mandiri (Biznet GIO) | PaaS (Railway) |
 | :--- | :--- | :--- |
 | **Biaya untuk 8 GB RAM** | Rp350.000 - Rp420.000 / bulan | ~Rp850.000 - Rp1.000.000 / bulan |
-| **eBPF/XDP Kernel Blocking** | **Didukung penuh** (root access) | Tidak didukung (sandbox) |
+| **eBPF/XDP Kernel Blocking** | OS mengizinkan eBPF; **kode Nexus masih stub** | Sama: tidak ada XDP di aplikasi |
 | **Full Local AI (Ollama)** | **Didukung penuh** | Sangat mahal (RAM dihitung per GB) |
 | **Kontrol Infrastruktur** | Penuh (`docker compose up -d`) | Terbatas (UI dashboard) |
 
@@ -54,7 +56,7 @@ Karena Nexus Cyber menggunakan arsitektur **Full Local AI** (Ollama + model `nex
 ## 3. Rekomendasi Deployment Produksi (Nexus Cyber)
 
 Untuk deployment produksi, **VPS Mandiri Biznet GIO (4 Cores / 8 GB RAM)** sangat disarankan karena:
-1.  Mendukung fitur keamanan kernel (eBPF/XDP) secara penuh untuk pemblokiran IP di level driver.
+1.  Root di VPS *memungkinkan* eBPF nanti; **hari ini** Nexus tidak drop paket XDP.
 2.  Inferensi AI lokal berjalan stabil tanpa risiko Out-Of-Memory (OOM) dengan alokasi RAM yang lega.
 3.  Latency akses dari pengunjung Indonesia sangat rendah (~10-30ms) karena data center berada di Jakarta.
 4.  Deployment cukup dengan satu perintah `docker compose up -d --build` tanpa konfigurasi dashboard PaaS.

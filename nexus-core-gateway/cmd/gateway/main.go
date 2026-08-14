@@ -235,60 +235,25 @@ func main() {
 	// 7. Chain: BrowserIntegrity -> TokenBucket -> NexusProxy (defense-in-depth)
 	gatewayHandler := proxy.BrowserIntegrityCheck(rateLimiter.HTTPMiddleware(gateway))
 
-	// 8. Start Server wrapped in top-level mux for internal APIs
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/routes", routesHandler(gateway.Router, telemetry)) // Zero-Code Onboarding
-	mux.HandleFunc("/api/telemetry", telemetryHandler(shuffler, telemetry, target))
-	mux.HandleFunc("/api/ai-events", aiEventsHandler(telemetry))                               // AI Cognitive Core Tracker
-	mux.HandleFunc("/api/ai/stream", aiStreamHandler())                                        // SSE for Live CLI
-	mux.HandleFunc("/api/ai/status", aiStatusHandler())                                        // Health Check
-	mux.HandleFunc("/api/cli/execute", cliExecuteHandler(telemetry, shuffler, gateway.Router)) // Interactive Terminal CLI
-	mux.HandleFunc("/api/logs", telemetryHandler(shuffler, telemetry, target))                 // Phase 6 requirement
-	mux.HandleFunc("/api/domains", xxxDomainsHandler(telemetry, gateway.Router))               // Multi-Tenant Workspace Switcher
-	mux.HandleFunc("/api/nechat", nechatHandler(telemetry))                                    // Phase 6 Nechat Assist
-	mux.HandleFunc("/api/panic", panicHandler(shuffler, telemetry))                            // Phase 6 Rescue Protocol
-	mux.HandleFunc("/api/report/generate", reportGenerateHandler(telemetry))                   // [NEW: EXECUTIVE REPORTING]
-	mux.HandleFunc("/api/stream/threats", threatsStreamHandler(gateway))                       // [NEW: THREAT MAP STREAMS]
-	mux.HandleFunc("/api/ip-monitoring", ipMonitoringHandler(telemetry))                       // [NEW: IP MONITORING & TRACKING]
-	mux.HandleFunc("/api/blacklist", blacklistListHandler())                                   // [NEW: LIST BANNED IPS]
-	mux.HandleFunc("/api/blacklist/ban", blacklistBanHandler(telemetry))                       // [NEW: MANUAL/AI BAN IP]
-	mux.HandleFunc("/api/blacklist/unban", blacklistUnbanHandler(telemetry))                   // [NEW: MANUAL UNBAN IP]
-	mux.HandleFunc("/api/audit/verify", auditVerifyHandler())                                  // [NEW: AUDIT LOG INTEGRITY VERIFICATION]
-	mux.HandleFunc("/api/antibodies", antibodiesHandler())                                     // [NEW: NEX-AI SELF-HEAL ANTIBODY AUDIT TRAIL]
-	mux.HandleFunc("/api/system/reset", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
+	publicMux := registerPublicMux(gatewayHandler, gateway, telemetry)
+	adminMux := registerAdminMux(gateway, telemetry, shuffler, target)
+
+	publicShield := proxy.DashboardCORS(proxy.CsrfShield(gateway.AIMiddleware(publicMux)))
+	adminShield := proxy.DashboardCORS(proxy.AdminControlPlane(
+		proxy.CsrfShield(gateway.AIMiddleware(adminMux)),
+		os.Getenv("NEXUS_ADMIN_TOKEN"),
+	))
+
+	adminAddr := os.Getenv("ADMIN_LISTEN")
+	if adminAddr == "" {
+		adminAddr = "127.0.0.1:8081"
+	}
+	go func() {
+		fmt.Printf("[NEXUS] Admin control plane on %s (SOC only; not on the public WAF port)\n", adminAddr)
+		if err := http.ListenAndServe(adminAddr, adminShield); err != nil {
+			log.Fatal(err)
 		}
-
-		// 1. Reset In-Memory RAM Stats
-		telemetry.ResetAll()
-
-		// 2. Reset AI Virtual Patches
-		gateway.ResetAntibodies()
-
-		// 3. Reset Redis Persistent Counters (Phase 7 Multi-Tenant)
-		if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
-			ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
-			defer cancel()
-			// Clear all Nexus related traffic counters
-			mtd.MtdRedis.Client.FlushDB(ctx) // Total Purge for Kedaulatan
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"status":"success","message":"System metrics and AI memory cleared across RAM and Redis."}`)
-	})
-	mux.HandleFunc("/api/upload", uploadShieldHandler(gateway, telemetry))
-	mux.HandleFunc("/api/unlock-reward", rewardUnlockHandler(telemetry))
-	mux.HandleFunc("/api/webhook/payment", paymentWebhookHandler(gateway.Router, telemetry))
-	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler) // CGNAT Bypass Challenge Validator
-	mux.HandleFunc("/api/test/run", runTestHandler())
-	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())                                 // [NEW: CSRF TOKEN ENDPOINT]
-	mux.HandleFunc("/api/license/validate-domain", validateDomainHandler(gateway.Router)) // [NEW: CADDY TLS VALIDATION ENDPOINT]
-	mux.Handle("/", gatewayHandler)                                                       // all other requests go to the proxy
-
-	// 9. Root Matrix Shield: Wrap EVERYTHING in AI Intelligence
-	rootShield := proxy.DashboardCORS(proxy.CsrfShield(gateway.AIMiddleware(mux)))
+	}()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -297,7 +262,7 @@ func main() {
 	if !strings.HasPrefix(port, ":") {
 		port = ":" + port
 	}
-	fmt.Printf("[NEXUS] Gateway Active on port %s -> Proxying to %s\n", port, target)
+	fmt.Printf("[NEXUS] Public WAF on %s -> Proxying to %s\n", port, target)
 	fmt.Println("[NEXUS] MODE: Phase 5 MTD Active | Honeypot: :9090 | Rate Limiter: 50r/s")
 
 	// [NEW: PQC SHIELD] Post-Quantum Cryptography Initialization
@@ -309,7 +274,7 @@ func main() {
 		DetailAction: "[PQC SHIELD] Post-Quantum Cryptography Module (ML-KEM-768) Initialized. Protecting against Quantum Threat Vectors.",
 	})
 
-	if err := http.ListenAndServe(port, rootShield); err != nil {
+	if err := http.ListenAndServe(port, publicShield); err != nil {
 		log.Fatal(err)
 	}
 }

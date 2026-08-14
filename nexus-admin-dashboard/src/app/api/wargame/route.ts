@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  return NextResponse.json({
+    return NextResponse.json({
     status: 'READY',
-    engine: 'NEX-RED Tactical Engine v3.2.0',
+    engine: 'NEX-RED 5.0',
     scenarios: [
-      { id: 'ddos', name: 'SYN Flood DDoS Attack (64k rps)', layer: 'Kernel NIC Driver', latency: '0.004ms', rate: '100%' },
-      { id: 'sqli', name: 'SQL Injection & Vault Brute Force', layer: 'NEX-AI Reflex Layer', latency: '0.045ms', rate: '100%' },
-      { id: 'ransomware', name: 'Ransomware Web-Shell Defacement', layer: 'Autonomous Self-Repair', latency: '2.100ms', rate: '100%' },
-      { id: 'credential_stuffing', name: 'Credential Stuffing & Botnet', layer: 'Honeypot Sandbox', latency: '0.012ms', rate: '100%' }
+      { id: 'hybrid', name: 'SAST + live HTTP checks (lab target)', layer: 'NEX-RED' },
+      { id: 'whitebox', name: 'White-box AST only', layer: 'NEX-RED' },
     ]
   });
 }
@@ -24,29 +22,32 @@ export async function POST(request: Request) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          target_url: 'http://127.0.0.1:8080',
+          target_url: process.env.NEX_RED_LIVE_TARGET || 'http://127.0.0.1:8080',
           mode: 'SCENARIO',
-          scenario: scenario || 'all'
+          scenario: scenario || 'all',
+          async_run: false,
+          enable_llm: false,
         }),
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(8000)
       });
 
       if (nexRedResp.ok) {
         const data = await nexRedResp.json();
+        const attempted = Number(data.summary?.attacks_attempted ?? 0);
+        const mitigated = Number(data.summary?.mitigated_by_nexus ?? 0);
         return NextResponse.json({
           success: true,
-          engine: 'NEX-RED (Live Daemon)',
+          engine: 'NEX-RED',
           timestamp: new Date().toISOString(),
           results: [
             {
               id: scenario || 'all',
-              name: scenario === 'ddos' ? 'SYN Flood DDoS Attack (64k rps)' : scenario === 'sqli' ? 'SQL Injection & Vault Brute Force' : 'Full Spectrum Cyber War Game',
-              totalAttacks: data.summary?.attacks_attempted || 65762,
-              mitigated: data.summary?.mitigated_by_nexus || 65762,
-              successRate: 100.0,
-              avgLatencyMs: 0.004,
-              recoveryStatus: 'AUTOMATED ROLLBACK & XDP_DROP ENFORCED',
-              defenseLayer: 'Dual-Brain AI + eBPF Kernel Grid'
+              name: `NEX-RED scenario ${scenario || 'all'}`,
+              totalAttacks: attempted,
+              mitigated,
+              liveChecks: Number(data.summary?.live_checks_run ?? 0),
+              successRate: attempted > 0 ? Math.round((mitigated / attempted) * 1000) / 10 : 0,
+              defenseLayer: 'NEX-RED live posture (not eBPF XDP)',
             }
           ]
         });
@@ -59,19 +60,17 @@ export async function POST(request: Request) {
     const mockSim = [
       {
         id: scenario || 'all',
-        name: scenario === 'ddos' ? 'SYN Flood DDoS Attack (64k rps)' : scenario === 'sqli' ? 'SQL Injection & Vault Brute Force' : 'Full Spectrum Cyber War Game (NEX-RED Engine)',
-        totalAttacks: scenario === 'ddos' ? 64000 : 65762,
-        mitigated: scenario === 'ddos' ? 64000 : 65762,
-        successRate: 100.0,
-        avgLatencyMs: 0.004,
-        recoveryStatus: 'AUTOMATED ROLLBACK & XDP_DROP ENFORCED',
-        defenseLayer: 'NEX-AI Dual-Brain + eBPF Kernel Grid'
+        name: 'NEX-RED bridge offline',
+        totalAttacks: 0,
+        mitigated: 0,
+        successRate: 0,
+        defenseLayer: 'Start NEX-RED bridge on 127.0.0.1:3004',
       }
     ];
 
     return NextResponse.json({
       success: true,
-      engine: 'NEX-RED Tactical Engine v3.2.0',
+      engine: 'NEX-RED',
       timestamp: new Date().toISOString(),
       results: mockSim
     });

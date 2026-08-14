@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -24,7 +25,11 @@ import (
 var failedAttempts sync.Map
 
 func getCleanIP(remoteAddr string) string {
-	if idx := strings.Index(remoteAddr, ":"); idx != -1 {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err == nil && host != "" {
+		return host
+	}
+	if idx := strings.LastIndex(remoteAddr, ":"); idx != -1 && !strings.Contains(remoteAddr, "]") {
 		return remoteAddr[:idx]
 	}
 	return remoteAddr
@@ -139,7 +144,9 @@ func uploadShieldHandler(px *proxy.NexusProxy, telemetry *logger.Logger) http.Ha
 			DetailAction: fmt.Sprintf("Visual Clean [%d%% Risk]: %d B -> %d B (%s)", cleanResult.RiskScore, cleanResult.OriginalSize, cleanResult.CleanedSize, cleanResult.Format),
 		})
 
-		// 5. Re-packing berkas yang sudah bersih dan kirim ke Portfolio backend
+		guestURL := rememberGuestPhoto(uuid.New().String(), contentType, cleanResult.Data)
+
+		// Best-effort forward to origin (Vercel may not expose /api/upload).
 		targetHost := os.Getenv("TARGET_BACKEND")
 		if targetHost == "" {
 			targetHost = "http://portfolio:80"
@@ -149,38 +156,26 @@ func uploadShieldHandler(px *proxy.NexusProxy, telemetry *logger.Logger) http.Ha
 		bodyBuf := &bytes.Buffer{}
 		bodyWriter := multipart.NewWriter(bodyBuf)
 		fileWriter, err := bodyWriter.CreateFormFile("photo", header.Filename)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"status":"error","message":"Failed to prepare upload payload"}`))
-			return
+		if err == nil {
+			_, _ = fileWriter.Write(cleanResult.Data)
+			_ = bodyWriter.Close()
+			if targetReq, reqErr := http.NewRequest(http.MethodPost, targetURL, bodyBuf); reqErr == nil {
+				targetReq.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+				client := &http.Client{Timeout: 10 * time.Second}
+				if resp, doErr := client.Do(targetReq); doErr == nil {
+					_, _ = io.Copy(io.Discard, resp.Body)
+					_ = resp.Body.Close()
+				}
+			}
+		} else {
+			_ = bodyWriter.Close()
 		}
-		if _, err := fileWriter.Write(cleanResult.Data); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"status":"error","message":"Failed to write clean data"}`))
-			return
-		}
-		bodyWriter.Close()
 
-		targetReq, err := http.NewRequest(http.MethodPost, targetURL, bodyBuf)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"status":"error","message":"Failed to create proxy upload request"}`))
-			return
-		}
-		targetReq.Header.Set("Content-Type", bodyWriter.FormDataContentType())
-
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Do(targetReq)
-		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte(`{"status":"error","message":"Failed to reach backend portfolio server"}`))
-			return
-		}
-		defer resp.Body.Close()
-
-		// Kembalikan respon dari portfolio ke client
-		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"status": "success",
+			"url":    guestURL,
+		})
 	}
 }
 
@@ -243,7 +238,7 @@ func rewardUnlockHandler(telemetry *logger.Logger) http.HandlerFunc {
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(map[string]string{
 				"status": "success",
-				"link":    rewardLink,
+				"link":   rewardLink,
 			})
 			return
 		}

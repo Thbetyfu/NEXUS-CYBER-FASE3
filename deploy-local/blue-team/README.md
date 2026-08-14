@@ -9,6 +9,7 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 1. Docker Desktop sudah Ready.
 2. Disarankan: internet lewat **kabel Ethernet** (Wi-Fi laptop dipakai untuk hotspot). Kalau hanya ada satu Wi-Fi, Windows kadang gagal share; skrip akan membuka Settings.
 3. Double-click **`START.bat`** (akan minta Administrator).
+   Sekali di laptop ini: `deploy-local\ALLOW-DEV-LAPTOP.bat` supaya Firewall/Defender tidak muncul terus.
 4. Tunjukkan file **`KARTU-BLUE-TEAM.txt`** ke red team (SSID + password + URL).
 5. Biarkan hotspot dan Docker tetap nyala sampai sesi selesai.
 6. Double-click **`STOP.bat`** untuk mematikan.

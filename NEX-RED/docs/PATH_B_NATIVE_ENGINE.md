@@ -2,7 +2,7 @@
 
 Dokumen ini adalah **peta kerja resmi** jika Nexus Cyber membangun kemampuan pentest otonom **milik sendiri** (bukan menggabungkan source Shannon/Strix).
 
-Status hari ini: NEX-RED v4 = SAST nyata + postur hidup. Benchmark `nexred.py benchmark` sudah menandai lima kelas inti Shannon sebagai **PROVEN di corpus kode**, dan **BELUM SETARA** untuk pentest hidup.
+Status hari ini: NEX-RED **v5** = SAST + postur + **pemeriksaan HTTP hidup** (tanpa sesi) + job async. Benchmark SAST tetap **BELUM SETARA** pentest Shannon/Strix. Browser (Fase 4) belum.
 
 **Definisi setara (Jalan B selesai):** pada target yang kita miliki dan izinkan, NEX-RED menghasilkan temuan dengan bukti HTTP/browser yang dapat diulang, lalu precision/recall kelas temuan mendekati report Shannon (Juice Shop / crAPI) dan cakupan kelas Strix — tanpa menyalin kode atau kit exploit mereka.
 

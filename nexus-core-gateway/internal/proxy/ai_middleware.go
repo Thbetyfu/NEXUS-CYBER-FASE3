@@ -172,6 +172,11 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 			// Otomatis imunisasi pola serangan jika panjang karakter memenuhi kelayakan tanda tangan antibodi.
 			if len(analysisData) > 10 {
 				np.AddAntibody(analysisData)
+				if np.Filter != nil {
+					if canonical := np.Filter.NormalizeForInspect(analysisData); canonical != "" {
+						np.AddAntibody(canonical)
+					}
+				}
 			}
 
 			np.Logger.LogAIEvent(logger.AIEventLog{

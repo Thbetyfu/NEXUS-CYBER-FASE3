@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	defaultDashboardAllowedOrigins = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,http://localhost:3002,http://127.0.0.1:3002,http://localhost:8080,http://127.0.0.1:8080"
+	defaultDashboardAllowedOrigins = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,http://localhost:3002,http://127.0.0.1:3002,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8081,http://127.0.0.1:8081"
 	dashboardAllowedMethods        = "GET, POST, OPTIONS, PUT, DELETE"
-	dashboardAllowedHeaders        = "Content-Type, X-CSRF-Token, X-Nexus-Webhook-Secret"
+	dashboardAllowedHeaders        = "Content-Type, X-CSRF-Token, X-Nexus-Webhook-Secret, X-Nexus-Admin-Token"
 )
 
 func parseDashboardAllowedOrigins() map[string]struct{} {

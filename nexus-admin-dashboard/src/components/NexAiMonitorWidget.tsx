@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, Server, Activity, ShieldCheck, Zap, Database } from 'lucide-react';
-import { API_BASE_URL } from '@/config';
+import { gatewayURL } from '@/config';
 
 interface ModelMetric {
 	label: string;
@@ -48,7 +48,7 @@ function NexAiMonitorWidget() {
 	useEffect(() => {
 		const fetchStatus = async () => {
 			try {
-				const res = await fetch(`${API_BASE_URL}/api/ai/status`);
+				const res = await fetch(gatewayURL("/api/ai/status"), { credentials: "include" });
 				if (res.ok) {
 					const data = await res.json();
 					setSysStats(prev => ({

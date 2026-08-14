@@ -12,8 +12,10 @@ from datetime import datetime, timezone
 
 from agents.blackbox.dynamic_prober import DynamicBlackboxProber
 from agents.exploit.poc_validator import PoCValidator
+from agents.planner.plan import plan_live_checks
 from agents.recon.surface_mapper import SurfaceMapper
 from agents.reporting.report_generator import ReportGenerator
+from agents.verify.live import execute_live_checks
 from agents.whitebox.code_analyzer import WhiteboxCodeAnalyzer
 from agents.whitebox.llm_verifier import LlmVerifier
 from core.types import ScanMode, ScanResult, ScanTarget
@@ -32,7 +34,9 @@ class NexRedOrchestrator:
         mitigated = 0
         files_analyzed = 0
         llm_used = False
-        raw_logs = [f"[{start_time.isoformat()}] NEX-RED v4 starting scan {self.scan_id}"]
+        live_checks_run = 0
+        status = "COMPLETED"
+        raw_logs = [f"[{start_time.isoformat()}] NEX-RED v5 starting scan {self.scan_id}"]
 
         mapper = None
         if self.target.mode in {ScanMode.BLACKBOX, ScanMode.HYBRID, ScanMode.SCENARIO} and self.target.target_url:
@@ -69,6 +73,15 @@ class NexRedOrchestrator:
             raw_logs.append(
                 f"Black-box probes={prober.total_probes} defensive_blocks={prober.mitigated_by_nexus}"
             )
+            checks = plan_live_checks(findings, paths)
+            live_findings, live_checks_run, live_mitigated = execute_live_checks(self.target.target_url, checks)
+            total_probes += live_checks_run
+            mitigated += live_mitigated
+            findings.extend(live_findings)
+            raw_logs.append(f"Live HTTP checks={live_checks_run} extra_findings={len(live_findings)}")
+            if live_checks_run == 0:
+                status = "PARTIAL"
+                raw_logs.append("Live HTTP produced no executed checks; scan is PARTIAL")
 
         if self.target.mode == ScanMode.SCENARIO:
             posture = BattleScenarioRunner.inspect_posture(self.target.target_url)
@@ -90,9 +103,10 @@ class NexRedOrchestrator:
             vulnerabilities_mitigated_by_nexus=mitigated,
             findings=validated,
             raw_logs=raw_logs,
-            status="COMPLETED",
+            status=status,
             files_analyzed=files_analyzed,
             llm_used=llm_used,
+            live_checks_run=live_checks_run,
         )
         report_path = ReportGenerator.save_report(result)
         raw_logs.append(f"Report saved to {report_path}")

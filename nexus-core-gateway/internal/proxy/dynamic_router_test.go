@@ -42,6 +42,16 @@ func TestDynamicRouterWildcardAndFallback(t *testing.T) {
 	if !foundFb || targetFallback != "http://127.0.0.1:5001" {
 		t.Errorf("Expected unregistered-domain.localhost to fall back to global wildcard *, got %s (found: %v)", targetFallback, foundFb)
 	}
+
+	if router.HasExplicitRoute("unregistered-domain.localhost") {
+		t.Fatal("HasExplicitRoute must ignore global * so TLS ask cannot mint random certs")
+	}
+	if !router.HasExplicitRoute("exact.tenant.localhost") {
+		t.Fatal("HasExplicitRoute should accept exact tenant hosts")
+	}
+	if !router.HasExplicitRoute("app.tenant.localhost") {
+		t.Fatal("HasExplicitRoute should accept tenant wildcards")
+	}
 }
 
 func TestDynamicRouterDatabaseFallbackAndSync(t *testing.T) {

@@ -54,5 +54,7 @@ Start-Process $found.Url
 
 Write-Host ""
 Write-Host "Sesi lab: kamu sekarang di depan Nexus, bukan di situs Vercel publik." -ForegroundColor Green
-Write-Host "Uji posture otomatis (opsional): double-click SCAN.bat" -ForegroundColor Green
+Write-Host "Cek postur (situs hidup, SOC tertutup): double-click CHECK.bat" -ForegroundColor Green
+Write-Host "Daftar uji browser: CHECKLIST.md" -ForegroundColor Green
+Write-Host "Uji posture NEX-RED (opsional): double-click SCAN.bat" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Red

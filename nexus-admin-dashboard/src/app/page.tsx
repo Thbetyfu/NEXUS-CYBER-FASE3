@@ -30,15 +30,15 @@ import BootSequence from '@/components/BootSequence';
 import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
 import LicenseManagerWidget from '@/components/LicenseManagerWidget';
 import ComplianceWidget from '@/components/ComplianceWidget';
-import WarGameWidget from '@/components/WarGameWidget';
+import SocAuthGate from '@/components/SocAuthGate';
 
 // Config
-import { API_BASE_URL } from '@/config';
+import { gatewayURL } from '@/config';
 
 // CSRF Token Helper
 const fetchCsrfToken = async (): Promise<string | null> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: "include" });
+    const res = await fetch(gatewayURL("/api/csrf-token"), { credentials: "include" });
     if (!res.ok) return null;
     const data = await res.json();
     return data.csrf_token;
@@ -114,6 +114,7 @@ function useTelemetry(url: string, intervalMs: number = 2000) {
         const res = await fetch(url, {
           cache: 'no-store',
           mode: 'cors',
+          credentials: 'include',
           headers: { 'Accept': 'application/json' }
         })
         
@@ -231,8 +232,8 @@ function useIPMonitoring(intervalMs: number = 4000) {
   const fetchData = useCallback(async () => {
     try {
       const [ipRes, blRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/ip-monitoring`, { cache: "no-store" }),
-        fetch(`${API_BASE_URL}/api/blacklist`, { cache: "no-store" })
+        fetch(gatewayURL("/api/ip-monitoring"), { cache: "no-store", credentials: "include" }),
+        fetch(gatewayURL("/api/blacklist"), { cache: "no-store", credentials: "include" })
       ]);
       if (ipRes.ok) {
         const ipData = await ipRes.json();
@@ -315,7 +316,7 @@ const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entrie
 
     try {
       const csrfToken = await fetchCsrfToken();
-      const res = await fetch(`${API_BASE_URL}/api/blacklist/ban`, {
+      const res = await fetch(gatewayURL("/api/blacklist/ban"), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -350,7 +351,7 @@ const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entrie
 
     try {
       const csrfToken = await fetchCsrfToken();
-      const res = await fetch(`${API_BASE_URL}/api/blacklist/unban`, {
+      const res = await fetch(gatewayURL("/api/blacklist/unban"), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -632,8 +633,8 @@ const NCCDashboard = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [logLimit, setLogLimit] = useState<number>(10);
   
-  const { logs, metrics, history, ebpfData, isLive, isUnlicensed } = useTelemetry(`${API_BASE_URL}/api/telemetry?domain=${activeDomain}`, 2000)
-  const aiEvents = useAIEvents(`${API_BASE_URL}/api/ai-events`, 1000)
+  const { logs, metrics, history, ebpfData, isLive, isUnlicensed } = useTelemetry(gatewayURL(`/api/telemetry?domain=${activeDomain}`), 2000)
+  const aiEvents = useAIEvents(gatewayURL("/api/ai-events"), 1000)
   const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
 
   // Subscription Re-activation State
@@ -719,7 +720,7 @@ const NCCDashboard = () => {
     setAuditResult(null);
     try {
       const csrfToken = await fetchCsrfToken();
-      const res = await fetch(`${API_BASE_URL}/api/test/run`, {
+      const res = await fetch(gatewayURL("/api/test/run"), {
         method: "POST",
         headers: {
           ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
@@ -744,7 +745,7 @@ const NCCDashboard = () => {
   const handlePanic = async () => {
     try {
       const csrfToken = await fetchCsrfToken();
-      await fetch(`${API_BASE_URL}/api/panic`, { 
+      await fetch(gatewayURL("/api/panic"), { 
         method: "POST",
         headers: {
           ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
@@ -760,7 +761,7 @@ const NCCDashboard = () => {
     if (window.confirm(`🚨 CRITICAL: Purge all data for [${activeDomain}]? This cannot be undone.`)) {
       try {
         const csrfToken = await fetchCsrfToken();
-        const res = await fetch(`${API_BASE_URL}/api/domains?domain=${activeDomain}`, {
+        const res = await fetch(gatewayURL(`/api/domains?domain=${activeDomain}`), {
           method: 'DELETE',
           headers: {
             ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
@@ -783,7 +784,7 @@ const NCCDashboard = () => {
     if (window.confirm("🚨 PURGE ALL SYSTEM DATA? This will reset metrics, clear AI memory, and wipe all forensic logs.")) {
       try {
         const csrfToken = await fetchCsrfToken();
-        const res = await fetch(`${API_BASE_URL}/api/system/reset`, { 
+        const res = await fetch(gatewayURL("/api/system/reset"), { 
           method: "POST", 
           headers: {
             ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
@@ -1521,4 +1522,10 @@ const NCCDashboard = () => {
   )
 }
 
-export default NCCDashboard
+export default function Page() {
+  return (
+    <SocAuthGate>
+      <NCCDashboard />
+    </SocAuthGate>
+  );
+}

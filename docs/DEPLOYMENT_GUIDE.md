@@ -1,6 +1,8 @@
-# 🚀 Panduan Deployment Terpadu Nexus Cyber Fase 2
+# Panduan Deployment Nexus Cyber
 
-Dokumen ini menyediakan panduan resmi untuk men-deploy **Nexus Cyber Fase 2** dalam dua opsi lingkungan:
+Pembaruan 2026-08-15. Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
+
+Dokumen ini mencakup dua opsi:
 1. **Opsi 1: PC Lokal (Local PC Deployment)** — Hemat biaya (Rp 0), cocok untuk demo, testing, dan riset dengan integrasi **Cloudflare Tunnel (Gratis)**.
 2. **Opsi 2: Cloud VPS (Biznet Gio / Hetzner / DigitalOcean)** — Produksi 24/7, multi-tenant container provisioner terisolasi, dan proteksi DDoS tingkat data center.
 
@@ -104,7 +106,7 @@ cloudflared tunnel --url http://localhost:8080
 | Target | Port | Perintah Flag | Fungsi |
 | :--- | :---: | :--- | :--- |
 | **WAF Gateway (Default)** | `8080` | *(tanpa flag)* | Ekspos WAF/proxy utama ke publik |
-| **SOC Dashboard** | `3001` | `--dashboard` / `-Dashboard` | Ekspos dasbor monitoring ke publik |
+| **SOC Dashboard** | `3001` | `--dashboard` / `-Dashboard` | **Tidak disarankan** — membuka control plane ke internet |
 | **Caddy Edge (Full Stack)** | `80` | `--port 80` | Ekspos seluruh stack via Caddy router |
 
 ### Output yang Diharapkan
@@ -158,7 +160,7 @@ URL HTTPS publik tersebut dapat langsung dibagikan ke klien/penguji.
 3. Skrip akan secara otomatis:
    * Meng-install Docker & Docker Compose Engine.
    * Menyiapkan **2 GB SWAP memory** untuk mencegah *OOM*.
-   * Mengamankan Firewall UFW (Port 22, 80, 443, 3001, 8080, 9090, 2222).
+   * Mengamankan Firewall UFW: publik 80/443 (dan 8080 hanya jika perlu). SOC **jangan** dibuka 3001/8081 ke `0.0.0.0`.
    * Menyalakan seluruh sistem pertahanan (Go Gateway + Next.js Dashboard + Postgres + Redis + Caddy).
 
 ---
@@ -169,8 +171,9 @@ URL HTTPS publik tersebut dapat langsung dibagikan ke klien/penguji.
 | :--- | :---: | :---: | :--- |
 | **Caddy Edge Router (HTTP)** | `80` | — | Redirect ke HTTPS / Reverse proxy publik |
 | **Caddy Edge Router (HTTPS)** | `443` | — | Auto-TLS on-demand per domain tenant |
-| **SOC Command Center** | `3001` | `3000` | Dasbor UI Next.js + Terminal Xterm.js interaktif |
-| **Nexus Core Gateway (WAF)** | `8080` | `8080` | Proxy utama pemutus SQLi/XSS/SSRF + Enkripsi PQC |
+| **SOC Command Center** | `127.0.0.1:3001` | `3000` | UI Next.js; **bukan** pintu hotspot |
+| **Gateway SOC** | `127.0.0.1:8081` | `8081` | Telemetri, CLI, ban, reset |
+| **Nexus Core Gateway (WAF)** | `8080` | `8080` | Reverse proxy + Reflex regex (PQC bukan E2E klien) |
 | **Digital Hallucination Honeypot** | `9090` | `9090` | Server perangkap jebakan bot peretas |
 | **SSH Tarpit Sandbox** | `2222` | — | TCP Listener penahan bot pemindai SSH |
 | **PostgreSQL** | `127.0.0.1:5432` | `5432` | Database forensik (loopback only, tidak publik) |

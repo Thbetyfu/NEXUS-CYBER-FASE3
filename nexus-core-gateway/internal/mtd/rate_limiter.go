@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/nexus-cyber/nexus-core-gateway/pkg/utils"
 )
 
 // ipBucket mendefinisikan status token bucket individu untuk setiap IP sumber.
@@ -46,31 +48,9 @@ func NewPerIPTokenBucket(capacity, refillRate float64) *PerIPTokenBucket {
 	return tb
 }
 
-// getRealIP mengekstrak IP asli klien dari request HTTP secara aman.
-//
-// Alasan Arsitektural (Why):
-// Di lingkungan cloud produksi, gateway sering kali berjalan di belakang Load Balancer, CDN, atau Proxy (seperti Cloudflare).
-// Jika hanya membaca RemoteAddr, seluruh trafik akan terdeteksi berasal dari satu IP Proxy tunggal (mengakibatkan
-// rate limiting memblokir seluruh pengguna web sah). Pengecekan hierarkis:
-// X-Forwarded-For (Entri Pertama) -> X-Real-IP -> RemoteAddr, menjamin keakuratan identifikasi IP.
+// getRealIP identifies the client for per-IP rate limiting.
 func getRealIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		parts := strings.Split(xff, ",")
-		for _, part := range parts {
-			ip := strings.TrimSpace(part)
-			if ip != "" {
-				return ip
-			}
-		}
-	}
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return strings.TrimSpace(xri)
-	}
-	ip, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return ip
+	return utils.ClientIP(r)
 }
 
 // Allow mengevaluasi apakah IP sumber tertentu masih memiliki token yang cukup untuk meneruskan request.

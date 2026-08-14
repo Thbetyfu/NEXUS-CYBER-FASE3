@@ -1,70 +1,33 @@
 # 🌐 Nexus Cyber Deployment Architecture
 
-Dokumen ini menjelaskan rancangan arsitektur fisik, topologi jaringan, serta panduan deployment untuk sistem pertahanan siber aktif **Nexus Cyber Security System** di lingkungan produksi (*production*).
+Pembaruan: 2026-08-15. Control plane **bukan** port WAF publik.
 
----
+## Zona
 
-## 🗺️ Topologi Jaringan & Alur Lalu Lintas
-
-Dalam lingkungan produksi, arsitektur sistem ini dibagi menjadi dua zona utama guna memenuhi standar kepatuhan keamanan informasi **ISO 27001**:
-1. **Zone A: Data Plane (Jalur Lalu Lintas Publik)** – Jalur akses pengguna internet umum menuju aplikasi yang dilindungi.
-2. **Zone B: Control Plane (Jalur Pengelolaan Keamanan)** – Jalur khusus yang sangat dibatasi bagi operator SOC dan layanan kecerdasan buatan (AI) internal.
-
-### Diagram Alur Lalu Lintas (Traffic Flow)
+1. **Data plane** — pengunjung/red team: Caddy `:80`/`:443` → gateway **`:8080`** (proxy + WAF). Honeypot `:9090`.
+2. **Control plane** — operator di laptop: gateway **`:8081`** dan dasbor **`127.0.0.1:3001`**. Tidak dipublish ke hotspot.
 
 ```mermaid
 graph TD
-    subgraph zone_internet ["Zona Internet Publik"]
-        User["User Steril"]
-        Hacker["Hacker / Bot"]
-    end
+    User["Pengunjung / red team hotspot"]
+    Caddy["Caddy :80"]
+    WAF["Gateway WAF :8080"]
+    Admin["Gateway SOC :8081"]
+    Dash["Dashboard 127.0.0.1:3001"]
+    Origin["Origin HTTP atau HTTPS"]
+    HP["Honeypot :9090"]
 
-    subgraph zone_edge ["Edge Layer (Zone A - IP Publik)"]
-        Gateway["Go Core Gateway: Port 80/443"]
-    end
-
-    subgraph zone_private ["Private Subnet (Zone A - Steril)"]
-        App["Website Asli / Backend: Port 3001"]
-        DB[("PostgreSQL & Redis")]
-        eBPF["eBPF / XDP Kernel Map"]
-    end
-
-    subgraph zone_soc ["SOC Internal Network (Zone B - VPN/SSH Tunnel)"]
-        Dashboard["Next.js Command Center: Port 3000"]
-        AI["AI Reasoning Layer: Ollama"]
-        Analyst["Security Analyst / Admin SOC"]
-    end
-
-    %% Jalur Lalu Lintas Data Plane
-    User -->|HTTP Requests| Gateway
-    Hacker -->|Eksploitasi / Payload| Gateway
-    
-    %% Filter & Mitigasi Gateway
-    Gateway -->|1. Validasi Hash & Blacklist| eBPF
-    Gateway -->|2. Lewati jika Bersih| App
-    Gateway -->|3. Alihkan jika Terdeteksi Serangan| Honeypot["Honeypot Sandbox: Port 9090"]
-    
-    %% Jejak Forensik & Komunikasi Kontrol
-    Gateway -->|Kirim Log Forensik| DB
-    Dashboard -->|Ambil Data Metrik & Audit| DB
-    Dashboard -->|Kirim Perintah Blokir Manual / Unban| Gateway
-    AI -->|Kirim Analisis Niat Asinkron| Gateway
-    Analyst -->|Akses Terenkripsi & Terbatas| Dashboard
+    User --> Caddy --> WAF --> Origin
+    User -.-> HP
+    Dash --> Admin
 ```
 
----
+eBPF/XDP di diagram lama **bukan** jalur drop paket nyata.
 
-## 🏢 Komponen & Penempatan Deployment
-
-Setiap komponen dirancang agar terisolasi satu sama lain guna meminimalkan area serangan (*attack surface reduction*):
-
-### 1. Edge Web Application Firewall (Go Gateway)
-* **Tanggung Jawab**: Bertindak sebagai *Reverse Proxy* terdepan, menangani enkripsi TLS/SSL (HTTPS), mitigasi DDoS tingkat kernel, dan filtrasi regex Reflex Layer.
-* **Lokasi Deployment**: Server VM khusus (seperti AWS EC2, GCP Compute Engine, atau server Bare-Metal lokal) yang diposisikan di zona DMZ (*Demilitarized Zone*) dengan alamat IP Publik langsung.
-* **Persyaratan Port**:
-  * `80/tcp` (HTTP) – Pengalihan otomatis ke HTTPS.
-  * `443/tcp` (HTTPS) – Lalu lintas web terenkripsi publik.
-  * `8080/tcp` – API Internal untuk Dasbor (diizinkan hanya untuk IP Dasbor SOC).
+### Edge Gateway
+- Publik: 80/443 (Caddy), 8080 (WAF langsung, hati-hati di lab).
+- Internal SOC: `127.0.0.1:8081`.
+- Jangan mem-proxy semua `/api` dasbor ke `:8080`.
 
 ### 2. Website Aplikasi Asli (Protected Backend Web Application)
 * **Tanggung Jawab**: Menyajikan konten visual, portal login, dan memproses data bisnis utama klien (misalnya Portal OJK Portal).
@@ -90,16 +53,16 @@ Berikut adalah 3 metode standar industri untuk mengakses dasbor secara aman:
 2. Analis SOC wajib mengaktifkan koneksi VPN kantor (seperti **WireGuard**, **OpenVPN**, atau **Tailscale**).
 3. Setelah terowongan enkripsi VPN aktif, analis mengakses dasbor melalui IP privat atau nama domain lokal:
    ```
-   http://10.100.20.10:3000 atau http://soc.nexus-cyber.internal
+   http://10.100.20.10:3001 atau http://soc.nexus-cyber.internal
    ```
 
 ### Metode B: Secure Shell (SSH) Port Forwarding
 1. Dasbor Next.js dikonfigurasi untuk hanya menerima koneksi dari mesin lokal server itu sendiri (`localhost` / `127.0.0.1`).
 2. Analis SOC melakukan port-forwarding aman dari laptop mereka melalui SSH:
    ```bash
-   ssh -L 3000:localhost:3000 user@ip-server-soc.company.com -N
-   ```
-3. Analis membuka peramban web di laptop pribadi mereka dengan mengetikkan alamat `http://localhost:3000`. Lalu lintas akan disalurkan secara aman melewati saluran SSH terenkripsi.
+   ssh -L 3001:localhost:3001 -L 8081:localhost:8081 user@ip-server-soc.company.com -N
+```
+3. Analis membuka `http://localhost:3001` (UI) yang memanggil API `http://127.0.0.1:8081`.
 
 ### Metode C: Strict Firewall IP Whitelisting
 1. Jika dasbor terpaksa dibuka dengan domain publik (misalnya `https://soc.company.com` untuk akses jarak jauh), pasang web server proxy (seperti Nginx) di depannya.
@@ -118,6 +81,8 @@ Berikut adalah 3 metode standar industri untuk mengakses dasbor secara aman:
 
 Untuk menjamin ketersediaan tinggi (*High Availability*), infrastruktur dianjurkan untuk mengikuti arsitektur berikut:
 
-1. **Load Balancer Layer**: Gunakan Load Balancer eksternal (seperti AWS ALB atau Cloudflare) di depan beberapa replika instance Go Gateway.
-2. **Degraded Mode Protection**: Jika basis data PostgreSQL utama mengalami kegagalan, Go Gateway akan otomatis bertransisi secara mulus (*graceful degradation*) ke mode memori lokal (`sync.Map` RAM caching) sehingga filtrasi WAF tetap berjalan normal tanpa memicu kegagalan sistem (*no single point of failure*).
-3. **eBPF Zero CPU Protection**: Ketika intensitas serangan DDoS sangat tinggi, eBPF map (`XDP_DROP`) memastikan beban CPU Gateway tetap di angka minimal karena pembuangan paket terjadi di level kernel driver jaringan, menjaga performa VM aplikasi asli tetap stabil.
+1. **Load Balancer Layer** (target produksi): LB di depan beberapa replika gateway data plane `:8080`. Control plane tetap terpisah dan tidak di-load-balance ke internet.
+2. **Degraded Mode**: jika Postgres gagal, WAF tetap memakai cache memori untuk blacklist/rate-limit sebatas yang sudah diimplementasikan — bukan jaminan HA penuh.
+3. **eBPF/XDP**: **tidak** aktif di kode. DDoS L3/L4 tidak dijamin. Jangan mengandalkan `XDP_DROP` di lab atau VPS saat ini.
+
+Dasbor compose: `127.0.0.1:3001`. Metode VPN/SSH di bawah tetap valid; ganti contoh port `3000` menjadi **3001** (UI) dan **8081** (API SOC). Tunnel Cloudflare ke dasbor **tidak** disarankan untuk lab hotspot.

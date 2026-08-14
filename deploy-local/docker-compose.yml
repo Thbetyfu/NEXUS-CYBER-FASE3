@@ -43,6 +43,7 @@ services:
     ports:
       - "8080:8080"
       - "9090:9090"
+      - "127.0.0.1:8081:8081"
     volumes:
       - ../nexus-core-gateway/geoip:/app/geoip
     environment:
@@ -60,6 +61,8 @@ services:
       AI_PROVIDER_KEY: ${AI_PROVIDER_KEY:-}
       SSH_TARPIT_PORT: "2222"
       HONEYPOT_PORT: "9090"
+      ADMIN_LISTEN: ":8081"
+      NEXUS_ADMIN_TOKEN: ${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
     cap_add:
       - NET_ADMIN
     extra_hosts:

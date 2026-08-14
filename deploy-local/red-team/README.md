@@ -10,7 +10,8 @@ Ini lab resmi terhadap WAF Nexus di jaringan hotspot. Bukan izin menyerang situs
 2. Di laptop ini, buka Wi-Fi → pilih **`NEXUS-BLUE-LAB`** (password di `KARTU-BLUE-TEAM.txt`).
 3. Double-click **`JOIN.bat`**.
 4. Browser harus membuka portofolio **melalui Nexus** (alamatnya IP, misalnya `http://192.168.137.1`).
-5. Opsional: **`SCAN.bat`** — NEX-RED blackbox (cek pintu & header, tanpa kit exploit). Perlu Python + clone repo ini.
+5. Opsional: **`CHECK.bat`** — situs hidup + SOC/DB tertutup dari laptop ini. Lihat **`CHECKLIST.md`**.
+6. Opsional: **`SCAN.bat`** — NEX-RED blackbox (cek pintu & header, tanpa kit exploit). Perlu Python + clone repo ini.
 
 `JOIN.bat` menunggu hingga ~90 detik, jadi boleh diklik dulu lalu baru connect Wi-Fi.
 

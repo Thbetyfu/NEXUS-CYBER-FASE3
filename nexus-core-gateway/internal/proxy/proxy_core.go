@@ -23,6 +23,7 @@ import (
 	"github.com/nexus-cyber/nexus-core-gateway/internal/licensing"
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/logger"
+	"github.com/nexus-cyber/nexus-core-gateway/pkg/utils"
 )
 
 // NexusProxy adalah inti penggerak dari gerbang pertahanan siber otonom (SOC Gateway).
@@ -41,11 +42,11 @@ type NexusProxy struct {
 	Honeypot  *mtd.HoneypotServer
 	Shuffler  *mtd.TopologyShuffler
 	Router    *DynamicRouter // Router multi-host dinamis terdistribusi
-	
+
 	// Peta antibodi (virtual patches) resident memori untuk pencocokan instan O(1)
 	Patches      sync.Map
 	PatchesCount int32
-	
+
 	// SSE Multi-client Fan-Out untuk visualisasi real-time 3D di dasbor Command Center
 	ThreatListeners sync.Map
 }
@@ -88,7 +89,7 @@ func NewNexusProxy(
 	np.Router.AddRoute("kemenkeu.localhost", target)
 	np.Router.AddRoute("bi.localhost", target)
 	np.Router.AddRoute("*", target)
-	
+
 	// Jalankan sinkronisasi background antibodi imun.
 	np.StartImmunitySync()
 
@@ -242,7 +243,7 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Nexus [413]: Request body exceeds inspection limit.", http.StatusRequestEntityTooLarge)
 			return
 		}
-		
+
 		// [AVSE - INTELLIGENT MULTIMEDIA FILTERING]
 		// Alasan Keamanan (Why):
 		// Peretas sering menyisipkan malware biner di dalam berkas gambar JPEG/PNG (steganografi).
@@ -262,15 +263,15 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Nexus [403]: Image blocked for security reasons (Resolution too high or corrupt).", http.StatusForbidden)
 				return
 			}
-			
+
 			// Ganti body request dengan byte gambar steril yang telah dibersihkan.
 			body = cleanResult.Data
-			
+
 			status := "SANITIZED"
 			if cleanResult.RiskScore > 70 {
 				status = "THREAT_CLEANED"
 			}
-			
+
 			np.Logger.LogAIEvent(logger.AIEventLog{
 				Layer:        "AVSE (Visual Shield)",
 				Status:       status,
@@ -290,11 +291,7 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Normalisasi Domain (Potong port pemanggil untuk pencocokan tabel router)
-	host := r.Host
-	if strings.Contains(host, ":") {
-		host = strings.Split(host, ":")[0]
-	}
+	host := utils.RequestHost(r.Host)
 
 	// Cari pemetaan domain ke backend steril otonom.
 	targetURL, found := np.Router.Lookup(host)

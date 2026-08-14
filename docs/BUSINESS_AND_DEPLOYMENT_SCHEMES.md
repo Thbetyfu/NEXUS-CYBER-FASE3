@@ -1,5 +1,8 @@
-# 🏢 SKEMA BISNIS & ARSITEKTUR DEPLOYMENT: B2G VS B2B ENTERPRISE VS B2B MICRO SAAS
-Panduan Penjualan, Lisensi, Penempatan Infrastruktur, dan Monetisasi Nexus Cyber untuk Sektor Publik (GovEdu), Korporasi Swasta (B2B Enterprise), dan UMKM (B2B Micro SaaS)
+# Skema bisnis & deployment (B2G / B2B / UMKM)
+
+**Visi komersial**, bukan status implementasi 2026-08-15. Lab nyata: `deploy-local/` (satu stack, bukan CNAME multi-tenant). Provisioner Stripe: `Task.MD` task 6–7, **ditunda**.
+
+---
 
 > [!IMPORTANT]
 > **KLASIFIKASI MODEL DEPLOYMENT & STRUKTUR HARGA**:

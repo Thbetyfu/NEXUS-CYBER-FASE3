@@ -1,6 +1,8 @@
-# 🛡️ Nexus-Cyber tahap 3
+# 🛡️ Nexus Cyber Fase 3
 
-**Autonomous Tactical Defense Grid & Geospatial Threat Intelligence Command Center**
+**WAF Go + Command Center SOC + mesin validasi NEX-RED**, untuk melindungi situs (lab: portofolio) di belakang reverse proxy.
+
+Klaim di README ini mengikuti **kode di repository**. Daftar kemampuan vs batasan: [`docs/CAPABILITIES.md`](./docs/CAPABILITIES.md) dan [`docs/LIMITATIONS.md`](./docs/LIMITATIONS.md). Riwayat: [`CHANGELOG.md`](./CHANGELOG.md).
 
 ### 1. Pemuatan Modul Keamanan (Boot Sequence)
 ![System Boot Sequence](./docs/img/Opening-Nexus-Cyber.jpeg)
@@ -11,160 +13,54 @@
 ### 3. Layar Pengunci Lisensi (Subscription Lockout Overlay)
 ![System License Lockout](./docs/img/System-Lock-Nexus-Cyber.jpeg)
 
-Nexus Cyber adalah sistem pertahanan siber otonom (SOC) yang menggabungkan AI Lokal (**Nexus-Brain**) dengan teknologi **Moving Target Defense (MTD)** untuk melindungi infrastruktur kritis dari serangan modern.
+---
+
+## Yang ada di kode hari ini
+
+| Lapisan | Perilaku nyata |
+| --- | --- |
+| **WAF publik** | Caddy `:80`/`:443` → gateway **`:8080`**: reverse proxy, Reflex regex **setelah normalisasi**, rate limit per IP, CSRF, unggah AVSE, vault password + autoban 5x |
+| **Control plane** | Gateway **`:8081`** (default `127.0.0.1`): telemetri, CLI, ban, reset, rute. Login operator (cookie). Bukan JWT penuh |
+| **Command Center** | Next.js; di compose diikat **`127.0.0.1:3001`**. Bukan pintu hotspot red team |
+| **Deception** | Honeypot HTTP `:9090`; SSH tarpit `:2222` (map Docker `22` di compose root, **tidak** di `deploy-local`) |
+| **MTD** | Shuffle port backend untuk origin **HTTP**; origin **HTTPS** (Vercel) **dipin** agar TLS tidak pecah |
+| **eBPF / XDP** | **Stub** — tidak membuang paket di kernel |
+| **PQC** | Modul/header inisialisasi; **bukan** enkripsi ujung-ke-ujung pengunjung |
+| **NEX-RED** | SAST Python AST + probe JSON jinak + **live HTTP tanpa sesi**; **bukan** proof-by-exploitation |
+| **SaaS provisioner / Stripe** | **Belum** (lihat `Task.MD` task 6–7) |
+
+Reflex sinkron di request path. Reasoning (`nex-ai-protect` / API) **opsional dan asinkron** jika dikonfigurasi — bukan Qwen 235B wajib di setiap request.
 
 ---
 
-## 🛠️ Fitur Utama (Features)
+## Lab 1 klik
 
-Nexus-Cyber tahap 2 dilengkapi dengan berbagai teknologi keamanan mutakhir yang terbagi dalam beberapa lapisan pertahanan:
+`deploy-local/START.bat` (Docker Desktop running). Pengunjung: **http://127.0.0.1** atau IP Wi-Fi laptop. **Jangan** buka URL Vercel jika ingin membuktikan WAF. Panduan: [`deploy-local/README.md`](./deploy-local/README.md).
 
-### 1. Pertahanan AI Berbasis Dua Lapis (Dual-Brain AI Shield)
+Gallery portofolio (unggah foto + password hadiah) ada di `#gallery`. Password: `REWARD_PASSWORD` di env lab.
 
-* **Reflex Layer**: Deteksi cepat menggunakan model Qwen3 32B via cloud API (Groq) dengan latensi ultra-rendah (<50ms) untuk pemblokiran serangan secara instan (SQL Injection, XSS, SSRF).
-* **Reasoning Layer**: Analisis forensik mendalam untuk mengidentifikasi intensi penyerang secara asinkron menggunakan model Qwen3 235B-A22B via OpenRouter API.
+Red team lab: [`deploy-local/red-team/CHECKLIST.md`](./deploy-local/red-team/CHECKLIST.md) lalu `CHECK.bat`.
 
-### 2. Pertahanan Dinamis (Moving Target Defense - MTD)
-
-* **Topology Port Shuffling**: Rotasi port komunikasi internal secara berkala berbasis CSPRNG untuk mengecoh pemetaan jaringan (*network scanning*) oleh peretas.
-* **Emergency Manual Shuffle**: Fitur rotasi port instan secara manual dari terminal jika terdeteksi kondisi darurat.
-
-### 3. Teknologi Deception & Stalling (Honeypot Sandbox)
-
-* **Isolated Honeypot**: Server umpan terisolasi pada port `:9090` untuk menjebak pemindai otomatis hacker.
-* **Tarpit Delay**: Menahan koneksi penyerang selama 8 detik secara sengaja untuk menguras *resource* penyerang, yang kemudian disiarkan langsung ke dasbor telemetri.
-* **SSH Tarpit (Socket Starvation)**: TCP Listener di port `:22` (via Docker `:2222`) yang menangkap pemindai SSH otomatis dan membekukan koneksi peretas dengan sequence string acak setiap 10 detik secara tak terbatas.
-
-### 4. Sanitasi Berkas Visual (AVSE - Anti-Vulnerability SQL/XSS Engine)
-
-* **Magic Byte Verification**: Verifikasi signature biner asli untuk mencegah bypass ekstensi ganda (seperti berkas `shell.php.png`).
-* **Visual Steganography Stripping**: Dekode dan re-encode biner piksel untuk melumpuhkan kode exploit yang sengaja disisipkan di ekor berkas gambar.
-* **EXIF/GPS Purging**: Pembersihan otomatis seluruh metadata lokasi kamera demi privasi pengunggah berkas.
-
-### 5. Proteksi Client-Side Anti-Inspect Hardening
-
-* **Context Menu Blocking**: Mencegah klik kanan untuk membatalkan akses menu "Inspect Element".
-* **Keyboard Shortcut Hooks**: Memblokir pintasan devtools (`F12`, `Ctrl+Shift+I/J/C`, `Ctrl+U`).
-* **Debugger Infinite Loop Tarpit**: Membekukan peramban hacker menggunakan loop debugger terus-menerus jika dipaksa masuk dari menu browser.
-* **Continuous Console Purging**: Pembersihan logs konsol per milidetik untuk mencegah pemetaan API.
-
-### 6. Multi-Tenant SaaS Licensing & Lockout
-
-* **Remote License Verification**: Validasi status lisensi client secara berkala menggunakan kunci `NEXUS_LICENSE_KEY`.
-* **Global Lockout Overlay**: Layar pengunci gelap premium berukuran penuh yang tidak dapat dilewati secara DOM jika lisensi kedaluwarsa atau dicabut.
-
-### 7. Terminal Komando Interaktif (SOC Command CLI)
-
-* **Xterm.js Console Engine**: Menggunakan emulator terminal web standar industri yang mendukung input keyboard asli, Tab Autocomplete, riwayat perintah (Arrow Up/Down), dan rendering warna ANSI.
-* **Command & AI Integration**: Mendukung eksekusi perintah administrator seperti: `/help`, `/status`, `/stats`, `/shuffle`, `/ban [IP]`, `/unban [IP]`, `/sub [domain]`, `/unsub [domain]`, `/honeystats`, `/patches`, dan `@nexus [query]` untuk konsultasi AI.
-
-### 8. Database Forensik & Kepatuhan ISO 27001
-
-* **Log Persistensi & Audit**: Penyimpanan log anomali dan jejak audit secara terstruktur dalam database **PostgreSQL** (`threat_logs`, `mtd_audit_trail`, `intel_blacklist`, `ai_insights`) serta **Redis** untuk *in-memory caching* dan *rate limiting*.
-* **Local GeoIP City Lookup**: Resolusi offline koordinat geografis peretas secara lokal menggunakan basis data MaxMind City `.mmdb` dengan fallback dinamis ke API online `ip-api.com`.
-* **AbuseIPDB Async Reporting**: Publikasi IP penyerang yang terblokir secara asinkron (goroutine) ke portal intelijen reputasi global AbuseIPDB.
-* **Multi-Tenant Telegram Push Alerts (Zero COGS)**: Pengiriman notifikasi insiden serangan secara langsung ke HP pemilik domain per-tenant via Telegram Bot Resmi (`@NexusCyberAlertBot`). Fitur ini menggunakan API Telegram 100% Gratis (HPP = Rp 0), dilengkapi *Debounce Cooldown Filter* (15 menit per domain) untuk mencegah kehabisan tenaga HP dari serangan DDoS, serta menyertakan tautan **Google Maps** lokasi hacker.
-
-### 9. Fitur Pengujian Simulasi & Ketahanan Riil (Testing & Simulation Mode)
-
-* **Autoban IP & Persistent Blacklist**: Mekanisme pemblokiran IP penyerang secara otomatis setelah 5 kali gagal menebak password vault hadiah. Fitur ini dapat diaktifkan kembali secara fungsional dalam kode untuk menguji skenario pemblokiran riil.
-* **Geospatial Tracking & GeoIP Integration**: Melacak asal negara penyerang, nama ISP, koordinat geografis, serta sidik jari perangkat penyerang (*device fingerprinting*) untuk dipetakan secara real-time pada Defense Matrix Dashboard.
-
-### 10. Autonomous Self-Repair & Rollback (Fase 8)
-
-* **System Integrity Monitor**: Pemindaian file sistem berkala (`repair.IntegrityMonitor`) menggunakan hash SHA-256 baseline steril yang disimpan aman di memori RAM.
-* **Instant Rollback**: Secara otomatis memulihkan visual situs yang terkena serangan defacement (pengubahan berkas visual/templates) kembali ke kondisi steril dalam waktu sub-milidetik (~600µs) tanpa *downtime*.
-* **Anti-Webshell Protection**: Melacak dan menghapus instan berkas tidak dikenal (*webshell* / berkas ilegal) yang sengaja ditambahkan ke dalam direktori templat visual yang dilindungi.
-
-### 11. IP Monitoring & Blacklist Control API
-
-* **IP Activity Monitoring**: API `/api/ip-monitoring` untuk agregasi data lalu lintas per IP (jumlah request, aktivitas URL/endpoint, status ban, dan user agent).
-* **Blacklist Control**: API `/api/blacklist/ban` dan `/api/blacklist/unban` untuk kontrol pemblokiran IP otonom maupun manual oleh admin.
-
-### 12. NEX-RED Autonomous Red Team Engine (Purple Team Grid)
-
-* **White-Box Code-Aware AST Flow**: Analisis jalur *source code* secara otomatis untuk memetakan *untrusted sinks*, SQLi, dan kerentanan logika sebelum rilis produksi.
-* **Dynamic Black-Box Swarm Prober**: Meniru perilaku peretas luar untuk menguji ketahanan WAF, MTD, dan Honeypot Nexus.
-* **Deterministic Proof-by-Exploitation**: Validasi temuan otomatis berbasis PoC untuk menjamin 0% *false positive*.
-* **Gateway Bridge Daemon**: Integrasi langsung via REST API (`127.0.0.1:3002`) untuk orkestrasi real-time dari Go Gateway dan Dasbor Next.js.
-
+SOC (opsional): `http://127.0.0.1:3001` atau dasbor `npm` ke `http://127.0.0.1:8081` + login `NEXUS_ADMIN_TOKEN`.
 
 ---
 
-## 📂 Dokumentasi Proyek
+## CI
 
-Silakan baca dokumen di bawah ini untuk memahami sistem secara mendalam:
+- GitHub Actions: `.github/workflows/nexus-ci.yml`
+- GitLab CI: `.gitlab-ci.yml`
+- Hook laptop: `.\scripts\ci\install-hooks.ps1`
 
-### 📖 Panduan Teknis & Operasional
-* [🏗️ **Architecture & Flow**](./docs/ARCHITECTURE.md) - Detail teknis MTD, AI Layers, & Self-Repair.
-* [🛡️ **Capabilities**](./docs/CAPABILITIES.md) - Daftar serangan yang bisa pencegah.
-* [⚠️ **Limitations**](./docs/LIMITATIONS.md) - Batasan perlindungan sistem.
-* [🕹️ **CLI Guide**](./docs/CLI_GUIDE.md) - Panduan perintah Command Center.
-* [🛠️ **Git Workflow**](./docs/GIT_WORKFLOW.md) - Panduan Push & Pull (Submodule).
+## Dokumentasi
 
-### 🛠️ Rekayasa Perangkat Lunak (SDLC Documents)
-* [📄 **Product Requirements Document (PRD)**](./docs/PRODUCT_REQUIREMENTS_DOCUMENT.md) - Visi produk, profil pengguna, dan kriteria keberhasilan.
-* [📄 **Software Requirements Specification (SRS)**](./docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md) - Kebutuhan fungsional, non-fungsional, dan skema endpoints API.
-* [📄 **Software Design Document (SWD)**](./docs/SOFTWARE_DESIGN_DOCUMENT.md) - ERD basis data relasional, deskripsi modul kode, dan diagram urutan siber aktif-pasif.
+Indeks hidup vs arsip: [`docs/README.md`](./docs/README.md).
 
----
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Capabilities](./docs/CAPABILITIES.md)
+- [Limitations](./docs/LIMITATIONS.md)
+- [PRD](./docs/PRD.md)
+- [SRS](./docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md)
+- [CLI Guide](./docs/CLI_GUIDE.md)
+- [Deployment](./docs/DEPLOYMENT_GUIDE.md)
 
-## CI (tes sebelum masuk `main`)
-
-- **GitHub Actions**: `.github/workflows/nexus-ci.yml` — jalan otomatis di setiap push/PR ke `main` (Go gateway, NEX-RED, skrip pertahanan, dashboard, Docker).
-- **GitLab CI**: `.gitlab-ci.yml` — pipeline yang sama jika repo di-import ke GitLab.
-- **Sebelum `git push` di laptop**: `.\scripts\ci\install-hooks.ps1` sekali, lalu hook menolak push jika tes NEX-RED/Go gagal.
-
-## 🚀 Cara Menjalankan (Quick Start & Deployment)
-
-Detail lengkap panduan penyebaran sistem dapat dibaca pada [📖 Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
-
-### 🖱️ Lab laptop 1 klik (`deploy-local/`)
-
-Double-click **`deploy-local/START.bat`** (Docker Desktop harus sudah running). Pengunjung membuka **http://127.0.0.1** (atau IP LAN laptop ini). Origin default adalah portofolio Vercel di belakang WAF. Panduan: [`deploy-local/README.md`](./deploy-local/README.md).
-
-### 🏛️ Skema 1: Deployment B2G / GovEdu (Self-Hosted On-Premise / PDN)
-*Dipasang 100% di server/Pusat Data milik Instansi Pemerintah/Sekolah itu sendiri:*
-* **Windows PowerShell**:
-  ```powershell
-  .\scripts\deploy\local\deploy-local-pc.ps1
-  ```
-* **Linux / WSL / Ubuntu Server**:
-  ```bash
-  bash scripts/deploy/local/deploy-local-pc.sh
-  ```
-
----
-
-### 🏢 Skema 2: Deployment B2B SaaS (Cloud Multi-Tenant Proxy Cluster)
-*Dipasang di Cloud VPS milik Nexus Cyber untuk melayani banyak klien swasta via DNS CNAME:*
-Jalankan perintah 1-klik di VPS Ubuntu 22.04 LTS Anda:
-
-```bash
-sudo bash scripts/deploy/vps/deploy-biznet-gio.sh
-```
-
----
-
-### 🛑 Mematikan Sistem
-
-```bash
-bash scripts/ops/nexus-kill.sh
-```
-
----
-
-### 🧪 Melakukan Audit Keamanan & Pemulihan Mandiri
-
-Jalankan alat uji terpadu untuk memverifikasi komponen MTD:
-```bash
-python scripts/tests/test_mtd_shuffle.py
-```
-
-Uji fitur pemulihan mandiri otonom (Self-Repair):
-```bash
-python scripts/tests/test_self_repair.py
-```
-
----
-*Nexus-Cyber tahap 2: Menjaga Kedaulatan Digital Indonesia dengan Imunitas Otonom & Intelijen Taktis.*
+NEX-RED: [`NEX-RED/README.md`](./NEX-RED/README.md).

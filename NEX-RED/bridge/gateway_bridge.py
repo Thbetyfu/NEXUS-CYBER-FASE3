@@ -13,7 +13,7 @@ from core.config import config
 from core.orchestrator import NexRedOrchestrator
 from core.types import ScanMode, ScanResult, ScanTarget
 
-app = FastAPI(title="NEX-RED Tactical Bridge", version="4.0.0")
+app = FastAPI(title="NEX-RED Tactical Bridge", version="5.0.0")
 
 SCAN_HISTORY: Dict[str, Dict[str, Any]] = {}
 
@@ -24,7 +24,7 @@ class TriggerScanRequest(BaseModel):
     mode: str = "HYBRID"
     scenario: Optional[str] = None
     enable_llm: bool = True
-    async_run: bool = False
+    async_run: bool = True
 
 
 def _mode_from(value: str) -> ScanMode:
@@ -64,7 +64,7 @@ def _background_scan(scan_id: str, req: TriggerScanRequest) -> None:
 
 @app.get("/api/v1/health")
 def health_check():
-    return {"status": "ONLINE", "engine": "NEX-RED", "version": "4.0.0"}
+    return {"status": "ONLINE", "engine": "NEX-RED", "version": "5.0.0"}
 
 
 @app.post("/api/v1/scan")
@@ -87,6 +87,7 @@ def trigger_scan(req: TriggerScanRequest, background: BackgroundTasks):
             "mitigated_by_nexus": result.vulnerabilities_mitigated_by_nexus,
             "files_analyzed": result.files_analyzed,
             "llm_used": result.llm_used,
+            "live_checks_run": result.live_checks_run,
             "findings_count": len(result.findings),
         },
         "findings": result.findings,

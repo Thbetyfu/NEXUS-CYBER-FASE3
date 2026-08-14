@@ -1,5 +1,8 @@
-# PANDUAN IMPLEMENTASI & PENGUJIAN: SELF-HEAL
-## SISTEM INTEGITAS DETEKSI DAN PEMULIHAN MANDIRI OTONOM
+# Panduan Self-Heal
+
+Integrity monitor di `nexus-core-gateway/internal/repair` memakai **BLAKE3**, baseline di RAM, restore folder yang dikonfigurasi. Bukan proteksi RCE di memori proses, bukan PITR database.
+
+---
 
 Nexus Cyber dilengkapi dengan modul keamanan otonom bernama **System Integrity Monitor (Self-Heal)**. Fitur ini dirancang untuk mendeteksi manipulasi berkas situs web secara instan (<10ms) dan mengembalikannya ke kondisi asli tanpa memerlukan campur tangan teknisi manusia.
 

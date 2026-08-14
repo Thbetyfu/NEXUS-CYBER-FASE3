@@ -4,8 +4,9 @@ echo ===========================================================================
 echo MENYELESAIKAN PROSES DAN MEMBERSIHKAN PORT ZOMBIE (NEXUS CYBER)
 echo ==============================================================================
 
-echo [1] Membersihkan Port 8080 (Gateway WAF)...
+echo [1] Membersihkan Port 8080 (Gateway WAF) dan 8081 (SOC admin)...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080') do taskkill /F /PID %%a 2>nul
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8081') do taskkill /F /PID %%a 2>nul
 
 echo [2] Membersihkan Port 9090 (Honeypot)...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :9090') do taskkill /F /PID %%a 2>nul

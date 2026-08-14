@@ -74,6 +74,7 @@ def main():
         print(f"[*] Scan: {result.scan_id}")
         print(f"[*] Files analyzed: {result.files_analyzed}")
         print(f"[*] Live probes: {result.total_attacks_attempted}")
+        print(f"[*] Live HTTP checks: {result.live_checks_run}")
         print(f"[*] Findings: {result.vulnerabilities_found}")
         print(f"[*] Defensive blocks: {result.vulnerabilities_mitigated_by_nexus}")
         print(f"[*] LLM used: {result.llm_used}")

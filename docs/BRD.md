@@ -1,8 +1,8 @@
-aa kpiah atagbpaka taapaapitt
-
 # BUSINESS REQUIREMENT & COMMERCIAL PROPOSAL
 
 ## NEXUS CYBER - AUTONOMOUS TACTICAL DEFENSE GRID
+
+**Arsip komersial.** Klaim eBPF XDP, JWT, dan SaaS CNAME di dokumen ini adalah visi penjualan, bukan status kode 2026-08-15. Kontrak teknis: `docs/CAPABILITIES.md` dan `CHANGELOG.md`.
 
 ---
 

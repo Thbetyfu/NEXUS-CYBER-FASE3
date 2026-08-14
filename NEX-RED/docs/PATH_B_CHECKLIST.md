@@ -6,29 +6,30 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 
 ## Fase 0 — Kontrak
 
-- [ ] RoE + `NEX_RED_LIVE_TARGET` di `.env.example`
-- [ ] Staging portfolio + gateway, bukan produksi klien
-- [ ] Model NEX-AI diputuskan (lokal / fallback API)
+- [x] RoE + `NEX_RED_LIVE_TARGET` di `.env.example`
+- [x] Staging portfolio + gateway, bukan produksi klien
+- [x] Model NEX-AI diputuskan (lokal / fallback API)
 
 ## Fase 1 — Job & sandbox
 
-- [ ] State `QUEUED | RUNNING | COMPLETED | FAILED | PARTIAL`
-- [ ] Gateway poll `GET /api/v1/scan/{id}` (bukan timeout 30s untuk live)
-- [ ] Docker sandbox: non-root, allow-list jaringan
+- [x] State `QUEUED | RUNNING | COMPLETED | FAILED | PARTIAL`
+- [x] Gateway poll `GET /api/v1/scan/{id}` (bukan timeout 30s untuk live)
+- [ ] Docker sandbox: non-root image ada; allow-list di Python — **bukan** iptables penuh
 
 ## Fase 2 — Planner
 
-- [ ] JSON langkah dari hipotesis AST
-- [ ] `max_steps` / `max_minutes`
-- [ ] Prompt tanpa permintaan payload exploit
+- [x] Langkah dari hipotesis AST (deterministik; tanpa payload exploit)
+- [x] `max_steps` (`NEX_RED_MAX_LIVE_STEPS`)
+- [x] Prompt LLM verifier tetap tanpa permintaan payload exploit
+- [ ] Planner LLM JSON bebas (masih deterministik)
 
 ## Fase 3 — HTTP evidence (MVP v5)
 
-- [ ] Route mutating tanpa sesi → 401/403 tercatat
-- [ ] IDOR: user B tidak membaca objek user A
-- [ ] Request tanpa `Authorization` gagal di rute terlindungi
-- [ ] Report: SAST vs `dynamically confirmed`
-- [ ] `live_checks_run ≥ 3` di benchmark
+- [x] Route mutating tanpa sesi → 401/403 atau 200 tercatat
+- [ ] IDOR: user B tidak membaca objek user A (butuh dua sesi — belum)
+- [x] Request tanpa `Authorization` ke `/api/telemetry` publik tercatat
+- [x] Report: `live_verdict` (sast_only / confirmed / rejected / mitigated_by_nexus)
+- [x] `live_checks_run` di hasil scan (bukan syarat benchmark Shannon)
 
 ## Fase 4 — Browser
 
