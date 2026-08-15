@@ -102,5 +102,97 @@ class TestLiveHttpFloor2(unittest.TestCase):
         self.assertEqual(tel[0].live_verdict, LiveVerdict.REJECTED)
 
 
+class _SecureTwoAccountHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        return
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length") or "0")
+        if length:
+            self.rfile.read(length)
+        if self.path.startswith("/nexred/lab/session-pair"):
+            body = b'{"owner_token":"owner-lab","peer_token":"peer-lab","object_path":"/objects/1"}'
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_response(404)
+        self.end_headers()
+
+    def do_GET(self):
+        auth = self.headers.get("Authorization", "")
+        if self.path.startswith("/objects/1"):
+            if auth == "Bearer owner-lab":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"id":1,"owner":"A"}')
+                return
+            self.send_response(403)
+            self.end_headers()
+            return
+        self.send_response(404)
+        self.end_headers()
+
+
+class _LeakyTwoAccountHandler(_SecureTwoAccountHandler):
+    def do_GET(self):
+        auth = self.headers.get("Authorization", "")
+        if self.path.startswith("/objects/1") and auth in {"Bearer owner-lab", "Bearer peer-lab"}:
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"id":1,"owner":"A"}')
+            return
+        self.send_response(404)
+        self.end_headers()
+
+
+class TestTwoAccountIdor(unittest.TestCase):
+    def _serve(self, handler):
+        server = HTTPServer(("127.0.0.1", 0), handler)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        return server, f"http://127.0.0.1:{port}"
+
+    def test_peer_denied_is_rejected(self):
+        server, base = self._serve(_SecureTwoAccountHandler)
+        try:
+            findings, ran, _ = execute_live_checks(base, plan_live_checks([]))
+        finally:
+            server.shutdown()
+            server.server_close()
+        idor = [item for item in findings if item.param_or_source == "cross_account_object_read"]
+        self.assertTrue(idor, findings)
+        self.assertEqual(idor[0].live_verdict, LiveVerdict.REJECTED)
+        self.assertEqual(idor[0].cwe_id, "CWE-639")
+        self.assertGreaterEqual(ran, 3)
+        self.assertNotIn("owner-lab", idor[0].proof_of_concept)
+        self.assertNotIn("peer-lab", idor[0].proof_of_concept)
+
+    def test_peer_can_read_owner_object_is_confirmed(self):
+        server, base = self._serve(_LeakyTwoAccountHandler)
+        try:
+            findings, _, _ = execute_live_checks(base, plan_live_checks([]))
+        finally:
+            server.shutdown()
+            server.server_close()
+        idor = [item for item in findings if item.param_or_source == "cross_account_object_read"]
+        self.assertTrue(idor, findings)
+        self.assertEqual(idor[0].live_verdict, LiveVerdict.CONFIRMED)
+
+    def test_missing_lab_pair_is_sast_only(self):
+        server, base = self._serve(_Handler)
+        try:
+            findings, _, _ = execute_live_checks(base, plan_live_checks([]))
+        finally:
+            server.shutdown()
+            server.server_close()
+        idor = [item for item in findings if item.param_or_source == "cross_account_object_read"]
+        self.assertTrue(idor, findings)
+        self.assertEqual(idor[0].live_verdict, LiveVerdict.SAST_ONLY)
+
+
 if __name__ == "__main__":
     unittest.main()

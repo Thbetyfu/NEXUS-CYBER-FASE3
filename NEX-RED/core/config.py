@@ -43,6 +43,9 @@ class NexRedConfig(BaseModel):
     max_llm_reviews: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LLM_REVIEWS", "15")))
     live_target: str = Field(default_factory=lambda: os.getenv("NEX_RED_LIVE_TARGET", "http://127.0.0.1"))
     max_live_steps: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LIVE_STEPS", "20")))
+    idor_owner_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OWNER_TOKEN", ""))
+    idor_peer_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_PEER_TOKEN", ""))
+    idor_object_path: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OBJECT_PATH", ""))
 
 
 config = NexRedConfig()

@@ -11,9 +11,11 @@ It is **not** Shannon and **not** Strix. v5 is Jalan B **Fase 0–3 irisan**: SA
 3. **LLM verifier (optional)** — confirm/drop static findings; remediations only.
 4. **Live recon** — links and missing security headers.
 5. **Black-box posture** — benign JSON probes.
-6. **Live HTTP checks** — unauthenticated mutating route, public telemetry must not be SOC, WAF 403 = `mitigated_by_nexus`.
+6. **Live HTTP checks** — unauthenticated mutating route, public telemetry must not be SOC, WAF 403 = `mitigated_by_nexus`, **two accounts** (peer must not read owner's object).
 7. **Jobs** — `POST /api/v1/scan` default `async_run=true`; poll `GET /api/v1/scan/{id}`.
 8. **Evidence gate** — no file:line or HTTP status → dropped.
+
+Two-account live check needs a lab pair: `POST /nexred/lab/session-pair` returning JSON `owner_token`, `peer_token`, `object_path`, **or** env `NEX_RED_IDOR_OWNER_TOKEN` / `NEX_RED_IDOR_PEER_TOKEN` / `NEX_RED_IDOR_OBJECT_PATH`. Tokens are not written into reports. Without a pair, the check is `sast_only` (not a pass and not a fake IDOR).
 
 ## What v5 does not do yet
 

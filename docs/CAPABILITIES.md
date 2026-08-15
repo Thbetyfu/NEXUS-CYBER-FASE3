@@ -24,7 +24,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 
 ## NEX-RED
 
-Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). Tidak mengirim exploit PoC. Bridge default **3004**.
+Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). Tidak mengirim exploit PoC. Bridge default **3004**. Live HTTP: rute mutasi tanpa sesi, telemetri publik, **dua akun** (CWE-639) jika ada pasangan sesi lab.
 
 ## Blue team (detail jujur)
 

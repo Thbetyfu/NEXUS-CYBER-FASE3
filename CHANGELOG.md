@@ -6,6 +6,9 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Added
+- NEX-RED: pemeriksaan hidup **dua akun** (peer tidak boleh baca objek owner). Butuh `POST /nexred/lab/session-pair` atau token env; tanpa itu hasilnya `sast_only`, bukan temuan palsu.
+
 ### Fixed
 - Sidik jari Gallery/vault di portofolio tidak lagi melempar di **HTTP hotspot** (`crypto.subtle` tidak ada). Unggah dan 5× password salah bisa mencapai gateway setelah blue team `git pull --recurse-submodules` lalu `START-OFFLINE.bat` (rebuild image `portfolio`).
 
@@ -13,6 +16,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - README: clone `--recursive` dan setup awal (lab Docker vs `start-dev.bat`).
 - Blue team: langkah pull + rebuild di `deploy-local/blue-team/README.md`.
 - Arsip sesi: `docs/reports/LAB_HOTSPOT_ACCEPTANCE_2026-08-15.md` (uji penerimaan lab, bukan pentest).
+- Arsip uji adil: `docs/reports/BENCHMARK_NEXRED_SHANNON_STRIX_2026-08-16.md` (`nexred.py benchmark` exit 2, BELUM SETARA).
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).

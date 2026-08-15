@@ -22,6 +22,7 @@ class HttpEvidence:
     status: Optional[int]
     nexus_header: bool
     error: Optional[str] = None
+    body: str = ""
 
 
 def _join(base: str, path: str) -> str:
@@ -35,7 +36,13 @@ class SafeHttpClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": config.user_agent})
 
-    def request(self, method: str, path: str, json_body: Optional[Mapping[str, Any]] = None) -> HttpEvidence:
+    def request(
+        self,
+        method: str,
+        path: str,
+        json_body: Optional[Mapping[str, Any]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+    ) -> HttpEvidence:
         url = path if path.startswith("http") else _join(self.target_url, path)
         if not is_url_allowed(url, self.target_url):
             return HttpEvidence(method=method.upper(), url=url, status=None, nexus_header=False, error="host_not_allowed")
@@ -44,15 +51,18 @@ class SafeHttpClient:
                 method.upper(),
                 url,
                 json=dict(json_body) if json_body else None,
+                headers=dict(headers) if headers else None,
                 timeout=self.timeout,
                 allow_redirects=False,
             )
             nexus = bool(resp.headers.get("X-Nexus-Shield") or resp.headers.get("X-Nexus-Waf"))
+            text = resp.text[:2048] if resp.text else ""
             return HttpEvidence(
                 method=method.upper(),
                 url=url,
                 status=resp.status_code,
                 nexus_header=nexus,
+                body=text,
             )
         except requests.RequestException as exc:
             return HttpEvidence(method=method.upper(), url=url, status=None, nexus_header=False, error=type(exc).__name__)

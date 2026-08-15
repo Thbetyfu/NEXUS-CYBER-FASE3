@@ -26,7 +26,7 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 ## Fase 3 — HTTP evidence (MVP v5)
 
 - [x] Route mutating tanpa sesi → 401/403 atau 200 tercatat
-- [ ] IDOR: user B tidak membaca objek user A (butuh dua sesi — belum)
+- [x] IDOR: user B tidak membaca objek user A (dua sesi lab atau token env)
 - [x] Request tanpa `Authorization` ke `/api/telemetry` publik tercatat
 - [x] Report: `live_verdict` (sast_only / confirmed / rejected / mitigated_by_nexus)
 - [x] `live_checks_run` di hasil scan (bukan syarat benchmark Shannon)

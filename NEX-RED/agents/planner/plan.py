@@ -45,6 +45,13 @@ def plan_live_checks(findings: Iterable[VulnerabilityFinding], extra_paths: Iter
         LiveCheck("baseline", "public_get", "GET", "/", "record_status"),
         LiveCheck("baseline", "benign_json_no_500", "POST", "/api/unlock-reward", "no_unhandled_500"),
         LiveCheck("soc-split", "request_without_authorization", "GET", "/api/telemetry", "must_not_be_operator_api"),
+        LiveCheck(
+            "idor-two-accounts",
+            "cross_account_object_read",
+            "GET",
+            "/nexred/lab/session-pair",
+            "peer_must_not_read_owner_object",
+        ),
     ]
     seen = {(item.method, item.path) for item in steps}
     for finding in findings:
