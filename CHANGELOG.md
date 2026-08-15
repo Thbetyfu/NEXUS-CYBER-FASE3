@@ -12,6 +12,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 ### Docs
 - README: clone `--recursive` dan setup awal (lab Docker vs `start-dev.bat`).
 - Blue team: langkah pull + rebuild di `deploy-local/blue-team/README.md`.
+- Arsip sesi: `docs/reports/LAB_HOTSPOT_ACCEPTANCE_2026-08-15.md` (uji penerimaan lab, bukan pentest).
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).
