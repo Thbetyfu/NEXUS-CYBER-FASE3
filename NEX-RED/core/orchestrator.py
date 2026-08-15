@@ -7,6 +7,7 @@ Does not invent attack counts. Metrics come from actual probes and analyzed file
 
 from __future__ import annotations
 
+from pathlib import Path
 import uuid
 from datetime import datetime, timezone
 
@@ -15,9 +16,11 @@ from agents.exploit.poc_validator import PoCValidator
 from agents.planner.plan import plan_live_checks
 from agents.recon.surface_mapper import SurfaceMapper
 from agents.reporting.report_generator import ReportGenerator
+from agents.verify.browser_flows import execute_browser_checks
 from agents.verify.live import execute_live_checks
 from agents.whitebox.code_analyzer import WhiteboxCodeAnalyzer
 from agents.whitebox.llm_verifier import LlmVerifier
+from core.config import config
 from core.types import ScanMode, ScanResult, ScanTarget
 from scenarios.battle_scenarios import BattleScenarioRunner
 
@@ -79,6 +82,14 @@ class NexRedOrchestrator:
             mitigated += live_mitigated
             findings.extend(live_findings)
             raw_logs.append(f"Live HTTP checks={live_checks_run} extra_findings={len(live_findings)}")
+            if config.enable_browser:
+                ws = Path(config.workspaces_dir) / self.scan_id
+                browser_findings, browser_ran = execute_browser_checks(self.target.target_url, ws)
+                live_checks_run += browser_ran
+                total_probes += browser_ran
+                mitigated += sum(1 for item in browser_findings if item.mitigated_by_nexus)
+                findings.extend(browser_findings)
+                raw_logs.append(f"Browser lab flows ran={browser_ran} findings={len(browser_findings)}")
             if live_checks_run == 0:
                 status = "PARTIAL"
                 raw_logs.append("Live HTTP produced no executed checks; scan is PARTIAL")

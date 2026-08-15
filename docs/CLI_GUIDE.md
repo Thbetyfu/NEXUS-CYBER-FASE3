@@ -37,7 +37,7 @@ python NEX-RED/nexred.py scan -m hybrid -u http://127.0.0.1 -r . --no-llm
 python NEX-RED/nexred.py bridge -p 3004
 ```
 
-Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_live_http tests.test_benchmark`
+Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_live_http tests.test_browser tests.test_benchmark`
 
 ## 4. Tes lain
 

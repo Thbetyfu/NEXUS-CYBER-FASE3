@@ -33,8 +33,8 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 
 ## Fase 4 — Browser
 
-- [ ] Login vault + upload gambar (alur sah) di sandbox
-- [ ] Ban 5× password salah tercatat
+- [x] Unggah gambar sah + 5 password vault salah di Chromium jika `NEX_RED_BROWSER=1` dan Playwright terpasang
+- [x] Ban 5× tercatat sebagai `mitigated_by_nexus` bila teks blacklist muncul; PoW hotspot → `sast_only` (bukan temuan palsu)
 
 ## Fase 5 — Multi-agen
 

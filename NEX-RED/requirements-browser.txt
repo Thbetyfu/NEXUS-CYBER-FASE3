@@ -1,0 +1,4 @@
+# Optional. CI does not install this.
+# pip install -r NEX-RED/requirements-browser.txt
+# python -m playwright install chromium
+playwright>=1.40.0

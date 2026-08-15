@@ -8,6 +8,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ### Added
 - NEX-RED: pemeriksaan hidup **dua akun** (peer tidak boleh baca objek owner). Butuh `POST /nexred/lab/session-pair` atau token env; tanpa itu hasilnya `sast_only`, bukan temuan palsu.
+- NEX-RED: alur browser lab opsional (`NEX_RED_BROWSER=1` + Playwright) untuk unggah gambar sah dan 5 password vault salah. PoW hotspot dilewati jujur (`sast_only`).
 
 ### Fixed
 - Sidik jari Gallery/vault di portofolio tidak lagi melempar di **HTTP hotspot** (`crypto.subtle` tidak ada). Unggah dan 5× password salah bisa mencapai gateway setelah blue team `git pull --recurse-submodules` lalu `START-OFFLINE.bat` (rebuild image `portfolio`).

@@ -46,6 +46,9 @@ class NexRedConfig(BaseModel):
     idor_owner_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OWNER_TOKEN", ""))
     idor_peer_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_PEER_TOKEN", ""))
     idor_object_path: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OBJECT_PATH", ""))
+    enable_browser: bool = Field(
+        default_factory=lambda: os.getenv("NEX_RED_BROWSER", "0").strip() in {"1", "true", "yes"}
+    )
 
 
 config = NexRedConfig()
