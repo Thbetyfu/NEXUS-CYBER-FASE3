@@ -17,7 +17,7 @@ Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. 
 
 | # | Yang diuji | Cara | Lulus jika |
 | --- | --- | --- | --- |
-| 1 | Pintu benar | URL di address bar = IP hotspot, bukan `vercel.app` | Halaman portofolio tampil lewat IP itu |
+| 1 | Pintu benar | URL di address bar = IP hotspot, bukan `vercel.app`. Skrip `CHECK.bat` boleh dapat HTTP 403 (tantangan sesi); **browser** harus sampai halaman portofolio (200). | Halaman portofolio tampil di browser |
 | 2 | Situs hidup | Beranda, navigasi, Gallery `#gallery` | Halaman biasa 200, foto/form terlihat |
 | 3 | Unggah sah | Kirim gambar wajar di Gallery | Tidak ditolak sebagai ancaman; atau pesan WAF jelas jika berkas rusak |
 | 4 | Vault lab | Password **salah** berulang di hadiah (maks. 5) | Setelah 5 gagal, IP terban (akses situs teralih / ditolak). Minta blue team unban jika perlu lanjut |
@@ -32,6 +32,8 @@ Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. 
 - Jangan minta blue team mem-publish dasbor ke hotspot.
 - Jangan scan internet / IP di luar kartu lab.
 - Jangan menyimpan atau membagikan daftar payload serangan di repo.
+
+Unggah/vault error “MUX” / “Connection error” di **HTTP** hotspot: biasanya sidik jari `crypto.subtle` (sudah di-fallback di kode). Blue team harus `git pull origin main --recurse-submodules` lalu **START-OFFLINE** (rebuild), bukan hanya refresh Chrome.
 
 ## Kalau CHECK.bat gagal
 

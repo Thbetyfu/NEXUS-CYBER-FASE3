@@ -23,6 +23,7 @@ Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-15.
 14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
 15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
 16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi.
+17. **Hotspot lab memakai HTTP.** Sidik jari Gallery memakai SHA-256 jika `crypto.subtle` ada, atau digest cadangan jika tidak. Itu header telemetri, bukan bukti HTTPS/PQC.
 
 ## Yang sengaja ditunda
 

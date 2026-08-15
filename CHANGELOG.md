@@ -6,6 +6,13 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Fixed
+- Sidik jari Gallery/vault di portofolio tidak lagi melempar di **HTTP hotspot** (`crypto.subtle` tidak ada). Unggah dan 5× password salah bisa mencapai gateway setelah blue team `git pull --recurse-submodules` lalu `START-OFFLINE.bat` (rebuild image `portfolio`).
+
+### Docs
+- README: clone `--recursive` dan setup awal (lab Docker vs `start-dev.bat`).
+- Blue team: langkah pull + rebuild di `deploy-local/blue-team/README.md`.
+
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).
 

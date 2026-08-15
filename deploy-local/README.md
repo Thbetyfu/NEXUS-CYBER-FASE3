@@ -85,7 +85,7 @@ Jika Anda menjalankan dasbor di laptop (`npm run dev -p 3001`) sambil stack `dep
 ## Origin
 
 - **Default (`START.bat`)**: `https://portfolio-website-three-ruddy-65.vercel.app`
-- **Offline (`START-OFFLINE.bat`)**: container `portfolio` di port internal 3002
+- **Offline (`START-OFFLINE.bat`)**: container `portfolio` di port internal 3002. Setelah `git pull --recurse-submodules`, jalankan ulang START-OFFLINE agar JS Gallery baru ter-build.
 
 Ubah origin di `deploy-local/.env` (disalin otomatis dari `.env.example` saat start pertama).
 

@@ -16,6 +16,19 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 
 `START-OFFLINE.bat` sama, tetapi origin-nya folder `playground/Portofolio-Thoriq` (tanpa Vercel).
 
+## Setelah laptop red team push perbaikan
+
+`git pull` **saja tidak cukup** jika image Docker portofolio masih yang lama. Di laptop **blue team**:
+
+```bat
+cd D:\NEXUS-CYBER-FASE3
+git pull origin main --recurse-submodules
+```
+
+Kalau folder submodule masih kosong/lama: `git submodule update --init --recursive`
+
+Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab.
+
 ## Yang otomatis
 
 - Mobile Hotspot Windows, SSID `NEXUS-BLUE-LAB` / password `NexusBlue1` (bisa diubah di `deploy-local/.env`)

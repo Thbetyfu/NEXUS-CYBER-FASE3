@@ -16,6 +16,8 @@ Update:
 git pull origin main --recurse-submodules
 ```
 
+Lab hotspot (blue team): setelah pull, jalankan `deploy-local\blue-team\STOP.bat` lalu `START-OFFLINE.bat` supaya image `portfolio` memuat JS terbaru. `git pull` tanpa rebuild Docker masih menyajikan bundle lama.
+
 Ubah isi portofolio: commit + push **di dalam** submodule, lalu di repo utama `git add playground/Portofolio-Thoriq` dan commit pointer.
 
 Jangan hapus `.git` di dalam submodule.

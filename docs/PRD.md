@@ -188,7 +188,7 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
 
 ### Fitur ID: F-09 - Fitur Uji Ketahanan Web Portfolio (Uploader & Password Reward)
 - **Status:**
-  - Gallery `#gallery` (unggah + vault password): **[Sudah ada]** di `playground/Portofolio-Thoriq`.
+  - Gallery `#gallery` (unggah + vault password): **[Sudah ada]** di `playground/Portofolio-Thoriq`. Sidik jari klien tidak melempar di HTTP lab.
   - AVSE unggah + penyimpanan foto tamu di gateway (`/api/photos`): **[Sudah ada]**.
   - Autoban IP setelah ≥5 password salah: **[Sudah ada]** (`getCleanIP` + `SplitHostPort`).
 - **User Story:** Sebagai Tester, saya ingin form unggah dan password hadiah di Gallery, serta WAF memblokir IP setelah brute force.

@@ -4,6 +4,81 @@
 
 Klaim di README ini mengikuti **kode di repository**. Daftar kemampuan vs batasan: [`docs/CAPABILITIES.md`](./docs/CAPABILITIES.md) dan [`docs/LIMITATIONS.md`](./docs/LIMITATIONS.md). Riwayat: [`CHANGELOG.md`](./CHANGELOG.md).
 
+## Clone
+
+Ada **submodule** portofolio di `playground/Portofolio-Thoriq`. Clone harus rekursif:
+
+```bash
+git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
+cd NEXUS-CYBER-FASE3
+```
+
+Jika folder sudah di-clone tanpa submodule:
+
+```bash
+git submodule update --init --recursive
+```
+
+Update nanti:
+
+```bash
+git pull origin main --recurse-submodules
+```
+
+Laptop blue team (lab Docker): setelah pull, `deploy-local\blue-team\STOP.bat` lalu `START-OFFLINE.bat` agar container portofolio memuat JS Gallery terbaru.
+
+Jangan menghapus folder `.git` di dalam submodule. Alur git: [`docs/GIT_WORKFLOW.md`](./docs/GIT_WORKFLOW.md).
+
+## Setup awal
+
+Pilih **satu** cara. Jangan jalankan `deploy-local/START.bat` bersamaan dengan `start-dev.bat` (port 80/8080 bentrok).
+
+### Cara A — lab Docker (disarankan, tanpa Go/Node)
+
+1. Pasang [Docker Desktop](https://www.docker.com/products/docker-desktop/) dan tunggu status **Ready**.
+2. (Windows, sekali) double-click `deploy-local\ALLOW-DEV-LAPTOP.bat` lalu **Yes** di UAC — firewall lab + pengecualian Defender.
+3. Double-click `deploy-local\START.bat` (atau `START-OFFLINE.bat` agar origin = folder portofolio, bukan Vercel).
+4. Buka **http://127.0.0.1** (Caddy → WAF). Bukti Nexus hanya lewat IP/laptop ini, **bukan** URL Vercel langsung.
+5. File `deploy-local/.env` dibuat otomatis dari `.env.example` pada start pertama. Ubah `REWARD_PASSWORD` / origin di situ jika perlu.
+
+Hotspot blue/red team, Gallery, dan checklist uji: [`deploy-local/README.md`](./deploy-local/README.md). Matikan: `deploy-local\STOP.bat`.
+
+### Cara B — development (ubah kode gateway / dasbor)
+
+Prasyarat: Docker (Postgres + Redis), [Go 1.22+](https://go.dev/dl/), Node.js 20+ (untuk Next.js 16), Python 3.10+.
+
+```bash
+copy .env.example .env
+copy nexus-core-gateway\.env.example nexus-core-gateway\.env
+```
+
+Di `nexus-core-gateway\.env` isi `NEXUS_ADMIN_TOKEN` (untuk login SOC selain loopback) dan pastikan `ADMIN_LISTEN=127.0.0.1:8081`. Token **jangan** ditaruh di `NEXT_PUBLIC_*`.
+
+Windows:
+
+```bat
+start-dev.bat
+```
+
+Itu menyalakan Postgres/Redis, gateway `:8080` + SOC `:8081`, dasbor Next di `:3001`, dan bridge NEX-RED `:3004`. Dasbor: `http://127.0.0.1:3001` dengan API `http://127.0.0.1:8081`.
+
+Manual (setara):
+
+```bash
+docker compose up -d postgres redis
+cd nexus-core-gateway && go run ./cmd/gateway
+cd nexus-admin-dashboard && npm install && npm run dev -- -p 3001
+python NEX-RED/nexred.py bridge -p 3004
+```
+
+NEX-RED scan (setelah WAF hidup, lewat Caddy jika lab Docker):
+
+```bash
+python NEX-RED/nexred.py scan -u http://127.0.0.1 -r . -m hybrid --no-llm
+```
+
+Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
+
 ### 1. Pemuatan Modul Keamanan (Boot Sequence)
 ![System Boot Sequence](./docs/img/Opening-Nexus-Cyber.jpeg)
 
