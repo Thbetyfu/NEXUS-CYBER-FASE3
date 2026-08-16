@@ -17,8 +17,10 @@ Tidak membuat wordlist exploit. Baris BLOCKED hanya muncul jika sudah ada di log
 - `NEX-AI/dataset/lab/lab_collected.jsonl`
 - `NEX-AI/dataset/lab/lab_collected.summary.json`
 
-Setelah stack lab jalan dan ada trafik ke `:80`/`:8080`, jalankan ulang (pengumpul mencoba `docker cp` dari `nexus-local-gateway:/app/nexus_traffic.log` jika file tidak ada di host):
+Setelah stack lab jalan dan ada trafik ke `:80`/`:8080`, di laptop **blue team**:
 
-```bash
-python NEX-AI/scripts/collect_lab_dataset.py
+```bat
+deploy-local\blue-team\COLLECT-DATASET.bat
 ```
+
+atau `python NEX-AI/scripts/collect_lab_dataset.py` (mencoba `docker cp` dari `nexus-local-gateway:/app/nexus_traffic.log`).

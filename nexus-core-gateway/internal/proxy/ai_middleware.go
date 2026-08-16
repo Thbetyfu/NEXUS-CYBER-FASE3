@@ -86,6 +86,8 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 			strings.HasPrefix(r.URL.Path, "/api/domains") ||
 			strings.HasPrefix(r.URL.Path, "/api/ai-events") ||
 			strings.HasPrefix(r.URL.Path, "/api/upload") ||
+			strings.HasPrefix(r.URL.Path, "/api/photos") ||
+			strings.HasPrefix(r.URL.Path, "/api/guest-photos") ||
 			strings.HasPrefix(r.URL.Path, "/api/unlock-reward") {
 			next.ServeHTTP(w, r)
 			return

@@ -37,6 +37,8 @@ Kalau folder submodule masih kosong/lama: `git submodule update --init --recursi
 
 Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab.
 
+Dataset NEX-AI dari log WAF (bukan LLM): **`COLLECT-DATASET.bat`** (butuh Python + Docker stack nyala).
+
 ## Yang otomatis
 
 - Mobile Hotspot Windows, SSID `NEXUS-BLUE-LAB` / password `NexusBlue1` (bisa diubah di `deploy-local/.env`)
