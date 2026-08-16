@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 
 from agents.planner.plan import LiveCheck
 from agents.runtime.http import HttpEvidence, SafeHttpClient
+from agents.verify.posture import looks_like_sensitive_record
 from core.config import config
 from core.types import Evidence, FindingSeverity, FindingSource, LiveVerdict, VulnerabilityFinding
 
@@ -100,6 +101,14 @@ def execute_live_checks(target_url: str, checks: List[LiveCheck]) -> Tuple[List[
                 findings.append(_finding(check, ev, LiveVerdict.CONFIRMED, FindingSeverity.HIGH, "Operator telemetry reachable without a control-plane session"))
             else:
                 findings.append(_finding(check, ev, LiveVerdict.REJECTED, FindingSeverity.INFO, "Public path did not expose operator telemetry"))
+            continue
+        if check.check == "unauthenticated_object_read":
+            if ev.status in {401, 403}:
+                findings.append(_finding(check, ev, LiveVerdict.REJECTED, FindingSeverity.INFO, "Object read without a session was denied"))
+            elif looks_like_sensitive_record(ev.status, ev.body):
+                findings.append(_finding(check, ev, LiveVerdict.CONFIRMED, FindingSeverity.HIGH, "Object JSON with account fields was returned with no session"))
+            else:
+                findings.append(_finding(check, ev, LiveVerdict.SAST_ONLY, FindingSeverity.LOW, "Unauthenticated object GET recorded; no account fields in the body"))
             continue
         if check.check == "benign_json_no_500" and ev.status is not None and ev.status < 500:
             findings.append(_finding(check, ev, LiveVerdict.REJECTED, FindingSeverity.INFO, "Benign JSON did not crash the app"))
@@ -206,7 +215,7 @@ def _execute_cross_account(
 
 def _finding(check: LiveCheck, ev: HttpEvidence, verdict: LiveVerdict, severity: FindingSeverity, title: str) -> VulnerabilityFinding:
     status = ev.status if ev.status is not None else 0
-    idor = check.check == "cross_account_object_read"
+    idor = check.check in {"cross_account_object_read", "unauthenticated_object_read"}
     return VulnerabilityFinding(
         id=f"NEXRED-LIVE-{check.hypothesis_id[:8]}-{ran_token(check)}",
         title=title,

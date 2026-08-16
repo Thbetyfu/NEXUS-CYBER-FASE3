@@ -59,6 +59,10 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       AI_PROVIDER_URL: ${AI_PROVIDER_URL:-}
       AI_PROVIDER_KEY: ${AI_PROVIDER_KEY:-}
+      NEX_AI_ENDPOINT: ${NEX_AI_ENDPOINT:-http://host.docker.internal:11434/api/chat}
+      NEX_AI_MODEL_REFLEX: ${NEX_AI_MODEL_REFLEX:-nex-ai-reflex}
+      NEX_AI_MODEL_REASONING: ${NEX_AI_MODEL_REASONING:-nex-ai-protect}
+      NEX_AI_API_KEY: ${NEX_AI_API_KEY:-dummy-key-for-local-usage}
       SSH_TARPIT_PORT: "2222"
       HONEYPOT_PORT: "9090"
       ADMIN_LISTEN: ":8081"

@@ -1,9 +1,20 @@
-# Sandbox NEX-RED (Lantai 2)
+# Sandbox NEX-RED (opsional)
 
-Image ini **opsional**. CLI `nexred.py scan` tetap jalan di laptop. Sandbox dipakai jika Anda ingin isolasi Docker.
+Image worker **non-root** (`uid 10001`). CLI `nexred.py scan` tetap bisa di laptop tanpa Docker.
 
-- User non-root `10001`
-- Jaringan: jangan `--network host`. Hubungkan hanya ke compose lab / `127.0.0.1` via extra_hosts
-- Allow-list host ada di `sandbox/policy.py` (bukan iptables di dalam image)
+## Apa yang dikunci
 
-Belum memblokir `curl` ke internet dari dalam kontainer tanpa network policy Docker. Itu fase berikutnya.
+- User `10001`, `cap_drop: ALL`, `no-new-privileges`, root filesystem read-only, tmpfs untuk laporan
+- **Tidak** memasang Docker socket
+- Allow-list HTTP di `sandbox/policy.py` (bukan iptables). Klien NEX-RED menolak host di luar lab; `curl` mentah di dalam image **bisa** masih ke internet jika jaringan Docker terbuka
+
+## Jalankan
+
+```bat
+cd NEX-RED\sandbox
+docker compose run --rm nexred
+```
+
+Atau: `python NEX-RED/nexred.py sandbox` (exit 3 jika Docker tidak ada — scan biasa tetap dipakai).
+
+Target di host (WAF / Juice Shop): `host.docker.internal`.

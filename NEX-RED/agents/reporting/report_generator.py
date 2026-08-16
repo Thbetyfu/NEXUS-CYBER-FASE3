@@ -30,8 +30,24 @@ class ReportGenerator:
             f"- **LLM verification used:** {result.llm_used}",
             f"- **Live HTTP checks:** {result.live_checks_run}",
             "",
-            "## Findings",
+            "## Agents",
         ]
+        if result.agent_runs:
+            lines.append("| Agent | OK | Findings | Probes |")
+            lines.append("| --- | --- | ---: | ---: |")
+            for run in result.agent_runs:
+                mark = "yes" if run.ok else "no"
+                lines.append(f"| `{run.name}` | {mark} | {run.findings} | {run.probes} |")
+                if run.error:
+                    lines.append(f"| | _{run.error}_ | | |")
+        else:
+            lines.append("_No named agents ran (white-box only)._")
+        lines.extend(
+            [
+                "",
+                "## Findings",
+            ]
+        )
         if not result.findings:
             if result.files_analyzed == 0 and result.total_attacks_attempted == 0:
                 lines.append("> No source files or live target were analyzed. This is not a clean bill of health.")
@@ -46,6 +62,7 @@ class ReportGenerator:
                         f"- **CWE:** {finding.cwe_id} | **OWASP:** {finding.owasp_category}",
                         f"- **Location:** `{finding.target_endpoint}`",
                         f"- **Source:** `{finding.source.value}` | **Confidence:** {finding.confidence:.2f} | **LLM:** {finding.verified_by_llm}",
+                        f"- **Agent:** `{finding.agent or 'unassigned'}`",
                         f"- **Live verdict:** `{finding.live_verdict.value if finding.live_verdict else 'sast_only'}`",
                         f"- **Evidence:** `{finding.proof_of_concept}`",
                         f"- **Remediation:** {finding.remediation}",

@@ -1,0 +1,10 @@
+reports
+workspaces
+**/__pycache__
+**/*.pyc
+.git
+.env
+.env.*
+production.env
+*.egg-info
+.pytest_cache

@@ -29,6 +29,9 @@ class _Handler(BaseHTTPRequestHandler):
             return
         self.send_response(200)
         self.end_headers()
+        if self.path.startswith("/objects/pii"):
+            self.wfile.write(b'{"id":1,"email":"owner@example.invalid"}')
+            return
         self.wfile.write(b"ok")
 
     def do_POST(self):
@@ -100,6 +103,24 @@ class TestLiveHttpFloor2(unittest.TestCase):
         tel = [item for item in findings if item.param_or_source == "request_without_authorization"]
         self.assertTrue(tel)
         self.assertEqual(tel[0].live_verdict, LiveVerdict.REJECTED)
+
+    def test_unauthenticated_object_read_with_email_is_confirmed(self):
+        hypo = VulnerabilityFinding(
+            id="H3",
+            title="IDOR lookup",
+            severity=FindingSeverity.HIGH,
+            cwe_id="CWE-639",
+            target_endpoint="app.py:L1",
+            proof_of_concept='route("/objects/pii")',
+            remediation="authz",
+            source=FindingSource.PYTHON_AST,
+            evidence=[Evidence(kind="source_location", summary="x", snippet='@app.route("/objects/pii")')],
+        )
+        findings, _, _ = execute_live_checks(self.base, plan_live_checks([hypo]))
+        obj = [item for item in findings if item.param_or_source == "unauthenticated_object_read"]
+        self.assertTrue(obj, findings)
+        self.assertEqual(obj[0].live_verdict, LiveVerdict.CONFIRMED)
+        self.assertEqual(obj[0].cwe_id, "CWE-639")
 
 
 class _SecureTwoAccountHandler(BaseHTTPRequestHandler):

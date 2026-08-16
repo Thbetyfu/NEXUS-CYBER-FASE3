@@ -52,6 +52,19 @@ class TestParityVerdict(unittest.TestCase):
         self.assertTrue(verdict.shannon_core_proven)
         self.assertFalse(verdict.equal_to_shannon_strix)
 
+    def test_juice_recall_does_not_flip_parity(self):
+        metrics = SastMetrics(true_positive=10, true_negative=6)
+        proven = set(SHANNON_CORE_CLASSES)
+        juice = {
+            "reachable": True,
+            "live_recall": 0.2,
+            "confirmed_classes": ["authorization"],
+        }
+        verdict = _verdict(metrics, proven, juice)
+        self.assertFalse(verdict.equal_to_shannon_strix)
+        self.assertFalse(verdict.live_pentest_comparable)
+        self.assertTrue(any("20%" in reason for reason in verdict.reasons))
+
 
 class TestShannonReportParser(unittest.TestCase):
     def test_parses_sample_reports_if_present(self):

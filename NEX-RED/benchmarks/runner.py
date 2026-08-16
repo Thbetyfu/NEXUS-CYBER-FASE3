@@ -40,7 +40,11 @@ class ParityVerdict:
     reasons: List[str]
 
 
-def _verdict(metrics: SastMetrics, proven: set[str]) -> ParityVerdict:
+def _verdict(
+    metrics: SastMetrics,
+    proven: set[str],
+    juice: Dict[str, Any] | None = None,
+) -> ParityVerdict:
     sast_ok = metrics.recall >= PARITY_RECALL and metrics.precision >= PARITY_PRECISION
     core_ok = all(name in proven for name in SHANNON_CORE_CLASSES)
     live_ok = False
@@ -57,6 +61,15 @@ def _verdict(metrics: SastMetrics, proven: set[str]) -> ParityVerdict:
         "Live pentest accuracy is not comparable: NEX-RED has no proof-by-exploitation loop. "
         "Shannon sample reports and Strix XBEN (96%/104) remain unpublished for NEX-RED."
     )
+    if juice and juice.get("reachable"):
+        rec = float(juice.get("live_recall") or 0)
+        hits = ", ".join(juice.get("confirmed_classes") or []) or "none"
+        reasons.append(
+            f"Juice Shop class recall {rec:.0%} (hits: {hits}); "
+            "live_pentest_comparable stays false until AUTH/AUTHZ/INJ/XSS/SSRF meet the Jalan B bar."
+        )
+    elif juice is not None:
+        reasons.append("Juice Shop lab not reachable; live class recall was not measured this run.")
     equal = sast_ok and core_ok and live_ok
     if equal:
         reasons = ["All parity gates passed."]
@@ -69,7 +82,7 @@ def _verdict(metrics: SastMetrics, proven: set[str]) -> ParityVerdict:
     )
 
 
-def run_benchmark(output_dir: Path | None = None) -> Dict[str, Any]:
+def run_benchmark(output_dir: Path | None = None, *, include_juice: bool = False) -> Dict[str, Any]:
     out = Path(output_dir or config.reports_dir)
     out.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix="nexred-bench-"))
@@ -83,7 +96,12 @@ def run_benchmark(output_dir: Path | None = None) -> Dict[str, Any]:
         proven.add("command_injection")
     coverage = build_coverage_rows(proven)
     published = parse_shannon_sample_reports()
-    verdict = _verdict(metrics, proven)
+    juice: Dict[str, Any] | None = None
+    if include_juice:
+        from benchmarks.juice_lab import run_juice_lab
+
+        juice = run_juice_lab(wait=True)
+    verdict = _verdict(metrics, proven, juice)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     payload: Dict[str, Any] = {
@@ -123,6 +141,7 @@ def run_benchmark(output_dir: Path | None = None) -> Dict[str, Any]:
         },
         "parity": asdict(verdict),
         "thresholds": {"precision": PARITY_PRECISION, "recall": PARITY_RECALL},
+        "juice_shop_lab": juice,
     }
 
     json_path = out / f"nexred_benchmark_{stamp}.json"
@@ -201,7 +220,31 @@ def _render_markdown(payload: Dict[str, Any]) -> str:
             "NEX-RED v4 measures **static evidence + live posture**. Those are different tasks. "
             "This benchmark therefore **cannot** declare pentest accuracy equal.",
             "",
-            "## 6. Verdict reasons",
+            "## 6. Juice Shop lab (class recall, optional `--live`)",
+            "",
+        ]
+    )
+    juice = payload.get("juice_shop_lab")
+    if not juice:
+        lines.append("_Not run. Pass `nexred.py benchmark --live` after `NEX-RED/lab/juice-shop/START.bat`._")
+    elif not juice.get("reachable"):
+        lines.append(juice.get("note") or "Juice Shop was not reachable.")
+    else:
+        rec = float(juice.get("live_recall") or 0)
+        lines.append(f"- **Target:** `{juice.get('target_url')}`")
+        lines.append(f"- **Class recall:** {rec:.0%} of AUTH / AUTHZ / INJ / XSS / SSRF")
+        lines.append(f"- **Confirmed classes:** {', '.join(juice.get('confirmed_classes') or []) or 'none'}")
+        lines.append("")
+        lines.append("| Class | Hit |")
+        lines.append("| --- | --- |")
+        for name, hit in (juice.get("live_recall_by_class") or {}).items():
+            lines.append(f"| `{name}` | {'yes' if hit else 'no'} |")
+        lines.append("")
+        lines.append(juice.get("note") or "")
+    lines.extend(
+        [
+            "",
+            "## 7. Verdict reasons",
             "",
         ]
     )

@@ -1,6 +1,6 @@
 # Command Center CLI Guide
 
-Pembaruan 2026-08-15. Perintah SOC lewat dasbor ke **`127.0.0.1:8081`** (`POST`, sesi operator). Bukan port WAF `:8080`.
+Pembaruan 2026-08-16. Perintah SOC lewat dasbor ke **`127.0.0.1:8081`** (`POST`, sesi operator). Bukan port WAF `:8080`.
 
 ## 1. Konsol SOC (Xterm.js)
 
@@ -34,10 +34,21 @@ Black-box = probe JSON jinak + recon header, **bukan** payload exploit.
 ```bash
 python NEX-RED/nexred.py scan -m whitebox -r .
 python NEX-RED/nexred.py scan -m hybrid -u http://127.0.0.1 -r . --no-llm
+python NEX-RED/nexred.py lab-juice
+python NEX-RED/nexred.py benchmark --live
+python NEX-RED/nexred.py llm-eval
+python NEX-RED/nexred.py sandbox
 python NEX-RED/nexred.py bridge -p 3004
 ```
 
-Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_live_http tests.test_browser tests.test_benchmark`
+`llm-eval` hanya `nex-ai-protect` (model milik Nexus). Tidak memakai Qwen/Llama meski ada di Ollama.
+Benchmark klasifikasi HTTP: `python NEX-AI/evaluation/run_benchmark.py --model nex-ai-reflex`.
+Dataset lab: `python NEX-AI/scripts/collect_lab_dataset.py` (lalu ulang setelah ada `nexus_traffic.log`).
+
+Juice Shop lab (loopback `:3003`): `NEX-RED/lab/juice-shop/START.bat` lalu `lab-juice`. Skor kelas, bukan pentest Shannon.
+Sandbox opsional: `NEX-RED/sandbox/START.bat` (uid 10001, tanpa Docker socket; bukan kunci internet kernel).
+
+Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_live_http tests.test_browser tests.test_benchmark tests.test_juice_lab tests.test_crew tests.test_sandbox tests.test_planner tests.test_llm_eval tests.test_modelfiles`
 
 ## 4. Tes lain
 

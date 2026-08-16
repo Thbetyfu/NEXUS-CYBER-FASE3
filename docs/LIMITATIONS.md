@@ -1,6 +1,6 @@
 # ⚠️ Nexus Cyber Limitations
 
-Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-15.
+Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-16.
 
 ## Di luar cakupan (umum)
 
@@ -19,7 +19,7 @@ Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-15.
 10. **Command Center bukan benteng publik.** SOC di `127.0.0.1` + cookie operator. Hotspot red team hanya boleh menembak situs di `:80`, bukan dasbor.
 11. **Lisensi lab** memakai kunci development (`nexus-cyber-dev`) — lockout 402 tidak mewakili produksi berbayar.
 12. **Membuka origin Vercel langsung melewati Nexus.** Bukti WAF hanya lewat Caddy/IP laptop.
-13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi plus **dua akun** jika lab menyediakan session-pair atau token env; browser lab opsional (Playwright). Tidak ada proof-by-exploitation.
+13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi plus **dua akun** jika lab menyediakan session-pair atau token env, plus GET objek tanpa sesi; planner LLM JSON hanya nama cek allow-list (bukan payload); agen bernama; browser lab opsional (Playwright); lab Juice Shop hanya **skor kelas** HTTP jinak (401 tercatat sebagai rejected). Sandbox Docker **bukan** kunci egress kernel (`curl` mentah bisa ke internet). Runtime LLM **hanya** `nex-ai-protect` (milik Nexus); Qwen/Llama di Ollama **bukan** pengganti. Protect dan reflex **satu GGUF**, dua Modelfile; belum dua model terlatih terpisah. Dataset lab dikumpulkan dari telemetri WAF (`collect_lab_dataset.py`); itu bahan latih, bukan model baru. Jika model belum didaftarkan atau JSON gagal, scan deterministik / `--no-llm`. Lihat [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md). Tidak ada proof-by-exploitation.
 14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
 15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
 16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi.

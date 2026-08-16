@@ -101,7 +101,7 @@ Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
 | **MTD** | Shuffle port backend untuk origin **HTTP**; origin **HTTPS** (Vercel) **dipin** agar TLS tidak pecah |
 | **eBPF / XDP** | **Stub** — tidak membuang paket di kernel |
 | **PQC** | Modul/header inisialisasi; **bukan** enkripsi ujung-ke-ujung pengunjung |
-| **NEX-RED** | SAST Python AST + probe JSON jinak + **live HTTP tanpa sesi**; **bukan** proof-by-exploitation |
+| **NEX-RED** | SAST Python AST + probe JSON jinak + **live HTTP tanpa sesi** + lab Juice Shop kelas (loopback `:3003`); **bukan** proof-by-exploitation |
 | **SaaS provisioner / Stripe** | **Belum** (lihat `Task.MD` task 6–7) |
 
 Reflex sinkron di request path. Reasoning (`nex-ai-protect` / API) **opsional dan asinkron** jika dikonfigurasi — bukan Qwen 235B wajib di setiap request.

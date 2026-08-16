@@ -1,6 +1,6 @@
 # 🛡️ Nexus Cyber Capabilities
 
-Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED` (bukan slide pemasaran). Pembaruan terakhir: 2026-08-15. Lihat [CHANGELOG.md](../CHANGELOG.md).
+Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED` (bukan slide pemasaran). Pembaruan terakhir: 2026-08-16. Lihat [CHANGELOG.md](../CHANGELOG.md).
 
 ## Grid pertahanan & validasi
 
@@ -16,7 +16,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | SOC | Ban, CLI, reset, telemetri | Listener **8081** + sesi operator | Nyata; bukan RBAC/JWT enterprise |
 | Validasi kode | Sink berbahaya di Python/Go/JS/PHP | NEX-RED v4 white-box | Nyata, konservatif |
 | Postur hidup | Header / 403 / HTTP tanpa sesi | NEX-RED v5 live checks | Nyata, bukan pentest |
-| Reasoning AI | Obfuskasi / zero-day | Goroutine opsional ke model/API | Bergantung env; bukan jaminan |
+| Reasoning AI | Obfuskasi / zero-day | Goroutine opsional ke `nex-ai-protect` (lab Docker: `host.docker.internal:11434`) | Bergantung Ollama di laptop; bukan jaminan |
 | DDoS L3/L4 | SYN flood, pps tinggi | eBPF map **stub** | **Tidak** drop XDP |
 | MitM pengunjung | Sniff TLS klien | Header PQC / modul inisialisasi | **Bukan** E2E ML-KEM ke browser |
 | Intelijen | STIX/TAXII BSSN | Rencana / CLI audit | **Tidak** feed penuh di path lab |
@@ -24,7 +24,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 
 ## NEX-RED
 
-Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). Tidak mengirim exploit PoC. Bridge default **3004**. Live HTTP: rute mutasi tanpa sesi, telemetri publik, **dua akun** (CWE-639) jika ada pasangan sesi lab. Browser lab opsional (`NEX_RED_BROWSER=1`).
+Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). Tidak mengirim exploit PoC. Bridge default **3004**. Live HTTP: rute mutasi tanpa sesi, telemetri publik, **dua akun** (CWE-639) jika ada pasangan sesi lab, plus **GET objek tanpa sesi**. Planner LLM JSON memilih cek dari allow-list (fallback deterministik). Runtime reasoning **hanya** `nex-ai-protect` (`Modelfile.protect`); klasifikasi HTTP memakai `nex-ai-reflex` (lihat [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md)). Bobot GGUF saat ini sama. Dataset lab: `NEX-AI/scripts/collect_lab_dataset.py`. Hybrid scan memakai agen bernama `recon` / `access` / `injection-hygiene` / `reporter` (bukan swarm Shannon). Sandbox Docker opsional (uid 10001, tanpa socket; allow-list Python). Browser lab opsional (`NEX_RED_BROWSER=1`). Lab Juice Shop di `127.0.0.1:3003` menjalankan belasan pemeriksaan jinak dan mengukur recall kelas (bukan setara Shannon).
 
 ## Blue team (detail jujur)
 

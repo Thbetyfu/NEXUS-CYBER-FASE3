@@ -17,7 +17,7 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 - **DILARANG MENGGUNAKAN SINGLE AI ATAU MODEL EXTERNAL/LLAMA**. Seluruh sistem analisis log dan deteksi serangan WAJIB menggunakan modul **NEX-AI** kustom:
   - **Reflex Layer (Otak Kiri)**: Menggunakan pola regex heuristik / rule-based (`nex-ai-reflex`), latensi < 1.2ms. Dieksekusi secara sinkron pada *request* HTTP (di `internal/ai/reflex_filter.go`).
   - **Reasoning Layer (Otak Kanan)**: Menggunakan model kustom eksklusif `nex-ai-protect`. WAJIB dipanggil secara **asinkron (goroutine)** dengan *timeout* maksimal 30 detik (di `internal/ai/reasoning_engine.go` & `internal/ai/cognitive_core.go`).
-- **Dilarang keras**: Menggunakan nama/referensi model legacy (Llama, GPT, dll) dalam penamaan struct, file, atau dokumentasi aktif.
+- **Dilarang keras**: Menggunakan nama/referensi model legacy (Llama, GPT, Qwen sebagai runtime) dalam penamaan struct, file, atau dokumentasi aktif. **Jangan** mengganti `nex-ai-protect` dengan model yang kebetulan terpasang di Ollama.
 
 ## 3. 🕸️ Keamanan & Kepatuhan (ISO 27001)
 - **Port Strictness**: Port untuk aplikasi pihak ketiga (Postgres: 5432, Redis: 6379) WAJIB diikat ke `127.0.0.1` dan tidak boleh diekspos ke publik (`0.0.0.0`). Server Development hanya diizinkan di port **3001** dan **3002**.

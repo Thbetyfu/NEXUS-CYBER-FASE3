@@ -133,6 +133,8 @@ NEX-RED/reports/
 NEX-RED/workspaces/
 
 # NEX-AI Private Artifacts
+*.gguf
+nex-ai-models/*.gguf
 NEX-AI/checkpoints/
 NEX-AI/build/
 NEX-AI/llama.cpp/
@@ -146,5 +148,5 @@ NEX-AI/**/*.onnx
 NEX-AI/**/*.ckpt
 NEX-AI/**/adapter_config.json
 NEX-AI/**/adapter_model.safetensors
-NEX-AI/.cache/
+NEX-AI/dataset/lab/
 NEX-AI/cache/

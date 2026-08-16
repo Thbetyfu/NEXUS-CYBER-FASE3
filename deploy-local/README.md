@@ -27,6 +27,8 @@ Urutan: blue team dulu sampai kartu lab muncul → red team join `NEXUS-BLUE-LAB
 
 Tidak perlu Go, Node, atau Python untuk mode default.
 
+Lab **Juice Shop** untuk skor kelas NEX-RED (bukan hotspot red team): [`NEX-RED/lab/juice-shop/README.md`](../NEX-RED/lab/juice-shop/README.md) — hanya `127.0.0.1:3003`.
+
 ## Laptop pengembangan (Windows Security)
 
 Dialog **Allow / Don't allow** yang berulang (Firewall, Defender yang memindai `go`/`node`/`docker`, SmartScreen pada `.bat`) bisa dipasang **sekali**:

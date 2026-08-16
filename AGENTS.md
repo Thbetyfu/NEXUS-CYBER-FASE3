@@ -9,3 +9,5 @@ Jika Anda mengubah **perilaku** sistem (kode gateway, dasbor, NEX-RED, Caddy, co
 Jangan mengklaim eBPF XDP nyata, JWT enterprise, Stripe/provisioner, atau pentest NEX-RED jika kode tidak melakukannya.
 
 Pembayaran / webhook fail-closed: **ditunda** (lihat `CHANGELOG.md` Unreleased) — jangan kerjakan kecuali pemilik minta.
+
+**NEX-AI only:** runtime reasoning/reflex hanya `nex-ai-protect` / `nex-ai-reflex` (model milik pemilik, bukan Ollama Hub). Jangan fallback Qwen/Llama/GPT. Lihat `.agents/rules/nex-ai-only.md` dan `docs/NEX_AI_RUNTIME.md`.

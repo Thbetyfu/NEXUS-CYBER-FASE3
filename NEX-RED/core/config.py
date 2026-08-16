@@ -5,7 +5,10 @@ Central settings for target orchestration, gateway communication, and execution 
 
 import os
 from pathlib import Path
+
 from pydantic import BaseModel, Field
+
+from core.nex_ai import REASONING_MODEL, canonical_reasoning_model
 
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
@@ -37,12 +40,18 @@ class NexRedConfig(BaseModel):
     ai_endpoint: str = Field(default_factory=lambda: os.getenv("NEX_AI_ENDPOINT", "http://127.0.0.1:11434/api/chat"))
     ai_api_key: str = Field(default_factory=lambda: os.getenv("NEX_AI_API_KEY", ""))
     ai_model_name: str = Field(
-        default_factory=lambda: os.getenv("NEX_AI_MODEL_REASONING", os.getenv("NEX_AI_REASONING_MODEL", "nex-ai-protect"))
+        default_factory=lambda: canonical_reasoning_model(
+            os.getenv("NEX_AI_MODEL_REASONING", os.getenv("NEX_AI_REASONING_MODEL", REASONING_MODEL))
+        )
     )
     llm_timeout_seconds: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_LLM_TIMEOUT", "20")))
     max_llm_reviews: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LLM_REVIEWS", "15")))
     live_target: str = Field(default_factory=lambda: os.getenv("NEX_RED_LIVE_TARGET", "http://127.0.0.1"))
+    juice_shop_url: str = Field(
+        default_factory=lambda: os.getenv("NEX_RED_JUICE_SHOP_URL", "http://127.0.0.1:3003")
+    )
     max_live_steps: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LIVE_STEPS", "20")))
+    max_live_minutes: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LIVE_MINUTES", "30")))
     idor_owner_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OWNER_TOKEN", ""))
     idor_peer_token: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_PEER_TOKEN", ""))
     idor_object_path: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OBJECT_PATH", ""))

@@ -2,7 +2,7 @@
 
 Dokumen ini adalah **peta kerja resmi** jika Nexus Cyber membangun kemampuan pentest otonom **milik sendiri** (bukan menggabungkan source Shannon/Strix).
 
-Status hari ini: NEX-RED **v5** = SAST + postur + **pemeriksaan HTTP hidup** (tanpa sesi) + job async. Benchmark SAST tetap **BELUM SETARA** pentest Shannon/Strix. Browser (Fase 4) belum.
+Status hari ini: NEX-RED **v5** = SAST + planner LLM JSON (allow-list) + live HTTP + browser opsional + agen bernama + sandbox opsional + skor kelas Juice Shop. Benchmark tetap **BELUM SETARA** Shannon/Strix.
 
 **Definisi setara (Jalan B selesai):** pada target yang kita miliki dan izinkan, NEX-RED menghasilkan temuan dengan bukti HTTP/browser yang dapat diulang, lalu precision/recall kelas temuan mendekati report Shannon (Juice Shop / crAPI) dan cakupan kelas Strix — tanpa menyalin kode atau kit exploit mereka.
 
@@ -85,7 +85,8 @@ NEX-RED/
 │   ├── planner/                   # BARU — LLM merencanakan langkah
 │   ├── runtime/                   # BARU — HTTP + browser tools (generik)
 │   └── verify/                    # BARU — evidence gate dinamis
-├── sandbox/                       # BARU — Dockerfile + policy jaringan
+├── lab/juice-shop/                # ADA — OWASP Juice Shop loopback :3003
+├── sandbox/                       # ADA — Dockerfile non-root + policy HTTP
 ├── jobs/                          # BARU — antrian scan async
 ├── core/orchestrator.py           # UBAH — pipeline job, bukan sync 30s
 └── benchmarks/                    # UBAH — pintu live_pentest_comparable
@@ -126,7 +127,7 @@ Estimasi kalender jika 1 insinyur fokus. Bisa overlap.
 - [ ] `jobs/` state machine: `QUEUED | RUNNING | COMPLETED | FAILED | PARTIAL`.
 - [ ] Bridge `POST /api/v1/scan?async_run=true` jadi default untuk mode hybrid/live.
 - [ ] Naikkan timeout adapter Go atau ganti polling `GET /api/v1/scan/{id}`.
-- [ ] `sandbox/Dockerfile`: user non-root, read-only mount source, jaringan hanya ke target.
+- [x] `sandbox/Dockerfile`: user non-root + compose read-only / cap-drop / no-new-privileges. Allow-list HTTP di Python. **Bukan** iptables; `curl` mentah di image masih bisa ke internet.
 - [ ] Uji: job 2 menit selesai tanpa timeout 30 detik.
 
 **Selesai jika:** dasbor bisa melihat status job; sandbox tidak bisa `curl` host di luar allow-list.
@@ -135,10 +136,10 @@ Estimasi kalender jika 1 insinyur fokus. Bisa overlap.
 
 **Hasil:** agent menyusun *langkah pemeriksaan* dari temuan AST, tanpa mengeksekusi exploit.
 
-- [ ] `agents/planner/`: input = ScanResult SAST + peta recon.
-- [ ] Output JSON: `{ "hypothesis_id", "check": "unauthenticated_mutating_route", "endpoint", "stop_condition" }`.
-- [ ] Anggaran: `max_steps` (mis. 20), `max_minutes` (mis. 30).
-- [ ] Prompt: minta **cara memperbaiki** dan **cara memeriksa aman/tidak**; dilarang meminta payload exploit.
+- [x] `agents/planner/`: input = ScanResult SAST + peta recon.
+- [x] Output JSON: `{ "hypothesis_id", "check": "unauthenticated_mutating_route", "endpoint", "stop_condition" }`.
+- [x] Anggaran: `max_steps` (mis. 20), `max_minutes` (mis. 30).
+- [x] Prompt: minta **cara memperbaiki** dan **cara memeriksa aman/tidak**; dilarang meminta payload exploit.
 
 **Selesai jika:** pada repo sengaja salah (corpus JWT/IDOR), planner menghasilkan langkah `verify_jwt_rejects_unverified` / `mutating_route_requires_auth` yang bisa diuji di Fase 3.
 
@@ -183,8 +184,8 @@ Pemeriksaan yang **diizinkan** (tes perilaku aman, bukan kit serangan):
 | `injection-hygiene` | 500/stack trace pada input biasa; **bukan** union-select kit |
 | `reporter` | Dedup + severity + remediasi |
 
-- [ ] Bus pesan sederhana (queue in-process dulu, bukan Kafka).
-- [ ] Satu agen gagal tidak menggugurkan yang lain (`PARTIAL`).
+- [x] Bus pesan sederhana (queue in-process dulu, bukan Kafka).
+- [x] Satu agen gagal tidak menggugurkan yang lain (`PARTIAL`).
 
 **Selesai jika:** hybrid scan menghasilkan report dengan bagian per agen; tidak ada angka serangan fiktif.
 
@@ -192,9 +193,9 @@ Pemeriksaan yang **diizinkan** (tes perilaku aman, bukan kit serangan):
 
 **Hasil:** benchmark berhenti berbohong dengan “tidak bisa dibanding”.
 
-- [ ] Lab: OWASP Juice Shop **self-hosted** (punya kita), atau subset challenge yang sah.
-- [ ] Gold set: *kelas* temuan Shannon sample report (AUTH, AUTHZ, INJ, XSS, SSRF) — bandingkan kelas, bukan menyalin langkah exploit report mereka ke skrip.
-- [ ] Metrik: `live_precision`, `live_recall_by_class`, `confirmed_findings`.
+- [x] Lab: OWASP Juice Shop **self-hosted** (punya kita), atau subset challenge yang sah.
+- [x] Gold set: *kelas* temuan Shannon sample report (AUTH, AUTHZ, INJ, XSS, SSRF) — bandingkan kelas, bukan menyalin langkah exploit report mereka ke skrip.
+- [x] Metrik: `live_precision`, `live_recall_by_class`, `confirmed_findings`.
 - [ ] `equal_to_shannon_strix`:
   - SAST bar tetap ≥ 85/90, **dan**
   - `broken_auth_authz` + empat kelas inti tetap PROVEN, **dan**

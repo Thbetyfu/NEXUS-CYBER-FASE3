@@ -16,7 +16,15 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 
 `START-OFFLINE.bat` sama, tetapi origin-nya folder `playground/Portofolio-Thoriq` (tanpa Vercel).
 
-## Setelah laptop red team push perbaikan
+## Kode + model: hard disk, bukan GitHub
+
+Uji lab **tidak wajib** `git push` / `git pull`. Bobot NEX-AI (`nex-ai-models/*.gguf`) tidak masuk Git.
+
+Alur yang disarankan: satu hard disk repo (di laptop kerja hurufnya bisa `D:\`, di blue team `E:\NEXUS-CYBER-FASE3`). Cabut → colok → jalankan dari folder itu. **Jangan hapus salinan “lama” di E: jika itu disk yang sama.**
+
+Ollama **per laptop**. Jika model NEX-AI **sudah ada di folder lain** di laptop itu: `ollama rm nex-ai-protect` dan `ollama rm nex-ai-reflex`, lalu impor **hanya** dari `E:\NEXUS-CYBER-FASE3\nex-ai-models\IMPORT-OLLAMA.bat` (jangan dua sumber). Detail: [`nex-ai-models/README.md`](../../nex-ai-models/README.md).
+
+## Setelah laptop red team push perbaikan (hanya jika blue team memakai clone Git terpisah)
 
 `git pull` **saja tidak cukup** jika image Docker portofolio masih yang lama. Di laptop **blue team**:
 

@@ -89,6 +89,15 @@ class VulnerabilityFinding(BaseModel):
     verified_by_llm: bool = False
     evidence: List[Evidence] = Field(default_factory=list)
     live_verdict: Optional[LiveVerdict] = None
+    agent: Optional[str] = None
+
+
+class AgentRunSummary(BaseModel):
+    name: str
+    ok: bool
+    error: Optional[str] = None
+    findings: int = 0
+    probes: int = 0
 
 
 class ScanTarget(BaseModel):
@@ -116,3 +125,4 @@ class ScanResult(BaseModel):
     files_analyzed: int = 0
     llm_used: bool = False
     live_checks_run: int = 0
+    agent_runs: List[AgentRunSummary] = Field(default_factory=list)

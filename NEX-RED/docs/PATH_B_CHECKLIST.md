@@ -8,20 +8,20 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 
 - [x] RoE + `NEX_RED_LIVE_TARGET` di `.env.example`
 - [x] Staging portfolio + gateway, bukan produksi klien
-- [x] Model NEX-AI diputuskan (lokal / fallback API)
+- [x] Model NEX-AI: `nex-ai-protect` / `nex-ai-reflex` saja (bukan Qwen/Llama Hub)
 
 ## Fase 1 — Job & sandbox
 
 - [x] State `QUEUED | RUNNING | COMPLETED | FAILED | PARTIAL`
 - [x] Gateway poll `GET /api/v1/scan/{id}` (bukan timeout 30s untuk live)
-- [ ] Docker sandbox: non-root image ada; allow-list di Python — **bukan** iptables penuh
+- [x] Docker sandbox: non-root image ada; allow-list di Python — **bukan** iptables penuh
 
 ## Fase 2 — Planner
 
 - [x] Langkah dari hipotesis AST (deterministik; tanpa payload exploit)
 - [x] `max_steps` (`NEX_RED_MAX_LIVE_STEPS`)
 - [x] Prompt LLM verifier tetap tanpa permintaan payload exploit
-- [ ] Planner LLM JSON bebas (masih deterministik)
+- [x] Planner LLM JSON bebas (allow-list nama cek + path; fallback deterministik jika model mati)
 
 ## Fase 3 — HTTP evidence (MVP v5)
 
@@ -38,13 +38,13 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 
 ## Fase 5 — Multi-agen
 
-- [ ] Agen `recon` / `access` / `injection-hygiene` / `reporter`
-- [ ] Satu agen gagal → `PARTIAL`, bukan crash
+- [x] Agen `recon` / `access` / `injection-hygiene` / `reporter`
+- [x] Satu agen gagal → `PARTIAL`, bukan crash
 
 ## Fase 6 — Parity
 
-- [ ] Lab Juice Shop (self-hosted) atau setara
-- [ ] Recall kelas AUTH/AUTHZ terukur
+- [x] Lab Juice Shop (self-hosted) atau setara — `NEX-RED/lab/juice-shop/`, CLI `lab-juice` / `benchmark --live`
+- [x] Recall kelas AUTH/AUTHZ terukur (`live_recall_by_class` + log `checks_run`; Juice Shop v17 sering **0/5 confirmed** karena 401 — itu hasil jujur)
 - [ ] `equal_to_shannon_strix` hanya true jika pintu live lulus
 
 ## Dilarang (selalu)

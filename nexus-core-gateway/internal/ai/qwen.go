@@ -12,9 +12,8 @@ import (
 	"time"
 )
 
-// QwenClient mengimplementasikan deteksi ancaman siber cepat (Reflex Layer Fase 1).
-// Seluruh request inference diarahkan ke endpoint lokal agar klasifikasi tetap konsisten
-// dengan arsitektur full local AI.
+// QwenClient is the HTTP client for the Reflex *model* slot.
+// Runtime name is nex-ai-reflex (owner model), never a public Qwen Hub tag.
 type QwenClient struct {
 	APIKey   string
 	Model    string

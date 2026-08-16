@@ -12,7 +12,7 @@ from urllib import error, request
 ROOT = Path(__file__).resolve().parent
 BENCHMARK_PATH = ROOT / "benchmark_cases.json"
 DEFAULT_ENDPOINT = "http://127.0.0.1:11434/api/chat"
-DEFAULT_MODEL = "nex-ai-protect"
+DEFAULT_MODEL = "nex-ai-reflex"
 
 
 SYSTEM_PROMPT = (
@@ -244,14 +244,15 @@ def main() -> int:
 
     summary = summarize(results)
     output_text = json.dumps(summary, indent=2, ensure_ascii=False)
-    print("\n=== BENCHMARK SUMMARY ===")
-    print(output_text)
 
     if args.output:
         output_file = Path(args.output).resolve()
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(output_text + "\n", encoding="utf-8")
-        print(f"\nHasil benchmark disimpan ke: {output_file}")
+        print(f"Hasil benchmark disimpan ke: {output_file}")
+
+    print("\n=== BENCHMARK SUMMARY ===")
+    print(json.dumps(summary, indent=2, ensure_ascii=True))
 
     return 0
 

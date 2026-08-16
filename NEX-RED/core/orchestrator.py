@@ -1,28 +1,33 @@
 """
 NEX-RED Core Orchestrator
 
-Pipeline: recon → white-box analysis → optional LLM verification → black-box posture → report.
-Does not invent attack counts. Metrics come from actual probes and analyzed files.
+Pipeline: white-box hypotheses → named agents (recon, injection-hygiene, access,
+reporter) on an in-process bus. One agent failure yields PARTIAL, not a crash.
+Does not invent attack counts.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-import uuid
 from datetime import datetime, timezone
+import uuid
 
-from agents.blackbox.dynamic_prober import DynamicBlackboxProber
-from agents.exploit.poc_validator import PoCValidator
-from agents.planner.plan import plan_live_checks
-from agents.recon.surface_mapper import SurfaceMapper
+from agents.crew import access, injection_hygiene, recon, reporter
+from agents.runtime.bus import AgentOutcome, run_agent
 from agents.reporting.report_generator import ReportGenerator
-from agents.verify.browser_flows import execute_browser_checks
-from agents.verify.live import execute_live_checks
 from agents.whitebox.code_analyzer import WhiteboxCodeAnalyzer
 from agents.whitebox.llm_verifier import LlmVerifier
-from core.config import config
-from core.types import ScanMode, ScanResult, ScanTarget
+from core.types import AgentRunSummary, ScanMode, ScanResult, ScanTarget
 from scenarios.battle_scenarios import BattleScenarioRunner
+
+
+def _summary(outcome: AgentOutcome) -> AgentRunSummary:
+    return AgentRunSummary(
+        name=outcome.name,
+        ok=outcome.ok,
+        error=outcome.error,
+        findings=len(outcome.findings),
+        probes=outcome.probes,
+    )
 
 
 class NexRedOrchestrator:
@@ -39,19 +44,9 @@ class NexRedOrchestrator:
         llm_used = False
         live_checks_run = 0
         status = "COMPLETED"
+        agent_runs: list[AgentRunSummary] = []
+        paths = ["/"]
         raw_logs = [f"[{start_time.isoformat()}] NEX-RED v5 starting scan {self.scan_id}"]
-
-        mapper = None
-        if self.target.mode in {ScanMode.BLACKBOX, ScanMode.HYBRID, ScanMode.SCENARIO} and self.target.target_url:
-            raw_logs.append(f"Recon: mapping surface {self.target.target_url}")
-            mapper = SurfaceMapper(self.target.target_url)
-            recon_findings = mapper.map()
-            total_probes += mapper.probes
-            findings.extend(recon_findings)
-            raw_logs.append(
-                f"Recon complete: reachable={mapper.reachable} waf={mapper.waf_detected} "
-                f"paths={len(mapper.discovered_paths)} findings={len(recon_findings)}"
-            )
 
         if self.target.mode in {ScanMode.WHITEBOX, ScanMode.HYBRID} and self.target.repo_path:
             raw_logs.append(f"White-box: analyzing {self.target.repo_path}")
@@ -62,37 +57,70 @@ class NexRedOrchestrator:
             verifier = LlmVerifier()
             wb_findings = verifier.verify(wb_findings, enabled=self.target.enable_llm)
             llm_used = verifier.used
+            for item in wb_findings:
+                item.agent = item.agent or "whitebox"
             findings.extend(wb_findings)
             raw_logs.append(f"After LLM verification: {len(wb_findings)} findings (llm_used={llm_used})")
 
-        if self.target.mode in {ScanMode.BLACKBOX, ScanMode.HYBRID} and self.target.target_url:
-            raw_logs.append(f"Black-box posture probe: {self.target.target_url}")
-            paths = mapper.discovered_paths if mapper else ["/"]
-            prober = DynamicBlackboxProber(self.target.target_url)
-            bb_findings = prober.run_dynamic_suite(paths)
-            total_probes += prober.total_probes
-            mitigated += prober.mitigated_by_nexus
-            findings.extend(bb_findings)
-            raw_logs.append(
-                f"Black-box probes={prober.total_probes} defensive_blocks={prober.mitigated_by_nexus}"
-            )
-            checks = plan_live_checks(findings, paths)
-            live_findings, live_checks_run, live_mitigated = execute_live_checks(self.target.target_url, checks)
-            total_probes += live_checks_run
-            mitigated += live_mitigated
-            findings.extend(live_findings)
-            raw_logs.append(f"Live HTTP checks={live_checks_run} extra_findings={len(live_findings)}")
-            if config.enable_browser:
-                ws = Path(config.workspaces_dir) / self.scan_id
-                browser_findings, browser_ran = execute_browser_checks(self.target.target_url, ws)
-                live_checks_run += browser_ran
-                total_probes += browser_ran
-                mitigated += sum(1 for item in browser_findings if item.mitigated_by_nexus)
-                findings.extend(browser_findings)
-                raw_logs.append(f"Browser lab flows ran={browser_ran} findings={len(browser_findings)}")
-            if live_checks_run == 0:
+        live_modes = {ScanMode.BLACKBOX, ScanMode.HYBRID, ScanMode.SCENARIO}
+        if self.target.mode in live_modes and self.target.target_url:
+            rec = run_agent("recon", lambda: recon(self.target.target_url))
+            agent_runs.append(_summary(rec))
+            findings.extend(rec.findings)
+            total_probes += rec.probes
+            if rec.ok:
+                paths = rec.extra.get("paths") or ["/"]
+                raw_logs.append(
+                    f"Agent recon: reachable={rec.extra.get('reachable')} waf={rec.extra.get('waf')} "
+                    f"paths={len(paths)} findings={len(rec.findings)}"
+                )
+            else:
                 status = "PARTIAL"
-                raw_logs.append("Live HTTP produced no executed checks; scan is PARTIAL")
+                raw_logs.append(f"Agent recon failed: {rec.error}")
+
+        if self.target.mode in {ScanMode.BLACKBOX, ScanMode.HYBRID} and self.target.target_url:
+            hyg = run_agent(
+                "injection-hygiene",
+                lambda: injection_hygiene(self.target.target_url, paths),
+            )
+            agent_runs.append(_summary(hyg))
+            findings.extend(hyg.findings)
+            total_probes += hyg.probes
+            mitigated += hyg.mitigated
+            if hyg.ok:
+                raw_logs.append(
+                    f"Agent injection-hygiene: probes={hyg.probes} blocks={hyg.mitigated}"
+                )
+            else:
+                status = "PARTIAL"
+                raw_logs.append(f"Agent injection-hygiene failed: {hyg.error}")
+
+            acc = run_agent(
+                "access",
+                lambda: access(
+                    self.target.target_url,
+                    findings,
+                    paths,
+                    self.scan_id,
+                    enable_llm=self.target.enable_llm,
+                ),
+            )
+            agent_runs.append(_summary(acc))
+            findings.extend(acc.findings)
+            total_probes += acc.probes
+            mitigated += acc.mitigated
+            if acc.ok:
+                live_checks_run = int(acc.extra.get("live_checks_run") or acc.probes)
+                raw_logs.append(
+                    f"Agent access: live_checks={live_checks_run} findings={len(acc.findings)} "
+                    f"llm_planner={bool(acc.extra.get('llm_planner'))}"
+                )
+                if live_checks_run == 0:
+                    status = "PARTIAL"
+                    raw_logs.append("Live HTTP produced no executed checks; scan is PARTIAL")
+            else:
+                status = "PARTIAL"
+                raw_logs.append(f"Agent access failed: {acc.error}")
 
         if self.target.mode == ScanMode.SCENARIO:
             posture = BattleScenarioRunner.inspect_posture(self.target.target_url)
@@ -101,7 +129,16 @@ class NexRedOrchestrator:
                 mitigated += 1
             raw_logs.append(f"Defense posture: {posture}")
 
-        validated = PoCValidator.validate_and_deduplicate(findings)
+        rep = run_agent("reporter", lambda: reporter(findings))
+        agent_runs.append(_summary(rep))
+        if rep.ok:
+            validated = rep.findings
+            raw_logs.append(f"Agent reporter: kept={len(validated)}")
+        else:
+            status = "PARTIAL"
+            validated = findings
+            raw_logs.append(f"Agent reporter failed: {rep.error}")
+
         end_time = datetime.now(timezone.utc)
         result = ScanResult(
             scan_id=self.scan_id,
@@ -118,6 +155,7 @@ class NexRedOrchestrator:
             files_analyzed=files_analyzed,
             llm_used=llm_used,
             live_checks_run=live_checks_run,
+            agent_runs=agent_runs,
         )
         report_path = ReportGenerator.save_report(result)
         raw_logs.append(f"Report saved to {report_path}")

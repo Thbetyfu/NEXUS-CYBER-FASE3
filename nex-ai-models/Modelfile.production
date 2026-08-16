@@ -1,0 +1,32 @@
+FROM ./nex_ai_q4_k_m.gguf
+
+# Set parameter untuk deterministik maksimal (keamanan tinggi)
+PARAMETER temperature 0.0
+PARAMETER top_p 0.9
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "}\n"
+PARAMETER num_predict 256
+PARAMETER temperature 0.0
+
+# Template format instruksi Qwen
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+"""
+
+# System Prompt yang ketat untuk menjamin keluaran JSON valid
+SYSTEM """Anda adalah mesin klasifikasi ancaman keamanan siber real-time. Tugas Anda adalah menganalisis payload request HTTP dan memberikan keputusan klasifikasi dalam format JSON tanpa ada penjelasan teks tambahan.
+
+Respons Anda harus selalu mengikuti skema JSON berikut secara mutlak:
+{
+  "status": "BENIGN" | "SUSPICIOUS" | "MALICIOUS",
+  "threat_score": 0.00 hingga 1.00,
+  "attack_type": "SQL_INJECTION" | "CROSS_SITE_SCRIPTING" | "PATH_TRAVERSAL" | "COMMAND_INJECTION" | "ZERO_DAY_BYPASS" | "NONE",
+  "reason": "Alasan analisis teknis secara singkat"
+}
+
+Jangan menyertakan teks pembuka, penjelasan tambahan di luar JSON, atau membungkus JSON dengan tag markdown ```json ... ```. Keluarkan teks JSON mentah langsung.
+"""

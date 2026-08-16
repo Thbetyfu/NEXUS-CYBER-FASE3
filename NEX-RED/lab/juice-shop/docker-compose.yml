@@ -1,0 +1,8 @@
+# OWASP Juice Shop for NEX-RED class-recall lab only.
+# Bound to loopback so the blue-team hotspot cannot reach it.
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v17.1.1
+    ports:
+      - "127.0.0.1:3003:3000"
+    restart: unless-stopped

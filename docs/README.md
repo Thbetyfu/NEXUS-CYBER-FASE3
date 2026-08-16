@@ -21,6 +21,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | [SOFTWARE_DESIGN_DOCUMENT.md](./SOFTWARE_DESIGN_DOCUMENT.md) | Desain; banner 8081/eBPF stub |
 | [NEXUS_CORE_DIRECTIVES.md](./NEXUS_CORE_DIRECTIVES.md) | Aturan arsitektur |
 | [../AGENTS.md](../AGENTS.md) | Instruksi agen berikutnya |
+| [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Runtime hanya `nex-ai-protect` / `nex-ai-reflex` |
 | [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) | Submodule `playground/Portofolio-Thoriq` |
 | [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Integrity monitor BLAKE3 |
 

@@ -13,5 +13,6 @@ Implementasikan arsitektur Ensemble AI kustom untuk filter trafik massal dan ana
 2. **Reasoning Layer (NEX-AI Protect)**: Model penalaran kontekstual kustom (`nex-ai-protect`) untuk analisis ancaman terobfuskasi & zero-day.
 
 ## Constraints
-* Dilarang menggunakan model AI tunggal / vendor cloud external.
+* Dilarang menggunakan model AI tunggal / vendor cloud external **sebagai runtime**.
+* Runtime wajib `nex-ai-protect` / `nex-ai-reflex`. Jangan fallback Qwen/Llama.
 * Interaksi antar layer harus melalui protokol tertutup.
