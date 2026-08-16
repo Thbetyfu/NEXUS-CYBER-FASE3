@@ -19,7 +19,7 @@ Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. 
 | --- | --- | --- | --- |
 | 1 | Pintu benar | URL di address bar = IP hotspot, bukan `vercel.app`. Skrip `CHECK.bat` boleh dapat HTTP 403 (tantangan sesi); **browser** harus sampai halaman portofolio (200). | Halaman portofolio tampil di browser |
 | 2 | Situs hidup | Beranda, navigasi, Gallery `#gallery` | Halaman biasa 200, foto/form terlihat |
-| 3 | Unggah sah | Kirim gambar wajar di Gallery | Tidak ditolak sebagai ancaman; atau pesan WAF jelas jika berkas rusak |
+| 3 | Unggah sah | Kirim gambar wajar di Gallery | Tidak ditolak sebagai ancaman; atau pesan WAF jelas jika berkas rusak. `GET /api/photos` boleh berisi `/api/guest-photos/…` meski kartu list origin masih 0 |
 | 4 | Vault lab | Password **salah** berulang di hadiah (maks. 5) | Setelah 5 gagal, IP terban (akses situs teralih / ditolak). Minta blue team unban jika perlu lanjut |
 | 5 | SOC tertutup | Dari laptop red team buka `http://IP-BLUE:3001` dan `http://IP-BLUE:8081` | **Tidak** nyambung (timeout / refused). Dasbor hanya di laptop blue team |
 | 6 | Postgres/Redis | `IP:5432` / `IP:6379` | Tidak terbuka ke hotspot |

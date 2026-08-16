@@ -52,6 +52,7 @@ func ApplyDashboardCORSHeaders(w http.ResponseWriter, r *http.Request) {
 func DashboardCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ApplyDashboardCORSHeaders(w, r)
+		ApplyBrowserSecurityHeaders(w, r)
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return

@@ -6,7 +6,7 @@ Pembaruan: 2026-08-16. Klaim AI/port mengikuti kode, bukan proposal lama.
 
 | Peran | Alamat | Publik ke hotspot? |
 | --- | --- | --- |
-| Situs lewat WAF | Caddy `:80` → gateway `:8080` | Ya |
+| Situs lewat WAF | Caddy `:80` → gateway `:8080` | Ya (header `nosniff` / `SAMEORIGIN`; tanpa HSTS di HTTP) |
 | Control plane SOC | `127.0.0.1:8081` | Tidak |
 | Command Center | `127.0.0.1:3001` (compose) | Tidak |
 | Honeypot | `:9090` | Ya (umpan) |

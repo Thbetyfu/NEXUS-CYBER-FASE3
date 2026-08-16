@@ -6,6 +6,10 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Security
+- Header peramban pada WAF publik (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP longgar untuk PoW/inline). **HSTS hanya jika HTTPS** (`X-Forwarded-Proto` atau TLS) agar hotspot `http://192.168.x.x` tidak dipaksa HTTPS.
+- `.gitignore`: `*.gguf` (termasuk `nex-ai-models/`) agar bobot tidak ter-commit.
+
 ### Added
 - NEX-RED: pemeriksaan hidup **dua akun** (peer tidak boleh baca objek owner). Butuh `POST /nexred/lab/session-pair` atau token env; tanpa itu hasilnya `sast_only`, bukan temuan palsu.
 - NEX-RED: alur browser lab opsional (`NEX_RED_BROWSER=1` + Playwright) untuk unggah gambar sah dan 5 password vault salah. PoW hotspot dilewati jujur (`sast_only`).
@@ -21,9 +25,6 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - Gateway + NEX-RED: nama model asing di env (`qwen2.5`, `llama3`, dll.) dipetakan ke `nex-ai-protect` / `nex-ai-reflex`. Tidak ada substitusi model yang kebetulan ada di `ollama list`.
 - NEX-AI: `nex-ai-protect` memakai `Modelfile.protect` (JSON NEX-RED, `num_predict` 1024, tanpa stop `}\n`). `nex-ai-reflex` tetap klasifikasi HTTP. Bobot GGUF masih sama. Benchmark HTTP default `nex-ai-reflex`. Parser NEX-RED merapikan nama field JSON yang berisi spasi.
 
-### Security
-- `.gitignore`: `*.gguf` (termasuk `nex-ai-models/`) agar bobot tidak ter-commit.
-
 ### Fixed
 - Sidik jari Gallery/vault di portofolio tidak lagi melempar di **HTTP hotspot** (`crypto.subtle` tidak ada). Unggah dan 5× password salah bisa mencapai gateway setelah blue team `git pull --recurse-submodules` lalu `START-OFFLINE.bat` (rebuild image `portfolio`).
 
@@ -32,7 +33,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - Blue team / NEX-AI: pindah hard disk (`D:` vs `E:\NEXUS-CYBER-FASE3`); jika model lama di path lain, `ollama rm` lalu impor hanya dari `nex-ai-models/`.
 - Blue team: langkah pull + rebuild di `deploy-local/blue-team/README.md`.
 - Arsip sesi: `docs/reports/LAB_HOTSPOT_ACCEPTANCE_2026-08-15.md` (uji penerimaan lab, bukan pentest).
-- Arsip uji adil: `docs/reports/BENCHMARK_NEXRED_SHANNON_STRIX_2026-08-16.md` (`nexred.py benchmark` exit 2, BELUM SETARA).
+- Red team: handoff sesi 16 Agu 2026 di `deploy-local/red-team/SESI-2026-08-16.md`.
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).

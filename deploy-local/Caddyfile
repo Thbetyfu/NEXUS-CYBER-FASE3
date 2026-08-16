@@ -3,5 +3,11 @@
 }
 
 :80 {
+	# HTTP lab hotspot: do not set Strict-Transport-Security (would break http://192.168.x.x).
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy no-referrer
+	}
 	reverse_proxy gateway:8080
 }

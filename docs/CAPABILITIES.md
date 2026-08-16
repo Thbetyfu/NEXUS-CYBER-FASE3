@@ -7,7 +7,8 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Kategori | Ancaman / tugas | Mekanisme di kode | Tingkat |
 | :--- | :--- | :--- | :--- |
 | Aplikasi web | SQLi / XSS / path traversal setelah **normalisasi** | Reflex `NormalizeForInspect` lalu regex | Nyata, lebih teliti; obfuskasi dalam masih bisa lolos |
-| Unggah | Shell berkedok gambar, EXIF | AVSE + magic bytes; handler publik `/api/upload`; sidik jari klien tidak memblokir HTTP lab | Nyata |
+| Unggah | Shell berkedok gambar, EXIF | AVSE + magic bytes; handler publik `/api/upload`; sidik jari klien tidak memblokir HTTP lab; foto tamu di `/api/photos` | Nyata |
+| Header HTTP | Clickjacking / MIME sniff (lab) | `nosniff`, `SAMEORIGIN`, CSP longgar; HSTS hanya HTTPS | Nyata parsial; bukan HSTS di hotspot HTTP |
 | Vault lab | Brute-force password hadiah | `/api/unlock-reward`, autoban 5x; sama: sidik jari HTTP lab tidak boleh menggagalkan POST | Nyata |
 | Abuse / flood | Request berlebih per IP | Token bucket; IP dari `utils.ClientIP` | Nyata (bukan DDoS kernel) |
 | Recon SSH | Scanner SSH | Tarpit `:2222` (compose root) | Nyata jika port dipasang |

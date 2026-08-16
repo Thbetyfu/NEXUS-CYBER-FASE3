@@ -23,7 +23,8 @@ Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-16.
 14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
 15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
 16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi.
-17. **Hotspot lab memakai HTTP.** Sidik jari Gallery memakai SHA-256 jika `crypto.subtle` ada, atau digest cadangan jika tidak. Itu header telemetri, bukan bukti HTTPS/PQC.
+17. **Hotspot lab memakai HTTP.** Sidik jari Gallery memakai SHA-256 jika `crypto.subtle` ada, atau digest cadangan jika tidak. Itu header telemetri, bukan bukti HTTPS/PQC. **HSTS tidak dipasang di HTTP lab** (akan merusak `http://192.168.x.x`). CSP edge mengizinkan `'unsafe-inline'` karena tantangan sesi dan portofolio memakai skrip sebaris — bukan klaim anti-XSS penuh.
+18. **Daftar foto Gallery di origin** bisa tetap 0 sementara unggah tamu sudah di WAF (`GET /api/photos`, `/api/guest-photos/`). List UI origin tidak otomatis sama dengan store gateway sampai Blue rebuild image yang memanggil `/api/photos`.
 
 ## Yang sengaja ditunda
 

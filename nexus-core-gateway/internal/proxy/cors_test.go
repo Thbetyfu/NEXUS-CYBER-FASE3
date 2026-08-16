@@ -3,6 +3,7 @@ package proxy
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -66,5 +67,36 @@ func TestDashboardCORSHandlesPreflightWithExplicitHeaders(t *testing.T) {
 	}
 	if got := rr.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, OPTIONS, PUT, DELETE" {
 		t.Fatalf("unexpected allowed methods value: %q", got)
+	}
+}
+
+func TestDashboardCORSSetsBrowserSecurityHeadersWithoutHSTSOnHTTP(t *testing.T) {
+	handler := DashboardCORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if got := rr.Header().Get("X-Content-Type-Options"); got != "nosniff" {
+		t.Fatalf("nosniff: %q", got)
+	}
+	if got := rr.Header().Get("X-Frame-Options"); got != "SAMEORIGIN" {
+		t.Fatalf("frame: %q", got)
+	}
+	if got := rr.Header().Get("Content-Security-Policy"); got == "" {
+		t.Fatal("expected CSP")
+	}
+	if got := rr.Header().Get("Strict-Transport-Security"); got != "" {
+		t.Fatalf("HSTS must stay off on HTTP lab, got %q", got)
+	}
+}
+
+func TestApplyBrowserSecurityHeadersSetsHSTSOnHTTPSForward(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("X-Forwarded-Proto", "https")
+	rr := httptest.NewRecorder()
+	ApplyBrowserSecurityHeaders(rr, req)
+	if got := rr.Header().Get("Strict-Transport-Security"); !strings.Contains(got, "max-age=") {
+		t.Fatalf("HSTS: %q", got)
 	}
 }
