@@ -35,10 +35,5 @@
 
 # 3. Routing HTTP (SEMENTARA UNTUK IP PUBLIC)
 :80 {
-    header {
-        X-Content-Type-Options nosniff
-        X-Frame-Options SAMEORIGIN
-        Referrer-Policy no-referrer
-    }
     reverse_proxy gateway:8080
 }
