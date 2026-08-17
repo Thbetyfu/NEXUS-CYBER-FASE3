@@ -119,3 +119,20 @@ func TestDynamicRouterDatabaseFallbackAndSync(t *testing.T) {
 	}
 }
 
+func TestRegisterProtectedHost_TLSAskOnlyThatName(t *testing.T) {
+	t.Setenv("PROTECTED_HOST", "https://Portfolio.Nexus-Lab.test:443/")
+	router := NewDynamicRouter(10 * time.Second)
+	_ = router.AddRoute("*", "http://127.0.0.1:5001")
+	RegisterProtectedHost(router, "http://origin.example:3002")
+	if !router.HasExplicitRoute("portfolio.nexus-lab.test") {
+		t.Fatal("PROTECTED_HOST must be an explicit route so Caddy ask can mint TLS")
+	}
+	if router.HasExplicitRoute("attacker.example") {
+		t.Fatal("global * must not authorize TLS for a random name")
+	}
+	target, ok := router.Lookup("portfolio.nexus-lab.test")
+	if !ok || target != "http://origin.example:3002" {
+		t.Fatalf("protected host lookup: got %s %v", target, ok)
+	}
+}
+

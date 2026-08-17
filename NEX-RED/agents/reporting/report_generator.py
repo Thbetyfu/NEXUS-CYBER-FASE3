@@ -29,6 +29,7 @@ class ReportGenerator:
             f"- **Defensive blocks observed:** {result.vulnerabilities_mitigated_by_nexus}",
             f"- **LLM verification used:** {result.llm_used}",
             f"- **Live HTTP checks:** {result.live_checks_run}",
+            f"- **Antibody loop:** `{result.antibody_loop_ok}`",
             "",
             "## Agents",
         ]
@@ -64,6 +65,7 @@ class ReportGenerator:
                         f"- **Source:** `{finding.source.value}` | **Confidence:** {finding.confidence:.2f} | **LLM:** {finding.verified_by_llm}",
                         f"- **Agent:** `{finding.agent or 'unassigned'}`",
                         f"- **Live verdict:** `{finding.live_verdict.value if finding.live_verdict else 'sast_only'}`",
+                        f"- **Defense delta:** `{finding.defense_delta.value if finding.defense_delta else 'n/a'}`",
                         f"- **Evidence:** `{finding.proof_of_concept}`",
                         f"- **Remediation:** {finding.remediation}",
                         "",

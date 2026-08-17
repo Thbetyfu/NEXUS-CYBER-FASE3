@@ -1,6 +1,6 @@
 # ⚠️ Nexus Cyber Limitations
 
-Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-16.
+Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-17.
 
 ## Di luar cakupan (umum)
 
@@ -16,15 +16,16 @@ Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-16.
 7. **Bukan WAF “AI penuh” pada setiap request.** Reflex = regex. Model reasoning tidak wajib hidup; tanpa Ollama/API, filtrasi tetap regex.
 8. **Bukan DDoS kernel.** `ebpf_stub.go` tidak `XDP_DROP`.
 9. **Bukan PQC ke browser pengunjung.** Jangan klaim MitM-proof end-to-end.
-10. **Command Center bukan benteng publik.** SOC di `127.0.0.1` + cookie operator. Hotspot red team hanya boleh menembak situs di `:80`, bukan dasbor.
+10. **Command Center bukan benteng publik.** SOC di `127.0.0.1` + cookie operator. Hotspot red team hanya boleh menembak situs di `:80`, bukan dasbor. Di WAF `:8080`, path SOC (`/api/telemetry`, CLI, ban, reset) mengembalikan **404** (bukan JSON operator). Lab portofolio **tidak** menyediakan `POST /nexred/lab/session-pair`; NEX-RED dua akun tetap `sast_only` kecuali origin lain (Juice Shop) atau token env.
 11. **Lisensi lab** memakai kunci development (`nexus-cyber-dev`) — lockout 402 tidak mewakili produksi berbayar.
 12. **Membuka origin Vercel langsung melewati Nexus.** Bukti WAF hanya lewat Caddy/IP laptop.
-13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi plus **dua akun** jika lab menyediakan session-pair atau token env, plus GET objek tanpa sesi; planner LLM JSON hanya nama cek allow-list (bukan payload); agen bernama; browser lab opsional (Playwright); lab Juice Shop hanya **skor kelas** HTTP jinak (401 tercatat sebagai rejected). Sandbox Docker **bukan** kunci egress kernel (`curl` mentah bisa ke internet). Runtime LLM **hanya** `nex-ai-protect` (milik Nexus); Qwen/Llama di Ollama **bukan** pengganti. Protect dan reflex **satu GGUF**, dua Modelfile; belum dua model terlatih terpisah. Dataset lab dikumpulkan dari telemetri WAF (`collect_lab_dataset.py`); itu bahan latih, bukan model baru. Jika model belum didaftarkan atau JSON gagal, scan deterministik / `--no-llm`. Lihat [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md). Tidak ada proof-by-exploitation.
+13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi plus **dua akun** jika lab menyediakan session-pair atau token env, plus GET objek tanpa sesi; planner LLM JSON hanya nama cek allow-list (bukan payload); agen bernama; browser lab opsional (Playwright); lab Juice Shop hanya **skor kelas** HTTP jinak (401 tercatat sebagai rejected). **Defense delta** membandingkan WAF vs origin lab (HTTP privat saja) dan replay 403 — itu wasit purple-team, bukan bukti exploit. `NEX_RED_ORIGIN_DIRECT` publik/HTTPS ditolak. Loop antibodi lab memakai `GET /nexred/lab/antibody-signal` (hanya angka) dan `POST /nexred/lab/vaccine-probe`; gagal replay = `replay_missed`. Daftar pola `/api/antibodies` tetap di SOC `:8081`. Harness hotspot tidak jalan di `127.0.0.1` (SOC laptop) kecuali dipaksa env. Sandbox Docker **bukan** kunci egress kernel (`curl` mentah bisa ke internet). Runtime LLM **hanya** `nex-ai-protect` (milik Nexus); Qwen/Llama di Ollama **bukan** pengganti. Protect dan reflex **satu GGUF**, dua Modelfile; belum dua model terlatih terpisah. Dataset lab dikumpulkan dari telemetri WAF (`collect_lab_dataset.py`); itu bahan latih, bukan model baru. Jika model belum didaftarkan atau JSON gagal, scan deterministik / `--no-llm`. Lihat [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md). Tidak ada proof-by-exploitation.
 14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
 15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
-16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi.
+16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi. Yang ada: **satu** `PROTECTED_HOST` per instance (CNAME/hosts ke mesin ini). Bukan daftar domain klien otomatis, bukan registrar.
 17. **Hotspot lab memakai HTTP.** Sidik jari Gallery memakai SHA-256 jika `crypto.subtle` ada, atau digest cadangan jika tidak. Itu header telemetri, bukan bukti HTTPS/PQC. **HSTS tidak dipasang di HTTP lab** (akan merusak `http://192.168.x.x`). CSP edge mengizinkan `'unsafe-inline'` karena tantangan sesi dan portofolio memakai skrip sebaris — bukan klaim anti-XSS penuh.
 18. **Foto tamu di RAM gateway.** `GET /api/photos` menghilang jika container gateway di-restart. Gallery harus fetch same-origin `/api/photos` (bukan hostname Docker). Setelah rebuild, unggah ulang untuk mengisi list.
+19. **Telegram adalah pager, bukan deteksi.** WAF tetap memblokir tanpa bot. Pesan tidak 100% lokasi, tidak menembus VPN, tidak memaksa GPS semua pengunjung. IP lab `192.168.x.x` = hotspot, bukan pin rumah. Laptop blue team harus bisa keluar ke internet (Ethernet) agar `api.telegram.org` tercapai; hotspot tanpa share internet tidak mengirim pager.
 
 ## Yang sengaja ditunda
 

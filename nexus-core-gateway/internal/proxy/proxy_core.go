@@ -89,6 +89,7 @@ func NewNexusProxy(
 	np.Router.AddRoute("kemenkeu.localhost", target)
 	np.Router.AddRoute("bi.localhost", target)
 	np.Router.AddRoute("*", target)
+	RegisterProtectedHost(np.Router, target)
 
 	// Jalankan sinkronisasi background antibodi imun.
 	np.StartImmunitySync()

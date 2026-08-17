@@ -1,7 +1,7 @@
 # 📄 SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
 ## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
 
-Pembaruan 2026-08-15: data plane `:8080`, control plane `:8081`. eBPF = stub. CLI SOC hanya di mux admin.
+Pembaruan 2026-08-17: data plane `:8080` (SOC path 404; mutasi tanpa sesi 401 kecuali lab Gallery/vault), satu `PROTECTED_HOST` per instance, control plane `:8081`. eBPF = stub. CLI SOC hanya di mux admin. Pager Telegram lab = env `TELEGRAM_*`, bukan GPS.
 
 ---
 
@@ -86,7 +86,7 @@ Sistem terdiri dari empat komponen utama yang saling berinteraksi:
     *   Menggunakan 1 Official Bot Telegram (`@NexusCyberAlertBot`) dengan **API Telegram 100% Gratis** tanpa batas pengiriman pesan.
     *   Memetakan entitas domain `tokosaya.com` ke `telegram_chat_id` penerima spesifik di database `domain_subscriptions`.
     *   Menerapkan *Debounce Cooldown Filter* (maksimal 1 notifikasi per 15 menit per domain) untuk mencegah kehabisan tenaga/spam pada HP klien saat diserang DDoS.
-    *   Pesan Telegram menyertakan data GeoIP lengkap (Negara, Kota, ISP) beserta link lokasi **Google Maps** aktif penyerang.
+    *   Pesan Telegram lab: IP yang terlihat + alasan ban. GeoIP (negara/kota/ISP + tautan peta) **hanya** untuk IP publik; IP privat/lab tidak memakai peta dunia. **Bukan** GPS perangkat, **bukan** tembus VPN. Debounce 15 menit per IP (plus per domain jika multi-tenant).
 
 ---
 

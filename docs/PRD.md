@@ -1,7 +1,7 @@
 # DOKUMEN KEBUTUHAN PRODUK (PRODUCT REQUIREMENT DOCUMENT - PRD)
 ## NEXUS CYBER - AUTONOMOUS TACTICAL DEFENSE GRID
 
-**Status implementasi (selaras kode, 2026-08-15):** WAF `:8080` + SOC `:8081`, CSRF gateway ada, sesi operator cookie (bukan JWT enterprise), autoban vault 5× aktif, Gallery portofolio ada, eBPF stub, pembayaran webhook fail-closed **ditunda**. Visi SaaS/B2G di bawah tetap sebagai produk; jangan dibaca seolah sudah lengkap di repo.
+**Status implementasi (selaras kode, 2026-08-17):** WAF `:8080` + SOC `:8081`, CSRF gateway ada, sesi pengunjung wajib pada mutasi/API asing di data plane (lab Gallery/vault dikecualikan), telemetri operator **tidak** di `:8080` (404), satu `PROTECTED_HOST` per instance (bukan CNAME SaaS massal), sesi operator cookie (bukan JWT enterprise), autoban vault 5× aktif, Gallery portofolio ada, pager Telegram lab jika `TELEGRAM_*` diisi (GeoIP jujur, bukan GPS), NEX-RED **defense delta** lab (bukan setara Shannon), eBPF stub, pembayaran webhook fail-closed **ditunda**. Visi SaaS/B2G di bawah tetap sebagai produk; jangan dibaca seolah sudah lengkap di repo.
 
 ---
 

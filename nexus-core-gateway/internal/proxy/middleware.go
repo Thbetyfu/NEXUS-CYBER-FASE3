@@ -217,19 +217,8 @@ func BrowserIntegrityCheck(next http.Handler) http.Handler {
 			return
 		}
 
-		// [LAYER_0_WHITELIST_GUARD]
-		// Alasan Teknis (Why):
-		// Rute API internal (`/api/`) dibebaskan dari tantangan JS karena dipanggil secara programatik
-		// oleh NCC Command Center Desktop/Web. Jika difilter, visualisasi dasbor akan gagal sinkron (blank data).
-		if strings.HasPrefix(r.URL.Path, "/api/") || r.URL.Path == "/api/verify-session" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		// Bypass tantangan untuk jalur sinkronisasi telemetri spesifik.
-		if strings.HasPrefix(r.URL.Path, "/api/telemetry") ||
-			strings.HasPrefix(r.URL.Path, "/api/ai-events") ||
-			strings.HasPrefix(r.URL.Path, "/api/logs") {
+		// Lab Gallery/vault/PoW APIs skip the HTML challenge; SOC APIs are not on this port.
+		if IsPublicDataPlanePath(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -392,7 +381,7 @@ func CsrfShield(next http.Handler) http.Handler {
 		// 3. Verify CSRF for state-changing requests (POST, PUT, DELETE, PATCH)
 		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch {
 			// Bypass verify-session challenge handler
-			if r.URL.Path == "/api/verify-session" {
+			if r.URL.Path == "/api/verify-session" || r.URL.Path == "/nexred/lab/vaccine-probe" {
 				next.ServeHTTP(w, r)
 				return
 			}

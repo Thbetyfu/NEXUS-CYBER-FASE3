@@ -63,10 +63,13 @@ services:
       - AI_PROVIDER_KEY=${AI_PROVIDER_KEY}
       - NEXUS_SESSION_SECRET=${NEXUS_SESSION_SECRET:-super-secret-matrix-key-2026}
       - TARGET_BACKEND=http://portfolio:3002
+      - PROTECTED_HOST=${PROTECTED_HOST:-portfolio.nexus-lab.test}
       - REWARD_PASSWORD=${REWARD_PASSWORD:-NexusAccessSecure2026!}
       - REWARD_LINK=${REWARD_LINK:-https://shopee.co.id/m/shopee-kaget-nexus-success}
       - ADMIN_LISTEN=:8081
       - NEXUS_ADMIN_TOKEN=${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     cap_add:
       - NET_ADMIN
     env_file:

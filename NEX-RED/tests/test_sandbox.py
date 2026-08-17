@@ -45,3 +45,11 @@ class TestSandboxPolicy(unittest.TestCase):
 
     def test_lab_loopback_allowed(self):
         self.assertTrue(is_url_allowed("http://127.0.0.1:3003/", "http://127.0.0.1:3003"))
+
+
+class TestLabOriginPolicy(unittest.TestCase):
+    def test_only_lab_http_origins(self):
+        from sandbox.policy import is_lab_origin_url, resolve_lab_origin
+
+        self.assertTrue(is_lab_origin_url("http://192.168.137.1:3002"))
+        self.assertIsNone(resolve_lab_origin("https://portfolio-website-three-ruddy-65.vercel.app"))

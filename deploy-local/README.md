@@ -4,9 +4,9 @@ Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di l
 
 Alur yang benar untuk bukti:
 
-`pengunjung → http://IP-laptop:80 (Caddy) → Gateway :8080 → origin`
+`pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. Situs publik tetap di [portofolio Vercel](https://portfolio-website-three-ruddy-65.vercel.app/) tanpa WAF.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. Situs publik tetap di [portofolio Vercel](https://portfolio-website-three-ruddy-65.vercel.app/) tanpa WAF.
 
 ## Skenario lab: hotspot blue team
 
@@ -43,8 +43,8 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 1. Buka folder `deploy-local`.
 2. Double-click **`START.bat`**.
 3. Tunggu build pertama (beberapa menit). Jendela tidak boleh ditutup sampai ada alamat.
-4. Buka di browser laptop ini: **http://127.0.0.1**
-5. Dari laptop lain di Wi-Fi yang sama: **http://IP-LAN** yang tercetak di jendela (contoh `http://192.168.1.12`).
+4. Buka di browser laptop ini: **http://127.0.0.1** atau **http://portfolio.nexus-lab.test** (jika `hosts` sudah diisi)
+5. Dari laptop lain di Wi-Fi yang sama: **http://IP-LAN** atau nama yang sama setelah baris `hosts` mengarah ke IP itu.
 
 | File | Fungsi |
 | --- | --- |
@@ -77,6 +77,8 @@ chmod +x start.sh stop.sh status.sh
 | Redis | 127.0.0.1:6379 | Tidak dibuka ke LAN |
 
 Dashboard SOC Next.js **tidak** ikut di stack ini (image dashboard butuh `output: 'standalone'` yang belum diaktifkan). SSH tarpit **tidak** dipasang di port 22 Windows.
+
+Pager Telegram opsional: isi `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` di `.env` laptop blue team. Lihat [`blue-team/README.md`](./blue-team/README.md).
 
 Jika Anda menjalankan dasbor di laptop (`npm run dev -p 3001`) sambil stack `deploy-local` hidup:
 

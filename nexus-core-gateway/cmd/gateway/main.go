@@ -238,7 +238,7 @@ func main() {
 	publicMux := registerPublicMux(gatewayHandler, gateway, telemetry)
 	adminMux := registerAdminMux(gateway, telemetry, shuffler, target)
 
-	publicShield := proxy.DashboardCORS(proxy.CsrfShield(gateway.AIMiddleware(publicMux)))
+	publicShield := proxy.DashboardCORS(proxy.PublicDataPlane(proxy.CsrfShield(gateway.AIMiddleware(publicMux))))
 	adminShield := proxy.DashboardCORS(proxy.AdminControlPlane(
 		proxy.CsrfShield(gateway.AIMiddleware(adminMux)),
 		os.Getenv("NEXUS_ADMIN_TOKEN"),

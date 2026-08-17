@@ -51,6 +51,7 @@ services:
       POSTGRES_DSN: postgres://nexus:${POSTGRES_PASSWORD:-nexus_local_dev_only}@postgres:5432/nexus_cyber?sslmode=disable
       TARGET_BACKEND: ${TARGET_BACKEND:-https://portfolio-website-three-ruddy-65.vercel.app}
       TARGET_BACKEND_HOST: ${TARGET_BACKEND_HOST:-portfolio-website-three-ruddy-65.vercel.app}
+      PROTECTED_HOST: ${PROTECTED_HOST:-portfolio.nexus-lab.test}
       NEXUS_LICENSE_KEY: ${NEXUS_LICENSE_KEY:-nexus-cyber-dev}
       NEXUS_LICENSE_DOMAIN: ${NEXUS_LICENSE_DOMAIN:-localhost}
       NEXUS_SESSION_SECRET: ${NEXUS_SESSION_SECRET:-nexus-local-session-change-me}
@@ -67,6 +68,9 @@ services:
       HONEYPOT_PORT: "9090"
       ADMIN_LISTEN: ":8081"
       NEXUS_ADMIN_TOKEN: ${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      THREAT_INTEL_PROVIDER: ${THREAT_INTEL_PROVIDER:-}
     cap_add:
       - NET_ADMIN
     extra_hosts:

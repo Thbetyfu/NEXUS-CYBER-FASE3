@@ -2,7 +2,9 @@ package tests
 
 import (
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
 )
@@ -12,9 +14,13 @@ import (
 func TestInitThreatReporter(t *testing.T) {
 	origProvider := os.Getenv("THREAT_INTEL_PROVIDER")
 	origEndpoint := os.Getenv("BANK_SIEM_ENDPOINT")
+	origToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	origChat := os.Getenv("TELEGRAM_CHAT_ID")
 	defer func() {
 		os.Setenv("THREAT_INTEL_PROVIDER", origProvider)
 		os.Setenv("BANK_SIEM_ENDPOINT", origEndpoint)
+		os.Setenv("TELEGRAM_BOT_TOKEN", origToken)
+		os.Setenv("TELEGRAM_CHAT_ID", origChat)
 	}()
 
 	t.Run("Initialize AbuseIPDB Mode", func(t *testing.T) {
@@ -67,9 +73,25 @@ func TestInitThreatReporter(t *testing.T) {
 		}
 	})
 
+	t.Run("Empty provider with Telegram credentials uses pager", func(t *testing.T) {
+		os.Setenv("THREAT_INTEL_PROVIDER", "")
+		os.Setenv("TELEGRAM_BOT_TOKEN", "lab-token")
+		os.Setenv("TELEGRAM_CHAT_ID", "lab-chat")
+		database.InitThreatReporter()
+
+		reporter, ok := database.ActiveThreatReporter.(*database.TelegramBotReporter)
+		if !ok {
+			t.Fatal("Expected Telegram pager when token and chat id are set")
+		}
+		if reporter.BotToken != "lab-token" || reporter.ChatID != "lab-chat" {
+			t.Errorf("unexpected telegram credentials: %+v", reporter)
+		}
+	})
+
 	t.Run("Initialize Unknown Fallback Mode", func(t *testing.T) {
 		os.Setenv("THREAT_INTEL_PROVIDER", "invalid-provider-name")
 		os.Unsetenv("TELEGRAM_BOT_TOKEN")
+		os.Unsetenv("TELEGRAM_CHAT_ID")
 		database.InitThreatReporter()
 
 		_, ok := database.ActiveThreatReporter.(*database.LocalOnlyReporter)
@@ -111,4 +133,33 @@ func TestThreatReporterExecution(t *testing.T) {
 			t.Errorf("Expected no error from ReportThreatForDomain dispatch, got %v", err)
 		}
 	})
+}
+
+func TestFormatTelegramAlertHonesty(t *testing.T) {
+	now := time.Date(2026, 8, 17, 2, 0, 0, 0, time.UTC)
+	lab := database.FormatTelegramAlert("192.168.137.66:4444", "", "vault brute", []int{18, 15}, "Indonesia", "Jakarta", "Telkom", -6.2, 106.8, now)
+	if !strings.Contains(lab, "192.168.137.66") {
+		t.Fatal("lab pager must show the visible lab IP")
+	}
+	if strings.Contains(lab, "google.com/maps") {
+		t.Fatal("lab RFC1918 must not get a world Maps pin")
+	}
+	if !strings.Contains(lab, "privat/lab") {
+		t.Fatal("lab pager must label private IPs")
+	}
+	if strings.Contains(lab, "GPS 95") || strings.Contains(lab, "Zero COGS") {
+		t.Fatal("pager copy must stay honest")
+	}
+
+	pub := database.FormatTelegramAlert("8.8.8.8", "example.com", "blocked", []int{15}, "United States", "Mountain View", "Google", 37.4, -122.0, now)
+	if !strings.Contains(pub, "GeoIP") || !strings.Contains(pub, "bukan GPS") {
+		t.Fatal("public IP pager must label GeoIP as not GPS")
+	}
+	if !strings.Contains(pub, "google.com/maps") {
+		t.Fatal("public GeoIP may include a maps URL")
+	}
+
+	if database.CleanReporterIP("[2001:db8::1]:443") != "2001:db8::1" {
+		t.Fatal("IPv6 host:port must not be truncated at the first colon")
+	}
 }

@@ -23,6 +23,7 @@ class HttpEvidence:
     nexus_header: bool
     error: Optional[str] = None
     body: str = ""
+    antibody_count: Optional[int] = None
 
 
 def _join(base: str, path: str) -> str:
@@ -57,12 +58,17 @@ class SafeHttpClient:
             )
             nexus = bool(resp.headers.get("X-Nexus-Shield") or resp.headers.get("X-Nexus-Waf"))
             text = resp.text[:2048] if resp.text else ""
+            count = None
+            raw_count = resp.headers.get("X-Nexus-Antibody-Count")
+            if raw_count and raw_count.isdigit():
+                count = int(raw_count)
             return HttpEvidence(
                 method=method.upper(),
                 url=url,
                 status=resp.status_code,
                 nexus_header=nexus,
                 body=text,
+                antibody_count=count,
             )
         except requests.RequestException as exc:
             return HttpEvidence(method=method.upper(), url=url, status=None, nexus_header=False, error=type(exc).__name__)

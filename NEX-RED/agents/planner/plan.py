@@ -22,6 +22,8 @@ ALLOWED_CHECKS = {
     "unauthenticated_mutating_route": ("POST", "expect_401_403_or_nexus_block"),
     "unauthenticated_object_read": ("GET", "must_not_read_object_without_session"),
     "cross_account_object_read": ("GET", "peer_must_not_read_owner_object"),
+    "antibody_signal": ("GET", "count_only_lab_signal"),
+    "antibody_vaccine_probe": ("POST", "lab_vaccine_then_replay"),
 }
 
 CHECK_ALIASES = {
@@ -99,6 +101,14 @@ def _deterministic_live_checks(
             "GET",
             "/nexred/lab/session-pair",
             "peer_must_not_read_owner_object",
+        ),
+        LiveCheck("antibody-signal", "antibody_signal", "GET", "/nexred/lab/antibody-signal", "count_only_lab_signal"),
+        LiveCheck(
+            "antibody-loop",
+            "antibody_vaccine_probe",
+            "POST",
+            "/nexred/lab/vaccine-probe",
+            "lab_vaccine_then_replay",
         ),
     ]
     seen = {(item.method, item.path) for item in steps}

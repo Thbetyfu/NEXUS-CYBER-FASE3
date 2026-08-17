@@ -13,7 +13,8 @@ from agents.planner.plan import plan_live_checks
 from agents.recon.surface_mapper import SurfaceMapper
 from agents.runtime.bus import AgentOutcome
 from agents.verify.browser_flows import execute_browser_checks
-from agents.verify.live import execute_live_checks
+from agents.verify.hotspot_harness import execute_hotspot_harness
+from agents.verify.live import antibody_loop_ok, execute_live_checks
 from core.config import config
 from core.types import VulnerabilityFinding
 
@@ -63,7 +64,19 @@ def access(
     checks = plan_live_checks(list(hypotheses), list(paths), enable_llm=enable_llm)
     findings, ran, mitigated = execute_live_checks(target_url, checks)
     _tag(findings, "access")
-    extra = {"live_checks_run": ran, "llm_planner": bool(enable_llm)}
+    extra = {
+        "live_checks_run": ran,
+        "llm_planner": bool(enable_llm),
+        "antibody_loop_ok": antibody_loop_ok(findings),
+    }
+    harness, harness_ran = execute_hotspot_harness(target_url)
+    if harness_ran:
+        _tag(harness, "access")
+        findings.extend(harness)
+        ran += harness_ran
+        extra["live_checks_run"] = ran
+        extra["hotspot_harness_ran"] = harness_ran
+        extra["antibody_loop_ok"] = antibody_loop_ok(findings)
     if config.enable_browser:
         workspace = Path(config.workspaces_dir) / scan_id
         browser_findings, browser_ran = execute_browser_checks(target_url, workspace)

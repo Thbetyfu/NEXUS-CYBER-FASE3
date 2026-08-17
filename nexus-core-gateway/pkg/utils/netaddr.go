@@ -3,6 +3,7 @@ package utils
 import (
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -18,6 +19,38 @@ func RequestHost(host string) string {
 		return strings.Trim(h, "[]")
 	}
 	return strings.Trim(host, "[]")
+}
+
+// ParseProtectedHost normalizes one public/lab DNS name (no scheme, no port, no IP).
+// Empty means “IP / localhost only” — hotspot lab still works without a custom name.
+func ParseProtectedHost(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	if strings.Contains(raw, "://") {
+		parsed, err := url.Parse(raw)
+		if err == nil && parsed.Host != "" {
+			raw = parsed.Host
+		}
+	}
+	host := strings.ToLower(RequestHost(raw))
+	if host == "" || host == "*" || strings.Contains(host, "*") || host == "localhost" {
+		return ""
+	}
+	if net.ParseIP(host) != nil {
+		return ""
+	}
+	if !strings.Contains(host, ".") {
+		return ""
+	}
+	return host
+}
+
+// ProtectedHostFromEnv is the single hostname this WAF instance is willing to
+// name in TLS ask / CNAME demos (PROTECTED_HOST). Not a multi-tenant SaaS list.
+func ProtectedHostFromEnv() string {
+	return ParseProtectedHost(os.Getenv("PROTECTED_HOST"))
 }
 
 func isLoopbackHost(host string) bool {

@@ -44,6 +44,17 @@ class LiveVerdict(str, Enum):
     MITIGATED_BY_NEXUS = "mitigated_by_nexus"
 
 
+class DefenseDelta(str, Enum):
+    """Twin WAF-vs-origin outcome. Not a Shannon exploit proof."""
+
+    WAF_BLOCKED = "waf_blocked"
+    ORIGIN_OPEN = "origin_open"
+    BOTH_HELD = "both_held"
+    REPLAY_HELD = "replay_held"
+    REPLAY_MISSED = "replay_missed"
+    ANTIBODY_LEARNED = "antibody_learned"
+
+
 class JobStatus(str, Enum):
     QUEUED = "QUEUED"
     RUNNING = "RUNNING"
@@ -89,6 +100,7 @@ class VulnerabilityFinding(BaseModel):
     verified_by_llm: bool = False
     evidence: List[Evidence] = Field(default_factory=list)
     live_verdict: Optional[LiveVerdict] = None
+    defense_delta: Optional[DefenseDelta] = None
     agent: Optional[str] = None
 
 
@@ -125,4 +137,5 @@ class ScanResult(BaseModel):
     files_analyzed: int = 0
     llm_used: bool = False
     live_checks_run: int = 0
+    antibody_loop_ok: Optional[bool] = None
     agent_runs: List[AgentRunSummary] = Field(default_factory=list)

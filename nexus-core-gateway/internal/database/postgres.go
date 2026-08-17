@@ -143,17 +143,9 @@ type NominatimResponse struct {
 // - Menghindari penyerapan data pribadi PII statis sesuai regulasi UU No. 27/2022 (UU PDP) dengan hanya mengolah
 //   metadata lokasi jaringan (Negara, Kota, ISP, dan Koordinat Lintang/Bujur) secara in-memory.
 func GetIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
-	// Jika IP adalah localhost / IP privat lokal, tanyakan IP publik WAN asli dari mesin saat ini secara real-time
-	if ip == "127.0.0.1" || ip == "localhost" || strings.HasPrefix(ip, "192.168.") || strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") {
-		client := &http.Client{Timeout: 3 * time.Second}
-		resp, err := client.Get("http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp")
-		if err == nil {
-			defer resp.Body.Close()
-			var geo GeoIPResponse
-			if err := json.NewDecoder(resp.Body).Decode(&geo); err == nil && geo.Status == "success" {
-				return geo.Country, geo.City, geo.ISP, geo.Lat, geo.Lon
-			}
-		}
+	ip = CleanReporterIP(ip)
+	if ip == "localhost" || IsPrivateOrLabIP(ip) {
+		return "private-lab", "RFC1918", "not-public-internet", 0, 0
 	}
 
 	// 1. Coba pencarian lokal dengan database GeoLite2 MaxMind jika tersedia

@@ -53,6 +53,10 @@ fi
 echo "[3/3] Alamat akses"
 echo "  Laptop ini      :  http://127.0.0.1"
 echo "  Gateway langsung :  http://127.0.0.1:8080"
+PROTECTED_HOST="$(grep -E '^PROTECTED_HOST=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r' | head -n1)"
+PROTECTED_HOST="${PROTECTED_HOST:-portfolio.nexus-lab.test}"
+echo "  Nama lab         :  http://${PROTECTED_HOST}"
+echo "    hosts: 127.0.0.1 ${PROTECTED_HOST}"
 if command -v hostname >/dev/null 2>&1; then
   hostname -I 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9.]+$' | grep -v '^127\.' | while read -r ip; do
     echo "  Laptop lain     :  http://$ip"

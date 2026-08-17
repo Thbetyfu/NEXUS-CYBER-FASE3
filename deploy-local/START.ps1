@@ -78,6 +78,15 @@ Write-Step "[3/3] Alamat akses"
 Write-Host "  Laptop ini     :  http://127.0.0.1"
 Write-Host "  Gateway langsung:  http://127.0.0.1:8080"
 
+. (Join-Path $PSScriptRoot "ps\Hosts.ps1")
+$protectedHost = Get-NexusProtectedHost
+if (Set-NexusLabHostsEntry -IP "127.0.0.1" -Name $protectedHost) {
+    Write-Host "  Nama lab       :  http://$protectedHost  (baris hosts 127.0.0.1 sudah ditulis)"
+} else {
+    Write-Host "  Nama lab       :  http://$protectedHost"
+    Write-Host "    hosts (Administrator):  127.0.0.1    $protectedHost"
+}
+
 $lanIps = @()
 try {
     $lanIps = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
@@ -99,5 +108,6 @@ if ($lanIps.Count -gt 0) {
 
 Write-Host ""
 Write-Host "Buka URL di atas (lewat WAF). Jangan pakai URL Vercel langsung untuk uji Nexus." -ForegroundColor Green
+Write-Host "NEX-RED: NEX_RED_LIVE_TARGET=http://$protectedHost (bukan origin Vercel)."
 Write-Host "Matikan: double-click STOP.bat"
 Write-Host "============================================================" -ForegroundColor Cyan

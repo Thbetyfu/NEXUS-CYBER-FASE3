@@ -33,7 +33,7 @@ Black-box = probe JSON jinak + recon header, **bukan** payload exploit.
 
 ```bash
 python NEX-RED/nexred.py scan -m whitebox -r .
-python NEX-RED/nexred.py scan -m hybrid -u http://127.0.0.1 -r . --no-llm
+python NEX-RED/nexred.py scan -m hybrid -u http://portfolio.nexus-lab.test -r . --no-llm
 python NEX-RED/nexred.py lab-juice
 python NEX-RED/nexred.py benchmark --live
 python NEX-RED/nexred.py llm-eval

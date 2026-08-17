@@ -39,7 +39,7 @@ Pilih **satu** cara. Jangan jalankan `deploy-local/START.bat` bersamaan dengan `
 2. (Windows, sekali) double-click `deploy-local\ALLOW-DEV-LAPTOP.bat` lalu **Yes** di UAC — firewall lab + pengecualian Defender.
 3. Double-click `deploy-local\START.bat` (atau `START-OFFLINE.bat` agar origin = folder portofolio, bukan Vercel).
 4. Buka **http://127.0.0.1** (Caddy → WAF). Bukti Nexus hanya lewat IP/laptop ini, **bukan** URL Vercel langsung.
-5. File `deploy-local/.env` dibuat otomatis dari `.env.example` pada start pertama. Ubah `REWARD_PASSWORD` / origin di situ jika perlu.
+5. File `deploy-local/.env` dibuat otomatis dari `.env.example` pada start pertama. Ubah `REWARD_PASSWORD` / origin di situ jika perlu. Pager Telegram opsional: isi `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (lihat `deploy-local/blue-team/README.md`); jangan commit token.
 
 Hotspot blue/red team, Gallery, dan checklist uji: [`deploy-local/README.md`](./deploy-local/README.md). Matikan: `deploy-local\STOP.bat`.
 
@@ -94,14 +94,14 @@ Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
 
 | Lapisan | Perilaku nyata |
 | --- | --- |
-| **WAF publik** | Caddy `:80`/`:443` → gateway **`:8080`**: reverse proxy, Reflex regex **setelah normalisasi**, rate limit per IP, CSRF, unggah AVSE, vault password + autoban 5x |
+| **WAF publik** | Caddy `:80`/`:443` → gateway **`:8080`**: reverse proxy, Reflex regex **setelah normalisasi**, rate limit per IP, CSRF, sesi pada mutasi/API asing, unggah AVSE, vault password + autoban 5x. Telemetri SOC **bukan** di port ini (404). Satu `PROTECTED_HOST` (lab HTTP / VPS TLS ask) |
 | **Control plane** | Gateway **`:8081`** (default `127.0.0.1`): telemetri, CLI, ban, reset, rute. Login operator (cookie). Bukan JWT penuh |
 | **Command Center** | Next.js; di compose diikat **`127.0.0.1:3001`**. Bukan pintu hotspot red team |
 | **Deception** | Honeypot HTTP `:9090`; SSH tarpit `:2222` (map Docker `22` di compose root, **tidak** di `deploy-local`) |
 | **MTD** | Shuffle port backend untuk origin **HTTP**; origin **HTTPS** (Vercel) **dipin** agar TLS tidak pecah |
 | **eBPF / XDP** | **Stub** — tidak membuang paket di kernel |
 | **PQC** | Modul/header inisialisasi; **bukan** enkripsi ujung-ke-ujung pengunjung |
-| **NEX-RED** | SAST Python AST + probe JSON jinak + **live HTTP tanpa sesi** + lab Juice Shop kelas (loopback `:3003`); **bukan** proof-by-exploitation |
+| **NEX-RED** | SAST + HTTP jinak + Juice Shop kelas + **defense delta** lab (WAF vs origin); **bukan** proof-by-exploitation |
 | **SaaS provisioner / Stripe** | **Belum** (lihat `Task.MD` task 6–7) |
 
 Reflex sinkron di request path. Reasoning (`nex-ai-protect` / API) **opsional dan asinkron** jika dikonfigurasi — bukan Qwen 235B wajib di setiap request.

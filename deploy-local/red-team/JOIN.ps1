@@ -5,6 +5,7 @@ param(
 $ErrorActionPreference = "Continue"
 Set-Location -LiteralPath $PSScriptRoot
 . (Join-Path $PSScriptRoot "..\ps\NetworkProbe.ps1")
+. (Join-Path $PSScriptRoot "..\ps\Hosts.ps1")
 
 Write-Host "============================================================" -ForegroundColor Red
 Write-Host "  RED TEAM  |  Nexus Cyber  |  join hotspot blue team" -ForegroundColor Red
@@ -43,14 +44,27 @@ if (-not $found) {
 }
 
 $targetPath = Join-Path $PSScriptRoot "target.txt"
-Save-NexusRedTarget -Path $targetPath -Url $found.Url
+$openUrl = $found.Url
+$protectedHost = Get-NexusProtectedHost
+$ip = $found.Ip
+if ($protectedHost -and $ip) {
+    if (Set-NexusLabHostsEntry -IP $ip -Name $protectedHost) {
+        $openUrl = "http://$protectedHost"
+        Write-Host "[OK] hosts: $ip $protectedHost" -ForegroundColor Green
+    } else {
+        Write-Host "[i] Nama lab: http://$protectedHost" -ForegroundColor Yellow
+        Write-Host "    Tambah (Administrator) di hosts:  $ip    $protectedHost" -ForegroundColor Yellow
+    }
+}
+Save-NexusRedTarget -Path $targetPath -Url $openUrl
 
-Write-Host "[OK] Pintu Nexus: $($found.Url)" -ForegroundColor Green
+Write-Host "[OK] Pintu Nexus: $openUrl" -ForegroundColor Green
+Write-Host "     IP WAF: $($found.Url)" -ForegroundColor Green
 Write-Host "     Disimpan ke target.txt" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "[3/3] Membuka browser ke WAF (bukan Vercel)..." -ForegroundColor Cyan
-Start-Process $found.Url
+Start-Process $openUrl
 
 Write-Host ""
 Write-Host "Sesi lab: kamu sekarang di depan Nexus, bukan di situs Vercel publik." -ForegroundColor Green

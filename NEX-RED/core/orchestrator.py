@@ -43,6 +43,7 @@ class NexRedOrchestrator:
         files_analyzed = 0
         llm_used = False
         live_checks_run = 0
+        antibody_ok = None
         status = "COMPLETED"
         agent_runs: list[AgentRunSummary] = []
         paths = ["/"]
@@ -111,9 +112,11 @@ class NexRedOrchestrator:
             mitigated += acc.mitigated
             if acc.ok:
                 live_checks_run = int(acc.extra.get("live_checks_run") or acc.probes)
+                antibody_ok = acc.extra.get("antibody_loop_ok")
                 raw_logs.append(
                     f"Agent access: live_checks={live_checks_run} findings={len(acc.findings)} "
-                    f"llm_planner={bool(acc.extra.get('llm_planner'))}"
+                    f"llm_planner={bool(acc.extra.get('llm_planner'))} "
+                    f"antibody_loop_ok={antibody_ok}"
                 )
                 if live_checks_run == 0:
                     status = "PARTIAL"
@@ -155,6 +158,7 @@ class NexRedOrchestrator:
             files_analyzed=files_analyzed,
             llm_used=llm_used,
             live_checks_run=live_checks_run,
+            antibody_loop_ok=antibody_ok,
             agent_runs=agent_runs,
         )
         report_path = ReportGenerator.save_report(result)

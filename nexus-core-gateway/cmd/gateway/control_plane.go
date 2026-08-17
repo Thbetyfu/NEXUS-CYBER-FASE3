@@ -22,6 +22,8 @@ func registerPublicMux(gatewayHandler http.Handler, gateway *proxy.NexusProxy, t
 	mux.HandleFunc("/api/verify-session", gateway.VerifySessionHandler)
 	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())
 	mux.HandleFunc("/api/license/validate-domain", validateDomainHandler(gateway.Router))
+	mux.HandleFunc("/nexred/lab/antibody-signal", proxy.AntibodySignalHandler(gateway))
+	mux.HandleFunc("/nexred/lab/vaccine-probe", proxy.LabVaccineProbeHandler(gateway))
 	mux.Handle("/", gatewayHandler)
 	return mux
 }

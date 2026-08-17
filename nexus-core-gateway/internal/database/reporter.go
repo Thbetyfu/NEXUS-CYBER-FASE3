@@ -25,8 +25,14 @@ var ActiveThreatReporter ThreatReporter
 // InitThreatReporter menginisialisasi reporter aktif berdasarkan konfigurasi .env.
 func InitThreatReporter() {
 	provider := os.Getenv("THREAT_INTEL_PROVIDER")
+	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	chatID := os.Getenv("TELEGRAM_CHAT_ID")
 	if provider == "" {
-		provider = "local" // default: log lokal tanpa dependensi eksternal
+		if botToken != "" && chatID != "" {
+			provider = "telegram"
+		} else {
+			provider = "local"
+		}
 	}
 
 	switch strings.ToLower(provider) {
@@ -56,8 +62,6 @@ func InitThreatReporter() {
 		}
 
 	case "telegram":
-		botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-		chatID := os.Getenv("TELEGRAM_CHAT_ID")
 		if botToken == "" || chatID == "" {
 			ActiveThreatReporter = &LocalOnlyReporter{}
 		} else {
@@ -69,9 +73,6 @@ func InitThreatReporter() {
 		ActiveThreatReporter = &LocalOnlyReporter{}
 
 	default:
-		// Jika TELEGRAM_BOT_TOKEN diset, gunakan Telegram secara otomatis
-		botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-		chatID := os.Getenv("TELEGRAM_CHAT_ID")
 		if botToken != "" && chatID != "" {
 			ActiveThreatReporter = &TelegramBotReporter{BotToken: botToken, ChatID: chatID}
 			log.Println("[REPORTER-INIT] Threat reporter auto-initialized: Telegram Bot Push Alerts")
@@ -232,33 +233,25 @@ func (r *TelegramBotReporter) ReportThreatForDomain(domain string, ip string, ca
 		return nil
 	}
 
-	// Normalisasi IP
-	if idx := strings.Index(ip, ":"); idx != -1 {
-		ip = ip[:idx]
+	ip = CleanReporterIP(ip)
+	if !ShouldSendTelegramAlertForIP(ip) {
+		log.Printf("[TELEGRAM-DEBOUNCE] Cooldown active for IP %s. Skipping pager.", ip)
+		return nil
 	}
 
 	go func() {
 		endpoint := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", r.BotToken)
 
-		// Dynamic Real-time GeoIP Lookup
-		country, city, isp, lat, lon := GetIPGeoInfo(ip)
-		gmapsURL := fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%.6f,%.6f", lat, lon)
+		country, city, isp, lat, lon := "", "", "", 0.0, 0.0
+		if !IsPrivateOrLabIP(ip) {
+			country, city, isp, lat, lon = GetIPGeoInfo(ip)
+		}
 
 		domainLabel := domain
 		if domainLabel == "" {
-			domainLabel = "System Gateway"
+			domainLabel = "lab / gateway"
 		}
-
-		messageText := fmt.Sprintf("🚨 *NEXUS CYBER ALERT - %s*\n\n"+
-			"🔒 *IP Penyerang*: `%s`\n"+
-			"🌐 *Domain Target*: `%s`\n"+
-			"🌍 *Wilayah*: `%s, %s`\n"+
-			"📡 *ISP*: `%s`\n"+
-			"🗺️ *Google Maps*: %s\n"+
-			"⚠️ *Kategori Serangan*: `%v` (%s)\n"+
-			"⏱️ *Waktu*: `%s`\n\n"+
-			"🛡️ _Status: Auto-Banned & Protected by Dual-Brain AI (Zero COGS)_",
-			domainLabel, ip, domainLabel, city, country, isp, gmapsURL, categories, comment, time.Now().Format("2006-01-02 15:04:05 MST"))
+		messageText := FormatTelegramAlert(ip, domainLabel, comment, categories, country, city, isp, lat, lon, time.Now())
 
 		payload := map[string]string{
 			"chat_id":    targetChatID,

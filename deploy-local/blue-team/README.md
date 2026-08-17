@@ -2,7 +2,7 @@
 
 Laptop ini = **pos pertahanan**. Tugasnya: menyalakan hotspot Windows, lalu menyalakan Nexus di depan portofolio.
 
-Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu membuka IP laptop ini.
+Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu membuka IP laptop ini (atau `http://portfolio.nexus-lab.test` setelah `hosts`).
 
 ## 1 klik
 
@@ -38,6 +38,25 @@ Kalau folder submodule masih kosong/lama: `git submodule update --init --recursi
 Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab.
 
 Dataset NEX-AI dari log WAF (bukan LLM): **`COLLECT-DATASET.bat`** (butuh Python + Docker stack nyala).
+
+## Pager Telegram (HP blue team)
+
+Ini **pager setelah WAF sudah mem-ban**, bukan pelacak. Tanpa token, pertahanan tetap jalan; hanya tidak ada getaran di HP.
+
+1. Di Telegram, buka [@BotFather](https://t.me/BotFather) → `/newbot` → salin token.
+2. Buka bot baru, kirim `/start`.
+3. Chat ID: buka `https://api.telegram.org/bot<TOKEN>/getUpdates` di browser laptop blue team (yang ada internet), lihat `"chat":{"id": ...}`.
+4. Isi `deploy-local\.env` (jangan commit):
+
+```
+TELEGRAM_BOT_TOKEN=isi-token-bot
+TELEGRAM_CHAT_ID=isi-chat-id
+```
+
+5. `STOP.bat` lalu `START-OFFLINE.bat` (atau `START.bat`) supaya container gateway membaca env baru.
+6. Uji: dari red team, 5× password vault salah sampai autoban. HP blue team dapat satu pesan berisi IP lab (`192.168.137.x`) yang **dilabeli privat** — bukan peta rumah.
+
+Laptop blue team perlu **internet keluar** (kabel Ethernet disarankan). Hotspot ke red team tidak harus membagikan internet.
 
 ## Yang otomatis
 

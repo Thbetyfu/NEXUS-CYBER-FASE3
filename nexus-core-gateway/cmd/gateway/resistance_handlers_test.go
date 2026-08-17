@@ -115,3 +115,27 @@ func TestRewardUnlockAutoban(t *testing.T) {
 		t.Errorf("Expected success response with reward link, got: %s", rrCorrect.Body.String())
 	}
 }
+
+func TestRewardUnlockBenignJSONDoesNotCrash(t *testing.T) {
+	tel, err := logger.NewLogger()
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	defer func() {
+		tel.Close()
+		os.Remove("nexus_traffic.log")
+		os.Remove("nexus_ai_events.log")
+	}()
+
+	handler := rewardUnlockHandler(tel)
+	req := httptest.NewRequest(http.MethodPost, "/api/unlock-reward", strings.NewReader(`{"nexred_posture":"benign-check"}`))
+	req.RemoteAddr = "192.0.2.8:9"
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+	if rr.Code >= 500 {
+		t.Fatalf("benign JSON must not 500, got %d body=%s", rr.Code, rr.Body.String())
+	}
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("benign JSON without password: want 401, got %d", rr.Code)
+	}
+}

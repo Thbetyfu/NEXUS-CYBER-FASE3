@@ -100,17 +100,9 @@ func (h *HoneypotServer) tarpitHandler(w http.ResponseWriter, r *http.Request) {
 			lon, _ := strconv.ParseFloat(lonStr, 64)
 			acc, _ := strconv.ParseFloat(accStr, 64)
 			if lat != 0 && lon != 0 {
-				log.Printf("[HONEYPOT-GPS-PROBE] High-precision Hardware GPS captured from IP %s: Lat=%.6f, Lon=%.6f (Accuracy: ±%.1fm)", attackerIP, lat, lon, acc)
+				log.Printf("[HONEYPOT-GEO-SHARE] Browser shared coordinates from IP %s: lat=%.6f lon=%.6f acc=±%.1fm (optional prompt, not GPS of all visitors)", attackerIP, lat, lon, acc)
 				if database.ActiveThreatReporter != nil {
-					gmapsURL := fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%.6f,%.6f", lat, lon)
-					alertMsg := fmt.Sprintf("🎯 *HARDWARE GPS PROBE CAPTURED (AKURASI PRESI 95%%+)*\n\n"+
-						"🔒 *IP Penyerang*: `%s`\n"+
-						"📍 *Koordinat Hardware GPS*: `%.6f, %.6f` (Presisi: ±%.1f meter)\n"+
-						"🗺️ *Google Maps*: %s\n"+
-						"💻 *User-Agent*: `%s`\n"+
-						"⏱️ *Waktu*: `%s`\n\n"+
-						"🛡️ _Status: Attacker Hardware Location Trapped & Auto-Banned_",
-						attackerIP, lat, lon, acc, gmapsURL, r.Header.Get("User-Agent"), time.Now().Format("2006-01-02 15:04:05 MST"))
+					alertMsg := database.FormatBrowserLocationAlert(attackerIP, r.Header.Get("User-Agent"), lat, lon, acc, time.Now())
 
 					if tgReporter, ok := database.ActiveThreatReporter.(*database.TelegramBotReporter); ok {
 						_ = tgReporter.SendCustomMessage(alertMsg)

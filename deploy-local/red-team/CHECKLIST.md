@@ -1,6 +1,6 @@
 # Checklist red team (lab hotspot)
 
-Hanya uji **IP laptop blue team** hasil `JOIN.bat` (contoh `http://192.168.137.1`). Bukan URL Vercel, bukan Wi-Fi kampus/rumah orang lain.
+Hanya uji **IP laptop blue team** hasil `JOIN.bat` (contoh `http://192.168.137.1`) **atau** `http://portfolio.nexus-lab.test` jika `hosts` mengarah ke IP itu. Bukan URL Vercel, bukan Wi-Fi kampus/rumah orang lain.
 
 Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. Cek encoding/obfuskasi ada di unit test gateway (`internal/ai/reflex_normalize_test.go`), bukan dari hotspot.
 
@@ -17,14 +17,14 @@ Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. 
 
 | # | Yang diuji | Cara | Lulus jika |
 | --- | --- | --- | --- |
-| 1 | Pintu benar | URL di address bar = IP hotspot, bukan `vercel.app`. Skrip `CHECK.bat` boleh dapat HTTP 403 (tantangan sesi); **browser** harus sampai halaman portofolio (200). | Halaman portofolio tampil di browser |
+| 1 | Pintu benar | URL di address bar = IP hotspot **atau** `PROTECTED_HOST`, bukan `vercel.app`. Skrip `CHECK.bat` boleh dapat HTTP 403 (tantangan sesi); **browser** harus sampai halaman portofolio (200). | Halaman portofolio tampil di browser |
 | 2 | Situs hidup | Beranda, navigasi, Gallery `#gallery` | Halaman biasa 200, foto/form terlihat |
 | 3 | Unggah sah | Kirim gambar wajar di Gallery | Tidak ditolak sebagai ancaman; list Gallery boleh terisi dari `GET /api/photos`. Setelah rebuild gateway, foto RAM hilang — unggah ulang |
 | 4 | Vault lab | Password **salah** berulang di hadiah (maks. 5) | Setelah 5 gagal, IP terban (akses situs teralih / ditolak). Minta blue team unban jika perlu lanjut |
 | 5 | SOC tertutup | Dari laptop red team buka `http://IP-BLUE:3001` dan `http://IP-BLUE:8081` | **Tidak** nyambung (timeout / refused). Dasbor hanya di laptop blue team |
 | 6 | Postgres/Redis | `IP:5432` / `IP:6379` | Tidak terbuka ke hotspot |
 | 7 | Honeypot (opsional) | Port `9090` di IP blue team | Ada layanan umpan; boleh lambat. Jangan diandalkan sebagai “bobol” |
-| 8 | Postur NEX-RED | `SCAN.bat` | Laporan header/reachability; **bukan** bukti exploit |
+| 8 | Postur NEX-RED | `SCAN.bat` | Laporan header/reachability, **defense delta** / **antibody loop**, dan harness SOC/datastore jika target IP hotspot; **bukan** bukti exploit |
 
 ## Jangan
 

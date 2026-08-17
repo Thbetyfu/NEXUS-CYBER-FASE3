@@ -34,4 +34,9 @@ func TestIPGeoInfoLookups(t *testing.T) {
 			t.Logf("[WARN] IP %s terdeteksi di %s (diharapkan %s)", tc.ip, country, tc.expectedCountry)
 		}
 	}
+
+	country, city, isp, lat, lon := database.GetIPGeoInfo("192.168.137.66")
+	if country != "private-lab" || city != "RFC1918" || isp != "not-public-internet" || lat != 0 || lon != 0 {
+		t.Fatalf("lab IP must not inherit WAN GeoIP; got %s %s %s %f %f", country, city, isp, lat, lon)
+	}
 }

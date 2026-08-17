@@ -2,6 +2,7 @@
 
 $script:HotspotScriptDir = $PSScriptRoot
 $script:NexusFirewallRule = "NexusCyber-deploy-local-WAF"
+. (Join-Path $PSScriptRoot "Hosts.ps1")
 
 function Get-NexusLabSettings {
     $ssid = "NEXUS-BLUE-LAB"
@@ -18,7 +19,7 @@ function Get-NexusLabSettings {
             if ($key -eq "NEXUS_HOTSPOT_PASS" -and $value) { $pass = $value }
         }
     }
-    return [pscustomobject]@{ Ssid = $ssid; Passphrase = $pass }
+    return [pscustomobject]@{ Ssid = $ssid; Passphrase = $pass; ProtectedHost = (Get-NexusProtectedHost) }
 }
 
 function Test-NexusAdmin {
@@ -152,6 +153,8 @@ function Write-NexusBlueCard {
     )
     $settings = Get-NexusLabSettings
     $url = if ($HotspotIp) { "http://$HotspotIp" } else { "http://<IP-hotspot-blue-team>" }
+    $hostsIp = if ($HotspotIp) { $HotspotIp } else { "<IP-hotspot>" }
+    $named = "http://$($settings.ProtectedHost)"
     $lines = @(
         "========================================"
         "  KARTU BLUE TEAM  |  Nexus Cyber lab"
@@ -164,8 +167,10 @@ function Write-NexusBlueCard {
         "Red team: join Wi-Fi di atas, lalu double-click JOIN.bat"
         "atau buka di browser:"
         "  $url"
+        "  $named   (setelah baris hosts: $hostsIp $($settings.ProtectedHost))"
         ""
         "Jangan tes ke URL Vercel. Pintu yang dilindungi Nexus adalah URL di atas."
+        "SOC :8081 / dasbor :3001 tidak dibuka ke hotspot."
         "========================================"
     )
     $text = $lines -join [Environment]::NewLine

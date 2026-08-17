@@ -30,6 +30,9 @@ Centang hanya jika ada bukti di kode/tes/report, bukan niat.
 - [x] Request tanpa `Authorization` ke `/api/telemetry` publik tercatat
 - [x] Report: `live_verdict` (sast_only / confirmed / rejected / mitigated_by_nexus)
 - [x] `live_checks_run` di hasil scan (bukan syarat benchmark Shannon)
+- [x] Sprint 1: `defense_delta` (waf_blocked / origin_open / both_held / replay_held); origin hanya lab HTTP (`NEX_RED_ORIGIN_DIRECT`); bukan proof-by-exploitation
+- [x] Sprint 2: GET sinyal jumlah antibodi di WAF (`/nexred/lab/antibody-signal`, tanpa pola) + POST vaksin lab + replay; `antibody_learned` / `replay_missed`; `antibody_loop_ok`
+- [x] Sprint 3: harness hotspot (SOC/datastore tertutup dari klien privat; honeypot tercatat jujur). Loopback dilewati kecuali `NEX_RED_HOTSPOT_HARNESS=1`
 
 ## Fase 4 — Browser
 

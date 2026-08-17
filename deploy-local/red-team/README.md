@@ -1,6 +1,6 @@
 # Red team — laptop yang menguji lewat hotspot blue team
 
-Laptop ini = **penguji**. Tidak perlu Docker. Yang wajib: join Wi-Fi hotspot laptop blue team, lalu buka situs **lewat IP itu**.
+Laptop ini = **penguji**. Tidak perlu Docker. Yang wajib: join Wi-Fi hotspot laptop blue team, lalu buka situs **lewat IP itu** (atau nama `PROTECTED_HOST` jika JOIN menulis `hosts`).
 
 Ini lab resmi terhadap WAF Nexus di jaringan hotspot. Bukan izin menyerang situs Vercel publik atau jaringan orang lain.
 

@@ -23,8 +23,10 @@
     }
 }
 
-# 2. Routing Multi-Tenant Client (SaaS WAF Gateway)
-# Menggunakan On-Demand TLS untuk mendaftarkan SSL/TLS otomatis per domain klien
+# 2. Routing satu hostname klien (bukan SaaS multi-tenant)
+# On-Demand TLS: Caddy ask gateway /api/license/validate-domain.
+# Hanya host yang HasExplicitRoute (termasuk PROTECTED_HOST) yang boleh dapat sertifikat.
+# :8081 / dasbor tidak di-bind ke 0.0.0.0 di sini.
 :443 {
     tls {
         on_demand

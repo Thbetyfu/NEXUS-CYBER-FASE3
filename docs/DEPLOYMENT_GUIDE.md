@@ -1,6 +1,6 @@
 # Panduan Deployment Nexus Cyber
 
-Pembaruan 2026-08-15. Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
+Pembaruan 2026-08-17. Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
 
 Dokumen ini mencakup dua opsi:
 1. **Opsi 1: PC Lokal (Local PC Deployment)** — Hemat biaya (Rp 0), cocok untuk demo, testing, dan riset dengan integrasi **Cloudflare Tunnel (Gratis)**.
@@ -17,7 +17,14 @@ Dokumen ini mencakup dua opsi:
 
 ### Mode 1-klik (disarankan untuk demo laptop)
 
-Folder **`deploy-local/`** di root repo: double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Lihat [`deploy-local/README.md`](../deploy-local/README.md).
+Folder **`deploy-local/`** di root repo: double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Satu nama lab: `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) — HTTP + berkas `hosts`, bukan Let's Encrypt untuk `.test`. Pager Telegram opsional: `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` di `.env` (lihat [`deploy-local/blue-team/README.md`](../deploy-local/blue-team/README.md)). Lihat [`deploy-local/README.md`](../deploy-local/README.md).
+
+### Satu hostname (bukan SaaS CNAME massal)
+
+1. Set `PROTECTED_HOST` di `deploy-local/.env` (satu DNS name).
+2. Lab: `127.0.0.1` / IP hotspot → nama itu di `hosts`. Scan NEX-RED ke `http://PROTECTED_HOST`.
+3. VPS: A/CNAME nama itu ke IP mesin; Caddy `:443` on-demand hanya jika gateway `HasExplicitRoute` (nama terdaftar). SOC `:8081` tetap loopback.
+4. Bukan jual domain, bukan `provisioner.sh` per klien.
 
 ### Mode A: Docker Compose root (stack lengkap termasuk dashboard)
 

@@ -47,6 +47,7 @@ class NexRedConfig(BaseModel):
     llm_timeout_seconds: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_LLM_TIMEOUT", "20")))
     max_llm_reviews: int = Field(default_factory=lambda: int(os.getenv("NEX_RED_MAX_LLM_REVIEWS", "15")))
     live_target: str = Field(default_factory=lambda: os.getenv("NEX_RED_LIVE_TARGET", "http://127.0.0.1"))
+    origin_direct: str = Field(default_factory=lambda: os.getenv("NEX_RED_ORIGIN_DIRECT", "").strip())
     juice_shop_url: str = Field(
         default_factory=lambda: os.getenv("NEX_RED_JUICE_SHOP_URL", "http://127.0.0.1:3003")
     )
@@ -57,6 +58,9 @@ class NexRedConfig(BaseModel):
     idor_object_path: str = Field(default_factory=lambda: os.getenv("NEX_RED_IDOR_OBJECT_PATH", ""))
     enable_browser: bool = Field(
         default_factory=lambda: os.getenv("NEX_RED_BROWSER", "0").strip() in {"1", "true", "yes"}
+    )
+    hotspot_harness: str = Field(
+        default_factory=lambda: os.getenv("NEX_RED_HOTSPOT_HARNESS", "auto").strip().lower()
     )
 
 

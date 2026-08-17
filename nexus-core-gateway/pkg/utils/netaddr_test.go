@@ -22,6 +22,18 @@ func TestRequestHost_IPv6AndPort(t *testing.T) {
 	}
 }
 
+func TestParseProtectedHost(t *testing.T) {
+	if got := ParseProtectedHost("https://Portfolio.Nexus-Lab.test:443/path"); got != "portfolio.nexus-lab.test" {
+		t.Fatalf("got %q", got)
+	}
+	if ParseProtectedHost("127.0.0.1") != "" || ParseProtectedHost("localhost") != "" || ParseProtectedHost("*.example.com") != "" {
+		t.Fatal("IP, localhost, and wildcards are not a single protected hostname")
+	}
+	if ParseProtectedHost("") != "" {
+		t.Fatal("empty stays empty")
+	}
+}
+
 func TestIsLoopbackRequestHost(t *testing.T) {
 	if !IsLoopbackRequestHost("[::1]:8080") {
 		t.Fatal("::1 should be loopback")
