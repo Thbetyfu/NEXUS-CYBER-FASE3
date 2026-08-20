@@ -1,7 +1,7 @@
 # DOKUMEN KEBUTUHAN PRODUK (PRODUCT REQUIREMENT DOCUMENT - PRD)
 ## NEXUS CYBER - AUTONOMOUS TACTICAL DEFENSE GRID
 
-**Status implementasi (selaras kode, 2026-08-17):** WAF `:8080` + SOC `:8081`, CSRF gateway ada, sesi pengunjung wajib pada mutasi/API asing di data plane (lab Gallery/vault dikecualikan), telemetri operator **tidak** di `:8080` (404), satu `PROTECTED_HOST` per instance (bukan CNAME SaaS massal), sesi operator cookie (bukan JWT enterprise), autoban vault 5× aktif, Gallery portofolio ada, pager Telegram lab jika `TELEGRAM_*` diisi (GeoIP jujur, bukan GPS), NEX-RED **defense delta** lab (bukan setara Shannon), eBPF stub, pembayaran webhook fail-closed **ditunda**. Visi SaaS/B2G di bawah tetap sebagai produk; jangan dibaca seolah sudah lengkap di repo.
+**Status implementasi (selaras kode, 2026-08-20):** WAF `:8080` + SOC `:8081`, CSRF gateway ada, sesi pengunjung wajib pada mutasi/API asing di data plane (lab Gallery/vault dikecualikan), telemetri operator **tidak** di `:8080` (404), satu `PROTECTED_HOST` per instance (bukan CNAME SaaS massal), sesi operator cookie (bukan JWT enterprise), autoban vault 5× aktif, Gallery portofolio ada, pager Telegram lab jika `TELEGRAM_*` diisi (GeoIP jujur, bukan GPS), NEX-RED **defense delta** lab (bukan setara Shannon), eBPF stub, pembayaran webhook fail-closed **ditunda**, back-office super-admin pelanggan **belum** (lihat F-10). Visi SaaS/B2G di bawah tetap sebagai produk; jangan dibaca seolah sudah lengkap di repo.
 
 ---
 
@@ -162,6 +162,21 @@ Hierarki halaman (*Sitemap*) dan batasan akses sistem terbagi menjadi dua lingku
     - **When:** Pengguna membuka dasbor Command Center.
     - **Then:** Layar penuh berubah gelap dengan visual lockout premium bertuliskan `"SISTEM DITANGGUHKAN: Masa sewa langganan Nexus Cyber Anda telah berakhir."` dan tidak dapat di-bypass via manipulasi DOM.
 
+### Fitur ID: F-10 - Back-office super-admin (saat dijual)
+- **Status:** **[Belum — backlog komersial]**
+- **Kapan:** Dikerjakan ketika ada pelanggan bayar atau kontrak (bukan prioritas lab hotspot).
+- **User Story:** Sebagai owner/developer Nexus, saya ingin melihat jumlah user, situs yang dilindungi, dan sisa masa aktif, tanpa memberi akses itu ke operator SOC atau ke pelanggan lain.
+- **Aturan Bisnis:**
+  - Sumber data: Postgres portal SaaS (`User`, `Subscription.domain`, `status`, `endDate`) di submodule `playground/NEXUS-CYBER-WEBISTE-SAAS` (bukan `nexus-admin-dashboard`).
+  - `nexus-admin-dashboard` **tetap** Command Center WAF/SOC instance ini. Jangan campur roster PII pelanggan ke `:8081` / `:3001`.
+  - Akses: peran internal saja, loopback atau VPN; kredensial **bukan** `NEXUS_ADMIN_TOKEN` (token itu untuk operasi WAF).
+  - Pelanggan hanya melihat domain miliknya (sudah ada di dashboard SaaS). Super-admin melihat **semua** tenant.
+- **Kriteria Penerimaan (Acceptance Criteria):**
+  - **Skenario 1: Ringkasan tenant**
+    - **Given:** Owner login ke back-office SaaS (bukan SOC).
+    - **When:** Membuka halaman internal tenant.
+    - **Then:** Terlihat jumlah user, daftar domain per user, paket, status, sisa hari sampai `endDate` (tanpa wajib menampilkan license key penuh).
+
 ### Fitur ID: F-07 - SOC Command Terminal CLI
 - **Status:** **[Sudah ada - penambahan fitur CLI kaya interaktif belum ada]**
 - **User Story:** Sebagai Operator SOC, saya ingin menggunakan terminal komando berbasis text untuk mengendalikan gateway dan menanyakan anomali keamanan langsung ke AI.
@@ -281,7 +296,7 @@ CSRF token di WAF **sudah ada**. Validasi skema Zod di setiap form dasbor **belu
 ## 8. 🚀 REKOMENDASI LANGKAH SELANJUTNYA
 Untuk membuat PRD ini menjadi senjata yang siap tempur di dunia nyata, pertimbangkan langkah-langkah berikut:
 
-1. **F-09 autoban:** sudah aktif di kode (2026-08). Prioritas berikutnya: webhook pembayaran fail-closed (ditunda pemilik).
+1. **F-09 autoban:** sudah aktif di kode (2026-08). Webhook pembayaran fail-closed **ditunda** pemilik. **F-10** back-office super-admin: kerjakan saat produk dijual (portal SaaS, bukan NEX-ADMIN).
 2. **Tingkatkan PACS:** Ubah dari sekadar Base64 menjadi enkripsi dinamis berbasis token waktu pendek yang dikombinasikan dengan teknik runtime JavaScript-obfuscation yang berubah di setiap request.
 3. **Tambahkan Runtime Application Self-Protection (RASP):** Selain memantau berkas statis (F-08), tambahkan pemicu untuk memantau aktivitas mencurigakan pada proses sistem operasi (misalnya, jika proses aplikasi web tiba-tiba menjalankan perintah `bin/sh`).
 

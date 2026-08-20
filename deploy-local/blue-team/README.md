@@ -35,7 +35,7 @@ git pull origin main --recurse-submodules
 
 Kalau folder submodule masih kosong/lama: `git submodule update --init --recursive`
 
-Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab.
+Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab. Submodule `playground/NEXUS-CYBER-WEBISTE-SAAS` ikut ter-pull; itu portal jual, **bukan** origin hotspot.
 
 Dataset NEX-AI dari log WAF (bukan LLM): **`COLLECT-DATASET.bat`** (butuh Python + Docker stack nyala).
 

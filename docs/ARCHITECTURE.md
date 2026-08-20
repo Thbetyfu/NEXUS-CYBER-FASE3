@@ -1,6 +1,6 @@
 # 🏗️ NEXUS CYBER ARCHITECTURE
 
-Pembaruan: 2026-08-16. Klaim AI/port mengikuti kode, bukan proposal lama.
+Pembaruan: 2026-08-20. Klaim AI/port mengikuti kode, bukan proposal lama.
 
 ## Port (lab & compose)
 
@@ -29,6 +29,7 @@ Pembaruan: 2026-08-16. Klaim AI/port mengikuti kode, bukan proposal lama.
 
 ### Dashboard (`nexus-admin-dashboard`)
 - Next.js App Router, Tailwind, Recharts, Xterm.js. Login operator ke control plane.
+- **Bukan** CRM pelanggan. Daftar semua user/situs/sisa langganan (F-10) direncanakan di portal SaaS terpisah ketika produk dijual.
 
 ## Directory structure
 
@@ -46,6 +47,7 @@ nexus-cyber/
 ├── nexus-core-gateway/
 ├── nexus-admin-dashboard/
 ├── playground/Portofolio-Thoriq/  # Origin lab (Gallery #gallery)
+├── playground/NEXUS-CYBER-WEBISTE-SAAS/  # Submodule portal jual (bukan compose lab)
 ├── scripts/
 └── docs/                       # Indeks: docs/README.md
 ```

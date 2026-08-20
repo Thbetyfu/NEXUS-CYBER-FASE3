@@ -22,7 +22,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | [NEXUS_CORE_DIRECTIVES.md](./NEXUS_CORE_DIRECTIVES.md) | Aturan arsitektur |
 | [../AGENTS.md](../AGENTS.md) | Instruksi agen berikutnya |
 | [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Runtime hanya `nex-ai-protect` / `nex-ai-reflex` |
-| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) | Submodule `playground/Portofolio-Thoriq` |
+| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) | Submodule portofolio + `playground/NEXUS-CYBER-WEBISTE-SAAS` |
 | [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Integrity monitor BLAKE3 |
 
 ## Beku (arsip historis — jangan ditulis ulang seolah kondisi hari ini)

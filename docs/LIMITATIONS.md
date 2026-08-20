@@ -1,6 +1,6 @@
 # ⚠️ Nexus Cyber Limitations
 
-Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-17.
+Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-20.
 
 ## Di luar cakupan (umum)
 
@@ -29,4 +29,5 @@ Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-17.
 
 ## Yang sengaja ditunda
 
-Webhook pembayaran fail-closed / Midtrans-Stripe orkestrasi: tidak dikerjakan sampai pemilik meminta (lihat CHANGELOG Unreleased).
+- Webhook pembayaran fail-closed / Midtrans-Stripe orkestrasi: tidak dikerjakan sampai pemilik meminta (lihat CHANGELOG Unreleased).
+- **Back-office super-admin (daftar semua pelanggan):** diperlukan **ketika produk dijual** (berapa user, situs mana, sisa hari/`endDate`, aktivasi GovEdu manual). **Bukan** fitur SOC. `nexus-admin-dashboard` tetap Command Center instance ini (ancaman, ban, telemetri). Roster pelanggan tinggal di Postgres portal SaaS (`playground/NEXUS-CYBER-WEBISTE-SAAS`). Jangan menempelkan PII pelanggan ke `:8081` / `:3001`. Belum dikerjakan (lab masih satu `PROTECTED_HOST`).

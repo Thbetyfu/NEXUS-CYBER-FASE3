@@ -1,6 +1,6 @@
 # 🛡️ Nexus Cyber Capabilities
 
-Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED` (bukan slide pemasaran). Pembaruan terakhir: 2026-08-17. Lihat [CHANGELOG.md](../CHANGELOG.md).
+Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED` (bukan slide pemasaran). Pembaruan terakhir: 2026-08-20. Lihat [CHANGELOG.md](../CHANGELOG.md).
 
 ## Grid pertahanan & validasi
 
@@ -23,6 +23,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | MitM pengunjung | Sniff TLS klien | Header PQC / modul inisialisasi | **Bukan** E2E ML-KEM ke browser |
 | Intelijen | STIX/TAXII BSSN | Rencana / CLI audit | **Tidak** feed penuh di path lab |
 | Multi-tenant bayar | Stripe/Midtrans + kontainer per klien | Webhook ada; provisioner **belum** | Ditunda |
+| Roster pelanggan | Jumlah user, situs, sisa langganan (owner saja) | Tidak ada di SOC; data di portal SaaS terpisah | **Belum**; backlog jual (bukan NEX-ADMIN) |
 
 ## NEX-RED
 

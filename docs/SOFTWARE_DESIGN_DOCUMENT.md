@@ -1,7 +1,7 @@
 # 📄 SOFTWARE DESIGN DOCUMENT (SWD)
 ## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
 
-Pembaruan 2026-08-15: Control plane SOC = listener terpisah `:8081` + cookie operator. Data plane = `:8080`. eBPF di dokumen desain lama = **target**, bukan driver aktif. Provisioner SaaS / Stripe = belum.
+Pembaruan 2026-08-20: Control plane SOC = listener terpisah `:8081` + cookie operator. Data plane = `:8080`. eBPF di dokumen desain lama = **target**, bukan driver aktif. Provisioner SaaS / Stripe = belum. Back-office daftar semua pelanggan (F-10) = **belum**; tempatnya portal SaaS, bukan Command Center SOC.
 
 ---
 

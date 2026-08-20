@@ -1,7 +1,7 @@
 # 📄 SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
 ## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
 
-Pembaruan 2026-08-17: data plane `:8080` (SOC path 404; mutasi tanpa sesi 401 kecuali lab Gallery/vault), satu `PROTECTED_HOST` per instance, control plane `:8081`. eBPF = stub. CLI SOC hanya di mux admin. Pager Telegram lab = env `TELEGRAM_*`, bukan GPS.
+Pembaruan 2026-08-20: data plane `:8080` (SOC path 404; mutasi tanpa sesi 401 kecuali lab Gallery/vault), satu `PROTECTED_HOST` per instance, control plane `:8081`. eBPF = stub. CLI SOC hanya di mux admin. Pager Telegram lab = env `TELEGRAM_*`, bukan GPS. Back-office super-admin semua pelanggan (F-10) **belum**; tempatnya portal SaaS saat dijual, bukan dasbor SOC.
 
 ---
 

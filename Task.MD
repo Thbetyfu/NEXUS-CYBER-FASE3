@@ -1,3 +1,5 @@
+lokasi 
+
 Catatan (2026-08-15): **pembayaran / webhook / Stripe / Midtrans jangan dikerjakan dulu** (permintaan pemilik). Setiap ubahan kode berikutnya wajib ikut `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/README.md`.
 
 1. dibuat menjadi sesuai uji coba dimana saya ingin di buat menjadi sesutu website uji ketahanan, jadi dimana website ini akan di deploy lalu Nexus cyber harus bisa mempertahankan website portofolio ini dari serangan cyber, sehingga kekuatan dari nexus cyber ini benar terbukti tetapi belum tau apa saja rencana yang harus di lakukan, dan saya ingin di website portofolionya di tambahkan untuk input gambar, di bagian paling bawah, "tambahkan foto foto kalian" coba pikirkan rencananya, bukti sudah berhasilnya adalah nanti akanada pasword disitu, lalu ketika masuk menggunakan pasword itu maka bisa mendapatkan link dimana link beruba hadiah beruba uang , linknya akan berupa shope kaget (tapi itu nanti akan di pikirkan), jadi yang butuh dikejrakna adlaha:
@@ -35,8 +37,18 @@ Rencana kerja strategis untuk mengubah seluruh infrastruktur Nexus Cyber menjadi
 ### 📦 3. Orkestrasi Pendaftaran Otomatis (Infrastructure Layer)
 
 * [ ] **Task 6: Dynamic Provisioner Script (`scripts/provisioner.sh`)**
+
   * Buat skrip asinkron yang meluncurkan kontainer Docker-Compose baru secara terisolasi (Gateway + Dashboard + PostgreSQL) untuk setiap penyewa (*tenant*) baru.
 * [ ] **Task 7: Integrasi Midtrans/Stripe Webhook**
+
   * Sambungkan gerbang pembayaran otomatis ke skrip penyediaan kontainer untuk aktivasi instan setelah klien berhasil melakukan pembayaran bulanan.
 
+* [ ] **Task 8: Back-office super-admin (saat dijual — F-10)**
+
+  * Di portal SaaS (`playground/NEXUS-CYBER-WEBISTE-SAAS`), bukan di `nexus-admin-dashboard`.
+  * Owner/developer saja: jumlah user, daftar situs, sisa masa aktif. Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`.
+  * Jangan kerjakan di sprint lab; lihat `docs/PRD.md` F-10 dan `CHANGELOG.md` Planned.
+
   buat versi Auto deploynya jika di jalankan di server on promise, sehingga mudah dan tak butuh banyak lagi maintenece dan mudah di pahami oleh orang awam
+
+ingat ini ketika di sserang harusnya bisa mengetahuai lokasi penyerang dimana dan tidak tertipu oleh VPN, jadi tolong di selesaian juga apakah ini bisa memberitahu lokasi penyerang dan memberitahukannya di telegram ? dan ini saya mau akan menjadi AI gaent bukan hanya AI biasa

@@ -25,6 +25,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - NEX-RED + gateway: sinyal lab **count-only** `GET /nexred/lab/antibody-signal` dan `POST /nexred/lab/vaccine-probe` (token konstan, bukan payload exploit). Pola virtual patch tidak dipublikasikan di WAF. `antibody_learned` jika jumlah ≥ 1 dan replay tetap 403.
 - NEX-RED: Sprint 3 **hotspot harness** — dari IP privat (bukan loopback): `:8081`/`:3001`/Postgres/Redis harus tertutup; `:9090` tercatat sebagai tarpit. `NEX_RED_HOTSPOT_HARNESS=0` mematikan.
 - Pager Telegram lab: jika `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` diisi di `deploy-local/.env`, gateway mengirim pesan ke HP **setelah** WAF sudah mem-ban IP. Teks jujur (bukan GPS, bukan tembus VPN). IP privat/lab tidak dipetakan ke GeoIP WAN laptop blue team. Cooldown 15 menit per IP. Butuh internet keluar ke `api.telegram.org`.
+- Submodule portal SaaS: `playground/NEXUS-CYBER-WEBISTE-SAAS` (`https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-SAAS.git`). Pointer versi untuk Blue `git pull --recurse-submodules`. Bukan origin WAF; tidak masuk `START-OFFLINE`.
 
 ### Changed
 - NEX-RED: pemeriksaan Juice Shop diperluas (GET objek/keranjang/kartu/whoami tanpa sesi; 401/403 tercatat sebagai `rejected`). Scan biasa: hipotesis CWE-639 juga GET objek tanpa `Authorization`. Tetap tanpa payload exploit.
@@ -42,9 +43,12 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - Arsip sesi: `docs/reports/LAB_HOTSPOT_ACCEPTANCE_2026-08-15.md` (uji penerimaan lab, bukan pentest).
 - Red team: handoff sesi 16 Agu 2026 di `deploy-local/red-team/SESI-2026-08-16.md`.
 - Pager Telegram: cara BotFather + chat ID di `deploy-local/blue-team/README.md` (token tidak di-commit).
+- Backlog jual **F-10**: back-office super-admin di portal SaaS (bukan NEX-ADMIN) — `docs/PRD.md`, `LIMITATIONS.md`, `CAPABILITIES.md`.
+- Submodule SaaS: `docs/GIT_WORKFLOW.md`, `README.md`, `docs/ARCHITECTURE.md`.
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).
+- Back-office super-admin **saat produk dijual**: jumlah user, daftar situs per pelanggan, sisa masa aktif. Hidup di submodule `playground/NEXUS-CYBER-WEBISTE-SAAS`, bukan tab di `nexus-admin-dashboard` (SOC). Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`. Tidak dikerjakan sampai ada tenant bayar / pemilik minta.
 
 ## [2026-08-15]
 

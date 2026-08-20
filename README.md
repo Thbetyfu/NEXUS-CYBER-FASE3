@@ -6,7 +6,7 @@ Klaim di README ini mengikuti **kode di repository**. Daftar kemampuan vs batasa
 
 ## Clone
 
-Ada **submodule** portofolio di `playground/Portofolio-Thoriq`. Clone harus rekursif:
+Ada **submodule**: portofolio `playground/Portofolio-Thoriq` dan portal SaaS `playground/NEXUS-CYBER-WEBISTE-SAAS`. Clone harus rekursif:
 
 ```bash
 git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
