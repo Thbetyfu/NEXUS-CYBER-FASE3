@@ -436,7 +436,7 @@ func paymentWebhookHandler(router *proxy.DynamicRouter, telemetry *logger.Logger
 		// 6. Log aktivitas AI untuk Dashboard SOC
 		telemetry.LogAIEvent(logger.AIEventLog{
 			Timestamp:    time.Now(),
-			Layer:        "SaaS-Billing",
+			Layer:        "Billing",
 			Status:       "PROVISION_SUCCESS",
 			DetailAction: fmt.Sprintf("[BILLING] Webhook payment verified for %s. Provisioning container on port %d.", payload.Domain, port),
 		})
@@ -500,7 +500,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 				"  - /recovery             : Trigger self-healing database state recovery (Portfolio target)\n" +
 				"  - /ban [IP]             : Blacklist an attacker IP manually\n" +
 				"  - /unban [IP]           : Restore/unban an IP address\n" +
-				"  - /sub [domain]         : Activate premium SaaS PACS shield for a client\n" +
+				"  - /sub [domain]         : Activate premium PACS shield for a client\n" +
 				"  - /unsub [domain]       : Revoke license and lock a domain instantly\n" +
 				"  - /honeystats           : List active attackers trapped in Tarpit\n" +
 				"  - /patches              : Show dynamically loaded virtual patches\n" +
@@ -636,7 +636,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
-				Layer:        "SaaS-WAF-Manager",
+				Layer:        "WAF-Manager",
 				Status:       "LICENSE_ACTIVATED",
 				DetailAction: fmt.Sprintf("[SAAS] Domain %s activated via CLI. Container provisioned on port %d.", domainToSub, port),
 			})
@@ -670,7 +670,7 @@ func cliExecuteHandler(telemetry *logger.Logger, shuffler *mtd.TopologyShuffler,
 
 			telemetry.LogAIEvent(logger.AIEventLog{
 				Timestamp:    time.Now(),
-				Layer:        "SaaS-WAF-Manager",
+				Layer:        "WAF-Manager",
 				Status:       "LICENSE_REVOKED",
 				DetailAction: fmt.Sprintf("[SAAS-ALERT] Domain %s license revoked via CLI. Container destroyed.", domainToUnsub),
 			})

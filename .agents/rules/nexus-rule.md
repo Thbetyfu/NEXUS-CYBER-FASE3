@@ -39,9 +39,10 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 Setiap perubahan **perilaku** (port, auth, mux, Caddy, compose, NEX-RED, Gallery, rate-limit, CSRF) WAJIB dalam pekerjaan yang sama:
 
 1. Entri [`CHANGELOG.md`](../../CHANGELOG.md) (Added / Changed / Security / Fixed).
-2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../docs/README.md) (`CAPABILITIES`, `LIMITATIONS`, `README` root, `PRD` status fitur, `ARCHITECTURE` / `DEPLOY_*` jika port atau zona berubah).
+2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../docs/README.md) — selaraskan [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md) jika model produk/GaaS berubah (`CAPABILITIES`, `LIMITATIONS`, `PRD`, `ARCHITECTURE`, dll.).
 3. Jangan menulis ulang `docs/reports/*`, `shannon/docs`, `strix/docs` seolah kondisi hari ini.
-4. Jangan mengklaim eBPF XDP, JWT enterprise, Stripe, atau pentest NEX-RED jika kode tidak melakukannya.
+4. Jangan mengklaim eBPF XDP, JWT enterprise, Stripe, **Channel Starter produksi/billing selesai**, **Loop GaaS di Rp 20rb**, atau pentest NEX-RED Shannon jika kode tidak melakukannya.
+5. Jangan dokumentasikan Channel Portal billing otomatis / F-10 sebagai prioritas produk (ditunda).
 
 Agen: `.agents/agents/docs-sync.md`.
 

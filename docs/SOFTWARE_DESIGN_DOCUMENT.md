@@ -1,16 +1,23 @@
-# 📄 SOFTWARE DESIGN DOCUMENT (SWD)
-## Nexus Cyber - Autonomous Tactical Defense Grid & Command Center
+# SOFTWARE DESIGN DOCUMENT (SWD)
+## Nexus Cyber — GaaS Edge Antibody Cowork
 
-Pembaruan 2026-08-20: Control plane SOC = listener terpisah `:8081` + cookie operator. Data plane = `:8080`. eBPF di dokumen desain lama = **target**, bukan driver aktif. Provisioner SaaS / Stripe = belum. Back-office daftar semua pelanggan (F-10) = **belum**; tempatnya portal SaaS, bukan Command Center SOC.
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)  
+Control plane `:8081` + cookie operator. Data plane `:8080`. eBPF = **stub**. Job Cowork = **ada**. Channel Portal / F-10 = **portal v0.1 / F-10 ditunda**. Command Center = kokpit operator, bukan produk GaaS ke klien.
 
 ---
 
-Sistem Nexus Cyber menggunakan pola desain **Microservices Loosely-Coupled** yang memisahkan antara lapisan *Data Plane* (WAF Gateway di Go) dengan *Control Plane* (SOC Dashboard di Next.js), serta mendukung 2 Topologi Deployment:
-- **Mode B2B SaaS (Cloud Multi-Tenant)**: Gateway berjalan di Cloud Proxy Cluster kita. Klien swasta mengarahkan CNAME domain mereka ke proxy kita. Notifikasi Telegram di-route secara dinamis ke HP masing-masing pemilik domain per-tenant.
-- **Mode B2G GovEdu (Self-Hosted On-Premise)**: Gateway dipasang 100% di server/Pusat Data (PDN) milik instansi pemerintah/sekolah itu sendiri. Seluruh data & AI lokal berjalan di dalam infrastruktur dinas tanpa keluar internet, notifikasi dikirim ke Telegram Group CSIRT Dinas.
+Sistem Nexus Cyber memisahkan **Data Plane** (WAF Gateway Go) dan **Control Plane** (SOC Next.js + NEX-RED bridge). Model deployment GaaS:
 
-Komponen utama:
-1.  **Reverse Proxy & Router Layer**: Menerima request HTTP publik, memeriksa kecocokan domain client premium, memproses payload di WAF middleware, dan meneruskan request ke backend target.
+- **Instance kanal:** satu `PROTECTED_HOST` per gateway (VPS atau on-prem).
+- **Job / Loop GaaS:** NEX-RED wasit (defense delta + antibody loop) + operator; artefak Job **belum** terimplementasi penuh.
+- **Legacy multi-tenant CNAME:** ditunda — jangan desain seolah produk jual hari ini.
+
+> Bagian ERD dan modul di bawah ini mungkin masih memuat istilah B2B legacy subscription / GovEdu lama. Kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+Komponen utama (legacy desain):
+
+1.  **Reverse Proxy & Router Layer**:
 2.  **MTD Port Shuffler**: Goroutine independen yang memantau waktu rotasi port target, menghitung port acak menggunakan CSPRNG, dan menginstruksikan router proxy untuk mengubah alamat target secara dinamis.
 3.  **Active Deception Modules**:
     *   **HTTP Honeypot**: Server HTTP independen yang berjalan di port `:9090` untuk mendeteksi penyerang web scanning.

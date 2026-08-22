@@ -13,9 +13,11 @@ if hasattr(sys.stdout, "reconfigure"):
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.types import ScanMode, ScanTarget
+from core.types import AutonomyLevel, CoworkJobStatus, ScanMode, ScanTarget
 from core.orchestrator import NexRedOrchestrator
 from agents.reporting.report_generator import ReportGenerator
+from jobs.orchestrator import JobCoworkOrchestrator
+from jobs.scheduler import JobScheduler
 
 
 def main():
@@ -71,6 +73,42 @@ def main():
 
     bridge_parser = subparsers.add_parser("bridge", help="Start the NEX-RED Gateway Bridge")
     bridge_parser.add_argument("-p", "--port", type=int, default=3004, help="Port (default: 3004)")
+
+    job_parser = subparsers.add_parser("job", help="GaaS Job Cowork (wasit → approval → close)")
+    job_sub = job_parser.add_subparsers(dest="job_command")
+
+    job_run = job_sub.add_parser("run", help="Create and measure a Job")
+    job_run.add_argument("--title", required=True, help="Job title")
+    job_run.add_argument("-u", "--url", default="http://127.0.0.1:8080", help="Target URL")
+    job_run.add_argument("-r", "--repo", default=None, help="Repo path for white-box")
+    job_run.add_argument(
+        "--autonomy",
+        choices=["L0", "L1"],
+        default="L0",
+        help="L0=artifact only, L1=edge apply + replay",
+    )
+    job_run.add_argument("--no-llm", action="store_true", help="Disable LLM planner")
+    job_run.add_argument("--auto-approve", action="store_true", help="Lab only: skip approval gate")
+
+    job_sub.add_parser("list", help="List recent jobs")
+    job_show = job_sub.add_parser("show", help="Show job detail")
+    job_show.add_argument("job_id", help="Job ID")
+    job_approve = job_sub.add_parser("approve", help="Approve pending job (L0/L1 gate)")
+    job_approve.add_argument("job_id", help="Job ID")
+    job_approve.add_argument("--operator", default="cli-operator", help="Operator name")
+    job_approve.add_argument("--note", default=None, help="Approval note")
+    job_export = job_sub.add_parser("export", help="Print artifact paths / markdown")
+    job_export.add_argument("job_id", help="Job ID")
+    job_export.add_argument("--format", choices=["md", "json"], default="md")
+
+    sched_add = job_sub.add_parser("schedule-add", help="Add Loop GaaS schedule")
+    sched_add.add_argument("--title", required=True)
+    sched_add.add_argument("-u", "--url", default="http://127.0.0.1:8080")
+    sched_add.add_argument("--autonomy", choices=["L0", "L1"], default="L0")
+    sched_add.add_argument("--interval-hours", type=int, default=168)
+    job_sub.add_parser("schedule-list", help="List Loop GaaS schedules")
+    sched_tick = job_sub.add_parser("schedule-tick", help="Run due schedules now")
+    sched_tick.add_argument("--auto-approve", action="store_true")
 
     args = parser.parse_args()
 
@@ -184,8 +222,88 @@ def main():
 
         print(f"[*] NEX-RED bridge on 127.0.0.1:{args.port}")
         uvicorn.run(app, host="127.0.0.1", port=args.port)
+    elif args.command == "job":
+        engine = JobCoworkOrchestrator()
+        if args.job_command == "run":
+            print(f"[*] Job Cowork: {args.title} → {args.url} ({args.autonomy})")
+            job = engine.create_job(
+                title=args.title,
+                target_url=args.url,
+                autonomy_level=AutonomyLevel(args.autonomy),
+                repo_path=args.repo,
+            )
+            job = engine.run_measurement(job.job_id, enable_llm=not args.no_llm)
+            print(f"[*] Status: {job.status.value} — awaiting approval")
+            if args.auto_approve:
+                job = engine.approve(job.job_id, operator="cli-auto", note="lab auto-approve")
+            _print_job(job)
+        elif args.job_command == "list":
+            for item in engine.list_jobs():
+                print(f"{item.job_id}  {item.status.value:18}  {item.title}  {item.target_url}")
+        elif args.job_command == "show":
+            job = engine.get(args.job_id)
+            if not job:
+                print(f"[!] Job not found: {args.job_id}")
+                raise SystemExit(1)
+            _print_job(job)
+        elif args.job_command == "approve":
+            job = engine.approve(args.job_id, operator=args.operator, note=args.note)
+            _print_job(job)
+        elif args.job_command == "export":
+            job = engine.get(args.job_id)
+            if not job:
+                print(f"[!] Job not found: {args.job_id}")
+                raise SystemExit(1)
+            scan = engine.store.load_scan_result(args.job_id)
+            if args.format == "json":
+                from jobs.artifact import build_artifact_payload
+                import json
+
+                print(json.dumps(build_artifact_payload(job, scan), indent=2))
+            else:
+                from jobs.artifact import render_markdown
+
+                print(render_markdown(job, scan))
+        elif args.job_command == "schedule-add":
+            sched = JobScheduler().add_schedule(
+                title=args.title,
+                target_url=args.url,
+                autonomy_level=AutonomyLevel(args.autonomy),
+                interval_hours=args.interval_hours,
+            )
+            print(f"[*] Schedule {sched.schedule_id} every {sched.interval_hours}h → {sched.target_url}")
+        elif args.job_command == "schedule-list":
+            for item in JobScheduler().list_schedules():
+                print(
+                    f"{item.schedule_id}  enabled={item.enabled}  every {item.interval_hours}h  "
+                    f"{item.title}  last={item.last_job_id or 'never'}"
+                )
+        elif args.job_command == "schedule-tick":
+            created = JobScheduler().tick(auto_approve=args.auto_approve)
+            print(f"[*] Created jobs: {', '.join(created) or 'none due'}")
+        else:
+            job_parser.print_help()
     else:
         parser.print_help()
+
+
+def _print_job(job) -> None:
+    print()
+    print("=" * 70)
+    print(f"[*] Job: {job.job_id}")
+    print(f"[*] Title: {job.title}")
+    print(f"[*] Target: {job.target_url}")
+    print(f"[*] Autonomy: {job.autonomy_level.value}")
+    print(f"[*] Status: {job.status.value}")
+    print(f"[*] Scan: {job.scan_id or 'n/a'}")
+    print(f"[*] Defense deltas: {job.defense_deltas or '{}'}")
+    print(f"[*] Residuals: {job.residuals or 'none'}")
+    print(f"[*] Antibody loop OK: {job.antibody_loop_ok}")
+    if job.artifact_paths:
+        print(f"[*] Artifacts: {job.artifact_paths}")
+    if job.status == CoworkJobStatus.PENDING_APPROVAL:
+        print("[*] Next: nexred.py job approve", job.job_id, "--operator <name>")
+    print("=" * 70)
 
 
 if __name__ == "__main__":

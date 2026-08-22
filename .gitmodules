@@ -1,6 +1,3 @@
 [submodule "playground/Portofolio-Thoriq"]
 	path = playground/Portofolio-Thoriq
 	url = https://github.com/Thbetyfu/Portofolio-Thoriq.git
-[submodule "playground/NEXUS-CYBER-WEBISTE-SAAS"]
-	path = playground/NEXUS-CYBER-WEBISTE-SAAS
-	url = https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-SAAS.git

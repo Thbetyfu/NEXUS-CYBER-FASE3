@@ -90,7 +90,7 @@ type AIInsight struct {
 	RecommendedAction string    `gorm:"type:varchar(255)"` // Mitigasi spesifik (misal: "BLOCK_IP")
 }
 
-// DomainSubscription memetakan tabel `domain_subscriptions` untuk kontrol lisensi SaaS WAF terpusat
+// DomainSubscription memetakan tabel `domain_subscriptions` untuk kontrol lisensi langganan legacy terpusat
 // serta pendaftaran notifikasi Telegram Multi-Tenant per-domain.
 type DomainSubscription struct {
 	Base
@@ -131,6 +131,77 @@ type AntibodyAudit struct {
 	InstanceID       string `gorm:"type:varchar(100)"`
 	// IsSharedToRedis menandai apakah antibodi ini sudah berhasil disinkronkan ke Redis shared store.
 	IsSharedToRedis  bool   `gorm:"type:boolean;default:false"`
+	// JobID menghubungkan vaksin lab/Job Cowork ke siklus GaaS (opsional).
+	JobID string `gorm:"type:varchar(32);index"`
+}
+
+// CoworkJob memetakan tabel `cowork_jobs` — entitas GaaS Job Cowork (Alur B).
+type CoworkJob struct {
+	Base
+	JobID          string `gorm:"type:varchar(32);uniqueIndex;not null"`
+	Title          string `gorm:"type:varchar(255)"`
+	TargetURL      string `gorm:"type:text"`
+	HostKey        string `gorm:"type:varchar(255);index"`
+	Scope          string `gorm:"type:varchar(64)"`
+	AutonomyLevel  string `gorm:"type:varchar(8)"`
+	Status         string `gorm:"type:varchar(32);index"`
+	ScanID         string `gorm:"type:varchar(64);index"`
+	RepoPath       string `gorm:"type:text"`
+	DefenseDeltas  string `gorm:"type:text"` // JSON object label→count
+	Residuals      string `gorm:"type:text"` // JSON array
+	AntibodyLoopOK *bool  `gorm:"type:boolean"`
+	FindingsCount  int    `gorm:"type:int"`
+	MitigatedCount int    `gorm:"type:int"`
+	LiveChecksRun  int    `gorm:"type:int"`
+	ArtifactJSON   string `gorm:"type:text"`
+	ArtifactMD     string `gorm:"type:text"`
+	ScanResultJSON string `gorm:"type:text"`
+}
+
+// CoworkJobStepLog jejak langkah Job Cowork untuk audit operator.
+type CoworkJobStepLog struct {
+	Base
+	JobID   string `gorm:"type:varchar(32);index;not null"`
+	Phase   string `gorm:"type:varchar(64)"`
+	Message string `gorm:"type:text"`
+	LoggedAt time.Time `gorm:"type:timestamp;index"`
+}
+
+// CoworkJobApproval gerbang persetujuan L0/L1.
+type CoworkJobApproval struct {
+	Base
+	JobID         string `gorm:"type:varchar(32);index;not null"`
+	Operator      string `gorm:"type:varchar(128)"`
+	AutonomyLevel string `gorm:"type:varchar(8)"`
+	Note          string `gorm:"type:text"`
+	Approved      bool   `gorm:"type:boolean;default:true"`
+	ApprovedAt    time.Time `gorm:"type:timestamp;index"`
+}
+
+// HostImmuneMemory riwayat wasit/antibodi per hostname (G-7).
+type HostImmuneMemory struct {
+	Base
+	HostKey              string `gorm:"type:varchar(255);uniqueIndex;not null"`
+	AntibodyLearnedCount int    `gorm:"type:int;default:0"`
+	ReplayMissedCount    int    `gorm:"type:int;default:0"`
+	OriginOpenCount      int    `gorm:"type:int;default:0"`
+	LastJobID            string `gorm:"type:varchar(32)"`
+	LastStatus           string `gorm:"type:varchar(32)"`
+	HistoryJSON          string `gorm:"type:text"`
+}
+
+// CoworkJobSchedule jadwal Loop GaaS (G-8).
+type CoworkJobSchedule struct {
+	Base
+	ScheduleID    string `gorm:"type:varchar(32);uniqueIndex;not null"`
+	Title         string `gorm:"type:varchar(255)"`
+	TargetURL     string `gorm:"type:text"`
+	AutonomyLevel string `gorm:"type:varchar(8)"`
+	RepoPath      string `gorm:"type:text"`
+	IntervalHours int    `gorm:"type:int;default:168"`
+	Enabled       bool   `gorm:"type:boolean;default:true"`
+	LastRunAt     *time.Time
+	LastJobID     string `gorm:"type:varchar(32)"`
 }
 
 

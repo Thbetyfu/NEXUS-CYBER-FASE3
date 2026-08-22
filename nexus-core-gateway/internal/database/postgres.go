@@ -64,6 +64,11 @@ func InitPostgres() {
 		&models.DomainSubscription{},
 		// [NEW] Audit trail untuk setiap antibodi zero-day yang dipelajari NEX-AI secara otonom (Self-Healing Log)
 		&models.AntibodyAudit{},
+		&models.CoworkJob{},
+		&models.CoworkJobStepLog{},
+		&models.CoworkJobApproval{},
+		&models.HostImmuneMemory{},
+		&models.CoworkJobSchedule{},
 	)
 	if err != nil {
 		log.Fatalf("[DB-ERROR] Failed to run migrations: %v", err)

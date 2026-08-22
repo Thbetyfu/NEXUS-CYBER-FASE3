@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # ⚠️ SUPERSEDED ARTIFACT
 Dokumen ini adalah catatan historis fase migrasi cloud inference pada 2026-03-20. Isinya dipertahankan apa adanya untuk integritas audit, tetapi **bukan lagi representasi arsitektur aktif**. Arsitektur saat ini menggunakan full local NEX-AI via Ollama.
 

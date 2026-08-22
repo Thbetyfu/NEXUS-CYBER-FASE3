@@ -1,12 +1,11 @@
 ---
 name: dual-brain
-description: Ensemble AI Architecture for Nexus Cyber (NEX-AI Reflex + NEX-AI Protect)
+description: Reflex regex + optional nex-ai-protect async — bukan selling point GaaS; lihat PRODUCT_MODEL.md
 ---
 
-# 🧠 Skill: Dual-Brain (Ensemble AI)
+# Skill: Dual-Brain (NEX-AI)
 
-## Objective
-Implementasikan arsitektur Ensemble AI kustom untuk filter trafik massal dan analisis anomali mendalam.
+**Produk GaaS** = wasit + Job Cowork, bukan dual-brain branding. Reflex di jalur request = **regex**; `nex-ai-protect` opsional asinkron.
 
 ## Workflow
 1. **Reflex Layer (NEX-AI Reflex)**: Model skala kecil dan cepat (`nex-ai-reflex`) untuk filtrasi real-time sub-milidetik.

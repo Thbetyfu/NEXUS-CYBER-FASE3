@@ -1,3 +1,7 @@
+> **Arsip historis** — snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 # ðŸ“Š LAPORAN PERBANDINGAN BENCHMARK: NEX-AI vs MODEL LLM LAINNYA
 ## Evaluasi Keunggulan Arsitektur & Performa WAF Cybersecurity Gateway
 

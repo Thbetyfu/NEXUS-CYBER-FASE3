@@ -31,6 +31,8 @@ import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
 import LicenseManagerWidget from '@/components/LicenseManagerWidget';
 import ComplianceWidget from '@/components/ComplianceWidget';
 import SocAuthGate from '@/components/SocAuthGate';
+import WarGameWidget from '@/components/WarGameWidget';
+import JobCoworkWidget from '@/components/JobCoworkWidget';
 
 // Config
 import { gatewayURL } from '@/config';
@@ -1414,6 +1416,26 @@ const NCCDashboard = () => {
               onClose={() => toggleWindow("compliance-audit")}
             >
               <ComplianceWidget />
+            </WindowFrame>
+          )}
+
+          {/* Job Cowork (GaaS Alur B) */}
+          {openWindows.includes("job-cowork") && (
+            <WindowFrame
+              key="job-cowork"
+              id="job-cowork"
+              title="Job Cowork — GaaS Wasit"
+              icon={<ShieldCheck size={14} />}
+              initialX={280}
+              initialY={90}
+              width={820}
+              height={560}
+              zIndex={windowZIndices["job-cowork"] || 23}
+              isActive={focusedWindow === "job-cowork"}
+              onFocus={() => handleFocusWindow("job-cowork")}
+              onClose={() => toggleWindow("job-cowork")}
+            >
+              <JobCoworkWidget />
             </WindowFrame>
           )}
 

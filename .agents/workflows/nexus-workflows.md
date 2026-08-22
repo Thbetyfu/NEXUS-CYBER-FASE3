@@ -1,15 +1,14 @@
 ---
-description: Alur Kerja (Workflow) untuk mengembangkan fitur atau memodifikasi modul di Nexus Cyber Fase 2
+description: Alur kerja pengembangan Nexus Cyber GaaS
 ---
 
-# 🚀 Nexus Cyber Development Workflow
+# Nexus Cyber Development Workflow
 
-Gunakan alur kerja ini ketika mengembangkan fitur baru (seperti modul AI, sistem pertahanan MTD, atau dasbor Command Center) di Nexus Cyber Fase 2.
+**Model produk:** [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md). Prioritas kode: Job Cowork → wasit → tepi. Billing otomatis massal **ditunda**.
 
-### Langkah 1: Pahami Konteks & Desain Arsitektur (Strategic Alignment)
-1. Periksa folder `docs/` (terutama `ARCHITECTURE.md` dan `NEXUS_CORE_DIRECTIVES.md`).
-2. Diskusikan dengan USER tentang *User Flow* dan *Logic Flow*. Jangan langsung menulis kode sebelum USER menyetujui pendekatan arsitekturnya.
-3. Tentukan apakah fitur ini berada di ranah **Backend (Go)** atau **Frontend (Next.js)**.
+### Langkah 1: Konteks
+1. Baca `docs/PRODUCT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/LIMITATIONS.md`.
+2. Jangan membangun F-10 / provisioner kecuali pemilik minta.
 
 ### Langkah 2: Evaluasi Risiko Keamanan & Latensi
 1. Jika menambahkan fitur analisis/AI, pastikan eksekusi berat dimasukkan ke dalam antrean (goroutine/Redis) sehingga tidak menyebabkan latensi *reverse proxy* naik > 50ms.

@@ -1,12 +1,14 @@
 # Nexus Cyber — deploy lokal 1 klik
 
+Lab **Alur A** (tepi) + uji **Alur B** (NEX-RED wasit). Model produk: [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md).
+
 Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di laptop, lalu mem-proxy situs portofolio di belakangnya.
 
 Alur yang benar untuk bukti:
 
 `pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. Situs publik tetap di [portofolio Vercel](https://portfolio-website-three-ruddy-65.vercel.app/) tanpa WAF.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus.
 
 ## Skenario lab: hotspot blue team
 

@@ -1,33 +1,53 @@
-# ⚠️ Nexus Cyber Limitations
+# Nexus Cyber Limitations
 
-Dokumen ini adalah kontrak kejujuran produk. Pembaruan: 2026-08-20.
+Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-22.
+
+---
+
+## Batasan model GaaS
+
+1. **Dua lapisan produk** — Channel Starter (murah, **lab v0.1** `channel-starter/`) ≠ Loop GaaS (mahal, **sudah** mesin lab). Jangan gabung klaim.
+2. **Bukan self-serve legacy** — F-10 **ditunda**; Starter v1 = **`nexus-channel-portal/`** + form + template.
+3. **Bukan SOC otonom 24/7** — Job Cowork + operator; manusia pemilik risiko L0/L1.
+4. **Rp ~20rb/bulan** — realistis hanya untuk **website template** shared; **tanpa** Job Cowork, domain included, atau support unlimited.
+5. **Bukan pentest exploit** — NEX-RED = wasit purple-team jinak.
+6. **Residual wajib jujur** — `origin_open` / `replay_missed` tidak disembunyikan.
+7. **Bukan GRC bank penuh** — irisan kanal digital saja.
+8. **Bukan approve regulator** — POJK/BSSN = pembingkai kompetisi, bukan sertifikasi.
+9. **DIY bisa meniru komponen** — moat = operasi + loop + jejak, bukan “tidak bisa ditiru”.
+
+---
 
 ## Di luar cakupan (umum)
 
-1. **Rekayasa sosial** — WAF tidak menghentikan karyawan yang menyerahkan sandi.
-2. **Akses fisik** — cabut listrik, curi disk, konsol server.
-3. **Insider** dengan shell pada host — bypass gateway.
-4. **Celah CPU/firmware** (Spectre, dll.).
-5. **Email** — bukan gerbang SMTP/malware lampiran.
-6. **Pemulihan baris database** — self-repair hanya file template yang dipantau, bukan PITR Postgres.
+1. Rekayasa sosial, akses fisik, insider shell, celah firmware
+2. Email / SMTP malware
+3. Pemulihan database — self-repair hanya file template terpantau
+4. DDoS volumetric — eBPF **stub**, tidak `XDP_DROP`
+5. RCE memori tanpa ubah file — self-repair tidak mendeteksi
 
-## Batasan yang ada di kode (penting untuk demo)
+---
 
-7. **Bukan WAF “AI penuh” pada setiap request.** Reflex = regex. Model reasoning tidak wajib hidup; tanpa Ollama/API, filtrasi tetap regex.
-8. **Bukan DDoS kernel.** `ebpf_stub.go` tidak `XDP_DROP`.
-9. **Bukan PQC ke browser pengunjung.** Jangan klaim MitM-proof end-to-end.
-10. **Command Center bukan benteng publik.** SOC di `127.0.0.1` + cookie operator. Hotspot red team hanya boleh menembak situs di `:80`, bukan dasbor. Di WAF `:8080`, path SOC (`/api/telemetry`, CLI, ban, reset) mengembalikan **404** (bukan JSON operator). Lab portofolio **tidak** menyediakan `POST /nexred/lab/session-pair`; NEX-RED dua akun tetap `sast_only` kecuali origin lain (Juice Shop) atau token env.
-11. **Lisensi lab** memakai kunci development (`nexus-cyber-dev`) — lockout 402 tidak mewakili produksi berbayar.
-12. **Membuka origin Vercel langsung melewati Nexus.** Bukti WAF hanya lewat Caddy/IP laptop.
-13. **NEX-RED bukan Shannon/Strix.** v5 punya pemeriksaan HTTP tanpa sesi plus **dua akun** jika lab menyediakan session-pair atau token env, plus GET objek tanpa sesi; planner LLM JSON hanya nama cek allow-list (bukan payload); agen bernama; browser lab opsional (Playwright); lab Juice Shop hanya **skor kelas** HTTP jinak (401 tercatat sebagai rejected). **Defense delta** membandingkan WAF vs origin lab (HTTP privat saja) dan replay 403 — itu wasit purple-team, bukan bukti exploit. `NEX_RED_ORIGIN_DIRECT` publik/HTTPS ditolak. Loop antibodi lab memakai `GET /nexred/lab/antibody-signal` (hanya angka) dan `POST /nexred/lab/vaccine-probe`; gagal replay = `replay_missed`. Daftar pola `/api/antibodies` tetap di SOC `:8081`. Harness hotspot tidak jalan di `127.0.0.1` (SOC laptop) kecuali dipaksa env. Sandbox Docker **bukan** kunci egress kernel (`curl` mentah bisa ke internet). Runtime LLM **hanya** `nex-ai-protect` (milik Nexus); Qwen/Llama di Ollama **bukan** pengganti. Protect dan reflex **satu GGUF**, dua Modelfile; belum dua model terlatih terpisah. Dataset lab dikumpulkan dari telemetri WAF (`collect_lab_dataset.py`); itu bahan latih, bukan model baru. Jika model belum didaftarkan atau JSON gagal, scan deterministik / `--no-llm`. Lihat [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md). Tidak ada proof-by-exploitation.
-14. **PACS/Base64** (jika aktif) adalah obfuskasi, bukan enkripsi.
-15. **Regex Reflex masih bisa dilompati** obfuskasi dalam (bukan percent/HTML/`\u`/komentar `/* */`/huruf fullwidth yang sudah dinormalisasi). Lihat arsip `docs/VULNERABILITY_ASSESSMENT.md` sebagai sejarah, bukan daftar celah hari ini.
-16. **Provisioner SaaS per-tenant dan pembayaran otomatis** belum menjadi produk jadi. Yang ada: **satu** `PROTECTED_HOST` per instance (CNAME/hosts ke mesin ini). Bukan daftar domain klien otomatis, bukan registrar.
-17. **Hotspot lab memakai HTTP.** Sidik jari Gallery memakai SHA-256 jika `crypto.subtle` ada, atau digest cadangan jika tidak. Itu header telemetri, bukan bukti HTTPS/PQC. **HSTS tidak dipasang di HTTP lab** (akan merusak `http://192.168.x.x`). CSP edge mengizinkan `'unsafe-inline'` karena tantangan sesi dan portofolio memakai skrip sebaris — bukan klaim anti-XSS penuh.
-18. **Foto tamu di RAM gateway.** `GET /api/photos` menghilang jika container gateway di-restart. Gallery harus fetch same-origin `/api/photos` (bukan hostname Docker). Setelah rebuild, unggah ulang untuk mengisi list.
-19. **Telegram adalah pager, bukan deteksi.** WAF tetap memblokir tanpa bot. Pesan tidak 100% lokasi, tidak menembus VPN, tidak memaksa GPS semua pengunjung. IP lab `192.168.x.x` = hotspot, bukan pin rumah. Laptop blue team harus bisa keluar ke internet (Ethernet) agar `api.telegram.org` tercapai; hotspot tanpa share internet tidak mengirim pager.
+## Batasan kode (demo & produksi)
 
-## Yang sengaja ditunda
+6. **Reflex = regex** — bukan AI pada setiap request; model reasoning opsional.
+7. **Command Center bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`.
+8. **Satu `PROTECTED_HOST` per instance** — bukan multi-tenant otomatis.
+9. **PACS/Base64** — obfuskasi, bukan enkripsi.
+10. **NEX-RED origin direct** — hanya HTTP privat; publik/HTTPS ditolak untuk delta.
+11. **Telegram** — pager setelah ban; bukan GPS; bukan deteksi mandiri.
+12. **F-10 back-office** — ditunda; roster pelanggan **bukan** di SOC `:8081`.
 
-- Webhook pembayaran fail-closed / Midtrans-Stripe orkestrasi: tidak dikerjakan sampai pemilik meminta (lihat CHANGELOG Unreleased).
-- **Back-office super-admin (daftar semua pelanggan):** diperlukan **ketika produk dijual** (berapa user, situs mana, sisa hari/`endDate`, aktivasi GovEdu manual). **Bukan** fitur SOC. `nexus-admin-dashboard` tetap Command Center instance ini (ancaman, ban, telemetri). Roster pelanggan tinggal di Postgres portal SaaS (`playground/NEXUS-CYBER-WEBISTE-SAAS`). Jangan menempelkan PII pelanggan ke `:8081` / `:3001`. Belum dikerjakan (lab masih satu `PROTECTED_HOST`).
+---
+
+## Yang sengaja ditunda (legacy subscription)
+
+- Webhook pembayaran fail-closed / Midtrans-Stripe
+- Back-office F-10 di portal legacy
+- Provisioner per-tenant CNAME massal
+
+Lihat [CHANGELOG.md](../CHANGELOG.md) Unreleased.
+
+---
+
+*Limitations GaaS — 2026-08-22.*

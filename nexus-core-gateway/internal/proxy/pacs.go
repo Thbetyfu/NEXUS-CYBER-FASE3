@@ -28,7 +28,7 @@ func IsDomainActive(domain string) bool {
 	err := database.DB.Where("domain = ?", domain).First(&sub).Error
 	if err != nil {
 		// If domain has never been registered, register it automatically as ACTIVE premium
-		// so that the zero-config SaaS integration works seamlessly out of the box!
+		// so that the zero-config integration works seamlessly out of the box!
 		newSub := models.DomainSubscription{
 			Domain:   domain,
 			OriginIP: "127.0.0.1",

@@ -2,36 +2,39 @@
 
 Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di repository dilarang.
 
+**Pivot produk 2026-08-22:** **Channel Starter** (entry UMKM) + **GaaS Edge Antibody Cowork**. Sumber kebenaran: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Keputusan terbuka: [DECISIONS_OPEN.md](./DECISIONS_OPEN.md).
+
 ## Hidup (wajib diselaraskan saat kode berubah)
 
 | Berkas | Isi |
 | --- | --- |
-| [CHANGELOG.md](../CHANGELOG.md) | Riwayat perubahan perilaku |
-| [CAPABILITIES.md](./CAPABILITIES.md) | Apa yang sistem **benar-benar** lakukan |
-| [LIMITATIONS.md](./LIMITATIONS.md) | Apa yang **tidak** dijamin |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Stack, port, struktur folder |
-| [DEPLOY_ARCHITECTURE.md](./DEPLOY_ARCHITECTURE.md) | Data plane vs control plane |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Cara menjalankan |
-| [PRD.md](./PRD.md) | Kebutuhan produk + status implementasi |
-| [SOFTWARE_REQUIREMENTS_SPECIFICATION.md](./SOFTWARE_REQUIREMENTS_SPECIFICATION.md) | SRS |
-| [CLI_GUIDE.md](./CLI_GUIDE.md) | Perintah SOC / NEX-RED |
-| [../README.md](../README.md) | Ringkasan repo |
+| [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | Dua lapisan — Starter + GaaS Job/L0/L1 |
+| [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) | Entry UMKM form→template (**lab v0.1**) |
+| [NEXUS_CHANNEL_PORTAL.md](./NEXUS_CHANNEL_PORTAL.md) | Pintu jual B2C/B2B — `nexus-channel-portal/` |
+| [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) | Keputusan bisnis — tanya pemilik |
+| [CHANGELOG.md](../CHANGELOG.md) | Riwayat perilaku |
+| [CAPABILITIES.md](./CAPABILITIES.md) / [LIMITATIONS.md](./LIMITATIONS.md) | Kontrak kejujuran |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) / [DEPLOY_ARCHITECTURE.md](./DEPLOY_ARCHITECTURE.md) | Stack & zona |
+| [PRD.md](./PRD.md) / [SRS](./SOFTWARE_REQUIREMENTS_SPECIFICATION.md) / [SWD](./SOFTWARE_DESIGN_DOCUMENT.md) | Spesifikasi |
+| [BRD.md](./BRD.md) / [BUSINESS_AND_DEPLOYMENT_SCHEMES.md](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md) | Bisnis GaaS |
+| [CLI_GUIDE.md](./CLI_GUIDE.md) / [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Operasi |
+| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) / [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Skema & repair |
+| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) / [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Submodule & AI |
+| [../README.md](../README.md) / [../AGENTS.md](../AGENTS.md) / [../ROADMAP.md](../ROADMAP.md) / [../Task.MD](../Task.MD) / [../UNIT_TESTING.md](../UNIT_TESTING.md) | Root |
+| [../nexus-core-gateway/README.md](../nexus-core-gateway/README.md) | Gateway |
+| [../nexus-admin-dashboard/README.md](../nexus-admin-dashboard/README.md) | Operator kokpit |
+| [../nexus-channel-portal/README.md](../nexus-channel-portal/README.md) | Channel Portal (jual) |
+| [../NEX-RED/README.md](../NEX-RED/README.md) | Wasit GaaS |
 | [../deploy-local/README.md](../deploy-local/README.md) | Lab 1 klik |
-| [../deploy-local/red-team/CHECKLIST.md](../deploy-local/red-team/CHECKLIST.md) | Apa yang diuji red team di hotspot |
-| [SOFTWARE_DESIGN_DOCUMENT.md](./SOFTWARE_DESIGN_DOCUMENT.md) | Desain; banner 8081/eBPF stub |
-| [NEXUS_CORE_DIRECTIVES.md](./NEXUS_CORE_DIRECTIVES.md) | Aturan arsitektur |
-| [../AGENTS.md](../AGENTS.md) | Instruksi agen berikutnya |
-| [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Runtime hanya `nex-ai-protect` / `nex-ai-reflex` |
-| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) | Submodule portofolio + `playground/NEXUS-CYBER-WEBISTE-SAAS` |
-| [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Integrity monitor BLAKE3 |
+| [../scripts/README.md](../scripts/README.md) | Skrip |
 
-## Beku (arsip historis — jangan ditulis ulang seolah kondisi hari ini)
+## Beku (arsip — banner `Arsip historis` di header)
 
-- `docs/reports/*` — laporan QA pada tanggal di header
-- `docs/VULNERABILITY_ASSESSMENT.md`, `docs/INTELLIGENCE_GAP.md`, `docs/NEX_AI_*`, `docs/BRD.md`, `docs/ENTERPRISE_THREAT_INTEL_PLAN.md` — snapshot bisnis/evaluasi lama (klaim eBPF/JWT di sana **bukan** kontrak kode)
-- `docs/PERFORMANCE_ESTIMATION.md`, `docs/DATABASE_SCHEMA.md`, `docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md` — estimasi / visi; bukan bukti XDP atau SaaS CNAME
-- `shannon/docs/*`, `strix/docs/*` — dokumentasi pihak ketiga, bukan kontrak Nexus
+- `docs/reports/*` — QA pada tanggal di header
+- `docs/VULNERABILITY_ASSESSMENT.md`, `INTELLIGENCE_GAP.md`, `ENTERPRISE_THREAT_INTEL_PLAN.md`, `NEX_AI_*`, `PERFORMANCE_ESTIMATION.md`, `PRD_Template_Siap_AI.md`
+- `NEX-AI/*.md`, `nex-ai-models/README.md` — submodul latih/evaluasi
+- `strix/`, `Soup/`, `shannon/` — pihak ketiga; **tidak** diselaraskan GaaS
 
 ## Aturan agen
 
-Jika Anda mengubah perilaku gateway, dasbor, NEX-RED, Caddy, atau compose: perbarui baris terkait di tabel **Hidup**, tambah entri `CHANGELOG.md`, dan jangan mengarang fitur di CAPABILITIES.
+Perubahan perilaku → `CHANGELOG.md` + dokumen hidup + selaraskan `PRODUCT_MODEL.md`. Jangan jual Loop di Rp 20rb / billing Starter massal / Job selesai jika kode belum.

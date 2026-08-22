@@ -1,54 +1,92 @@
-lokasi 
+# Task & Backlog Nexus Cyber
 
-Catatan (2026-08-15): **pembayaran / webhook / Stripe / Midtrans jangan dikerjakan dulu** (permintaan pemilik). Setiap ubahan kode berikutnya wajib ikut `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/README.md`.
+**Pembaruan:** 2026-08-22  
+**Strategi:** [docs/PRODUCT_MODEL.md](docs/PRODUCT_MODEL.md) — **Channel Starter** (entry UMKM) + **GaaS Edge Antibody Cowork** (inti). Keputusan terbuka: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md).
 
-1. dibuat menjadi sesuai uji coba dimana saya ingin di buat menjadi sesutu website uji ketahanan, jadi dimana website ini akan di deploy lalu Nexus cyber harus bisa mempertahankan website portofolio ini dari serangan cyber, sehingga kekuatan dari nexus cyber ini benar terbukti tetapi belum tau apa saja rencana yang harus di lakukan, dan saya ingin di website portofolionya di tambahkan untuk input gambar, di bagian paling bawah, "tambahkan foto foto kalian" coba pikirkan rencananya, bukti sudah berhasilnya adalah nanti akanada pasword disitu, lalu ketika masuk menggunakan pasword itu maka bisa mendapatkan link dimana link beruba hadiah beruba uang , linknya akan berupa shope kaget (tapi itu nanti akan di pikirkan), jadi yang butuh dikejrakna adlaha:
-   - `[x]` set pasword (REWARD_PASSWORD=NexusAccessSecure2026!)
-   - `[x]` set arsitektur dan user flownya (WAF Proxy -> Target Portfolio -> AVSE Sanitization + Vault Bruteforce protection + SOC Dashboard)
-2. apakah nexus cyber ini sudah benar benar bisa di deploy?
-   - `[x]` Ya, sudah diaudit dan diselaraskan pada docker-compose.yml (TARGET_BACKEND=http://portfolio:3002) dan siap dideploy di VPS / Railway (menggunakan external LLM API).
-3. performa CPU dan RAM butuh berapa? apakah sudah optimal?
-   - `[x]` Ya, profil performa didokumentasikan di docs/PERFORMANCE_ESTIMATION.md. Gateway sangat ringan (15-30MB RAM), LLM lokal membutuhkan minimal 4GB-8GB RAM (jika lokal), disarankan cloud LLM API untuk PaaS/Railway.
+Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/README.md`.
 
 ---
 
-## 🚀 SPRINT ROADMAP: MULTI-TENANT DEDICATED SAAS & GLOBAL LICENSE LOCKOUT (NEXUS CYBER SAAS)
+## Selesai (lab / fondasi)
 
-Rencana kerja strategis untuk mengubah seluruh infrastruktur Nexus Cyber menjadi sistem SOC (Security Operations Center) SaaS berbasis langganan yang dapat disewa secara mandiri oleh klien:
+1. **Website uji ketahanan portofolio** — Gallery unggah + vault password + autoban 5×  
+   - `[x]` `REWARD_PASSWORD` di env lab  
+   - `[x]` Alur: WAF → portofolio → AVSE + vault + SOC operator  
 
-### 🏢 1. Modul Verifikasi Lisensi Global (Backend Layer)
+2. **Deploy lab**  
+   - `[x]` `deploy-local/` + compose; satu `PROTECTED_HOST`  
+   - `[x]` Performa ringkas: [docs/PERFORMANCE_ESTIMATION.md](docs/PERFORMANCE_ESTIMATION.md)  
 
-* [X] **Task 1: Penyiapan Modul `internal/licensing`**
-  * Buat pustaka otentikasi lisensi terpusat di sisi Go Gateway.
-  * Tambahkan penanganan parameter variabel lingkungan `NEXUS_LICENSE_KEY`.
-* [X] **Task 2: Penyiapan Handshake Rutin**
-  * Jalankan goroutine asinkron yang melakukan verifikasi masa sewa secara berkala (misal: setiap 1 jam sekali) ke server lisensi pusat (`https://license.nexus-cyber.com/verify`).
-* [X] **Task 3: Implementasi Fail-Secure Lockout**
-  * Jika status lisensi `EXPIRED` atau `REVOKED`, gateway akan menangguhkan seluruh rute proxying atau mengembalikan kode pemblokiran total ke browser pengunjung.
+3. **Wasit NEX-RED (komponen GaaS)**  
+   - `[x]` Defense delta (WAF vs origin lab)  
+   - `[x]` Antibody loop (vaccine-probe + replay)  
+   - `[x]` Agen recon / access / injection-hygiene / reporter  
 
-### 🎭 2. Layar Pengunci Dasbor (Frontend Layer)
+4. **Tepi always-on**  
+   - `[x]` Reflex + antibodi cache + control plane `:8081`  
 
-* [X] **Task 4: Dynamic License Guard (React Router Context)**
-  * Deteksi status validitas lisensi dari respon backend REST/SSE API di dasbor Command Center.
-* [X] **Task 5: Premium Dark Lockout Overlay**
-  * Buat komponen modal overlay berukuran penuh (*full-screen unbypassable overlay*) berwarna gelap premium dengan teks peringatan: `"SISTEM DITANGGUHKAN: Masa sewa langganan Nexus Cyber Anda telah berakhir."`
-  * Lindungi layar pengunci agar tidak dapat dilewati menggunakan manipulasi DOM atau inspeksi elemen.
+---
 
-### 📦 3. Orkestrasi Pendaftaran Otomatis (Infrastructure Layer)
+## Prioritas GaaS v1 (kerjakan ini)
 
-* [ ] **Task 6: Dynamic Provisioner Script (`scripts/provisioner.sh`)**
+### Fase 1 — Job Cowork **[Selesai — NEX-RED file-backed]**
 
-  * Buat skrip asinkron yang meluncurkan kontainer Docker-Compose baru secara terisolasi (Gateway + Dashboard + PostgreSQL) untuk setiap penyewa (*tenant*) baru.
-* [ ] **Task 7: Integrasi Midtrans/Stripe Webhook**
+- [x] **G-1:** Entitas `Job` (status, scope, L0/L1, log langkah)  
+- [x] **G-2:** CLI/API `job run` / `job show` — orkestrasi delta + probe yang sudah ada  
+- [x] **G-3:** Aturan `CLOSED_OK` / `CLOSED_GAP` — tidak hijau jika `replay_missed` tanpa residual  
+- [x] **G-4:** Gerbang persetujuan L0 (artefak saja) / L1 (pasang antibodi)  
 
-  * Sambungkan gerbang pembayaran otomatis ke skrip penyediaan kontainer untuk aktivasi instan setelah klien berhasil melakukan pembayaran bulanan.
+### Fase 2 — Deliverable **[Selesai — artefak file + widget operator]**
 
-* [ ] **Task 8: Back-office super-admin (saat dijual — F-10)**
+- [x] **G-5:** Ekspor artefak risiko (Markdown/JSON): delta, antibodi, residual, persetujuan  
+- [x] **G-6:** Halaman ringkas Job di Command Center (operator) — bukan Channel Portal pelanggan  
 
-  * Di portal SaaS (`playground/NEXUS-CYBER-WEBISTE-SAAS`), bukan di `nexus-admin-dashboard`.
-  * Owner/developer saja: jumlah user, daftar situs, sisa masa aktif. Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`.
-  * Jangan kerjakan di sprint lab; lihat `docs/PRD.md` F-10 dan `CHANGELOG.md` Planned.
+### Fase 3 — Moat operasi **[Selesai — file; PG belum]**
 
-  buat versi Auto deploynya jika di jalankan di server on promise, sehingga mudah dan tak butuh banyak lagi maintenece dan mudah di pahami oleh orang awam
+- [x] **G-7:** Memori imun per host (`immune_memory.json` + histori miss)  
+- [x] **G-8:** Job terjadwal (Loop GaaS) — `schedule-add` + tick bridge 60s  
 
-ingat ini ketika di sserang harusnya bisa mengetahuai lokasi penyerang dimana dan tidak tertipu oleh VPN, jadi tolong di selesaian juga apakah ini bisa memberitahu lokasi penyerang dan memberitahukannya di telegram ? dan ini saya mau akan menjadi AI gaent bukan hanya AI biasa
+---
+
+## Prioritas Channel Starter (Milestone 18 — lab v0.1)
+
+- [x] **S-1:** Spesifikasi form wizard + 3 template (`fnb`, `jasa`, `profil`)
+- [x] **S-2:** Generator rule-based (JSON → static site), **bukan** LLM berat — `channel-starter/`
+- [x] **S-3:** Deploy multi-tenant shared + subdomain lab — Caddy import + hosts registry (`channel-starter/cli.py deploy apply` + `deploy-local/`)
+- [x] **S-4:** Halaman admin / onboarding pelanggan — FastAPI form `:3010` (bukan F-10 legacy)
+- [x] **S-5:** Pricing tier + copy jujur (Starter ≠ Cowork) — footer template + manifest
+- [x] **S-6:** Upsell path ke Loop GaaS — `cli.py upsell enable|disable|status`, satu `PROTECTED_HOST` aktif, Job Cowork via bridge `:3004`
+
+**Tanya pemilik** sebelum implementasi: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md).
+
+---
+
+## Milestone 19 — Nexus Channel Portal (v0.1)
+
+- [x] **P-1:** Modul `nexus-channel-portal/` — landing + animasi + harga B2C/B2B
+- [x] **P-2:** Form `/order` + proxy API ke channel-starter
+- [x] **P-3:** Pembayaran manual WA + keputusan Q2/Q4/Q7/Q8 di DECISIONS_OPEN
+- [ ] **P-4:** Midtrans webhook (ditunda)
+
+---
+
+## Ditunda (legacy subscription — jangan kerjakan kecuali pemilik minta)
+
+- [ ] **Task 6:** `scripts/provisioner.sh` multi-tenant  
+- [ ] **Task 7:** Midtrans/Stripe webhook fail-closed  
+- [ ] **Task 8:** F-10 back-office di portal legacy  
+- [ ] Portal self-serve CNAME massal, paket Rp19k **otomatis legacy** (digantikan desain Channel Starter — lihat DECISIONS_OPEN Q8)
+
+Lihat `CHANGELOG.md` Unreleased dan `docs/PRD.md` F-06/F-10.
+
+---
+
+## Catatan operasi (jujur)
+
+- **GeoIP / Telegram:** pager setelah ban; IP publik dapat label GeoIP — **bukan** GPS, **bukan** tembus VPN.  
+- **AI:** runtime hanya `nex-ai-protect` / `nex-ai-reflex` — bukan substitusi Ollama Hub.  
+- **Produk jual:** Channel Starter (entry) → upsell Job/Loop GaaS — lihat [docs/BRD.md](docs/BRD.md) dan [docs/CHANNEL_STARTER.md](docs/CHANNEL_STARTER.md).
+
+---
+
+*Backlog selaras pivot GaaS 2026-08-22.*

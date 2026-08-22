@@ -1,3 +1,7 @@
+> **Arsip historis** — snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 # TEMPLAT PRD SIAP-AI (AI-READY PRD TEMPLATE)
 Format Dokumen Kebutuhan Produk yang Dioptimalkan untuk LLM / AI Code Generator
 

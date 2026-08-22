@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** — bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # NEX-AI models â€” paket pindahan antar laptop
 
 Folder ini berisi bobot Ollama **`nex-ai-protect`** dan **`nex-ai-reflex`** agar bisa dibawa ke laptop lain **tanpa** `git push` file besar.

@@ -1,3 +1,7 @@
+> **Dokumen NEX-RED** — selaraskan [NEX-RED/README.md](../README.md); bukan Shannon/Strix.
+
+---
+
 # Aturan keterlibatan NEX-RED (RoE)
 
 Hanya target milik Nexus:

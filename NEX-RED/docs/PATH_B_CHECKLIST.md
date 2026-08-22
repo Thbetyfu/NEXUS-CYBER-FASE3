@@ -1,3 +1,7 @@
+> **Dokumen NEX-RED** — selaraskan [NEX-RED/README.md](../README.md); bukan Shannon/Strix.
+
+---
+
 # Jalan B â€” Checklist eksekusi
 
 Sumber lengkap: [PATH_B_NATIVE_ENGINE.md](./PATH_B_NATIVE_ENGINE.md).

@@ -1,117 +1,114 @@
-# Panduan Unit Testing & Verifikasi Proyek Nexus Cyber (Fase 2)
+# Panduan Unit Testing & Verifikasi — Nexus Cyber
 
-Dokumen ini menjelaskan seluruh skenario pengujian unit (*Unit Testing*) otomatis yang telah dibuat untuk mengamankan fungsionalitas WAF Gateway, serta tata cara melakukan verifikasi penuh pada komponen backend dan frontend.
-
----
-
-## 1. Daftar Pengujian Unit Otomatis (Go Backend)
-
-Backend Go WAF Gateway dilengkapi dengan rangkaian pengujian otomatis di bawah package `internal` dan `cmd/gateway` untuk mengamankan gerbang lalu lintas jaringan.
-
-### 1.1 Modul Proxy, PACS & CSRF Protection (`internal/proxy`)
-Pengujian di dalam file [pacs_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/pacs_test.go), [middleware_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/middleware_test.go), [provisioner_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/provisioner_test.go), dan [dynamic_router_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/proxy/dynamic_router_test.go):
-
-- **`TestCsrfShield` (Double-Submit Cookie Verification):**
-  - Memastikan request `GET` menyisipkan cookie `nexus_csrf` secara otomatis.
-  - Memastikan request `POST` diblokir (`HTTP 403 Forbidden`) jika tidak mengirim token CSRF atau menggunakan token yang tidak cocok.
-  - Memastikan request `POST` lolos (`HTTP 200 OK`) ketika cookie dan header token `X-CSRF-Token` cocok.
-  - Memastikan bypass validasi pada rute pengecualian seperti `/api/verify-session`.
-- **`TestGenerateRandomKey`:**
-  - Memverifikasi panjang dan tingkat keacakan kunci enkripsi XOR dinamis yang dibuat per request.
-- **`TestRandomVarName`:**
-  - Memastikan generator nama variabel JavaScript acak menghasilkan nama variabel yang valid menurut sintaksis peramban (diawali huruf/underscore).
-- **`TestObfuscateHTML`:**
-  - Memastikan visual HTML asli terobfuskasi penuh (tidak mengandung teks mentah sensitif) dan terbungkus script engine decrypter.
-- **`TestXOREncryption`:**
-  - Menguji keakuratan enkripsi dan dekripsi XOR byte-by-byte menggunakan kunci acak.
-- **`TestFindFreePort`:**
-  - Memastikan fungsi pendeteksi port TCP bebas (`FindFreePort`) bekerja dengan benar untuk alokasi port kontainer tenant baru.
-- **`TestRunProvisionerInvalidAction`:**
-  - Memverifikasi penanganan galat argumen pada orkestrator kontainer jika dikirimkan aksi kosong.
-- **`TestDynamicRouterWildcardAndFallback`:**
-  - Memverifikasi kemampuan rute dinamis untuk mendeteksi pencocokan tepat domain, pencocokan wildcard (seperti `*.tenant.localhost`), serta global fallback `*` jika domain tidak terdaftar sama sekali.
-
-### 1.2 Modul RASP (Runtime Application Self-Protection) (`internal/rasp`)
-Pengujian di dalam file [monitor_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/rasp/monitor_test.go):
-
-- **`TestRASPPrevention`:**
-  - Menjalankan monitor RASP background loop.
-  - Melahirkan *child process* ilegal terkontrol (`cmd.exe` di Windows / `sh` di Linux).
-  - Memverifikasi RASP mendeteksi proses anak tersebut dan langsung membunuhnya secara paksa dalam waktu **sub-milidetik (<1ms)**.
-  - Memverifikasi rekaman insiden dikirimkan ke log telemetri AI SOC.
-
-### 1.3 Modul Self-Repair & Integritas File (`internal/repair`)
-Pengujian di dalam file [monitor_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/internal/repair/monitor_test.go):
-
-- **`TestIntegrityMonitorRestoreAndPurge`:**
-  - Memantau folder pengujian secara periodik dengan hashing **BLAKE3** yang super cepat.
-  - **Skenario Modifikasi:** Mengubah isi file baseline visual (web defacement), memverifikasi pemulihan instan ke kondisi steril.
-  - **Skenario Penghapusan:** Menghapus file baseline visual, memverifikasi pembuatan ulang file steril otomatis.
-  - **Skenario File Ilegal:** Menambahkan file tidak dikenal (simulasi web-shell), memverifikasi file tersebut langsung dihapus paksa secara instan.
-
-### 1.4 Modul Handlers, Billing Webhook & CLI (`cmd/gateway`)
-Pengujian di dalam file [resistance_handlers_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/resistance_handlers_test.go), [webhook_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/webhook_test.go), dan [cli_test.go](file:///d:/0. Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/cmd/gateway/cli_test.go):
-
-- **`TestRewardUnlockAutoban`:**
-  - Menguji counter brute force sandi reward galeri portofolio.
-  - Memastikan percobaan salah ke-1 hingga ke-4 ditolak dengan status `HTTP 401 Unauthorized`.
-  - Memastikan percobaan salah ke-5 langsung memicu **Autoban IP** (`HTTP 403 Forbidden`) dan mendaftarkannya ke RAM lokal serta eBPF stub.
-  - Memverifikasi request berikutnya dari IP terban langsung ditolak di layer awal.
-  - Memverifikasi akses dibuka kembali dan tautan reward diberikan setelah dilakukan `Unban` dan memasukkan password yang benar.
-- **`TestPaymentWebhookHandler`:**
-  - Memverifikasi integrasi penanganan webhook pembayaran (simulasi Stripe/Midtrans) dengan respon sukses `HTTP 200 OK`, alokasi port dinamis otonom, dan pemicuan orkestrasi kontainer.
-  - Memastikan `/sub` mengalokasikan port dinamis, mendaftarkan langganan aktif, memicu peluncuran container, dan mendaftarkan rute.
-  - Memastikan `/unsub` menonaktifkan status sewa, mencopot rute proxy, dan menghancurkan container tenant dari host.
-- **`TestValidateDomainHandler`:**
-  - Memverifikasi endpoint validasi domain `/api/license/validate-domain` (yang digunakan Caddy On-Demand TLS) dengan memastikan domain tak terdaftar mengembalikan `HTTP 404 Not Found`, sedangkan domain terdaftar mengembalikan `HTTP 200 OK`.
+**Pembaruan:** 2026-08-22  
+**Model produk:** [docs/PRODUCT_MODEL.md](docs/PRODUCT_MODEL.md) — GaaS Edge Antibody Cowork. Pengujian di bawah ini mengcover **mesin gateway + lab**; orkestrasi **Job Cowork** ada di `NEX-RED/tests/test_job_cowork.py`.
 
 ---
 
-## 2. Cara Menjalankan Pengujian (Testing Execution)
+## 1. Unit test otomatis (Go backend)
 
-### 2.1 Menjalankan Seluruh Unit Test (Backend Go)
-Buka terminal pada direktori `nexus-core-gateway` dan eksekusi perintah berikut:
+Backend Go di `nexus-core-gateway` — paket utama:
+
+| Paket | Fokus uji |
+| --- | --- |
+| `internal/proxy` | CSRF, middleware, dynamic router, PACS (obfuskasi — bukan enkripsi) |
+| `internal/repair` | Integrity monitor BLAKE3, restore folder terpantau |
+| `internal/rasp` | RASP monitor (jika modul aktif di build) |
+| `cmd/gateway` | Handlers lab (vault autoban), CLI, webhook (**ditunda** produksi) |
+
+### 1.1 Proxy & CSRF (`internal/proxy`)
+
+- **`TestCsrfShield`:** GET set cookie; POST tanpa token → 403; POST dengan token cocok → 200; bypass rute lab (`/api/verify-session`).
+- **`TestDynamicRouterWildcardAndFallback`:** satu `PROTECTED_HOST` / wildcard lab — **bukan** multi-tenant massal legacy.
+- **PACS:** obfuskasi HTML — jangan klaim enkripsi enterprise di laporan uji.
+
+### 1.2 Self-repair (`internal/repair`)
+
+- **`TestIntegrityMonitorRestoreAndPurge`:** modifikasi/hapus file baseline → restore; file ilegal → purge. **Hanya** folder yang dikonfigurasi.
+
+### 1.3 Gateway handlers (`cmd/gateway`)
+
+- **`TestRewardUnlockAutoban`:** 5× password salah → ban; unban + password benar → reward link.
+- **`TestPaymentWebhookHandler`:** ada di kode uji — **pembayaran otomatis legacy ditunda**; jangan anggap produk jual aktif.
+- **`TestValidateDomainHandler`:** validasi domain untuk TLS ask — satu instance, bukan provisioner per tenant.
+
+---
+
+## 2. Menjalankan pengujian
+
+Dari `nexus-core-gateway`:
 
 ```bash
-go test -v ./internal/proxy ./internal/rasp ./internal/repair ./cmd/gateway
+go test -v ./internal/proxy ./internal/repair ./cmd/gateway
 ```
 
-### 2.2 Menjalankan Tes pada Paket Tertentu
-Jika ingin memverifikasi satu paket spesifik saja:
+Paket tertentu:
 
-- **Hanya Modul RASP:**
-  ```bash
-  go test -v ./internal/rasp
-  ```
-- **Hanya Modul Self-Repair (BLAKE3):**
-  ```bash
-  go test -v ./internal/repair
-  ```
-- **Hanya Modul CSRF & PACS:**
-  ```bash
-  go test -v ./internal/proxy
-  ```
-- **Hanya Modul Autoban Handler:**
-  ```bash
-  go test -v ./cmd/gateway
-  ```
+```bash
+go test -v ./internal/proxy
+go test -v ./internal/repair
+go test -v ./cmd/gateway
+```
 
 ---
 
-## 3. Verifikasi Kompilasi Produksi (Frontend)
+## 3. Verifikasi NEX-RED (wasit GaaS — lab)
 
-Untuk memastikan integrasi type-safety TypeScript, Zod Schema, dan transmisi token CSRF tidak merusak kode build produksi client:
+Defense delta + antibody loop — bukan unit test Go; jalankan setelah WAF hidup:
 
-### 3.1 Verifikasi Admin Dashboard (Next.js)
-Jalankan kompilasi produksi Next.js untuk memverifikasi TypeScript check dan static generation:
+```bash
+python NEX-RED/nexred.py scan -u http://127.0.0.1 -r . -m hybrid --no-llm
+```
+
+Label wasit: `waf_blocked`, `origin_open`, `both_held`, `replay_missed`, `antibody_learned`. Detail: [NEX-RED/README.md](NEX-RED/README.md).
+
+**Job Cowork end-to-end:** `python -m unittest tests.test_job_cowork` (+ lab bridge `:3004` untuk UI).
+
+---
+
+## 4. Verifikasi build frontend
+
+### Command Center (operator kokpit — bukan produk GaaS ke klien)
+
 ```bash
 cd nexus-admin-dashboard
 npm run build
 ```
 
-### 3.2 Verifikasi Portofolio Website (Vite + React)
-Jalankan kompilasi aset statis Vite:
+### Portofolio lab
+
 ```bash
-cd Portfolio-website
+cd playground/Portofolio-Thoriq
 npm run build
 ```
+
+---
+
+## 5. Unit test Channel Starter (Python)
+
+Modul `channel-starter/` — Milestone 18 lab v0.1:
+
+```powershell
+cd channel-starter
+pip install -r requirements.txt
+python -m unittest discover -s tests -v
+```
+
+| Test | Fokus |
+| --- | --- |
+| `test_generator.py` | 3 template, preset, WA, aggregate Caddy S-3, upsell S-6, copy tier jujur |
+
+---
+
+## 6. Batasan kejujuran uji
+
+- Reflex = regex; reasoning opsional
+- eBPF di test/log = **stub**, bukan XDP nyata
+- NEX-RED ≠ Shannon/Strix pentest
+- Telegram pager = env lab; bukan GPS penyerang
+
+Kontrak lengkap: [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
+
+---
+
+*Selaraskan dengan pivot GaaS 2026-08-22.*

@@ -1,73 +1,144 @@
-# Skema bisnis & deployment (B2G / B2B / UMKM)
+# Skema Bisnis & Deployment — Nexus Cyber GaaS
 
-**Visi komersial**, bukan status implementasi 2026-08-15. Lab nyata: `deploy-local/` (satu stack, bukan CNAME multi-tenant). Provisioner Stripe: `Task.MD` task 6–7, **ditunda**.
-
----
-
-> [!IMPORTANT]
-> **KLASIFIKASI MODEL DEPLOYMENT & STRUKTUR HARGA**:
-> 1. **B2G Government & Public Schools (Self-Hosted)**: Dideploy **100% Self-Hosted di server fisik instansi/sekolah sendiri / PDN**. Data siber 100% di dalam jaringan lokal. Pengadaan via **SIPLah & E-Katalog LKPP (APBD/APBN/BOS)**.
-> 2. **B2B Enterprise Swasta (Self-Hosted)**: Dideploy **100% Self-Hosted di Data Center / Server Fisik milik swasta besar sendiri**. Menggunakan **Enterprise Contract License Tahunan**.
-> 3. **B2B Micro & SME / UMKM (Managed Cloud Proxy)**: Tanpa server sendiri, cukup **mengarahkan DNS CNAME** ke Cloud Proxy Nexus Cyber. Langganan bulanan/tahunan SaaS murah (**Paket UMKM Rp19.000/bulan**).
+**Versi:** 2.0.0 / 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)  
+**Visi komersial GaaS** — bukan status multi-tenant CNAME legacy. Lab nyata: `deploy-local/` (satu stack, satu `PROTECTED_HOST`).
 
 ---
 
-## 1. Perbandingan Strategis 3 Skema Deployment
+## 1. Perbandingan Skema Deployment GaaS
 
-| Aspek Arsitektural & Bisnis | 🏛️ B2G Govt & Public School (Self-Hosted) | 🏢 B2B Enterprise Swasta (Self-Hosted) | 🏪 B2B Micro & UMKM (Cloud Proxy SaaS) |
-| :--- | :--- | :--- | :--- |
-| **Target Pengguna** | Kemenkes, KAI, Disdik, SMAN 1 Samarinda, Unmul. | Bank Swasta, Korporasi Besar, RS Swasta Besar. | UMKM Retail (WIN Electronic), Startup, Toko Online. |
-| **Lokasi Deployment** | **Self-Hosted On-Premise** di Server Fisik / VM Sendiri / PDN. | **Self-Hosted On-Premise** di Private Data Center Sendiri. | **Cloud Multi-Tenant Proxy Cluster** (Biznet GIO/Hetzner). |
-| **Cara Integrasi** | Middleware dipasang langsung di server fisik lokal instansi. | Middleware dipasang langsung di atas VM/Server Swasta. | Klien mengubah rekaman **DNS CNAME** domain ke Proxy SaaS. |
-| **Kedaulatan Data** | **100% Local Air-Gapped** di server fisik instansi. | **100% Local Data Sovereignty** di Data Center swasta. | Trafik disaring di Cloud Proxy sebelum ke origin server. |
-| **Push Alert Telegram** | **Group CSIRT Internal Dinas/Sekolah** / Syslog SIEM. | **Group Alert SOC Swasta** / Syslog SIEM. | **Bot Multi-Tenant Alert per Domain** (Zero COGS). |
-| **Skema Harga & Bayar** | Lisensi Tahunan via **SIPLah / E-Katalog (APBD/BOS)**. | **Annual Enterprise Contract License** (CAPEX Invoice). | **Monthly/Annual OPEX SaaS** (Starter Rp19.000/bln). |
+| Aspek | Job GaaS | Loop GaaS | On-prem instance |
+| --- | --- | --- | --- |
+| **Target** | Pilot / audit siklus | Kanal produksi berulang | Institusi kedaulatan data |
+| **Deployment** | Instance sementara atau staging → produksi | Instance tetap di VPS/on-prem klien | Gateway di mesin klien |
+| **Integrasi** | DNS/proxy ke gateway `:8080` | Sama + Job jadwal | Middleware di DC klien |
+| **Yang dibayar** | Satu Job (ukur→kendalikan→uji) | Retainership + Job berkala | Lisensi + opsi Loop |
+| **Deliverable** | Tabel delta, status antibodi, residual | + riwayat imun host (target) | + operasi lokal |
+| **Operator** | Nexus (+ persetujuan klien L0/L1) | Nexus | CSIRT klien + Nexus opsional |
 
----
-
-## 2. Skema Sektor Publik & Sekolah Negeri (B2G Self-Hosted)
-
-### 2.1 Arsitektur & Kedaulatan Data
-- Software `nexus-core-gateway` dipasang sebagai *Appliance Transparan (Zero-Code Middleware)* di atas server/VM milik sekolah/dinas sendiri.
-- Data Dapodik, NIK Siswa, dan NIK Guru tetap 100% di dalam infrastruktur lokal (Menjamin *Data Sovereignty* UU PDP No. 27/2022 & Permenkominfo No. 5/2021).
-
-### 2.2 Model Penentuan Harga B2G (CAPEX Tahunan via E-Katalog/SIPLah)
-*   **GovEdu Basic (Sekolah Negeri SD/SMP/SMA)**: **Rp228.000 / tahun** per server sekolah (Lisensi On-Premise).
-*   **GovEdu Pro (Dinas / UPTD Kab/Kota)**: **Rp588.000 / tahun** per node server.
-*   **GovEdu Enterprise (Kementerian / PTN)**: **Rp1.788.000 / tahun** per cluster node.
-*   **GovEdu Central (Disdik Terpusat 50 Domain)**: **Rp11.880.000 / tahun**.
+**Tidak ada** skema “UMKM CNAME Rp19.000” atau “GovEdu E-Katalog massal” di roadmap GaaS v1.
 
 ---
 
-## 3. Skema Sektor Swasta Besar (B2B Enterprise Self-Hosted)
+## 2. Job GaaS — Satu Siklus
 
-### 3.1 Arsitektur Private Data Center Swasta
-Perusahaan swasta besar (Bank Swasta, Korporasi Gede) memiliki Data Center fisik sendiri dan dilarang membuang data nasabah ke proxy publik.
-- **Enterprise Appliance Installation**: Dipasang langsung di atas VM/Docker/Kubernetes milik swasta.
-- **Private SOC Alert**: Integrasi notifikasi langsung ke SIEM SOC Swasta / Slack / Telegram Enterprise.
+### 2.1 Ruang lingkup
 
-### 3.2 Model Penentuan Harga B2B Enterprise (Annual Contract License)
-*   **Enterprise Standard (1 Server Node)**: **Rp2.499.000 / tahun**.
-*   **Enterprise Cluster (Multi-Node Cluster)**: **Rp8.999.000 / tahun**.
-*   **Enterprise Unlimited**: **Rp24.999.000 / tahun** (Termasuk SLA Support 24/7 & Incident Forensic Report).
+- Satu `PROTECTED_HOST` (kanal web/API)
+- Pemeriksaan HTTP **jinak** (NEX-RED allow-list)
+- Defense delta: WAF vs origin (origin direct hanya loopback/RFC1918/Docker)
+- Virtual patch antibodi di tepi (L1 setelah persetujuan)
+- Verifikasi: vaccine-probe + replay → `antibody_learned` atau `replay_missed`
+
+### 2.2 Deliverable (target produk)
+
+| Artefak | Isi |
+| --- | --- |
+| Tabel delta | Label per kelas: `origin_open`, `waf_blocked`, … |
+| Status antibodi | `antibody_learned` / `replay_missed` |
+| Residual | Eksplisit: celah origin, false positive, batas WAF |
+| Log persetujuan | L0/L1, timestamp, pemilik risiko |
+
+### 2.3 Kriteria selesai Job
+
+- **CLOSED_OK:** verifikasi lulus atau semua temuan `both_held` tanpa gap
+- **CLOSED_GAP:** residual tertulis (wajib jika `replay_missed`)
+- **PARTIAL:** agen gagal sebagian — ditutup jujur
 
 ---
 
-## 4. Skema Sektor UMKM & Swasta Kecil (B2B Micro Cloud Proxy SaaS)
+## 3. Loop GaaS — Retainership
 
-### 4.1 Arsitektur Managed CNAME Proxy (Tanpa Server Sendiri)
-UMKM retail seperti **Toko WIN Electronic (Bapak Tjhin Fui Men)** tidak memiliki server fisik.
-- **Praktis CNAME Routing**: Cukup ubah DNS CNAME domain (misal: `winingtronik.com` -> `proxy.nexus-cyber.com`). Proteksi otonom langsung aktif.
-- **Dynamic Telegram Alert (Zero COGS / HPP = Rp 0)**: Push alert dikirim via Bot Telegram gratis `@NexusCyberAlertBot` per-domain tanpa biaya kirim.
+### 3.1 Komponen
 
-### 4.2 Model Penentuan Harga B2B Micro SaaS (OPEX Monthly/Annual)
-*   **Starter UMKM (Calon Klien 1: WIN Electronic)**: **Rp19.000 / bulan** (Ditagih Tahunan **Rp228.000 / tahun**, WTP validated oleh Tjhin Fui Men, komitmen komersialisasi).
-*   **Pro Swasta (3 Domain)**: **Rp49.000 / bulan** (Ditagih Tahunan **Rp588.000 / tahun**).
-*   **Pro+ Swasta (10 Domain)**: **Rp149.000 / bulan** (Ditagih Tahunan **Rp1.788.000 / tahun**).
+- **Alur A:** tepi always-on (Reflex, antibodi cache, pager Telegram opsional)
+- **Alur B:** Job Cowork mingguan / per rilis fitur kanal
+- **Alur C:** kumulatif artefak untuk laporan risiko berkala
+
+### 3.2 Ritme operasi (contoh)
+
+| Frekuensi | Aktivitas |
+| --- | --- |
+| Kontinu | Tepi + pager insiden |
+| Mingguan | Job hygiene + delta |
+| Per rilis | Job penuh setelah deploy kanal |
+| Bulanan | Ringkasan artefak ke pemilik risiko |
 
 ---
 
-## 5. Peta Jalan Komersialisasi 10 Tahun
-1.  **LKPP e-Katalog & SIPLah Onboarding (Tahun 1)**: Daftarkan lisensi GovEdu di E-Katalog LKPP & SIPLah untuk sekolah negeri & dinas.
-2.  **Sertifikasi Keamanan BSSN (Tahun 3)**: Mengajukan evaluasi sertifikasi produk keamanan informasi BSSN & ISO 27001.
-3.  **Resiliensi Kedaulatan Digital (Tahun 5+)**: Menjadikan Nexus Cyber sebagai perisai WAF standar nasional untuk PDN, BPD Swasta/Pemerintah, dan UMKM Indonesia.
+## 4. On-prem Instance
+
+- `nexus-core-gateway` di VM/server klien
+- Control plane `:8081` + Command Center loopback/VPN
+- Data sensitif tidak melalui proxy publik Nexus
+- Job/Loop dioperasikan oleh CSIRT klien atau Nexus (kontrak terpisah)
+
+---
+
+## 5. Ilustrasi Pricing (bukan kontrak)
+
+Hanya perencanaan internal — lihat [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) untuk harga final.
+
+### 5.1 GaaS (inti)
+
+| Paket | Ilustrasi | Catatan |
+| --- | --- | --- |
+| Job GaaS (48–72 jam) | Tier proyek per host | Bayar per hasil Job |
+| Loop GaaS (bulanan) | Tier retainership per host | Termasuk N Job/bulan |
+| On-prem lisensi | Tier tahunan per instance | + opsi Loop |
+
+### 5.2 Channel Starter (entry UMKM)
+
+| Paket | Ilustrasi/bulan | Termasuk Job Cowork? |
+| --- | --- | --- |
+| Starter | Rp 0–29.000 | **Tidak** |
+| Usaha | Rp 49.000–99.000 | Tidak |
+| Tepi (+ Alur A) | Rp 149.000–299.000 | Tidak |
+| Cowork upsell | Rp 500.000–2.000.000+ | **Ya** |
+
+Domain tahunan **terpisah**. Validasi pasar: UMKM **≤ ~Rp 20.000** untuk tier dasar — detail [CHANNEL_STARTER.md](./CHANNEL_STARTER.md).
+
+**Bukan** rencana v1: satu paket Rp 19.000 all-in (site + Loop + operator).
+
+---
+
+## 6. Peta Jalan Komersialisasi GaaS
+
+| Fase | Fokus | Bukan |
+| --- | --- | --- |
+| **1** | Job berbayar + demo before/after | Channel Portal legacy billing otomatis |
+| **2** | Loop 2–5 host + retainership | F-10 back-office |
+| **3** | Memori imun + ekspor artefak | Multi-tenant CNAME massal |
+| **4** | **Channel Starter** — form + template UMKM | Loop di harga Rp 20rb |
+| **5+** | Upsell Cowork dari base Starter | Klaim enterprise SLA |
+
+---
+
+## 7. Ketahanan Keuangan & Manajemen Risiko
+
+Skema GaaS memetakan ke siklus risiko **kanal digital**:
+
+| Siklus | Job / Loop |
+| --- | --- |
+| Identifikasi | Defense delta + hygiene |
+| Pengendalian | Antibodi L1 di tepi |
+| Pemantauan | Tepi + Job berulang + pager |
+| Dokumentasi | Artefak Job (Alur C) |
+
+Konteks POJK 30/2025 (risiko siber ITSK) dan ketahanan siber perbankan = **pembingkai**, bukan klaim sertifikasi.
+
+---
+
+## 8. Yang Ditunda (legacy subscription)
+
+- Billing otomatis massal (Midtrans) — portal v1 = WA manual
+- F-10 super-admin roster pelanggan
+- Webhook Midtrans/Stripe fail-closed
+- Provisioner kontainer per-tenant CNAME massal
+
+Lihat [CHANGELOG.md](../CHANGELOG.md) Unreleased.
+
+---
+
+*Skema GaaS v2 — 2026-08-22. Menggantikan skema B2G/B2B legacy subscription/UMKM sebelumnya.*

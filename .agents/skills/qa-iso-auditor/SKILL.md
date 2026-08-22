@@ -1,6 +1,6 @@
 ---
 name: qa-iso-auditor
-description: Senior QA Auditor for Nexus Cyber (ISO 25010 & 27001)
+description: QA/ISO audit lab — bukan klaim sertifikasi GaaS produk
 ---
 
 # 🕵️ Skill: QA ISO Auditor (Zero-Tolerance)

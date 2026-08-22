@@ -1,5 +1,9 @@
 # NEX-RED: Nexus Cyber Security Validation Engine
 
+**GaaS:** wasit **Alur B** — defense delta + antibody loop + **Job Cowork** (`NEX-RED/jobs/`).
+
+**Model produk:** [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md)
+
 NEX-RED is the **Nexus-owned** white-box + live HTTP engine for Nexus Cyber.
 
 It is **not** Shannon and **not** Strix. v5 is Jalan B **Fase 0–5 plus lab Juice Shop (Fase 6 irisan)**: SAST, planner LLM JSON (allow-list), live HTTP, sandbox opsional, agen bernama, skor kelas Juice Shop. Bukan proof-by-exploitation.
@@ -13,14 +17,15 @@ It is **not** Shannon and **not** Strix. v5 is Jalan B **Fase 0–5 plus lab Jui
 5. **Black-box posture** — benign JSON probes.
 6. **Live HTTP checks** — unauthenticated mutating route, public telemetry must not be SOC, WAF 403 = `mitigated_by_nexus`, **two accounts**, and **GET object without a session** (CWE-639).
 7. **Browser lab (optional)** — `NEX_RED_BROWSER=1` plus Playwright: benign gallery upload and five wrong vault passwords. Screenshots stay under `NEX-RED/workspaces/`.
-8. **Jobs** — `POST /api/v1/scan` default `async_run=true`; poll `GET /api/v1/scan/{id}`.
-9. **Named agents** — `recon`, `injection-hygiene` (benign JSON / 500), `access` (session/IDOR/object GET), `reporter` (dedup). One agent exception → scan `PARTIAL`, others still run. Report has an **Agents** table.
-10. **Juice Shop lab** — `lab-juice` / `benchmark --live` against `http://127.0.0.1:3003`. Twelve benign checks. 401 is `rejected`. Does not flip `equal_to_shannon_strix`.
-11. **Defense delta (Sprint 1)** — optional twin: same benign request to WAF and lab origin (`NEX_RED_ORIGIN_DIRECT`, loopback/RFC1918/Docker only). Replay at the edge after a 403. Labels: `waf_blocked` / `origin_open` / `both_held` / `replay_held`. Not Shannon parity.
-12. **Evidence gate** — no file:line or HTTP status → dropped.
-13. **Sandbox (optional)** — `nexred.py sandbox` / `NEX-RED/sandbox/START.bat`: non-root image, no Docker socket. Missing Docker → exit 3; use `scan` on the laptop.
-14. **Antibody loop (Sprint 2)** — GET `/nexred/lab/antibody-signal` (count only) then POST `/nexred/lab/vaccine-probe` (constant lab token, not an exploit). Replay must stay 403 and `antibody_count >= 1` → `antibody_learned`. SOC `/api/antibodies` stays off the WAF.
-15. **Hotspot harness (Sprint 3)** — on a private non-loopback target (or `NEX_RED_HOTSPOT_HARNESS=1`): SOC `:8081`/`:3001` and Postgres/Redis must not answer; honeypot `:9090` is recorded as tarpit, not Cowrie. Vault 5× remains the optional browser flow.
+8. **Job Cowork (GaaS)** — `nexred.py job run|approve|export`; bridge `POST /api/v1/jobs`; status `OPEN` → `CLOSED_OK`/`CLOSED_GAP`.
+9. **Scan jobs** — `POST /api/v1/scan` default `async_run=true`; poll `GET /api/v1/scan/{id}`.
+10. **Named agents** — `recon`, `injection-hygiene` (benign JSON / 500), `access` (session/IDOR/object GET), `reporter` (dedup). One agent exception → scan `PARTIAL`, others still run. Report has an **Agents** table.
+11. **Juice Shop lab** — `lab-juice` / `benchmark --live` against `http://127.0.0.1:3003`. Twelve benign checks. 401 is `rejected`. Does not flip `equal_to_shannon_strix`.
+12. **Defense delta (Sprint 1)** — optional twin: same benign request to WAF and lab origin (`NEX_RED_ORIGIN_DIRECT`, loopback/RFC1918/Docker only). Replay at the edge after a 403. Labels: `waf_blocked` / `origin_open` / `both_held` / `replay_held`. Not Shannon parity.
+13. **Evidence gate** — no file:line or HTTP status → dropped.
+14. **Sandbox (optional)** — `nexred.py sandbox` / `NEX-RED/sandbox/START.bat`: non-root image, no Docker socket. Missing Docker → exit 3; use `scan` on the laptop.
+15. **Antibody loop (Sprint 2)** — GET `/nexred/lab/antibody-signal` (count only) then POST `/nexred/lab/vaccine-probe` (constant lab token, not an exploit). Replay must stay 403 and `antibody_count >= 1` → `antibody_learned`. SOC `/api/antibodies` stays off the WAF.
+16. **Hotspot harness (Sprint 3)** — on a private non-loopback target (or `NEX_RED_HOTSPOT_HARNESS=1`): SOC `:8081`/`:3001` and Postgres/Redis must not answer; honeypot `:9090` is recorded as tarpit, not Cowrie. Vault 5× remains the optional browser flow.
 
 Two-account live check needs a lab pair: `POST /nexred/lab/session-pair` returning JSON `owner_token`, `peer_token`, `object_path`, **or** env `NEX_RED_IDOR_OWNER_TOKEN` / `NEX_RED_IDOR_PEER_TOKEN` / `NEX_RED_IDOR_OBJECT_PATH`. Tokens are not written into reports. Without a pair, the check is `sast_only` (not a pass and not a fake IDOR).
 

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ business_name }} — {{ tagline }}</title>
+  <meta name="description" content="{{ description[:160] }}" />
+  <style>
+    :root { --primary: {{ primary_color }}; --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    header { padding: 2.5rem 1.25rem; text-align: center; background: linear-gradient(135deg, var(--primary), #1e293b); }
+    header h1 { margin: 0 0 .5rem; font-size: clamp(1.5rem, 5vw, 2.25rem); }
+    header p { margin: 0; opacity: .9; }
+    main { max-width: 720px; margin: 0 auto; padding: 2rem 1.25rem; }
+    section { background: var(--card); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    h2 { margin-top: 0; color: var(--primary); font-size: 1.1rem; }
+    .cta { display: inline-block; margin-top: 1rem; padding: .85rem 1.5rem; background: #25d366; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 600; }
+    .cta:hover { filter: brightness(1.05); }
+    footer { text-align: center; padding: 2rem 1rem; font-size: .75rem; opacity: .65; }
+    .badge { display: inline-block; font-size: .7rem; padding: .2rem .5rem; border: 1px solid var(--primary); border-radius: 4px; margin-top: .5rem; }
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ business_name }}</h1>
+    <p>{{ tagline }}</p>
+    <span class="badge">{{ category_label }} · Channel Starter</span>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+    {% if gaas_active %}
+    <section>
+      <h2>Perlindungan Nexus Cowork</h2>
+      <p>Host <strong>{{ protected_host }}</strong> dilindungi wasit GaaS (WAF + Job Cowork).</p>
+      {% if cowork_job_id %}<p>Job: {{ cowork_job_id }}</p>{% endif %}
+    </section>
+    {% elif show_upsell %}
+    <section>
+      <h2>Naik tier keamanan</h2>
+      <p>Starter hanya website statis. Untuk wasit + Job/Loop GaaS, hubungi operator Nexus.</p>
+      <p><small>{{ upsell_note }}</small></p>
+    </section>
+    {% endif %}
+    <section>
+      <h2>Hubungi kami</h2>
+      {% if address %}<p>{{ address }}</p>{% endif %}
+      {% if email %}<p>Email: {{ email }}</p>{% endif %}
+      <a class="cta" href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">Chat WhatsApp</a>
+    </section>
+  </main>
+  <footer>
+    Dibuat dengan Nexus Channel Starter · Tier {{ tier_label }}<br />
+    {{ upsell_note }}
+  </footer>
+</body>
+</html>

@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 🛡️ QA AUDIT REPORT: PHASE 3 GATEWAY
 
 **Status**: **PASSED (WITH RECOMMENDATIONS)** ✅

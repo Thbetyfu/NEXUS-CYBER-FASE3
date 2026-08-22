@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** — bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # PETA JALAN PENGEMBANGAN MODEL AI LOKAL: NEX-AI
 ## RENCANA PELAKSANAAN SPRINT PELATIHAN DAN INTEGRASI MODEL CYBER-SECURITY
 

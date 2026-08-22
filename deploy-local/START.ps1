@@ -79,6 +79,7 @@ Write-Host "  Laptop ini     :  http://127.0.0.1"
 Write-Host "  Gateway langsung:  http://127.0.0.1:8080"
 
 . (Join-Path $PSScriptRoot "ps\Hosts.ps1")
+. (Join-Path $PSScriptRoot "ps\ChannelStarterHosts.ps1")
 $protectedHost = Get-NexusProtectedHost
 if (Set-NexusLabHostsEntry -IP "127.0.0.1" -Name $protectedHost) {
     Write-Host "  Nama lab       :  http://$protectedHost  (baris hosts 127.0.0.1 sudah ditulis)"
@@ -86,6 +87,16 @@ if (Set-NexusLabHostsEntry -IP "127.0.0.1" -Name $protectedHost) {
     Write-Host "  Nama lab       :  http://$protectedHost"
     Write-Host "    hosts (Administrator):  127.0.0.1    $protectedHost"
 }
+
+$csHosts = Set-ChannelStarterLabHosts -IP "127.0.0.1"
+if ($csHosts.names.Count -gt 0) {
+    if ($csHosts.ok) {
+        Write-Host "  Channel Starter: $($csHosts.names.Count) subdomain ditulis ke hosts (127.0.0.1)"
+    } elseif ($csHosts.reason -eq "admin_required") {
+        Write-Host "  Channel Starter: jalankan START.bat sebagai Administrator untuk hosts subdomain"
+    }
+}
+Write-ChannelStarterAccessLines -IP "127.0.0.1"
 
 $lanIps = @()
 try {

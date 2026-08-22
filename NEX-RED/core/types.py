@@ -55,12 +55,35 @@ class DefenseDelta(str, Enum):
     ANTIBODY_LEARNED = "antibody_learned"
 
 
-class JobStatus(str, Enum):
+class ScanJobStatus(str, Enum):
+    """Async scan queue on the bridge — not GaaS Job Cowork lifecycle."""
+
     QUEUED = "QUEUED"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
+
+
+# Backward-compatible alias for scan bridge code.
+JobStatus = ScanJobStatus
+
+
+class CoworkJobStatus(str, Enum):
+    """GaaS Job Cowork lifecycle — see docs/PRODUCT_MODEL.md §4."""
+
+    OPEN = "OPEN"
+    MEASURED = "MEASURED"
+    PENDING_APPROVAL = "PENDING_APPROVAL"
+    VERIFYING = "VERIFYING"
+    CLOSED_OK = "CLOSED_OK"
+    CLOSED_GAP = "CLOSED_GAP"
+    PARTIAL = "PARTIAL"
+
+
+class AutonomyLevel(str, Enum):
+    L0 = "L0"
+    L1 = "L1"
 
 
 class AttackPhase(str, Enum):
@@ -120,6 +143,56 @@ class ScanTarget(BaseModel):
     timeout_seconds: int = 300
     headers: Dict[str, str] = Field(default_factory=dict)
     enable_llm: bool = True
+
+
+class JobStepLog(BaseModel):
+    at: datetime = Field(default_factory=_utcnow)
+    phase: str
+    message: str
+
+
+class ApprovalRecord(BaseModel):
+    at: datetime = Field(default_factory=_utcnow)
+    operator: str
+    autonomy_level: AutonomyLevel
+    note: Optional[str] = None
+    approved: bool = True
+
+
+class CoworkJob(BaseModel):
+    job_id: str
+    title: str
+    target_url: str
+    scope: str = "hybrid-http-jinak"
+    autonomy_level: AutonomyLevel = AutonomyLevel.L0
+    status: CoworkJobStatus = CoworkJobStatus.OPEN
+    repo_path: Optional[str] = None
+    scan_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=_utcnow)
+    updated_at: datetime = Field(default_factory=_utcnow)
+    step_logs: List[JobStepLog] = Field(default_factory=list)
+    approvals: List[ApprovalRecord] = Field(default_factory=list)
+    defense_deltas: Dict[str, int] = Field(default_factory=dict)
+    residuals: List[str] = Field(default_factory=list)
+    antibody_loop_ok: Optional[bool] = None
+    findings_count: int = 0
+    mitigated_count: int = 0
+    live_checks_run: int = 0
+    host_key: str = ""
+    artifact_paths: Dict[str, str] = Field(default_factory=dict)
+
+
+class JobSchedule(BaseModel):
+    schedule_id: str
+    title: str
+    target_url: str
+    autonomy_level: AutonomyLevel = AutonomyLevel.L0
+    repo_path: Optional[str] = None
+    interval_hours: int = 168
+    enabled: bool = True
+    last_run_at: Optional[datetime] = None
+    last_job_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=_utcnow)
 
 
 class ScanResult(BaseModel):

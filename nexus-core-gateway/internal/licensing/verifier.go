@@ -118,7 +118,7 @@ func verify(domain string, key string) {
 		return
 	}
 
-	// 3. Panggil API Server Lisensi SaaS Online/Remote
+	// 3. Panggil API Server Lisensi Online/Remote
 	apiEndpoint := os.Getenv("SAAS_LICENSE_API_URL")
 	if apiEndpoint == "" {
 		apiEndpoint = "http://localhost:3000/api/license"

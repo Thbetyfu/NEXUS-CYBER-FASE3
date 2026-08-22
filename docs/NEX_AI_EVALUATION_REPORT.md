@@ -1,73 +1,77 @@
+> **Arsip historis**  snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 
 # EVALUASI KELAYAKAN DAN PERFORMA: NEX-AI
 ## Laporan Analisis Kandidat Model AI Lokal untuk Nexus Cyber
 ---
 
-## 📊 RINGKASAN EKSEKUTIF
+## ð RINGKASAN EKSEKUTIF
 
 | Aspek Evaluasi | Status | Skor |
 | :--- | :--- | :--- |
-| **Kesesuaian Arsitektur** | ✅ SANGAT SESUAI | 95/100 |
-| **Kualitas Dokumentasi** | ✅ SANGAT BAIK | 92/100 |
-| **Kesiapan Dataset** | ✅ SIAP (Parsial) | 80/100 |
-| **Integrasi Teknis** | ✅ TERINTEGRASI | 90/100 |
-| **Kelengkapan Konfigurasi** | ⚠️ BUTUH PENAMBAHAN | 70/100 |
-| **Keseimbangan Performansi** | ✅ OPTIMAL | 88/100 |
+| **Kesesuaian Arsitektur** | â SANGAT SESUAI | 95/100 |
+| **Kualitas Dokumentasi** | â SANGAT BAIK | 92/100 |
+| **Kesiapan Dataset** | â SIAP (Parsial) | 80/100 |
+| **Integrasi Teknis** | â TERINTEGRASI | 90/100 |
+| **Kelengkapan Konfigurasi** | â ï¸ BUTUH PENAMBAHAN | 70/100 |
+| **Keseimbangan Performansi** | â OPTIMAL | 88/100 |
 | **Skor Keseluruhan** | | **86/100** |
 
-**REKOMENDASI**: **✅ LAYAK SEBAGAI KANDIDAT UTAMA** dengan langkah-langkah penyelesaian seperti tercantum di bagian akhir.
+**REKOMENDASI**: **â LAYAK SEBAGAI KANDIDAT UTAMA** dengan langkah-langkah penyelesaian seperti tercantum di bagian akhir.
 
 ---
 
-## 🎯 STATUS LAYANAN SAAT INI
+## ð¯ STATUS LAYANAN SAAT INI
 
-### A. Layanan Utama - ✅ BERJALAN NORMAL
+### A. Layanan Utama - â BERJALAN NORMAL
 | Layanan | Port | Status | Keterangan |
 | :--- | :--- | :--- | :--- |
-| Website SaaS Nexus Cyber | `3003` | ✅ Berjalan | Next.js App Router, Ready in 1806ms |
-| Nexus Admin Dashboard | `3000` | ✅ Berjalan | Next.js App Router, Ready in 1575ms |
-| Nexus Core Gateway | `8080` | ✅ Berjalan | Go Application (v1.21), Honeypot aktif di :9090, SSH Tarpit di :2222, RASP &amp; PQC Shield aktif |
-| Redis (Docker) | `6379` | ✅ Healthy | Cache &amp; Session Store |
-| PostgreSQL (Docker) | `5432` | ✅ Healthy | Database Utama |
+| Channel Portal Nexus Cyber | `3003` | â Berjalan | Next.js App Router, Ready in 1806ms |
+| Nexus Admin Dashboard | `3000` | â Berjalan | Next.js App Router, Ready in 1575ms |
+| Nexus Core Gateway | `8080` | â Berjalan | Go Application (v1.21), Honeypot aktif di :9090, SSH Tarpit di :2222, RASP &amp; PQC Shield aktif |
+| Redis (Docker) | `6379` | â Healthy | Cache &amp; Session Store |
+| PostgreSQL (Docker) | `5432` | â Healthy | Database Utama |
 
-### B. Layanan AI Lokal - ⚠️ BELUM BERJALAN
+### B. Layanan AI Lokal - â ï¸ BELUM BERJALAN
 | Layanan | Port | Status | Keterangan |
 | :--- | :--- | :--- | :--- |
-| NEX-AI Inference Engine | `11434` | ❌ Tidak Aktif | Tidak ada proses listening di port 11434 (Ollama/vLLM belum berjalan) |
+| NEX-AI Inference Engine | `11434` | â Tidak Aktif | Tidak ada proses listening di port 11434 (Ollama/vLLM belum berjalan) |
 
 ---
 
-## 🧠 ANALISIS KELAYAKAN FOLDER `NEX-AI`
+## ð§  ANALISIS KELAYAKAN FOLDER `NEX-AI`
 
-### 1. Struktur Folder - ✅ LENGKAP
+### 1. Struktur Folder - â LENGKAP
 
 ```
 NEX-AI/
-├── ARCHITECTURE_DESIGN.md      ✅ Desain arsitektur teknis
-├── Modelfile.production        ✅ Konfigurasi Ollama
-├── Output.md                   ✅ Definisi skema output JSON
-├── ROADMAP.md                  ✅ Peta jalan pengembangan
-├── dataset/
-│   └── cyber_security_dataset.json ✅ Dataset training (320+ sampel)
-└── scripts/
-    ├── train_qlora.py          ✅ Script fine-tuning QLoRA
-    ├── generate_dataset.py     ✅ Script generate dataset
-    └── convert_and_quantize.sh ✅ Script konversi GGUF
+âââ ARCHITECTURE_DESIGN.md      â Desain arsitektur teknis
+âââ Modelfile.production        â Konfigurasi Ollama
+âââ Output.md                   â Definisi skema output JSON
+âââ ROADMAP.md                  â Peta jalan pengembangan
+âââ dataset/
+â   âââ cyber_security_dataset.json â Dataset training (320+ sampel)
+âââ scripts/
+    âââ train_qlora.py          â Script fine-tuning QLoRA
+    âââ generate_dataset.py     â Script generate dataset
+    âââ convert_and_quantize.sh â Script konversi GGUF
 ```
 
 ### 2. Analisis Detail Setiap Komponen
 
-#### A. ARCHITECTURE_DESIGN.md - ✅ SANGAT KOMPREHENSIF
+#### A. ARCHITECTURE_DESIGN.md - â SANGAT KOMPREHENSIF
 
 **Kelebihan:**
-- ✅ Diagram arsitektur Data Plane vs Control Plane menggunakan Mermaid
-- ✅ Spesifikasi base model `Qwen2.5-3B-Instruct` yang tepat untuk kasus cybersecurity
-- ✅ Konfigurasi QLoRA hyperparameter terdefinisi (r=16, alpha=32, NF4 quantization)
-- ✅ Alur preprocessing payload (decode, trim, strukturisasi JSON)
-- ✅ Mekanisme fail-safe (timeout 200ms, fallback ke regex, cache Redis 1 jam)
-- ✅ System prompt ketat untuk output JSON deterministik
+- â Diagram arsitektur Data Plane vs Control Plane menggunakan Mermaid
+- â Spesifikasi base model `Qwen2.5-3B-Instruct` yang tepat untuk kasus cybersecurity
+- â Konfigurasi QLoRA hyperparameter terdefinisi (r=16, alpha=32, NF4 quantization)
+- â Alur preprocessing payload (decode, trim, strukturisasi JSON)
+- â Mekanisme fail-safe (timeout 200ms, fallback ke regex, cache Redis 1 jam)
+- â System prompt ketat untuk output JSON deterministik
 
-#### B. Modelfile.production - ✅ SESUAI STANDAR OLLAMA
+#### B. Modelfile.production - â SESUAI STANDAR OLLAMA
 
 **Konten Kunci:**
 - Base model: `nex_ai_q4_k_m.gguf` (quantized Q4_K_M)
@@ -77,7 +81,7 @@ NEX-AI/
 
 **Catatan:** File GGUF model utama belum ada di folder (perlu di-generate via training).
 
-#### C. Output.md - ✅ SEMPURNA
+#### C. Output.md - â SEMPURNA
 
 **Konten Kunci:**
 - Skema JSON output yang jelas (status, threat_score, attack_type, reason)
@@ -91,7 +95,7 @@ NEX-AI/
 - Contoh request-response untuk setiap kategori
 - Cara pemanfaatan output di subsistem Nexus Cyber (blokir, alert, audit trail)
 
-#### D. ROADMAP.md - ✅ TERSTRUKTUR DENGAN BAIK
+#### D. ROADMAP.md - â TERSTRUKTUR DENGAN BAIK
 
 **5 Sprint yang Didefinisikan:**
 1. Sprint 1: Data Ingestion (5000 sampel, labeling)
@@ -105,7 +109,7 @@ NEX-AI/
 - Latensi &lt; 80ms (RTX 3060 Laptop)
 - JSON parser error rate 0%
 
-#### E. Dataset - ✅ BERKUALITAS (PARSIAL)
+#### E. Dataset - â BERKUALITAS (PARSIAL)
 
 **Status:** `cyber_security_dataset.json` tersedia dengan **320+ sampel** terstruktur dalam format instruction-input-output.
 
@@ -120,19 +124,19 @@ NEX-AI/
 
 **Kekurangan:** Target 5000 sampel belum tercapai (baru 320+).
 
-#### F. Scripts - ✅ SIAP DIGUNAKAN
+#### F. Scripts - â SIAP DIGUNAKAN
 
 | Script | Fungsi | Status |
 | :--- | :--- | :--- |
-| `train_qlora.py` | Training QLoRA dengan Unsloth | ✅ Siap |
-| `generate_dataset.py` | Generate dataset baru | ✅ Siap |
-| `convert_and_quantize.sh` | Konversi model ke GGUF Q4_K_M | ✅ Siap |
+| `train_qlora.py` | Training QLoRA dengan Unsloth | â Siap |
+| `generate_dataset.py` | Generate dataset baru | â Siap |
+| `convert_and_quantize.sh` | Konversi model ke GGUF Q4_K_M | â Siap |
 
 ---
 
-## 🎯 ANALISIS KESESUAIAN DENGAN PROYEK NEXUS CYBER
+## ð¯ ANALISIS KESESUAIAN DENGAN PROYEK NEXUS CYBER
 
-### A. Integrasi dengan Nexus Core Gateway - ✅ SEMPURNA
+### A. Integrasi dengan Nexus Core Gateway - â SEMPURNA
 
 **Kode yang Sudah Diupdate:**
 
@@ -154,7 +158,7 @@ NEX-AI/
 4. **`nexus-core-gateway/.env`**:
    - Konfigurasi sudah lengkap untuk Full Local AI
 
-### B. Kesesuaian dengan Arsitektur Dual-Brain - ✅ TEPAT
+### B. Kesesuaian dengan Arsitektur Dual-Brain - â TEPAT
 
 **Mapping NEX-AI ke Dual-Brain Architecture:**
 
@@ -164,33 +168,33 @@ NEX-AI/
 | **Reasoning Layer** | `nex-ai-protect` | Analisis forensik mendalam |
 | **SOC Brain Chat** | `nex-ai-protect` | Chat interaktif admin SOC |
 
-### C. Kinerja yang Diharapkan - ✅ OPTIMAL UNTUK LOKAL
+### C. Kinerja yang Diharapkan - â OPTIMAL UNTUK LOKAL
 
 **Keuntungan Qwen2.5-3B-Instruct + QLoRA + GGUF Q4_K_M:**
-- ✅ Footprint memori: ~2 GB (dapat berjalan di CPU/RAM tanpa GPU)
-- ✅ Latensi inferensi: ~50-100ms (sesuai target &lt; 200ms untuk fail-safe)
-- ✅ Kemampuan kode yang unggul untuk deteksi payload berbahaya
-- ✅ Support format ChatML native (sesuai Modelfile)
+- â Footprint memori: ~2 GB (dapat berjalan di CPU/RAM tanpa GPU)
+- â Latensi inferensi: ~50-100ms (sesuai target &lt; 200ms untuk fail-safe)
+- â Kemampuan kode yang unggul untuk deteksi payload berbahaya
+- â Support format ChatML native (sesuai Modelfile)
 
 ---
 
-## 🔍 STATUS KESIAPAN DEPLOYMENT
+## ð STATUS KESIAPAN DEPLOYMENT
 
-### A. Apa Yang Sudah Lengkap - ✅
-1. ✅ Semua kode integrasi di Gateway diubah ke Full Local AI
-2. ✅ Folder `NEX-AI` dengan dokumentasi dan script lengkap
-3. ✅ Dataset awal 320+ sampel
-4. ✅ Semua layanan utama berjalan (SaaS, Dashboard, Gateway, Redis, Postgres)
+### A. Apa Yang Sudah Lengkap - â
+1. â Semua kode integrasi di Gateway diubah ke Full Local AI
+2. â Folder `NEX-AI` dengan dokumentasi dan script lengkap
+3. â Dataset awal 320+ sampel
+4. â Semua layanan utama berjalan (Channel Portal, Dashboard, Gateway, Redis, Postgres)
 
-### B. Apa Yang Masih Kurang - ⚠️
-1. ❌ File model utama `nex_ai_q4_k_m.gguf` (GGUF)
-2. ❌ Ollama/vLLM belum berjalan di port 11434
-3. ❌ Proses fine-tuning QLoRA belum dijalankan
-4. ❌ Dataset belum mencapai target 5000 sampel
+### B. Apa Yang Masih Kurang - â ï¸
+1. â File model utama `nex_ai_q4_k_m.gguf` (GGUF)
+2. â Ollama/vLLM belum berjalan di port 11434
+3. â Proses fine-tuning QLoRA belum dijalankan
+4. â Dataset belum mencapai target 5000 sampel
 
 ---
 
-## 📋 REKOMENDASI LANGKAH SELANJUTNYA
+## ð REKOMENDASI LANGKAH SELANJUTNYA
 
 ### Tahap 1: Setup Dasar Model (1-2 Hari)
 1. **Install Ollama di Windows:**
@@ -254,9 +258,9 @@ NEX-AI/
 
 ---
 
-## 🎖️ KESIMPULAN AKHIR
+## ðï¸ KESIMPULAN AKHIR
 
-**KANDIDAT NEX-AI: ✅ SANGAT LAYAK**
+**KANDIDAT NEX-AI: â SANGAT LAYAK**
 
 Folder `NEX-AI` menyediakan **kerangka kerja yang matang, terdokumentasi dengan sangat baik, dan terintegrasi sempurna** dengan proyek Nexus Cyber. Meskipun model GGUF final dan Ollama belum berjalan, semua fondasi (arsitektur, script training, konfigurasi, dan dataset awal) sudah **siap untuk dieksekusi**.
 
@@ -272,7 +276,7 @@ Segera jalankan training QLoRA dan deploy model GGUF ke Ollama untuk mengaktifka
 
 ---
 
-## 📌 CATATAN TEKNIS TAMBAHAN
+## ð CATATAN TEKNIS TAMBAHAN
 
 - **Alternatif tanpa training:** Gunakan `qwen2.5:3b-instruct` sebagai baseline sementara dengan menyesuaikan `AI_MODEL_REFLEX` dan `AI_MODEL_REASONING` di file `.env`
 - **Port 11434:** Pastikan tidak ada firewall yang memblokir port ini (Ollama default port)

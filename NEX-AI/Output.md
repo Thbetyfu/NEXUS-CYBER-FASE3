@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** — bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # SPESIFIKASI OUTPUT MODEL AI: NEX-AI
 ## STRUKTUR KELUARAN, KATEGORI DETEKSI, DAN SCENARIO PENALARAN FORENSIK
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/mtd"
@@ -48,6 +49,15 @@ func registerAdminMux(gateway *proxy.NexusProxy, telemetry *logger.Logger, shuff
 	mux.HandleFunc("/api/blacklist/unban", proxy.RequirePOST(blacklistUnbanHandler(telemetry)))
 	mux.HandleFunc("/api/audit/verify", auditVerifyHandler())
 	mux.HandleFunc("/api/antibodies", antibodiesHandler())
+	mux.HandleFunc("/api/jobs", jobsHandler())
+	mux.HandleFunc("/api/jobs/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/approve") {
+			jobApproveHandler()(w, r)
+			return
+		}
+		jobByIDHandler()(w, r)
+	})
+	mux.HandleFunc("/api/host-immune", hostImmuneHandler())
 	mux.HandleFunc("/api/system/reset", proxy.RequirePOST(systemResetHandler(gateway, telemetry)))
 	mux.HandleFunc("/api/test/run", proxy.RequirePOST(runTestHandler()))
 	mux.HandleFunc("/api/csrf-token", csrfTokenHandler())

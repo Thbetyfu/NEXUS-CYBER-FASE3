@@ -1,6 +1,6 @@
 ---
 name: pqc
-description: Post-Quantum Cryptography (NIST ML-KEM Standard)
+description: PQC module — bukan E2E browser; bukan jual GaaS v1
 ---
 
 # 🔒 Skill: PQC (Post-Quantum Cryptography)

@@ -23,6 +23,19 @@ class NexRedConfig(BaseModel):
     reports_dir: str = Field(
         default_factory=lambda: os.getenv("NEX_RED_REPORTS_DIR", str(_PACKAGE_ROOT / "reports"))
     )
+    jobs_dir: str = Field(
+        default_factory=lambda: os.getenv("NEX_RED_JOBS_DIR", str(_PACKAGE_ROOT / "jobs" / "data"))
+    )
+    schedules_path: str = Field(
+        default_factory=lambda: os.getenv(
+            "NEX_RED_SCHEDULES_PATH", str(_PACKAGE_ROOT / "jobs" / "schedules.json")
+        )
+    )
+    immune_memory_path: str = Field(
+        default_factory=lambda: os.getenv(
+            "NEX_RED_IMMUNE_MEMORY_PATH", str(_PACKAGE_ROOT / "jobs" / "immune_memory.json")
+        )
+    )
     workspaces_dir: str = Field(
         default_factory=lambda: os.getenv("NEX_RED_WORKSPACES_DIR", str(_PACKAGE_ROOT / "workspaces"))
     )

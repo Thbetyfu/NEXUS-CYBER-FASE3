@@ -1,3 +1,7 @@
+> **Dokumen NEX-RED** — selaraskan [NEX-RED/README.md](../README.md); bukan Shannon/Strix.
+
+---
+
 # Jalan B â€” Mesin Pentest Native NEX-RED
 
 Dokumen ini adalah **peta kerja resmi** jika Nexus Cyber membangun kemampuan pentest otonom **milik sendiri** (bukan menggabungkan source Shannon/Strix).

@@ -1,12 +1,56 @@
-# 🏗️ NEXUS CYBER ARCHITECTURE
+# NEXUS CYBER ARCHITECTURE
 
-Pembaruan: 2026-08-20. Klaim AI/port mengikuti kode, bukan proposal lama.
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — GaaS Edge Antibody Cowork. Klaim mengikuti kode.
+
+---
+
+## Model produk (GaaS)
+
+Nexus bukan multi-tenant WAF legacy. Arsitektur mendukung **satu instance per kanal** + **Job Cowork** (wasit + antibodi + replay) + **Command Center operator** (internal).
+
+```mermaid
+flowchart TB
+  subgraph alurA [AlurA_TepiAlwaysOn]
+    User[Pengunjung] --> Caddy
+    Caddy --> WAF["Gateway :8080"]
+    WAF --> Origin[OriginApp]
+    WAF --> Block[403Ban]
+    Block --> TG[TelegramPager]
+  end
+
+  subgraph alurB [AlurB_JobCowork]
+    Job[JobCowork_NEXRED] --> NEXRED[NEX-RED]
+    NEXRED --> Delta[DefenseDelta]
+    Delta --> Patch[AntibodiL0L1]
+    Patch --> Verify[VaccineReplay]
+    Verify --> WAF
+  end
+
+  subgraph alurC [AlurC_Artefak]
+    Verify --> Artifact[EksporMDJSON]
+  end
+
+  subgraph kokpit [OperatorKokpit]
+    SOC["CommandCenter :3001"]
+    Admin["ControlPlane :8081"]
+    SOC --> Admin
+  end
+```
+
+| Peran | Siapa | Antarmuka |
+| --- | --- | --- |
+| **Pemilik risiko kanal** | Klien | Artefak Job MD/JSON (export NEX-RED) |
+| **Operator Nexus** | Tim internal | `:3001` + `:8081` |
+| **Channel Portal** | `:3003` | **Aktif v0.1** — pintu jual B2C/B2B (`nexus-channel-portal/`) |
+
+---
 
 ## Port (lab & compose)
 
 | Peran | Alamat | Publik ke hotspot? |
 | --- | --- | --- |
-| Situs lewat WAF | Caddy `:80` → gateway `:8080` | Ya (header `nosniff` / `SAMEORIGIN`; tanpa HSTS di HTTP) |
+| Situs lewat WAF | Caddy `:80` → gateway `:8080` | Ya |
 | Control plane SOC | `127.0.0.1:8081` | Tidak |
 | Command Center | `127.0.0.1:3001` (compose) | Tidak |
 | Honeypot | `:9090` | Ya (umpan) |
@@ -15,39 +59,45 @@ Pembaruan: 2026-08-20. Klaim AI/port mengikuti kode, bukan proposal lama.
 | Juice Shop (NEX-RED lab) | `127.0.0.1:3003` | Tidak |
 | Postgres / Redis | `127.0.0.1:5432` / `6379` | Tidak |
 
-## Tech stack (yang dipakai)
+---
+
+## Tech stack
 
 ### Gateway (`nexus-core-gateway`)
-- Go `net/http` + `httputil` (bukan keharusan Gin/Fiber).
-- Reflex: regex di `internal/ai/reflex_filter.go`. Reasoning: opsional asinkron.
-- Redis + PostgreSQL. Self-repair folder terpantau. GeoIP MMDB. Honeypot + SSH tarpit.
-- eBPF: stub. PQC: modul, bukan E2E klien.
-- Identitas HTTP: `pkg/utils` (`RequestHost`, `ClientIP`).
+
+- Go `net/http`; Reflex regex; antibodi cache; Redis + PostgreSQL
+- Lab antibody: `/nexred/lab/antibody-signal`, `/nexred/lab/vaccine-probe` (control plane)
+- eBPF: **stub**. Satu `PROTECTED_HOST` per instance
 
 ### NEX-RED
-- Python 3.10+. AST + pattern + probe jinak. Bridge **3004**. Sandbox Docker opsional (`sandbox/`).
+
+- Defense delta, antibody loop, agen `recon` / `access` / `injection-hygiene` / `reporter`
+- Bridge **3004**; bukan Shannon/Strix
 
 ### Dashboard (`nexus-admin-dashboard`)
-- Next.js App Router, Tailwind, Recharts, Xterm.js. Login operator ke control plane.
-- **Bukan** CRM pelanggan. Daftar semua user/situs/sisa langganan (F-10) direncanakan di portal SaaS terpisah ketika produk dijual.
+
+- Kokpit **operator internal** — bukan produk GaaS yang dijual ke pemilik risiko
+
+### Channel Portal (monorepo)
+
+- `nexus-channel-portal/` — landing, harga, form `/order`, WA manual
+
+---
 
 ## Directory structure
 
 ```text
 nexus-cyber/
-├── .agents/                    # Aturan & agen (docs-sync, soc-control-plane, request-identity)
-├── CHANGELOG.md
-├── deploy-local/               # Lab 1 klik (tanpa SOC di LAN)
-├── NEX-RED/                    # Validasi (bukan Shannon/Strix)
-│   ├── nexred.py
-│   ├── sandbox/                # Image worker non-root (opsional)
-│   ├── lab/juice-shop/         # OWASP Juice Shop loopback :3003
-│   ├── bridge/                 # REST, port 3004
-│   └── tests/
+├── docs/PRODUCT_MODEL.md       # Model GaaS (sumber kebenaran produk)
 ├── nexus-core-gateway/
 ├── nexus-admin-dashboard/
-├── playground/Portofolio-Thoriq/  # Origin lab (Gallery #gallery)
-├── playground/NEXUS-CYBER-WEBISTE-SAAS/  # Submodule portal jual (bukan compose lab)
-├── scripts/
-└── docs/                       # Indeks: docs/README.md
+├── NEX-RED/
+├── playground/Portofolio-Thoriq/
+├── nexus-channel-portal/   # Pintu jual Channel Starter
+├── deploy-local/
+└── docs/
 ```
+
+---
+
+*Arsitektur GaaS — 2026-08-22.*

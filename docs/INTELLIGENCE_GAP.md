@@ -1,3 +1,7 @@
+> **Arsip historis** — snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 # INTELLIGENCE GAP ANALYSIS REPORT
 
 **Arsip 2026-03-19.** Jangan diperlakukan sebagai hasil tes lab 2026-08.

@@ -1,6 +1,6 @@
 ---
 name: self-repair
-description: Autonomous Recursive Self-Repair and Virtual Patching
+description: Self-repair folder terpantau — Alur A tepi; bukan Job Cowork
 ---
 
 # 🛠️ Skill: Self-Repair (Autonomous Resilience)

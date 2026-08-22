@@ -1,5 +1,7 @@
 # Checklist red team (lab hotspot)
 
+Komponen uji **wasit GaaS** (defense delta) — lihat [`../../NEX-RED/README.md`](../../NEX-RED/README.md). Bukan pentest exploit.
+
 Hanya uji **IP laptop blue team** hasil `JOIN.bat` (contoh `http://192.168.137.1`) **atau** `http://portfolio.nexus-lab.test` jika `hosts` mengarah ke IP itu. Bukan URL Vercel, bukan Wi-Fi kampus/rumah orang lain.
 
 Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. Cek encoding/obfuskasi ada di unit test gateway (`internal/ai/reflex_normalize_test.go`), bukan dari hotspot.

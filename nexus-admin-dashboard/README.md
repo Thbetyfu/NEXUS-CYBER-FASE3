@@ -1,47 +1,24 @@
-# 🖥️ Nexus Cyber - Command Center Admin Dashboard (Tahap 2)
+# Nexus Cyber — Command Center (operator kokpit)
 
-Dasbor Security Operations Center (SOC) berbasis web premium yang dibangun menggunakan **Next.js 15 (Turbopack)**, **TailwindCSS**, **Framer Motion**, dan **Lucide Icons**. Dasbor ini berfungsi sebagai pusat visualisasi telemetri pertahanan, mitigasi ancaman waktu-nyata (real-time), dan kepatuhan Moving Target Defense (MTD).
+Next.js dashboard untuk **operator Nexus** — telemetri, CLI, ban/unban, **Job Cowork** (GaaS Alur B). **Bukan** Channel Portal ke pemilik risiko kanal.
 
----
+**Model produk:** [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md)
 
-## 📸 Antarmuka Dashboard (Screenshots)
+## Stack
 
-Berikut adalah visualisasi sistem nyata hasil audit uji stres pertahanan siber pada fase 2:
+Next.js App Router, Tailwind, Xterm.js. Bind **`127.0.0.1:3001`** di lab. API ke control plane **`127.0.0.1:8081`**.
 
-### 1. Pemuatan Modul Sistem (Boot Sequence)
-Menampilkan inisialisasi modul persandian pasca-kuantum (PQC ML-KEM-768), sinkronisasi AI lokal, dan kalibrasi matriks topologi MTD secara dinamis dan aman.
+## Getting started
 
-![System Boot Sequence](../docs/img/Opening-Nexus-Cyber.jpeg)
-
-### 2. Panel Kendali Utama (SOC Command Center Dashboard)
-Pusat kendali taktis terpadu dengan orkestrasi windows dinamis. Menampilkan grafik laju paket, visualisasi peta serangan siber global (*Geospatial Threat Map*), telemetri logs forensik, terminal kendali administrator, dan panel **MTD Security Audit** untuk pengujian stres langsung.
-
-![SOC Command Center Dashboard](../docs/img/Dashboard-Nexus-Cyber.jpeg)
-
-### 3. Modul Kunci Lisensi Keamanan (Licensing Lockout Overlay)
-Layar pengunci gelap premium yang menangguhkan sistem WAF dan memblokir akses dasbor secara absolut jika lisensi langganan klien terdeteksi tidak valid, kedaluwarsa, atau dicabut.
-
-![System License Lockout](../docs/img/System-Lock-Nexus-Cyber.jpeg)
-
----
-
-## 🛠️ Panduan Memulai (Getting Started)
-
-### 1. Prasyarat
-Pastikan Anda telah menginstal Node.js versi LTS terbaru pada sistem lokal Anda.
-
-### 2. Pemasangan Dependensi
-Pasang semua paket pustaka yang dibutuhkan menggunakan NPM:
 ```bash
 npm install
+npm run dev -- -p 3001
 ```
 
-### 3. Menjalankan Server Pengembangan Lokal
-Jalankan dev server Next.js (port default dikunci pada **port 3001**):
-```bash
-npm run dev
-```
+Login: `NEXUS_ADMIN_TOKEN` dari `nexus-core-gateway/.env`.
 
-### 4. Akses Dasbor
-Buka tautan [http://localhost:3001](http://localhost:3001) pada peramban web Anda.
-*(Gunakan lisensi langganan bypass pengembangan `nexus-cyber-dev` untuk membuka kunci layar penangguhan).*
+## Screenshots (lab)
+
+Boot sequence, dashboard telemetri, overlay lisensi **lab** (`nexus-cyber-dev`) — bukan lockout langganan produksi.
+
+Lihat [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).

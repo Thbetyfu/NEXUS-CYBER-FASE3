@@ -1,5 +1,7 @@
 # Sandbox NEX-RED (opsional)
 
+Bagian NEX-RED untuk scan terisolasi. Produk GaaS: [`../../docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md).
+
 Image worker **non-root** (`uid 10001`). CLI `nexred.py scan` tetap bisa di laptop tanpa Docker.
 
 ## Apa yang dikunci

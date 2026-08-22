@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 🎨 COMMAND CENTER DASHBOARD (PHASE 6)
 ## Nexus Cyber — UI/UX & Live Telemetry Validated
 **Role**: Senior UI/UX Designer & QA Auditor

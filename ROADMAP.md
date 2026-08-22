@@ -1,136 +1,111 @@
-# Nexus Cyber Strategic Roadmap & Sprint Plan
+# Nexus Cyber — Roadmap Strategis
 
-Status Proyek: **Sprint 1, 2, & 3 Completed** - Active Development
-Versi: **v3.2.0**
-Arsitek: Antigravity
+**Versi:** v4.1.0 / 2026-08-22  
+**Strategi:** [docs/PRODUCT_MODEL.md](docs/PRODUCT_MODEL.md) — **Channel Starter** + **GaaS Edge Antibody Cowork**  
+**Status:** Milestone lab 1–16 selesai; **Milestone 17 (GaaS)** aktif.
 
----
-
-## 🛠️ Rekam Jejak Milestone Proyek (Global Roadmap)
-
-### Milestone 1: Initiation of Skills & Knowledge Base (COMPLETED) ✅
-- [x] Inisiasi Core Directives (`NEXUS_CORE_DIRECTIVES.md`).
-- [x] Konfigurasi `.agents/skills/` (5 Skill Inti).
-
-### Milestone 2: Roadmap & Architecture Scaffolding (COMPLETED) ✅
-- [x] Ekspansi Roadmap detail (M3 - M10).
-- [x] Tech Stack Specification (Go, Next.js, Docker, Ollama).
-- [x] Directory Scaffolding (`ARCHITECTURE.md`).
-- [x] Otomatisasi Boilerplate (`setup.sh`).
-
-### Milestone 3: Core Gateway & Proxy Implementation (COMPLETED) ✅
-- [x] Inisiasi Repository **nexus-core-gateway** (Go).
-- [x] Implementasi Reverse Proxy Layer (HTTP/TCP).
-- [x] Integrasi Logging & Observability (Structured JSON Logs).
-
-### Milestone 4: Dual-Brain AI Filter (Qwen & NEX-AI) (COMPLETED) ✅
-- [x] Integrasi Reflex Layer (Qwen) via Local Inference (Ollama).
-- [x] Integrasi Reasoning Layer (NEX-AI) untuk Analisis Niat (Nechat).
-- [x] Implementasi AI Orchestrator (Ensemble Logic) v2.5.
-
-### Milestone 5: Moving Target Defense (MTD) Layer (COMPLETED) ✅
-- [x] Implementasi Dynamic Port-Knocking / IP Shuffling (`mtd_shuffler.go`).
-- [x] Konfigurasi Target Randomization Scheduler.
-- [x] Integrasi MTD Control via Admin Dashboard.
-
-### Milestone 6: Post-Quantum Cryptography (PQC) Integration (COMPLETED) ✅
-- [x] Integrasi Pustaka NIST ML-KEM (Kyber-768).
-- [x] Implementasi PQC-Wrapper pada jalur data sensitif.
-- [x] Pengujian "Harvest Now, Decrypt Later" Resilience.
-
-### Milestone 7: Admin Command Center (Next.js Dashboard) (COMPLETED) ✅
-- [x] Inisiasi **nexus-admin-dashboard** (Next.js + Tailwind).
-- [x] Dashboard Visualisasi Real-time (Anomalies, MTD Status).
-- [x] Integrasi API Gateway Control Plane.
-- [x] **MVP Upgrade**: Premium Boot Sequence & Windowing System.
-
-### Milestone 8: Autonomous Self-Repair & Rollback (COMPLETED) ✅
-- [x] Implementasi System Integrity Monitor (Baseline check).
-- [x] Scripting Virtual Patching Otonom (Recursive Self-Repair Skill).
-- [x] Mekanisme Rollback Instan (< 100ms) & Anti-Webshell.
-
-### Milestone 9: Digital Hallucination (Honeypot Sandbox) (COMPLETED) ✅
-- [x] Implementasi High-Interaction Honeypot (Port 9090).
-- [x] Mekanisme pengalihan trafik mencurigakan ke Sandbox.
-- [x] Analisis perilaku penyerang di dalam Hallucination Layer.
-
-### Milestone 10: Integration, Stress Test & Production (COMPLETED) ✅
-- [x] Inisiasi **Nexus Core CLI** (`nexus` binary) untuk orkestrasi profesional.
-- [x] Push ke GitHub Repository (Version Control Sync).
-- [x] End-to-End Stress Test (Simulasi Serangan DDoS & Injeksi) -> 17/17 Checks Lulus.
-- [x] Cloud Deployment Sandbox (Local Tunnel & Network Hardening).
-- [x] Final Handover Dokumentasi Operasional.
-
-### Milestone 11: Commercialization & Dual-Engine Business Model (COMPLETED) ✅
-*Strategi komersialisasi pertahanan siber otonom untuk monetisasi pasar.*
-- [x] Integrasi rute dynamic proxy multi-tenant untuk penyaringan bersama (*Shared Cloud WAF*).
-- [x] Enkripsi otomatis *Polymorphic HTML Encryption (PACS)* on-the-fly untuk response HTML.
-- [x] Otomatisasi webhook billing (Midtrans) terhubung ke gateway auto-activation.
-- [x] Penyediaan 5 paket langganan (Free, Basic, Pro, Pro+, Ultrasafe) di dashboard dan landing page.
-- [x] Mekanisme *Lapis 2 Domain Validation* (`.sch.id`, `.ac.id`, `.go.id`) untuk mencegah penyalahgunaan oleh pihak swasta.
-- [x] Modul bypass pembayaran online (B2G manual activation via Admin Command Center setelah PO/LKPP terbit).
-- [x] Skema Lisensi Software-Only Tahunan per CPU Core untuk penempatan on-premise/hybrid data center vital.
-
-### Milestone 12: IP Monitoring & Autonomous Ban Grid (COMPLETED) ✅
-*Pemantauan lalu lintas IP secara real-time dan orkestrasi pemblokiran aktif di tingkat aplikasi dan kernel.*
-- [x] **Modul Pemantauan IP (Live Traffic & Activity Tracker)**: Visualisasi tabel aktivitas real-time dengan Heuristic Threat Score.
-- [x] **Fitur Banned Manual (Manual Banning Console)**: Panel kendali manual untuk operator SOC dengan pilihan durasi (1 jam, 24 jam, 7 hari, permanen), input alasan, dan **double confirmation** sebelum eksekusi.
-- [x] **Fitur Auto-Banned AI (AI Autonomous Ban)**: Pemblokiran otomatis 24 jam jika Reflex Layer mendeteksi ancaman > 85 dan Reasoning Layer memvalidasi dengan tingkat keyakinan > 90%.
-- [x] **Multi-Layer Lockout**: Integrasi pemblokiran di tingkat Aplikasi (Redis Blacklist / HTTP 403) dan Driver/Kernel (eBPF map `XDP_DROP` / 0% CPU overhead).
-
-### Milestone 13: NEX-AI Custom Model & Branding Eksklusif (COMPLETED) ✅
-*Membangun model kecerdasan buatan siber milik sendiri yang eksklusif dan tidak dapat ditiru kompetitor.*
-- [x] **Adversarial Dataset Enrichment (2.000 Sampel)**: Pengayaan dataset latih dengan 5 teknik obfuskasi serangan zero-day dan 4 jenis trafik benign kompleks.
-- [x] **Pipeline Pelatihan QLoRA 4-bit NF4**: Fine-tuning model dasar `Qwen2.5-3B-Instruct` menggunakan metode QLoRA.
-- [x] **Otomasi Penggabungan LoRA (Auto-Merge Pipeline)**: Menambahkan fase `peft_model.merge_and_unload()` otomatis.
-- [x] **Ekspor GGUF & Kuantisasi Q4_K_M**: Kuantisasi model ke GGUF `Q4_K_M` (1.84 GB).
-- [x] **Registrasi Model Eksklusif di Ollama**: Mendaftarkan `nex-ai-protect` & `nex-ai-reflex` menggunakan Modelfile khusus.
-- [x] **Branding Imersif NEX-AI di Dashboard**: Widget tensor model dan aktivitas synaptik node AI real-time.
-- [x] **GeoIP Lookup Terpadu**: Integrasi pencarian lokasi IP (MaxMind DB + ip-api.com) ketika IP diblacklist atau divisualisasikan.
-
-### Milestone 14: Collective Threat Intelligence & Sovereign Compliance Exporter (COMPLETED) ✅
-*Jaringan intelijen ancaman siber privat nasional BSSN/ID-CERT dan generator laporan audit kepatuhan otomatis.*
-- [x] **STIX 2.1 / TAXII 2.1 Standardized Format**: Format payload standar nasional untuk pelaporan sinyal ancaman siber.
-- [x] **Encrypted Syslog TLS Reporter (RFC 5424)**: Pengiriman telemetri terenkripsi ke SIEM internal bank/instansi.
-- [x] **BSSN Collective Threat Feed Sync**: Sinkronisasi & injeksi blacklist kolektif BSSN ke memori RAM/Redis gateway.
-- [x] **Automated Multi-Framework Evaluator**: Penilaian otomatis terhadap `ISO/IEC 27001:2022`, `PCI-DSS v4.0`, `UU PDP No. 27/2022`, dan `ISO 25010`.
-- [x] **1-Click Audit Report Exporter**: Penjana laporan audit format Markdown & JSON via UI Dashboard SOC (`ComplianceWidget.tsx`) dan CLI Subcommand (`gateway audit export`).
-
-### Milestone 15: Full War Room Live War Game Simulator & Recovery Panel (COMPLETED) ✅
-*Panel simulasi perang siber live terpadu dan mitigasi otonom real-time.*
-- [x] **Live Attack Scenario Engine**: Skenario serangan simulasi siber `DDoS SYN Flood (64k rps)`, `SQL Injection Vault Tamper`, `Ransomware Web-Shell Defacement`, dan `Credential Stuffing`.
-- [x] **Real-time Latency & Auto-Mitigation Evaluator**: Evaluasi kecepatan mitigasi instan (Reflex Filter < 0.045ms, eBPF XDP_DROP 0% CPU, Self-Repair Rollback < 2.1ms).
-- [x] **Cyber War Room Dashboard Widget**: Widget UI interaktif (`WarGameWidget.tsx`) dengan animasi status eksekusi perang siber.
-- [x] **CLI War Game Subsystem**: Subcommand `gateway sim --type=all` pada binary Go Gateway.
-
-### Milestone 16: NEX-RED Autonomous Red Team Engine Fusion (COMPLETED) ✅
-*Peleburan kemampuan White-Box (Shannon AST & Flow Mapping) dan Black-Box (Strix Dynamic Swarm) ke dalam engine Red Team otonom tunggal.*
-- [x] **NEX-RED Core Package (`NEX-RED/`)**: Arsitektur modular berorientasi objek (Python) yang mencakup Whitebox, Blackbox, Exploit Validator, dan Report Generator.
-- [x] **Proof-of-Exploitation (PoC) Validator**: Verifikasi deterministik untuk mencegah *false positive* sebelum dimasukkan ke dalam laporan akhir.
-- [x] **Nexus Gateway Bridge Daemon**: REST API Server (`127.0.0.1:3002`) untuk interkoneksi langsung dengan Go Gateway & Next.js SOC Dashboard.
-- [x] **Legacy Cleanup & Deprecation**: Pembersihan total folder eksperimen usang (`Hacker_Test/`, `shannon-main/`, `strix-main/`) untuk memastikan prinsip *Zero Dead Code* dan *Zero Duplication (DRY)*.
-
+> Milestone 11–16 di bawah = **warisan teknis lab**. Klaim komersial multi-tenant legacy, eBPF XDP nyata, Shannon/Strix parity, dan BSSN feed penuh **bukan** kontrak produk hari ini — lihat [docs/CAPABILITIES.md](docs/CAPABILITIES.md).
 
 ---
 
-## 🚀 Rencana Sprint & Milestone (Fase 2 Dev Testbed)
+## Milestone 17: Pivot GaaS — Edge Antibody Cowork (ACTIVE)
 
-### Sprint 1: Integrasi Web Portofolio & Uji Ketahanan (Password Vault) (COMPLETED) ✅
-* [x] **Task 1.1: Pengaturan Password & Tautan Hadiah**
-  * Konfigurasi parameter `REWARD_PASSWORD` dan `REWARD_LINK` secara dinamis di berkas `.env` dan `resistance_handlers.go`.
-* [x] **Task 1.2: Aktivasi & Integrasi Proteksi Brute-Force**
-  * Memvalidasi bahwa handler `rewardUnlockHandler` secara aktif menyimpan log percobaan salah ke database dan memicu `database.BanIP` setelah 5 kali gagal.
-* [x] **Task 1.3: Alur User Flow Uji Ketahanan**
-  * Alur: Pengunjung &rarr; Mengakses Portofolio &rarr; Berusaha membongkar/brute-force Vault &rarr; Percobaan dicatat oleh Reflex AI &rarr; Jika gagal >= 5 kali, IP diblokir di level Gateway &rarr; Tampilan dasbor Command Center mendeteksi aktivitas serangan.
+*Dari multi-tenant WAF legacy → jasa terkelola siklus ukur→kendalikan→uji.*
 
-### Sprint 2: Kesiapan Deployment & Analisis Performa (COMPLETED) ✅
-* [x] **Task 2.1: Audit Kesiapan Deploy (Docker-Compose)**
-  * Melakukan audit integrasi port, variabel lingkungan, dan jaringan internal pada berkas `docker-compose.yml` agar sistem siap dideploy ke server VPS.
-* [x] **Task 2.2: Estimasi Profil Performa CPU & RAM**
-  * Menganalisis konsumsi memori minimum Go Gateway (ringan, ~15-30MB RAM) vs FastAPI AI Server (jauh lebih berat jika menjalankan model local). Rekomendasi alokasi RAM server untuk deployment stabil.
+| Fase | Target | Status |
+| --- | --- | --- |
+| **17.0 Docs & model** | PRODUCT_MODEL, PRD v3, BRD, BUSINESS | **Selesai** 2026-08-22 |
+| **17.1 Job Cowork** | Entitas Job + orkestrasi delta/probe | **Sudah ada** (NEX-RED file-backed) |
+| **17.2 L0/L1 + artefak** | Gerbang persetujuan + export risiko | **Sudah ada** |
+| **17.3 Loop GaaS** | Job berkala + retainership operasi | **Sudah ada** (interval scheduler) |
+| **17.4 Memori imun** | Histori antibodi/miss per host | **Sudah ada** (PG + file) |
 
-### Sprint 3: CLI & Pelacakan Penetas (IP Tracking) (COMPLETED) ✅
-* [x] **Task 3.1: Peningkatan Konsol Terminal Command Center**
-  * Menambahkan lebih banyak perintah interaktif (termasuk `/recovery` untuk memicu pemulihan basis data portofolio dari log audit) dan auto-complete bantuan pada dasbor terminal.
-* [x] **Task 3.2: Pelacakan Geografis IP Penetas (Threat GeoIP Lookup)**
-  * Mengintegrasikan API pencarian lokasi IP ketika IP didaftarkan ke blacklist dan menampilkannya di peta visual dasbor secara langsung.
+Deliverable bisnis: Channel Starter (funnel UMKM) → upsell Job/Loop GaaS.
+
+---
+
+## Milestone 18: Channel Starter (ACTIVE — lab v0.1)
+
+*Form → template → deploy UMKM; rule-based, bukan LLM berat.*
+
+| Fase | Target | Status |
+| --- | --- | --- |
+| **18.0 Strategi & docs** | PRODUCT_MODEL §0, CHANNEL_STARTER, DECISIONS_OPEN | **Selesai** 2026-08-22 |
+| **18.1 Form + template** | 3 layout, generator | **Lab v0.1** — `channel-starter/` |
+| **18.2 Deploy shared** | Subdomain multi-tenant | **Lab siap** — Caddy import + hosts; VPS/TLS produksi butuh DNS wildcard |
+| **18.3 Upsell Cowork** | Satu host → gateway + Job | **Lab siap** — `upsell enable` + `channel-starter-upsell.env` |
+
+Keputusan bisnis belum final: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md).
+
+---
+
+## Rekam jejak (lab — completed)
+
+### M1–M10: Gateway, AI, MTD, dashboard, self-repair, honeypot, stress test ✅
+
+Fondasi teknis: Go gateway, Command Center, NEX-RED bridge, lab portofolio.
+
+### M11–M16: Warisan komersial / evaluasi (completed di repo, bukan jual GaaS v1)
+
+- M11: Multi-tenant legacy / PACS / billing — **superseded** oleh pivot GaaS; provisioner **ditunda**
+- M12: Ban grid — tepi + Redis; eBPF = **stub**
+- M13: NEX-AI GGUF + GeoIP pager
+- M14–M15: Compliance / war game — sebagian lab/UI
+- M16: NEX-RED fusion — **bukan** Shannon; bridge **3004**
+
+---
+
+## Sprint aktif (GaaS)
+
+### Sprint G-1: Job object & CLI ✅
+
+- [x] Skema Job + status machine (`NEX-RED/jobs/`)  
+- [x] `nexred job` / bridge `/api/v1/jobs`  
+- [x] Test: tidak `CLOSED_OK` pada `replay_missed`  
+
+### Sprint G-2: Artefak & operator UI ✅
+
+- [x] Export Markdown/JSON  
+- [x] Widget Job Cowork di Command Center  
+
+### Sprint G-3: Loop & memori host ✅
+
+- [x] Scheduler `interval_hours` + tick bridge  
+- [x] `immune_memory` PG + file  
+
+---
+
+## Sprint lab (completed — Fase 2 testbed)
+
+### Sprint 1–3: Portofolio, deploy, GeoIP CLI ✅
+
+Seperti rencana asli: vault password, docker lab, Telegram/GeoIP pager (jujur: bukan GPS).
+
+---
+
+## Milestone 19: Nexus Channel Portal (ACTIVE — v0.1)
+
+*Pintu jual B2C/B2B — reuse desain portal legacy, copy & backend baru.*
+
+| Fase | Target | Status |
+| --- | --- | --- |
+| **19.0 Naming & docs** | `nexus-channel-portal/`, bersih legacy | **Selesai** 2026-08-22 |
+| **19.1 Landing + animasi** | Hero, fitur, harga, FAQ | **Selesai** |
+| **19.2 Form + WA** | `/order` + proxy ke channel-starter | **Selesai** |
+| **19.3 Midtrans** | Billing otomatis | **Ditunda** |
+
+Keputusan bisnis: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md) (Q2/Q4/Q7/Q8 disepakati).
+
+---
+
+## Yang sengaja tidak di roadmap v1
+
+- Channel Portal self-serve billing otomatis, F-10, CNAME massal, SIPLah/E-Katalog massal  
+- eBPF XDP produksi, klaim SOC otonom 24/7  
+- Pentest exploit Shannon parity  
+
+Roadmap bisnis detail: [docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md](docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
+
+---
+
+*Roadmap v4 — pivot GaaS 2026-08-22.*

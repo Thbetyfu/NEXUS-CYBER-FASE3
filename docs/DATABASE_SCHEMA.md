@@ -1,5 +1,8 @@
 # Nexus Cyber Database Schema
 
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Entitas **`jobs` GaaS** — migrasi PostgreSQL via GORM (`cowork_jobs`, dll.); file JSON di `NEX-RED/jobs/data/` tetap backup lokal.
+
 Skema **target** PostgreSQL untuk audit. Tabel di bawah harus dicek ulang terhadap migrasi GORM di `nexus-core-gateway` sebelum dianggap kontrak produksi. ISO 27001 di sini adalah *desain*, bukan sertifikat.
 
 ---
@@ -94,8 +97,9 @@ Tabel untuk mencatat setiap kali **NEX-AI Cognitive Core** (`nex-ai-protect`) me
 | `instance_id` | `VARCHAR(100)`| Identitas mesin/node gateway yang melakukan deteksi pertama. |
 ---
 
-### 6. `domain_subscriptions` (Lisensi SaaS & Notifikasi Telegram Multi-Tenant)
-Tabel untuk mengelola pendaftaran domain terproteksi, kunci lisensi SaaS, serta pemetaan Chat ID Telegram untuk notifikasi terisolasi per domain (Multi-Tenant).
+### 6. `domain_subscriptions` (legacy subscription — **ditunda** GaaS v1)
+
+Skema target untuk multi-tenant / Telegram per domain. **Produk GaaS v1:** satu `PROTECTED_HOST` per instance; tabel ini belum kontrak jual aktif.
 *   **Tujuan**: Kontrol lisensi B2B/B2G dan routing pengiriman Notifikasi Push Telegram instan per-domain (Zero COGS).
 
 | Kolom | Tipe Data | Keterangan |
@@ -130,6 +134,31 @@ Tabel untuk menyimpan seluruh hasil pengujian dan temuan eksploitasi otonom dari
 | `remediation_advice`| `TEXT` | Saran penambalan keamanan bagi developer. |
 | `status` | `VARCHAR(32)` | Status (`VERIFIED_EXPLOITABLE`, `MITIGATED_BY_NEXUS`). |
 | `created_at` | `TIMESTAMP` | Stempel waktu temuan tercatat. |
+
+---
+
+### 8. `cowork_jobs` (GaaS Job Cowork — Alur B)
+
+Entitas Job Cowork persisten. NEX-RED menulis via sync ke control plane `POST /api/jobs` (gateway AutoMigrate).
+
+| Kolom | Tipe | Keterangan |
+| --- | --- | --- |
+| `id` | UUID | PK |
+| `job_id` | VARCHAR(32) | Unique, mis. `JOB-AB12CD34` |
+| `title` | VARCHAR(255) | Judul Job |
+| `target_url` | TEXT | URL wasit |
+| `host_key` | VARCHAR(255) | Hostname normalisasi (memori imun) |
+| `scope` | VARCHAR(64) | mis. `hybrid-http-jinak` |
+| `autonomy_level` | VARCHAR(8) | `L0` / `L1` |
+| `status` | VARCHAR(32) | Siklus Job Cowork |
+| `scan_id` | VARCHAR(64) | ID scan NEX-RED terkait |
+| `defense_deltas` | TEXT | JSON label→count |
+| `residuals` | TEXT | JSON array residual |
+| `antibody_loop_ok` | BOOLEAN | Hasil uji replay |
+| `scan_result_json` | TEXT | Snapshot scan (opsional) |
+| `artifact_json` / `artifact_md` | TEXT | Artefak risiko Alur C |
+
+Tabel terkait: `cowork_job_step_logs`, `cowork_job_approvals`, `host_immune_memories`, `cowork_job_schedules`. Kolom `antibody_audits.job_id` (opsional) menghubungkan vaksin ke Job.
 
 
 

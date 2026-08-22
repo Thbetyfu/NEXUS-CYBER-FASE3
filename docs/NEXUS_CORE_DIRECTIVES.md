@@ -1,9 +1,11 @@
 # NEXUS CORE DIRECTIVES
-**Project: Nexus Cyber - Autonomous Database Security Gateway**
-**Status: Milestone 13 + control plane 8081 (2026-08-15)**
-**Terakhir Diperbarui: 2026-08-15**
+**Project: Nexus Cyber — GaaS Edge Antibody Cowork**
+**Status: control plane 8081; pivot produk GaaS 2026-08-22**
+**Terakhir Diperbarui: 2026-08-22**
 
-Dokumen ini merangkum aturan main utama, arsitektur inti, dan keputusan teknis yang telah ditetapkan untuk sistem Infrastructure/Database Security Gateway yang dibangun sebagai pertahanan vital nasional.
+> **Model produk:** lihat [`docs/PRODUCT_MODEL.md`](./PRODUCT_MODEL.md). Bagian di bawah tentang multi-tenant nasional legacy / dual-brain sebagai selling point = arsitektur teknis legacy; produk jual = Job Cowork + wasit + antibodi + Channel Portal, bukan multi-tenant massal.
+
+Dokumen ini merangkum aturan arsitektur inti gateway. Kontrak kejujuran: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md).
 
 ---
 

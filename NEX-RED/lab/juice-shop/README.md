@@ -1,5 +1,7 @@
 # Lab Juice Shop (NEX-RED)
 
+Skor kelas HTTP jinak — **bukan** Shannon parity. Wasit GaaS: [`../../../docs/PRODUCT_MODEL.md`](../../../docs/PRODUCT_MODEL.md).
+
 Self-hosted [OWASP Juice Shop](https://owasp.org/www-project-juice-shop/) for **class recall** vs Shannon sample families (AUTH, AUTHZ, INJ, XSS, SSRF).
 
 This is **not** a Shannon/Strix pentest replay. NEX-RED only sends benign GET/POST (no SQLi, XSS, or SSRF payloads in git).

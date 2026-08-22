@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 📊 QA INTEGRATION & PENETRATION TEST REPORT
 **Standard Compliance:** ISO 25010 (Functional Suitability, Security) & ISO 27001 (A.12.6 Vulnerability Management)  
 **Status:** 🟢 100% SUCCESSFUL (ALL SECURITY SYSTEMS VERIFIED ACTIVE)  

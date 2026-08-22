@@ -1,6 +1,8 @@
 # Red team — laptop yang menguji lewat hotspot blue team
 
-Laptop ini = **penguji**. Tidak perlu Docker. Yang wajib: join Wi-Fi hotspot laptop blue team, lalu buka situs **lewat IP itu** (atau nama `PROTECTED_HOST` jika JOIN menulis `hosts`).
+Lab purple-team (bukan pentest Shannon). Wasit delta/antibody: [`../../NEX-RED/README.md`](../../NEX-RED/README.md).
+
+Laptop ini = **penguji**. Tidak perlu Docker.
 
 Ini lab resmi terhadap WAF Nexus di jaringan hotspot. Bukan izin menyerang situs Vercel publik atau jaringan orang lain.
 

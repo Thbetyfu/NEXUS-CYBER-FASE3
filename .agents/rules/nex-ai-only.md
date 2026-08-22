@@ -6,7 +6,7 @@ description: Runtime AI is NEX-AI only. Never Qwen, Llama, GPT, or other public 
 
 # NEX-AI only (runtime)
 
-Pemilik model: **NEX-AI milik Nexus** (`nex-ai-protect`, `nex-ai-reflex`). Bukan model Ollama Hub.
+Pemilik model: **NEX-AI milik Nexus** (`nex-ai-protect`, `nex-ai-reflex`). Produk GaaS tidak dijual sebagai "model GGUF" — wasit Job Cowork yang dijual.
 
 ## Wajib
 

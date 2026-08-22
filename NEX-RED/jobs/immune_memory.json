@@ -1,0 +1,27 @@
+{
+  "hosts": {
+    "127.0.0.1": {
+      "antibody_learned_count": 0,
+      "replay_missed_count": 0,
+      "origin_open_count": 0,
+      "history": [
+        {
+          "job_id": "JOB-17877964",
+          "status": "CLOSED_OK",
+          "at": "2026-08-22T13:32:02.518731+00:00",
+          "residuals": [],
+          "antibody_loop_ok": null
+        },
+        {
+          "job_id": "JOB-1D092873",
+          "status": "CLOSED_OK",
+          "at": "2026-08-22T13:27:45.975029+00:00",
+          "residuals": [],
+          "antibody_loop_ok": null
+        }
+      ],
+      "last_job_id": "JOB-17877964",
+      "last_status": "CLOSED_OK"
+    }
+  }
+}

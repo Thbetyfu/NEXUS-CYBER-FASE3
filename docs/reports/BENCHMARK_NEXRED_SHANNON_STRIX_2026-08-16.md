@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # Uji adil NEX-RED × Shannon × Strix — 16 Agustus 2026
 
 **Klasifikasi.** Arsip eksperimen. Bukan klaim produk “setara pentest.” Kontrak kode: `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, `NEX-RED/README.md`.

@@ -2,10 +2,10 @@
 	admin off
 }
 
-# Lab HTTP: IP hotspot AND Host: PROTECTED_HOST (hosts file). No HSTS.
-# TLS for a public DNS name is the root Caddyfile :443 + gateway HasExplicitRoute — not this file.
+# Channel Starter static sites (multi-tenant subdomains)
+import /srv/channel-starter/_caddy/ChannelStarter.caddy
+
+# Default lab catch-all → WAF gateway (portfolio / PROTECTED_HOST)
 :80 {
-	# Browser headers (nosniff / frame / CSP) come from the gateway.
-	# Do not set them here or Chrome sees duplicates. No HSTS on HTTP lab.
 	reverse_proxy gateway:8080
 }

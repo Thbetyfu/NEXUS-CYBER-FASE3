@@ -1,6 +1,7 @@
-# 🌐 Nexus Cyber Deployment Architecture
+# Nexus Cyber Deployment Architecture
 
-Pembaruan: 2026-08-17. Control plane **bukan** port WAF publik.
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — GaaS instance per kanal; control plane **bukan** port WAF publik.
 
 ## Zona
 

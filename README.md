@@ -1,12 +1,14 @@
-# 🛡️ Nexus Cyber Fase 3
+# Nexus Cyber Fase 3
 
-**WAF Go + Command Center SOC + mesin validasi NEX-RED**, untuk melindungi situs (lab: portofolio) di belakang reverse proxy.
+**Dua lapisan produk:** **Channel Starter** (website UMKM dari form + template, ~Rp 20rb — **lab v0.1** di [`channel-starter/`](./channel-starter/)) + **Edge Antibody Cowork** (Job/Loop GaaS — **mesin sudah ada**).
 
-Klaim di README ini mengikuti **kode di repository**. Daftar kemampuan vs batasan: [`docs/CAPABILITIES.md`](./docs/CAPABILITIES.md) dan [`docs/LIMITATIONS.md`](./docs/LIMITATIONS.md). Riwayat: [`CHANGELOG.md`](./CHANGELOG.md).
+Model & arah: [`docs/PRODUCT_MODEL.md`](./docs/PRODUCT_MODEL.md). Keputusan terbuka: [`docs/DECISIONS_OPEN.md`](./docs/DECISIONS_OPEN.md). Klaim teknis: [`docs/CAPABILITIES.md`](./docs/CAPABILITIES.md), [`docs/LIMITATIONS.md`](./docs/LIMITATIONS.md).
+
+Mesin: WAF Go (`:8080`) + wasit NEX-RED (defense delta + antibody loop + **Job Cowork**) + Command Center operator (`:8081`) + **Channel Portal** (`nexus-channel-portal/` `:3003`).
 
 ## Clone
 
-Ada **submodule**: portofolio `playground/Portofolio-Thoriq` dan portal SaaS `playground/NEXUS-CYBER-WEBISTE-SAAS`. Clone harus rekursif:
+Ada **submodule**: portofolio `playground/Portofolio-Thoriq`. **Channel Portal** ada di monorepo (`nexus-channel-portal/`). Clone harus rekursif:
 
 ```bash
 git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
@@ -102,7 +104,7 @@ Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
 | **eBPF / XDP** | **Stub** — tidak membuang paket di kernel |
 | **PQC** | Modul/header inisialisasi; **bukan** enkripsi ujung-ke-ujung pengunjung |
 | **NEX-RED** | SAST + HTTP jinak + Juice Shop kelas + **defense delta** lab (WAF vs origin); **bukan** proof-by-exploitation |
-| **SaaS provisioner / Stripe** | **Belum** (lihat `Task.MD` task 6–7) |
+| **Channel Portal / billing otomatis** | **Portal v1 manual WA** — Midtrans **ditunda** |
 
 Reflex sinkron di request path. Reasoning (`nex-ai-protect` / API) **opsional dan asinkron** jika dikonfigurasi — bukan Qwen 235B wajib di setiap request.
 
@@ -130,6 +132,8 @@ SOC (opsional): `http://127.0.0.1:3001` atau dasbor `npm` ke `http://127.0.0.1:8
 
 Indeks hidup vs arsip: [`docs/README.md`](./docs/README.md).
 
+- [Product Model (GaaS)](./docs/PRODUCT_MODEL.md)
+- [Roadmap](./ROADMAP.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Capabilities](./docs/CAPABILITIES.md)
 - [Limitations](./docs/LIMITATIONS.md)

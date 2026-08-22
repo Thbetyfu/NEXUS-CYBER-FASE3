@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** — bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # Dataset lab NEX-AI
 
 Pengumpul: `python NEX-AI/scripts/collect_lab_dataset.py`

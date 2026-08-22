@@ -1,10 +1,13 @@
 # Panduan Deployment Nexus Cyber
 
-Pembaruan 2026-08-17. Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — GaaS instance per kanal (satu `PROTECTED_HOST`), bukan CNAME massal legacy.
+
+Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
 
 Dokumen ini mencakup dua opsi:
-1. **Opsi 1: PC Lokal (Local PC Deployment)** — Hemat biaya (Rp 0), cocok untuk demo, testing, dan riset dengan integrasi **Cloudflare Tunnel (Gratis)**.
-2. **Opsi 2: Cloud VPS (Biznet Gio / Hetzner / DigitalOcean)** — Produksi 24/7, multi-tenant container provisioner terisolasi, dan proteksi DDoS tingkat data center.
+1. **Opsi 1: PC Lokal** — Demo, Job Cowork lab, riset (Rp 0).
+2. **Opsi 2: Cloud VPS** — Instance kanal produksi (satu host per deployment GaaS Loop); **bukan** multi-tenant provisioner legacy (ditunda).
 
 ---
 
@@ -19,7 +22,7 @@ Dokumen ini mencakup dua opsi:
 
 Folder **`deploy-local/`** di root repo: double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Satu nama lab: `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) — HTTP + berkas `hosts`, bukan Let's Encrypt untuk `.test`. Pager Telegram opsional: `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` di `.env` (lihat [`deploy-local/blue-team/README.md`](../deploy-local/blue-team/README.md)). Lihat [`deploy-local/README.md`](../deploy-local/README.md).
 
-### Satu hostname (bukan SaaS CNAME massal)
+### Satu hostname (GaaS instance — bukan CNAME massal legacy)
 
 1. Set `PROTECTED_HOST` di `deploy-local/.env` (satu DNS name).
 2. Lab: `127.0.0.1` / IP hotspot → nama itu di `hosts`. Scan NEX-RED ke `http://PROTECTED_HOST`.
@@ -136,7 +139,7 @@ URL HTTPS publik tersebut dapat langsung dibagikan ke klien/penguji.
 
 ### Keunggulan
 - **Aksesibilitas**: Menyala otomatis 24 jam nonstop.
-- **Otomatisasi SaaS**: Mendukung fitur `provisioner.sh` untuk memutar kontainer Docker tenant secara dinamis di jaringan terisolasi `nexus-tenant-net`.
+- **Otomatisasi tenant legacy (`provisioner.sh`)**: **ditunda** — deployment GaaS = satu instance per kanal, bukan multi-tenant massal.
 - **IP Publik Statis**: Memudahkan konfigurasi DNS domain resmi.
 
 ### Spesifikasi VPS Minimum yang Direkomendasikan

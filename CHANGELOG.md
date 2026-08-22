@@ -6,13 +6,41 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Added
+- **Channel Starter (Milestone 18 lab):** modul `channel-starter/` — form wizard, 3 template, CLI; **S-3 deploy lab** + **S-6 upsell Cowork**. **Belum:** billing otomatis, VPS wildcard/TLS produksi massal.
+- **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
+
+### Docs
+- **Strategi dua lapisan:** Channel Starter (entry UMKM ~Rp 20rb, **lab v0.1** di `channel-starter/`) + GaaS Edge Antibody Cowork (inti, **sudah** mesin Job/Loop).
+- Dokumen baru [`docs/CHANNEL_STARTER.md`](docs/CHANNEL_STARTER.md), [`docs/DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md).
+- Selaraskan [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) v1.1, [`docs/BRD.md`](docs/BRD.md) v2.1, [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md), [`LIMITATIONS.md`](docs/LIMITATIONS.md), [`CAPABILITIES.md`](docs/CAPABILITIES.md), [`ROADMAP.md`](ROADMAP.md) M18–M19, [`docs/NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`Task.MD`](Task.MD), [`README.md`](README.md), [`AGENTS.md`](AGENTS.md). Penamaan **legacy subscription** menggantikan istilah lama di docs hidup.
+- Pivot dokumentasi **model langganan lama → GaaS** (Edge Antibody Cowork): model bounded agentic managed service, bukan multi-tenant WAF legacy.
+- Dokumen baru [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) sebagai sumber kebenaran produk.
+- [`docs/PRD.md`](docs/PRD.md) v3.0, rewrite [`docs/BRD.md`](docs/BRD.md) dan [`docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
+- Selaraskan [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CAPABILITIES.md`](docs/CAPABILITIES.md), [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md), [`docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md`](docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md), [`docs/SOFTWARE_DESIGN_DOCUMENT.md`](docs/SOFTWARE_DESIGN_DOCUMENT.md), [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md), [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md), [`docs/README.md`](docs/README.md), root [`README.md`](README.md), [`AGENTS.md`](AGENTS.md).
+- Root: [`ROADMAP.md`](ROADMAP.md) v4 (Milestone 17 GaaS), [`Task.MD`](Task.MD) backlog GaaS, [`UNIT_TESTING.md`](UNIT_TESTING.md) selaras kejujuran kode.
+- Selaraskan markdown repo: komponen README, `deploy-local/`, `scripts/`, `.agents/`, banner arsip `docs/reports/*` dan evaluasi lama.
+- Portal legacy dan F-10 ditandai **ditunda** di docs hidup; pintu jual v1 = `nexus-channel-portal/`.
+
+### Added
+- **Job Cowork (GaaS Alur B):** entitas `CoworkJob` + status `OPEN` → `MEASURED` → `PENDING_APPROVAL` → `VERIFYING` → `CLOSED_OK` / `CLOSED_GAP` / `PARTIAL` di `NEX-RED/jobs/`.
+- CLI `nexred.py job run|show|list|approve|export|schedule-*`; bridge `POST/GET /api/v1/jobs`, approve, artefak MD/JSON; gerbang L0/L1.
+- Aturan penutupan: `replay_missed` → `CLOSED_GAP` (tidak hijau).
+- Memori imun per host (file `jobs/immune_memory.json`); Loop GaaS scheduler (`interval_hours` + tick bridge).
+- Command Center: widget **Job Cowork** + `GET/POST/PATCH /api/jobs` (operator, bukan Channel Portal pelanggan).
+
+### Added
+- **PostgreSQL Job Cowork:** tabel `cowork_jobs`, step logs, approvals, `host_immune_memories`, schedules — GORM AutoMigrate di gateway.
+- Control plane `:8081`: `GET/POST /api/jobs`, `POST /api/jobs/{id}/approve`, `GET/POST /api/host-immune`.
+- NEX-RED `jobs/sync.py` — sinkron Job ke PG via control plane (`NEXUS_CONTROL_PLANE_URL`); file JSON tetap backup.
+
 ### Security
 - Data plane `:8080`: `GET /api/telemetry` (dan API SOC lain) **404**, bukan diproksi ke origin. POST/PUT/PATCH/DELETE tanpa cookie `nexus_session` **401**, kecuali lab Gallery/vault/PoW (`/api/upload`, `/api/unlock-reward`, `/api/verify-session`, foto tamu, CSRF, lisensi Caddy). `POST /nexred/lab/session-pair` **404** (lab portofolio tidak mencetak token dua akun).
 - Header peramban pada WAF publik (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, CSP longgar untuk PoW/inline). **HSTS hanya jika HTTPS**. Caddy lab **tidak** mengulang header yang sama (sumber: gateway).
 - `.gitignore`: `*.gguf` (termasuk `nex-ai-models/`) agar bobot tidak ter-commit.
 
 ### Added
-- Satu hostname lab/VPS: env `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) didaftarkan di router agar Caddy on-demand TLS **ask** hanya nama itu. Bukan provisioner SaaS, bukan jual domain. Lab tetap HTTP `:80` (IP hotspot + nama via `hosts`).
+- Satu hostname lab/VPS: env `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) didaftarkan di router agar Caddy on-demand TLS **ask** hanya nama itu. Bukan multi-tenant provisioner, bukan jual domain. Lab tetap HTTP `:80` (IP hotspot + nama via `hosts`).
 - NEX-RED: alur browser lab opsional (`NEX_RED_BROWSER=1` + Playwright) untuk unggah gambar sah dan 5 password vault salah. PoW hotspot dilewati jujur (`sast_only`).
 - NEX-RED: lab **OWASP Juice Shop** di `127.0.0.1:3003` plus CLI `lab-juice` / `benchmark --live` untuk recall kelas AUTH/AUTHZ/INJ/XSS/SSRF (HTTP jinak; `equal_to_shannon_strix` tetap false).
 - NEX-RED: Fase 5 multi-agen terbatas (`recon` / `access` / `injection-hygiene` / `reporter`) lewat bus in-process. Satu agen gagal → `PARTIAL`, agen lain tetap jalan. Report punya tabel Agents. Bukan swarm Shannon.
@@ -25,7 +53,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - NEX-RED + gateway: sinyal lab **count-only** `GET /nexred/lab/antibody-signal` dan `POST /nexred/lab/vaccine-probe` (token konstan, bukan payload exploit). Pola virtual patch tidak dipublikasikan di WAF. `antibody_learned` jika jumlah ≥ 1 dan replay tetap 403.
 - NEX-RED: Sprint 3 **hotspot harness** — dari IP privat (bukan loopback): `:8081`/`:3001`/Postgres/Redis harus tertutup; `:9090` tercatat sebagai tarpit. `NEX_RED_HOTSPOT_HARNESS=0` mematikan.
 - Pager Telegram lab: jika `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` diisi di `deploy-local/.env`, gateway mengirim pesan ke HP **setelah** WAF sudah mem-ban IP. Teks jujur (bukan GPS, bukan tembus VPN). IP privat/lab tidak dipetakan ke GeoIP WAN laptop blue team. Cooldown 15 menit per IP. Butuh internet keluar ke `api.telegram.org`.
-- Submodule portal SaaS: `playground/NEXUS-CYBER-WEBISTE-SAAS` (`https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-SAAS.git`). Pointer versi untuk Blue `git pull --recurse-submodules`. Bukan origin WAF; tidak masuk `START-OFFLINE`.
+- Portal legacy submodule digantikan **`nexus-channel-portal/`** di monorepo (2026-08-22).
 
 ### Changed
 - NEX-RED: pemeriksaan Juice Shop diperluas (GET objek/keranjang/kartu/whoami tanpa sesi; 401/403 tercatat sebagai `rejected`). Scan biasa: hipotesis CWE-639 juga GET objek tanpa `Authorization`. Tetap tanpa payload exploit.
@@ -43,12 +71,13 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - Arsip sesi: `docs/reports/LAB_HOTSPOT_ACCEPTANCE_2026-08-15.md` (uji penerimaan lab, bukan pentest).
 - Red team: handoff sesi 16 Agu 2026 di `deploy-local/red-team/SESI-2026-08-16.md`.
 - Pager Telegram: cara BotFather + chat ID di `deploy-local/blue-team/README.md` (token tidak di-commit).
-- Backlog jual **F-10**: back-office super-admin di portal SaaS (bukan NEX-ADMIN) — `docs/PRD.md`, `LIMITATIONS.md`, `CAPABILITIES.md`.
-- Submodule SaaS: `docs/GIT_WORKFLOW.md`, `README.md`, `docs/ARCHITECTURE.md`.
+- Backlog jual **F-10**: back-office super-admin di portal legacy (bukan NEX-ADMIN) — `docs/PRD.md`, `LIMITATIONS.md`, `CAPABILITIES.md`.
+- Portal legacy: `docs/GIT_WORKFLOW.md`, `README.md`, `docs/ARCHITECTURE.md`.
+- PRD v2.2: tiga kursi (SOC ≠ UMKM ≠ F-10); sitemap Channel Portal; F-06 lockout bukan Command Center toko; F-01 tanpa Qwen 235B.
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).
-- Back-office super-admin **saat produk dijual**: jumlah user, daftar situs per pelanggan, sisa masa aktif. Hidup di submodule `playground/NEXUS-CYBER-WEBISTE-SAAS`, bukan tab di `nexus-admin-dashboard` (SOC). Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`. Tidak dikerjakan sampai ada tenant bayar / pemilik minta.
+- Back-office super-admin **saat produk dijual**: jumlah user, daftar situs per pelanggan, sisa masa aktif. Hidup di **`nexus-channel-portal/`** (F-10 ditunda), bukan tab di `nexus-admin-dashboard` (SOC). Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`. Tidak dikerjakan sampai ada tenant bayar / pemilik minta.
 
 ## [2026-08-15]
 

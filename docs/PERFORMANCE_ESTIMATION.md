@@ -1,3 +1,7 @@
+> **Arsip historis** — snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 # Estimasi Profil Performa Resource: Nexus Cyber WAF & AI
 
 Angka di bawah adalah **estimasi**, bukan hasil load-test produksi. eBPF/XDP **tidak** mengurangi CPU di lab saat ini (modul stub). Reasoning LLM hanya memakai RAM besar jika Ollama/`nex-ai-protect` benar-benar dijalankan.

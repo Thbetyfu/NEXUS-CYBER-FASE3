@@ -1,5 +1,7 @@
 # Blue team — laptop yang menjaga situs
 
+Lab **GaaS Alur A** (tepi) + uji wasit NEX-RED. Model: [`../../docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md).
+
 Laptop ini = **pos pertahanan**. Tugasnya: menyalakan hotspot Windows, lalu menyalakan Nexus di depan portofolio.
 
 Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu membuka IP laptop ini (atau `http://portfolio.nexus-lab.test` setelah `hosts`).
@@ -35,7 +37,7 @@ git pull origin main --recurse-submodules
 
 Kalau folder submodule masih kosong/lama: `git submodule update --init --recursive`
 
-Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab. Submodule `playground/NEXUS-CYBER-WEBISTE-SAAS` ikut ter-pull; itu portal jual, **bukan** origin hotspot.
+Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab. **Channel Portal** ada di monorepo (`nexus-channel-portal/`), bukan origin hotspot.
 
 Dataset NEX-AI dari log WAF (bukan LLM): **`COLLECT-DATASET.bat`** (butuh Python + Docker stack nyala).
 

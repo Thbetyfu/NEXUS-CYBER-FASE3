@@ -1,3 +1,7 @@
+> **Arsip historis** — laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # Laporan uji penerimaan lab hotspot â€” 15 Agustus 2026
 
 **Klasifikasi.** Ini **arsip sesi**, bukan kontrak kemampuan produk. Klaim yang mengikat ada di `docs/CAPABILITIES.md` dan `docs/LIMITATIONS.md`.

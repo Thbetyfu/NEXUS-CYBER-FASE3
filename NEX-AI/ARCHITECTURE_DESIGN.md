@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** — bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # DESAIN ARSITEKTUR TEKNIS: NEX-AI
 ## SISTEM KLASIFIKASI ANCAMAN LOKAL BERBASIS SMALL LANGUAGE MODEL (SLM)
 

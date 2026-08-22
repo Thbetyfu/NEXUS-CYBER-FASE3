@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 📊 QA PHASE 7: INTERACTIVE SOC TERMINAL & SIMULATION ENGINE REPORT
 **Standard Compliance:** ISO 27001 (A.12 Operations Security) & ISO 25010 (Usability & Robustness)  
 **Status:** 🟢 COMPILATION & TYPES VERIFIED (100% SUCCESSFUL)  

@@ -1,3 +1,7 @@
+> **Arsip / submodul NEX-AI** � bukan kontrak produk GaaS utama. Lihat [docs/PRODUCT_MODEL.md](../docs/PRODUCT_MODEL.md).
+
+---
+
 # 🏛️ NEX-AI SOVEREIGNTY & PROPRIETARY MODEL NOTICE
 
 **Status Lisensi**: 🔒 **EKSKLUSIF PRIVAT PROPRIETARY (NON-OPEN-SOURCE)**  

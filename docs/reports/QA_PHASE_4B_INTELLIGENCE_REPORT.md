@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 🕵️ QA AUDIT REPORT: PHASE 4 — Intelligence Layer Optimization
 
 **Standard**: ISO/IEC 27001 + ISO/IEC 25010

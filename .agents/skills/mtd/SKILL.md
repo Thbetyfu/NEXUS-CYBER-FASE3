@@ -1,6 +1,6 @@
 ---
 name: mtd
-description: Moving Target Defense and Digital Hallucination
+description: MTD/honeypot lab — bukan jual GaaS v1; lihat docs/PRODUCT_MODEL.md
 ---
 
 # 🌐 Skill: MTD (Moving Target Defense)

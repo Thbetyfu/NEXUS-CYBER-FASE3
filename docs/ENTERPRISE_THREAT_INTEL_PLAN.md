@@ -1,3 +1,7 @@
+> **Arsip historis** ó snapshot; kontrak hidup: [PRODUCT_MODEL.md](./PRODUCT_MODEL.md), [CAPABILITIES.md](./CAPABILITIES.md).
+
+---
+
 # üè¶ RENCANA ARSITEKTUR INTELIJEN ANCAMAN SKALA PERBANKAN
 
 ## Transisi dari AbuseIPDB Publik ke Jaringan Threat Intelligence Privat Nasional

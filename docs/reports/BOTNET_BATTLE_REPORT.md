@@ -1,3 +1,7 @@
+> **Arsip historis** � laporan QA/evaluasi pada tanggal di header. Model produk GaaS: [PRODUCT_MODEL.md](../PRODUCT_MODEL.md).
+
+---
+
 # 🚨 BOTNET BATTLE REPORT
 ## Nexus Cyber — Distributed Botnet Simulation (Layer 7 DDoS)
 **Author**: Red Team (Internal Penetration Test)

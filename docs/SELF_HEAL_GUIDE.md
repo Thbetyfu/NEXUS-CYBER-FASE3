@@ -1,5 +1,8 @@
 # Panduan Self-Heal
 
+**Pembaruan:** 2026-08-22  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — komponen tepi Alur A; **bukan** pengganti Job Cowork atau RCE memori.
+
 Integrity monitor di `nexus-core-gateway/internal/repair` memakai **BLAKE3**, baseline di RAM, restore folder yang dikonfigurasi. Bukan proteksi RCE di memori proses, bukan PITR database.
 
 ---
