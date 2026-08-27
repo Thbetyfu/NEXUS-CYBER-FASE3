@@ -24,11 +24,11 @@ export function Navbar() {
         <Link href="/startup" className="notion-navbar-link">
           Startup
         </Link>
-        <Link href="/institusi" className="notion-navbar-link">
-          Institusi
+        <Link href="/corporat" className="notion-navbar-link">
+          Corporat
         </Link>
-        <Link href="/b2g" className="notion-navbar-link">
-          B2G
+        <Link href="/pemerintah" className="notion-navbar-link">
+          Pemerintah
         </Link>
       </div>
       <div className="flex gap-2 notion-navbar-actions desktop-only">
@@ -56,11 +56,11 @@ export function Navbar() {
           <Link href="/startup" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Startup
           </Link>
-          <Link href="/institusi" className="notion-navbar-link" onClick={() => setOpen(false)}>
-            Institusi
+          <Link href="/corporat" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Corporat
           </Link>
-          <Link href="/b2g" className="notion-navbar-link" onClick={() => setOpen(false)}>
-            B2G
+          <Link href="/pemerintah" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Pemerintah
           </Link>
           <Link href="/" className="notion-button notion-button-primary" onClick={() => setOpen(false)}>
             Pilih segmen

@@ -12,7 +12,7 @@ import {
   Shield,
 } from "lucide-react";
 import { getSegment } from "@/lib/segments";
-import { whatsappB2GUrl } from "@/lib/portal-config";
+import { whatsappPemerintahUrl } from "@/lib/portal-config";
 import { Navbar, WaCta } from "./Navbar";
 
 const WHERE = [
@@ -45,7 +45,7 @@ const MARGIN_HINT = [
 ];
 
 export function CoworkB2GPage() {
-  const segment = getSegment("b2g");
+  const segment = getSegment("pemerintah");
   const plans = segment.plans;
 
   return (
@@ -88,9 +88,9 @@ export function CoworkB2GPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <WaCta label="Diskusi B2G on-prem" href={whatsappB2GUrl()} primary />
-            <Link href="/institusi" className="notion-button" style={{ padding: "12px 24px" }}>
-              Institusi B2B (hosted)
+            <WaCta label="Diskusi Pemerintah on-prem" href={whatsappPemerintahUrl()} primary />
+            <Link href="/corporat" className="notion-button" style={{ padding: "12px 24px" }}>
+              Corporat (hosted / on-prem)
             </Link>
           </motion.div>
         </section>
@@ -140,7 +140,7 @@ export function CoworkB2GPage() {
 
         <section id="harga" style={{ marginBottom: 36 }}>
           <h2 className="text-center" style={{ fontSize: "1.2rem", marginBottom: 8 }}>
-            Paket B2G (ilustrasi pitching)
+            Paket Pemerintah (ilustrasi pitching)
           </h2>
           <p
             className="text-center"
@@ -226,7 +226,7 @@ export function CoworkB2GPage() {
         {segment.faqs.length > 0 && (
           <section id="faq" style={{ padding: "8px 0", maxWidth: 640, margin: "0 auto" }}>
             <h2 className="text-center" style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>
-              FAQ B2G
+              FAQ Pemerintah
             </h2>
             {segment.faqs.map((faq) => (
               <details key={faq.q} className="notion-toggle">
@@ -239,22 +239,13 @@ export function CoworkB2GPage() {
           </section>
         )}
 
-        <div className="notion-callout notion-callout-blue" style={{ marginTop: 28 }}>
-          <div className="notion-callout-content">
-            <strong>Status jujur:</strong> pitching & arsitektur siap. Packaging binary berlisensi
-            produksi, pengadaan formal, dan pilot DC instansi <em>belum</em> selesai. Bukan eBPF XDP
-            nyata, bukan SOC 24/7 otonom.
-          </div>
-        </div>
-
         <p
           className="text-center"
           style={{ marginTop: 28, fontSize: 13, color: "var(--notion-text-muted)" }}
         >
-          Butuh wasit hosted dulu?{" "}
-          <Link href="/institusi">
-            <Building2 size={12} style={{ display: "inline", verticalAlign: "middle" }} /> Institusi
-            B2B
+          Butuh wasit hosted atau corporat on-prem?{" "}
+          <Link href="/corporat">
+            <Building2 size={12} style={{ display: "inline", verticalAlign: "middle" }} /> Corporat
           </Link>
           {" · "}
           <Link href="/">Pilih segmen lain</Link>
@@ -265,7 +256,7 @@ export function CoworkB2GPage() {
         <div className="notion-container" style={{ paddingBottom: 0 }}>
           <div className="notion-navbar-brand" style={{ marginBottom: 6 }}>
             <Shield size={18} />
-            <span style={{ fontSize: 15 }}>Nexus Cyber · B2G</span>
+            <span style={{ fontSize: 15 }}>Nexus Cyber · Pemerintah</span>
           </div>
           <p style={{ fontSize: 12, color: "var(--notion-text-muted)", margin: 0 }}>
             © {new Date().getFullYear()} Nexus Cyber

@@ -24,16 +24,16 @@ const ICONS: Record<SegmentId, typeof Store> = {
   umkm: Store,
   sekolah: GraduationCap,
   startup: Rocket,
-  institusi: Building2,
-  b2g: Landmark,
+  corporat: Building2,
+  pemerintah: Landmark,
 };
 
 const WORDS = [
   "website UMKM.",
   "pagar anti-deface.",
   "landing startup.",
-  "wasit kanal B2B.",
-  "Edge on-prem B2G.",
+  "wasit corporat.",
+  "Edge on-prem pemerintah.",
 ];
 
 const FLOW_STEPS = [
@@ -88,9 +88,9 @@ function HeroFlow() {
   }, []);
 
   const hints = [
-    "Pilih UMKM, sekolah, startup, institusi, atau B2G — harga tidak dicampur.",
+    "Pilih UMKM, sekolah, startup, corporat, atau pemerintah — harga tidak dicampur.",
     "Pesan lewat WhatsApp; teks sudah berisi nama paket.",
-    "Proses di PC operator + tunnel — tanpa VPS dulu (B2G target = DC klien).",
+    "Proses di PC operator + tunnel — tanpa VPS dulu (on-prem = DC klien).",
     "Website live, Job wasit, atau pitch on-prem — sesuai peran Anda.",
   ];
 
@@ -159,8 +159,8 @@ export function SegmentHub() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            Satu portal. Lima peran. Harga menyesuaikan apakah Anda sudah punya website — kecuali
-            institusi & B2G (kontrak wasit / on-prem, tanpa cabang itu).
+            Satu portal. Lima peran. UMKM–startup: cabang website. Corporat: hosted atau on-prem
+            (jika besar). Pemerintah: on-prem di DC instansi.
           </motion.p>
 
           <motion.a

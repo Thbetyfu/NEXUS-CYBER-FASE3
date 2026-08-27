@@ -114,7 +114,7 @@ export default function AddRouteModal({ isOpen, onClose, onSuccess }: AddRouteMo
                                 required
                                 value={domain}
                                 onChange={(e) => setDomain(e.target.value)}
-                                placeholder="e.kemenkeu.localhost"
+                                placeholder="portfolio.nexus-lab.test"
                                 className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/50 transition-all font-mono"
                             />
                         </div>

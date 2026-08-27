@@ -94,15 +94,23 @@ func NewLogger() (*Logger, error) {
 		DomainStats:      make(map[string]*DomainStatsEntry),
 	}
 
-	// Inisialisasi awal aset strategis nasional demi pelacakan terpusat instan.
+	// Lab workspaces only — bukan domain demo OJK/BI/Kemenkeu (warisan SaaS lama).
 	criticalAssets := []string{
 		"localhost",
-		"ojk.go.id",
-		"bi.go.id",
-		"kemenkeu.go.id",
-		"portal.nexus",
-		"audit.nexus",
-		"cloud.nexus",
+		"127.0.0.1",
+		"portfolio.nexus-lab.test",
+	}
+	if host := strings.TrimSpace(os.Getenv("PROTECTED_HOST")); host != "" {
+		seen := false
+		for _, a := range criticalAssets {
+			if a == host {
+				seen = true
+				break
+			}
+		}
+		if !seen {
+			criticalAssets = append(criticalAssets, host)
+		}
 	}
 	for _, a := range criticalAssets {
 		l.DomainStats[a] = &DomainStatsEntry{}

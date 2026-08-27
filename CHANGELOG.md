@@ -6,6 +6,10 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Changed
+- **SOC → Operator GaaS saja:** kokpit `:3001` fokus kanal, antrian L0/L1, Job Cowork, artefak MD/JSON. **Dihapus** dari UI/kode dashboard: War Room, Defense Matrix, MTD Audit, Licensing SaaS, AI Cortex/Nechat, NEX-AI monitor window (+ API `/api/wargame`, `/api/license`). Ban dialog tanpa klaim XDP. Next rewrite `/api` = `fallback` agar `/api/gaas`, `/api/jobs`… lokal tetap jalan.
+
+
 ### Added
 - **Cowork B2B GTM (Milestone 20):** keputusan Q9 (prioritas B2B Cowork), [`docs/COWORK_B2B.md`](docs/COWORK_B2B.md), halaman [`/cowork`](nexus-channel-portal/src/app/cowork/page.tsx) di Channel Portal.
 - **B2G pitching (Milestone 20.2d):** [`docs/COWORK_B2G.md`](docs/COWORK_B2G.md), [`docs/PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md), halaman [`/b2g`](nexus-channel-portal/src/app/b2g/page.tsx) — on-prem Edge + Loop wajib; **bukan** produksi pengadaan selesai.
@@ -13,7 +17,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
 
 ### Docs
-- **Lab target (agen):** origin default yang dilindungi = portofolio `playground/Portofolio-Thoriq` / `PROTECTED_HOST=portfolio.nexus-lab.test` — ditulis di [`AGENTS.md`](AGENTS.md), [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) §0, [`.agents/rules/nexus-rule.md`](.agents/rules/nexus-rule.md); tujuan = bukti Alur A + Job Cowork, bukan landing saja.
+- **SOC lab cleanup:** seed workspace OJK/BI/Kemenkeu diganti `portfolio.nexus-lab.test`; ikon desktop + default window Job Cowork & Laporan Compliance.
 - **B2G pitching package:** on-prem Edge lisensi + Loop wajib; source & control plane tidak diserahkan; keputusan di `DECISIONS_OPEN` (pitching ≠ produksi B2G).
 - **Unit ekonomi:** jual / COGS / margin per segmen × cabang website (asumsi pilot PC+tunnel) — [`PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md).
 - **Portal multi-segmen (satu situs):** hub `/` + `/umkm` · `/sekolah` · `/startup` · `/institusi` · `/b2g`; UMKM Rp 20rb termasuk pelindung; GaaS entry Rp 35rb; `/cowork` → `/institusi`.

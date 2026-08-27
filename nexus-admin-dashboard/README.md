@@ -1,24 +1,22 @@
-# Nexus Cyber — Command Center (operator kokpit)
+# Nexus Cyber — Operator Console (kokpit GaaS)
 
-Next.js dashboard untuk **operator Nexus** — telemetri, CLI, ban/unban, **Job Cowork** (GaaS Alur B). **Bukan** Channel Portal ke pemilik risiko kanal.
+Next.js dashboard untuk **operator Nexus** saja — **Operator GaaS Console** (kanal, antrian L0/L1, Job Cowork, artefak), telemetri, CLI, ban/unban.
+
+**Bukan** Channel Portal pelanggan. **Bukan** War Room / MTD / licensing SaaS (dihapus dari UI).
 
 **Model produk:** [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md)
 
+## Yang ada
+
+- GaaS Console, Job Cowork, Logs, IP/Ban, Terminal, Metrics, Laporan/Artefak
+
 ## Stack
 
-Next.js App Router, Tailwind, Xterm.js. Bind **`127.0.0.1:3001`** di lab. API ke control plane **`127.0.0.1:8081`**.
-
-## Getting started
+Next.js App Router, Tailwind, Xterm.js. Bind **`127.0.0.1:3001`**. Control plane **`127.0.0.1:8081`**. Job bridge **`:3004`**.
 
 ```bash
 npm install
 npm run dev -- -p 3001
 ```
 
-Login: `NEXUS_ADMIN_TOKEN` dari `nexus-core-gateway/.env`.
-
-## Screenshots (lab)
-
-Boot sequence, dashboard telemetri, overlay lisensi **lab** (`nexus-cyber-dev`) — bukan lockout langganan produksi.
-
-Lihat [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
+Login: `NEXUS_ADMIN_TOKEN` dari `deploy-local/.env` / gateway.

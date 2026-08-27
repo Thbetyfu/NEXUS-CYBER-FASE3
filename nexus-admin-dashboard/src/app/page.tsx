@@ -1,17 +1,17 @@
 "use client"
 
-/* 
-   NEXUS_COMMAND_CENTER_OS [V2.0]
-   - Unified Security OS Interface for Thoriq
-   - Orchestrates Portfolio Defense & Monitoring
-   - Improved UX: Desktop Icons, Snappy Windows, Active Focus
+/*
+   NEXUS OPERATOR CONSOLE [GaaS-only]
+   - Operator GaaS Console (kanal + Job + approve + artefak)
+   - Lab widgets removed (War Room, MTD, map, Nechat, NEX-AI monitor, license manager)
+   - Bukan dashboard pelanggan / Channel Portal
 */
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import {
-  Shield, Activity, ShieldAlert, Cpu, Globe, Terminal,
-  WifiOff, ShieldCheck, Lock,
-  Database, Users, Ban
+  Shield, Activity, ShieldAlert, Cpu, Terminal,
+  WifiOff, ShieldCheck,
+  Database, Users, Ban, LayoutDashboard
 } from 'lucide-react';
 import {
   AreaChart, Area, CartesianGrid, ResponsiveContainer
@@ -19,20 +19,16 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 // Components
-import NechatWidget from '@/components/NechatWidget';
 import AddRouteModal from '@/components/AddRouteModal';
 import AiTerminalWidget from '@/components/AiTerminalWidget';
-import ThreatMapWidget from '@/components/ThreatMapWidget';
 import EmergencyAlarm from '@/components/EmergencyAlarm';
 import WindowFrame from '@/components/WindowFrame';
 import Taskbar from '@/components/Taskbar';
 import BootSequence from '@/components/BootSequence';
-import NexAiMonitorWidget from '@/components/NexAiMonitorWidget';
-import LicenseManagerWidget from '@/components/LicenseManagerWidget';
 import ComplianceWidget from '@/components/ComplianceWidget';
 import SocAuthGate from '@/components/SocAuthGate';
-import WarGameWidget from '@/components/WarGameWidget';
 import JobCoworkWidget from '@/components/JobCoworkWidget';
+import OperatorGaasConsole from '@/components/OperatorGaasConsole';
 
 // Config
 import { gatewayURL } from '@/config';
@@ -312,7 +308,7 @@ const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entrie
     if (!banTarget) return;
 
     // Double confirmation logic
-    if (!window.confirm(`🚨 DOUBLE CONFIRMATION:\nAre you sure you want to block IP [${banTarget}]?\nThis will enforce XDP_DROP at kernel/NIC level (0% CPU overhead) and return HTTP 403 Forbidden at application level.`)) {
+    if (!window.confirm(`Konfirmasi ban IP [${banTarget}]?\nGateway akan menolak trafik IP ini (HTTP 403 di tepi). Bukan klaim eBPF/XDP kernel.`)) {
       return;
     }
 
@@ -347,7 +343,7 @@ const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entrie
   };
 
   const handleUnban = async (ip: string) => {
-    if (!window.confirm(`🔓 Are you sure you want to unban IP [${ip}]?\nThis will restore its traffic access (XDP_PASS).`)) {
+    if (!window.confirm(`Unban IP [${ip}]?\nTrafik dari IP ini akan diizinkan lagi di gateway.`)) {
       return;
     }
 
@@ -576,7 +572,7 @@ const IPMonitorConsole = React.memo(({ entries, blacklist, onRefetch }: { entrie
                 </div>
 
                 <p className="text-[10px] text-gray-400">
-                  You are about to isolate IP <span className="text-white font-bold">{banTarget}</span> at both Firewall Kernel level (eBPF XDP_DROP) and Gateway Layer.
+                  You are about to blacklist IP <span className="text-white font-bold">{banTarget}</span>. Gateway will reject that IP&apos;s traffic (HTTP 403 at the edge). Not a kernel eBPF/XDP claim.
                 </p>
 
                 <div className="space-y-3 text-[10px]">
@@ -635,47 +631,28 @@ const NCCDashboard = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [logLimit, setLogLimit] = useState<number>(10);
   
-  const { logs, metrics, history, ebpfData, isLive, isUnlicensed } = useTelemetry(gatewayURL(`/api/telemetry?domain=${activeDomain}`), 2000)
+  // isUnlicensed kept inside useTelemetry but not rendered (no SaaS paywall on operator console)
+  const { logs, metrics, history, ebpfData, isLive } = useTelemetry(gatewayURL(`/api/telemetry?domain=${activeDomain}`), 2000)
   const aiEvents = useAIEvents(gatewayURL("/api/ai-events"), 1000)
   const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
-
-  // Subscription Re-activation State
-  const [activationKey, setActivationKey] = useState("");
-  const [isActivating, setIsActivating] = useState(false);
-  const [activationSuccess, setActivationSuccess] = useState(false);
-
-  const handleActivation = async () => {
-    if (!activationKey) return;
-    setIsActivating(true);
-    setTimeout(() => {
-      setIsActivating(false);
-      if (activationKey === "nexus-cyber-dev" || activationKey.length >= 16) {
-        setActivationSuccess(true);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        alert("🚨 ERROR: Kunci lisensi langganan tidak valid atau telah diblokir.");
-      }
-    }, 1200);
-  };
 
   // System State
   const [isEmergency, setIsEmergency] = useState(false);
   const lastHoneypotCountRef = useRef(0);
 
-  // Window Management State
-  const [openWindows, setOpenWindows] = useState<string[]>(["metrics", "threat-map", "ai-terminal", "system-status"]);
-  const [focusedWindow, setFocusedWindow] = useState<string>("metrics");
+  // Window Management State — GaaS operator windows only
+  const [openWindows, setOpenWindows] = useState<string[]>([
+    "operator-gaas",
+  ]);
+  const [focusedWindow, setFocusedWindow] = useState<string>("operator-gaas");
   const [windowZIndices, setWindowZIndices] = useState<Record<string, number>>({
+    "operator-gaas": 20,
     "metrics": 10,
-    "threat-map": 11,
-    "ai-terminal": 12,
     "forensic-logs": 13,
     "system-status": 14,
-    "mtd-audit": 15,
     "ip-monitor": 16,
-    "nex-ai-monitor": 17
+    "job-cowork": 18,
+    "compliance-audit": 19,
   });
 
   const handleFocusWindow = useCallback((id: string) => {
@@ -705,44 +682,6 @@ const NCCDashboard = () => {
   }, [metrics.honeypot, logs, isEmergency]);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // MTD Defense Audit States
-  const [auditStatus, setAuditStatus] = useState<"IDLE" | "RUNNING" | "COMPLETED" | "ERROR">("IDLE");
-  const [auditResult, setAuditResult] = useState<{
-    checks: Array<{ label: string; passed: boolean; detail: string }>;
-    passed: number;
-    total: number;
-    output: string;
-  } | null>(null);
-  const [auditError, setAuditError] = useState("");
-
-  const runMtdAudit = async () => {
-    setAuditStatus("RUNNING");
-    setAuditError("");
-    setAuditResult(null);
-    try {
-      const csrfToken = await fetchCsrfToken();
-      const res = await fetch(gatewayURL("/api/test/run"), {
-        method: "POST",
-        headers: {
-          ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {})
-        },
-        credentials: "include",
-        mode: "cors"
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.details || errData.error || "Failed to run audit");
-      }
-      const data = await res.json();
-      setAuditResult(data);
-      setAuditStatus("COMPLETED");
-    } catch (err) {
-      setAuditStatus("ERROR");
-      const errMsg = err instanceof Error ? err.message : "Connection to Gateway lost or script execution timed out.";
-      setAuditError(errMsg);
-    }
-  };
 
   const handlePanic = async () => {
     try {
@@ -801,7 +740,7 @@ const NCCDashboard = () => {
 
   return (
     <div className={`relative min-h-screen bg-[#050608] text-gray-200 font-sans overflow-hidden transition-colors duration-1000 ${isEmergency ? 'shadow-[inset_0_0_150px_rgba(220,38,38,0.15)]' : ''}`}>
-      <h1 className="sr-only">Nexus Cyber Command Center OS</h1>
+      <h1 className="sr-only">Nexus Operator GaaS Console</h1>
       <AnimatePresence>
         {isBooting && <BootSequence key="boot-sequence" onComplete={() => setIsBooting(false)} />}
       </AnimatePresence>
@@ -862,78 +801,99 @@ const NCCDashboard = () => {
       {/* Header / Menu Bar */}
       <header className="absolute top-0 left-0 right-0 h-10 flex items-center justify-between px-6 z-50 pointer-events-none">
         <div className="flex items-center gap-4 pointer-events-auto">
-          <div className="flex items-center gap-2 bg-black/40 border border-white/5 rounded-full px-4 py-1 backdrop-blur-md">
-            <Shield className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Nexus SOC OS</span>
+          <div className="flex items-center gap-2 bg-black/40 border border-teal-500/20 rounded-full px-4 py-1 backdrop-blur-md">
+            <Shield className="w-3.5 h-3.5 text-teal-400" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Operator GaaS</span>
           </div>
+          <span className="text-[9px] font-mono text-teal-500/60 uppercase tracking-widest hidden sm:inline">
+            Internal Nexus · bukan pelanggan
+          </span>
         </div>
       </header>
 
       {/* Desktop Workspace */}
       <main className="absolute inset-0 top-10 bottom-14 overflow-hidden p-6 z-10">
         
-        {/* Desktop Icons Layer */}
+        {/* Desktop Icons — GaaS operator only */}
         <div className="absolute top-8 left-8 flex flex-col gap-2 z-0">
-          <DesktopIcon 
-            id="metrics" 
-            label="System Metrics" 
-            icon={Activity} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("metrics")}
+          <DesktopIcon
+            id="operator-gaas"
+            label="GaaS Console"
+            icon={LayoutDashboard}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("operator-gaas")}
           />
-          <DesktopIcon 
-            id="threat-map" 
-            label="Defense Matrix" 
-            icon={Globe} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("threat-map")}
+          <DesktopIcon
+            id="job-cowork"
+            label="Job Cowork"
+            icon={ShieldCheck}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("job-cowork")}
           />
-          <DesktopIcon 
-            id="ai-terminal" 
-            label="AI Cortex" 
-            icon={Cpu} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("ai-terminal")}
-          />
-          <DesktopIcon 
-            id="forensic-logs" 
-            label="Forensic Logs" 
-            icon={Database} 
-            onClick={toggleWindow} 
+          <DesktopIcon
+            id="forensic-logs"
+            label="Forensic Logs"
+            icon={Database}
+            onClick={toggleWindow}
             isOpen={openWindows.includes("forensic-logs")}
           />
-          <DesktopIcon 
-            id="system-status" 
-            label="Nexus Terminal" 
-            icon={Terminal} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("system-status")}
-          />
-          <DesktopIcon 
-            id="mtd-audit" 
-            label="MTD Security Audit" 
-            icon={ShieldCheck} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("mtd-audit")}
-          />
-          <DesktopIcon 
-            id="ip-monitor" 
-            label="IP Activity" 
-            icon={Users} 
-            onClick={toggleWindow} 
+          <DesktopIcon
+            id="ip-monitor"
+            label="IP Activity"
+            icon={Users}
+            onClick={toggleWindow}
             isOpen={openWindows.includes("ip-monitor")}
           />
-          <DesktopIcon 
-            id="nex-ai-monitor" 
-            label="NEX-AI Core" 
-            icon={Shield} 
-            onClick={toggleWindow} 
-            isOpen={openWindows.includes("nex-ai-monitor")}
+          <DesktopIcon
+            id="system-status"
+            label="Nexus Terminal"
+            icon={Terminal}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("system-status")}
+          />
+          <DesktopIcon
+            id="metrics"
+            label="System Metrics"
+            icon={Activity}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("metrics")}
+          />
+          <DesktopIcon
+            id="compliance-audit"
+            label="Laporan / Artefak"
+            icon={ShieldAlert}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("compliance-audit")}
           />
         </div>
 
         {/* Floating Windows Layer */}
         <AnimatePresence>
+          {/* Operator GaaS Console — default home */}
+          {openWindows.includes("operator-gaas") && (
+            <WindowFrame
+              key="operator-gaas"
+              id="operator-gaas"
+              title="Operator GaaS Console"
+              icon={<LayoutDashboard size={14} />}
+              initialX={120}
+              initialY={36}
+              width={920}
+              height={640}
+              zIndex={windowZIndices["operator-gaas"] || 20}
+              isActive={focusedWindow === "operator-gaas"}
+              onFocus={() => handleFocusWindow("operator-gaas")}
+              onClose={() => toggleWindow("operator-gaas")}
+            >
+              <OperatorGaasConsole
+                isLive={isLive}
+                metrics={metrics}
+                activeDomain={activeDomain}
+                onOpenOps={toggleWindow}
+              />
+            </WindowFrame>
+          )}
+
           {/* Metrics Window */}
           {openWindows.includes("metrics") && (
             <WindowFrame
@@ -962,14 +922,14 @@ const NCCDashboard = () => {
                   </div>
                 </div>
 
-                {/* eBPF Kernel Shield Panel */}
+                {/* Edge drop counters (lab telemetry — not real XDP/eBPF) */}
                 <div className="bg-[#0b0e14] border border-emerald-500/20 rounded-xl p-4 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest flex items-center gap-1.5">
-                      <Cpu size={11} className="animate-pulse" /> eBPF Kernel Shield
+                      <Cpu size={11} className="animate-pulse" /> Edge drop counters
                     </p>
                     <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/20">
-                      ACTIVE (XDP_DROP)
+                      GATEWAY (lab)
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 mt-1">
@@ -1023,52 +983,6 @@ const NCCDashboard = () => {
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
-            </WindowFrame>
-          )}
-
-          {/* Threat Map Window */}
-          {openWindows.includes("threat-map") && (
-            <WindowFrame
-              key="threat-map"
-              id="threat-map"
-              title="Global Defense Matrix"
-              icon={<Globe size={14} />}
-              initialX={560}
-              initialY={40}
-              width={750}
-              height={520}
-              zIndex={windowZIndices["threat-map"]}
-              isActive={focusedWindow === "threat-map"}
-              onFocus={() => handleFocusWindow("threat-map")}
-              onClose={() => toggleWindow("threat-map")}
-            >
-              <div className="h-full bg-black">
-                <ThreatMapWidget />
-              </div>
-            </WindowFrame>
-          )}
-
-          {/* AI Terminal Window */}
-          {openWindows.includes("ai-terminal") && (
-            <WindowFrame
-              key="ai-terminal"
-              id="ai-terminal"
-              title="Nexus AI Cortex"
-              icon={<Cpu size={14} />}
-              initialX={250}
-              initialY={300}
-              width={700}
-              height={500}
-              zIndex={windowZIndices["ai-terminal"]}
-              isActive={focusedWindow === "ai-terminal"}
-              onFocus={() => handleFocusWindow("ai-terminal")}
-              onClose={() => toggleWindow("ai-terminal")}
-            >
-              <div className="h-full flex flex-col">
-                <div className="flex-1 overflow-hidden">
-                  <NechatWidget activeDomain={activeDomain} />
                 </div>
               </div>
             </WindowFrame>
@@ -1167,174 +1081,6 @@ const NCCDashboard = () => {
             </WindowFrame>
           )}
 
-          {/* MTD Compliance Audit Window */}
-          {openWindows.includes("mtd-audit") && (
-            <WindowFrame
-              key="mtd-audit"
-              id="mtd-audit"
-              title="MTD Defense Compliance Audit"
-              icon={<ShieldCheck size={14} />}
-              initialX={300}
-              initialY={100}
-              width={700}
-              height={550}
-              zIndex={windowZIndices["mtd-audit"]}
-              isActive={focusedWindow === "mtd-audit"}
-              onFocus={() => handleFocusWindow("mtd-audit")}
-              onClose={() => toggleWindow("mtd-audit")}
-            >
-              <div className="h-full flex flex-col bg-[#06080c] text-gray-200 p-6 overflow-y-auto custom-scrollbar font-mono">
-                {auditStatus === "IDLE" && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center gap-6 p-4">
-                    <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.1)]">
-                      <Shield className="w-10 h-10 text-cyan-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-white uppercase tracking-widest">MTD Security Audit Suite</h3>
-                      <p className="text-xs text-gray-400 max-w-md leading-relaxed">
-                        Verify system compliance against ISO 27001 & ISO 25010 standards in real-time.
-                        This runs 17 active stress tests simulating multi-tenant rate floods, digital hallucination honeypots, and topology shuffling.
-                      </p>
-                    </div>
-                    <button
-                      onClick={runMtdAudit}
-                      className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-black font-black rounded-xl text-[10px] uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
-                    >
-                      Launch MTD Security Audit
-                    </button>
-                  </div>
-                )}
-
-                {auditStatus === "RUNNING" && (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-6 p-4">
-                    <div className="relative w-24 h-24">
-                      {/* Scanning Ring */}
-                      <div className="absolute inset-0 rounded-full border-4 border-cyan-500/10 border-t-cyan-500 animate-spin" />
-                      <div className="absolute inset-2 rounded-full border border-cyan-500/20 flex items-center justify-center bg-black/40">
-                        <Activity className="w-8 h-8 text-cyan-400 animate-pulse" />
-                      </div>
-                    </div>
-                    <div className="text-center space-y-2">
-                      <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-[0.2em] animate-pulse">
-                        AUDIT IN PROGRESS...
-                      </h4>
-                      <p className="text-[9px] text-gray-500 uppercase tracking-widest">
-                        Executing 17 physical stress tests & probing defense mechanisms
-                      </p>
-                    </div>
-                    {/* Simulated loading steps */}
-                    <div className="w-full max-w-sm bg-black/60 border border-white/5 rounded-xl p-4 text-[9px] text-cyan-500/70 space-y-1.5 font-mono">
-                      <div className="flex items-center gap-2">
-                        <span className="w-1 h-1 rounded-full bg-cyan-400 animate-ping" />
-                        <span>[SYS] Initiating stress-test sequence...</span>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-80">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                        <span>[MTD] Probing Per-IP Token Bucket (150 concurrent reqs)</span>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-60">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
-                        <span>[HONEYPOT] Testing Digital Hallucination & Tarpit delays</span>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-40">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-600" />
-                        <span>[SHUFFLER] Verifying CSPRNG topology port rotation</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {auditStatus === "ERROR" && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center gap-6 p-4">
-                    <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                      <ShieldAlert className="w-8 h-8 text-red-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest">Audit Execution Failed</h3>
-                      <p className="text-[10px] text-gray-400 max-w-md bg-black/40 border border-red-950/30 p-3 rounded-lg leading-relaxed text-left font-mono whitespace-pre-wrap">
-                        {auditError}
-                      </p>
-                    </div>
-                    <button
-                      onClick={runMtdAudit}
-                      className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold rounded-xl text-[10px] uppercase tracking-widest transition-all"
-                    >
-                      Retry Security Audit
-                    </button>
-                  </div>
-                )}
-
-                {auditStatus === "COMPLETED" && auditResult && (
-                  <div className="space-y-6 animate-in fade-in duration-300 w-full">
-                    {/* Compliance Card Banner */}
-                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.05)] w-full">
-                      {/* Ambient green light */}
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full filter blur-xl pointer-events-none" />
-                      <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                        <ShieldCheck className="w-9 h-9 text-emerald-400" />
-                      </div>
-                      <div className="flex-1 text-center md:text-left space-y-1">
-                        <div className="flex items-center justify-center md:justify-start gap-2">
-                          <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-black tracking-widest uppercase">
-                            Audited & Compliant
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-black text-white tracking-widest uppercase">
-                          {auditResult.passed} / {auditResult.total} MTD CHECKS PASSED
-                        </h3>
-                        <p className="text-[9px] text-emerald-400/70 uppercase tracking-wider font-bold">
-                          STATUS: SECURED • ISO 27001 & ISO 25010 RESILIENT SPEC
-                        </p>
-                      </div>
-                      <button
-                        onClick={runMtdAudit}
-                        className="px-5 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/35 font-bold rounded-xl text-[9px] uppercase tracking-widest transition-all shrink-0"
-                      >
-                        Re-Audit System
-                      </button>
-                    </div>
-
-                    {/* Checks Grid */}
-                    <div className="bg-black/40 border border-white/5 rounded-2xl overflow-hidden w-full">
-                      <div className="bg-[#090b0e] px-4 py-3 border-b border-white/5 flex items-center justify-between">
-                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Detailed Verification Log</span>
-                        <span className="text-[8px] text-emerald-500 font-black uppercase tracking-widest">100% Integrity</span>
-                      </div>
-                      <div className="divide-y divide-white/5 max-h-60 overflow-y-auto custom-scrollbar">
-                        {auditResult.checks.map((chk, i) => (
-                          <div key={i} className="px-4 py-2.5 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
-                            <div className="space-y-0.5 flex-1 pr-4">
-                              <p className="text-[10px] text-gray-200 font-bold leading-normal">{chk.label}</p>
-                              {chk.detail && <p className="text-[8px] text-gray-500 leading-normal">{chk.detail}</p>}
-                            </div>
-                            <span className={`px-2 py-0.5 rounded-[4px] font-black uppercase text-[8px] shrink-0 ${
-                              chk.passed 
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                : "bg-red-500/10 text-red-500 border border-red-500/20"
-                            }`}>
-                              {chk.passed ? "PASS" : "FAIL"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Raw output accordion */}
-                    <details className="group bg-black/20 border border-white/5 rounded-2xl overflow-hidden w-full">
-                      <summary className="px-4 py-3 text-[10px] text-gray-500 font-bold uppercase tracking-wider cursor-pointer list-none flex items-center justify-between hover:bg-white/[0.01] transition-colors select-none">
-                        <span>Show Raw Terminal Audit Log Output</span>
-                        <span className="text-cyan-500 group-open:rotate-180 transition-transform duration-200">▼</span>
-                      </summary>
-                      <pre className="p-4 bg-black border-t border-white/5 text-[9px] text-green-400 leading-relaxed font-mono overflow-auto max-h-60 custom-scrollbar whitespace-pre-wrap">
-                        {auditResult.output}
-                      </pre>
-                    </details>
-                  </div>
-                )}
-              </div>
-            </WindowFrame>
-          )}
-
           {/* IP Activity & Blacklist Console Window */}
           {openWindows.includes("ip-monitor") && (
             <WindowFrame
@@ -1359,52 +1105,12 @@ const NCCDashboard = () => {
             </WindowFrame>
           )}
 
-          {/* NEX-AI Neural Core Monitor Window */}
-          {openWindows.includes("nex-ai-monitor") && (
-            <WindowFrame
-              key="nex-ai-monitor"
-              id="nex-ai-monitor"
-              title="NEX-AI Neural Core"
-              icon={<Shield size={14} />}
-              initialX={400}
-              initialY={200}
-              width={750}
-              height={500}
-              zIndex={windowZIndices["nex-ai-monitor"]}
-              isActive={focusedWindow === "nex-ai-monitor"}
-              onFocus={() => handleFocusWindow("nex-ai-monitor")}
-              onClose={() => toggleWindow("nex-ai-monitor")}
-            >
-              <NexAiMonitorWidget />
-            </WindowFrame>
-          )}
-
-          {/* Commercial License Manager Window */}
-          {openWindows.includes("license-manager") && (
-            <WindowFrame
-              key="license-manager"
-              id="license-manager"
-              title="License & Commercial Subscription Engine"
-              icon={<Lock size={14} />}
-              initialX={350}
-              initialY={120}
-              width={820}
-              height={560}
-              zIndex={windowZIndices["license-manager"] || 20}
-              isActive={focusedWindow === "license-manager"}
-              onFocus={() => handleFocusWindow("license-manager")}
-              onClose={() => toggleWindow("license-manager")}
-            >
-              <LicenseManagerWidget />
-            </WindowFrame>
-          )}
-
           {/* Compliance Audit & BSSN Threat Intel Window */}
           {openWindows.includes("compliance-audit") && (
             <WindowFrame
               key="compliance-audit"
               id="compliance-audit"
-              title="BSSN Threat Intel & Sovereign Compliance Exporter"
+              title="Laporan / Artefak (ops)"
               icon={<ShieldAlert size={14} />}
               initialX={300}
               initialY={100}
@@ -1438,26 +1144,6 @@ const NCCDashboard = () => {
               <JobCoworkWidget />
             </WindowFrame>
           )}
-
-          {/* Full War Room Live War Game Window */}
-          {openWindows.includes("wargame-sim") && (
-            <WindowFrame
-              key="wargame-sim"
-              id="wargame-sim"
-              title="War Room Live War Game Simulator"
-              icon={<ShieldAlert size={14} />}
-              initialX={250}
-              initialY={80}
-              width={860}
-              height={600}
-              zIndex={windowZIndices["wargame-sim"] || 22}
-              isActive={focusedWindow === "wargame-sim"}
-              onFocus={() => handleFocusWindow("wargame-sim")}
-              onClose={() => toggleWindow("wargame-sim")}
-            >
-              <WarGameWidget />
-            </WindowFrame>
-          )}
         </AnimatePresence>
       </main>
 
@@ -1477,69 +1163,6 @@ const NCCDashboard = () => {
 
       {/* Modals */}
       <AddRouteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={() => {}} />
-
-      {/* Unbypassable Global License Lockout Paywall Overlay */}
-      {isUnlicensed && (
-        <div 
-          className="fixed inset-0 z-[99999] backdrop-blur-2xl bg-[#030508]/95 flex items-center justify-center p-6 text-center select-none"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#05080c]/90 border border-red-500/30 rounded-3xl p-10 shadow-[0_0_50px_rgba(239,68,68,0.15)] max-w-lg w-full flex flex-col items-center gap-8 backdrop-blur-md relative overflow-hidden"
-          >
-            {/* Background Accent Orb */}
-            <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-red-500/5 rounded-full pointer-events-none filter blur-[80px]" />
-            
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center animate-pulse">
-                <Lock className="w-10 h-10 text-red-500 animate-pulse" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center border-2 border-[#05080c]" />
-            </div>
-
-            <div className="space-y-3 relative z-10">
-              <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] font-mono">
-                SISTEM DITANGGUHKAN
-              </h2>
-              <p className="text-xs text-red-400 font-mono uppercase tracking-widest">
-                Masa Sewa Langganan Nexus Cyber Telah Berakhir
-              </p>
-              <p className="text-gray-400 text-xs leading-relaxed max-w-sm mx-auto font-sans">
-                Seluruh gerbang WAF, mitigasi heuristik kecerdasan buatan, dan orkestrasi Moving Target Defense untuk domain Anda dinonaktifkan secara otomatis demi alasan integritas sistem.
-              </p>
-            </div>
-
-            <div className="w-full space-y-4 relative z-10">
-              <div className="flex flex-col gap-2">
-                <label className="text-[9px] text-gray-500 font-mono uppercase tracking-widest text-left">Kunci Lisensi Langganan</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="password"
-                    value={activationKey}
-                    onChange={(e) => setActivationKey(e.target.value)}
-                    disabled={isActivating || activationSuccess}
-                    placeholder={activationSuccess ? "AKTIVASI SUKSES..." : "Masukkan NEXUS_LICENSE_KEY..."}
-                    className="flex-1 bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white outline-none focus:border-red-500/40 transition-colors disabled:opacity-50"
-                  />
-                  <button 
-                    onClick={handleActivation}
-                    disabled={isActivating || activationSuccess}
-                    className="px-6 bg-red-500/10 hover:bg-red-500/20 disabled:bg-red-500/5 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                  >
-                    {isActivating ? "MEMPROSES..." : activationSuccess ? "BERHASIL" : "AKTIVASI"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-[8px] text-gray-600 font-mono uppercase tracking-widest mt-2">
-              NEXUS COMMAND CENTER • SECURITY COMPLIANCE ISO 27001
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   )
 }

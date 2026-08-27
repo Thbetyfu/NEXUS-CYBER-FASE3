@@ -73,10 +73,10 @@ Karena biaya infrastruktur tahap ini ≈ **Rp 0** (PC sendiri), harga **disesuai
 | **UMKM** | `/umkm` | **Rp 20.000** site+pagar · **Rp 35.000** GaaS entry | **Rp 15.000** pagar · **Rp 28.000** pagar+status |
 | **Sekolah** | `/sekolah` | Sama struktur 20 / 35 (copy sekolah) | Sama struktur 15 / 28 |
 | **Startup** | `/startup` | Landing+pagar **Rp 45.000** · Landing+Tepi **Rp 75.000** · Job **Rp 200.000** | Tepi **Rp 75.000** · Job **Rp 200.000** · Loop **Rp 300.000** |
-| **Institusi** | `/institusi` | Job **Rp 200.000** · Loop **Rp 300.000** · Custom (**tanpa** cabang website v1) |
-| **B2G** | `/b2g` | Lisensi Edge On-Prem **Rp 18jt**/tahun · Loop On-Prem **Rp 3,5jt**/bulan · Custom — **tanpa** kuis website; target DC klien (bukan PC pilot) |
+| **Corporat** | `/corporat` | **Cabang deploy:** Hosted = Job **Rp 200.000** · Loop **Rp 300.000**; On-prem (besar) = Edge **Rp 18jt**/tahun · Loop **Rp 3,5jt**/bulan |
+| **Pemerintah** | `/pemerintah` | Lisensi Edge On-Prem **Rp 18jt**/tahun · Loop On-Prem **Rp 3,5jt**/bulan · Custom — **tanpa** kuis website; target DC instansi |
 
-Homepage `/` = hub pilih segmen (desain ink+teal, daftar peran — bukan kartu gradient generik). Setelah pilih peran (kecuali institusi & B2G): tanya **sudah punya website?** → harga menyesuaikan.
+Homepage `/` = hub pilih segmen. Setelah pilih peran: UMKM/sekolah/startup → **sudah punya website?**; Corporat → **hosted vs on-prem**; Pemerintah → langsung paket on-prem.
 
 **Catatan unit ekonomi (pilot PC+tunnel, infra ≈ 0):** cabang “sudah punya web” lebih murah karena tanpa slot template; tetap cover ops/alert. Jangan jual Loop institusi/B2G di harga warung. Tabel jual/COGS/margin: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md). Narasi on-prem: [COWORK_B2G.md](./COWORK_B2G.md).
 

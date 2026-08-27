@@ -159,8 +159,8 @@ export function ProductLayersSection() {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="notion-callout-content">
-            <strong>Fokus pitching:</strong> B2C (UMKM/sekolah) + B2B (startup/institusi) + pintu{" "}
-            <Link href="/b2g">B2G on-prem</Link> (lisensi Edge + Loop wajib; source tidak diserahkan). SIPLah/E-Katalog
+            <strong>Fokus pitching:</strong> B2C (UMKM/sekolah) + Corporat (hosted atau on-prem) + pintu{" "}
+            <Link href="/pemerintah">Pemerintah on-prem</Link> (lisensi Edge + Loop wajib; source tidak diserahkan). SIPLah/E-Katalog
             massal belum.
           </div>
         </motion.div>

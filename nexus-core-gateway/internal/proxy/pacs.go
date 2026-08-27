@@ -386,7 +386,7 @@ func getUnlicensedPaywallHTML(domain string) string {
 </html>`, domain)
 }
 
-// SeedInitialDomainSubscriptions seeds sample premium clients for demonstrations.
+// SeedInitialDomainSubscriptions seeds lab workspaces for local demo (bukan domain kementerian).
 func SeedInitialDomainSubscriptions() {
 	if database.DB == nil {
 		return
@@ -401,7 +401,21 @@ func SeedInitialDomainSubscriptions() {
 		target = fmt.Sprintf("http://%s:3001", backendHost)
 	}
 
-	domains := []string{"localhost", "ojk.localhost", "kemenkeu.localhost", "bi.localhost"}
+	// Hapus seed demo SaaS lama agar tidak muncul di Domain Switcher SOC.
+	legacy := []string{
+		"ojk.go.id", "bi.go.id", "kemenkeu.go.id",
+		"portal.nexus", "audit.nexus", "cloud.nexus",
+		"ojk.localhost", "kemenkeu.localhost", "bi.localhost",
+	}
+	for _, dom := range legacy {
+		database.DB.Unscoped().Where("domain = ?", dom).Delete(&models.DomainSubscription{})
+	}
+
+	protected := strings.TrimSpace(os.Getenv("PROTECTED_HOST"))
+	if protected == "" {
+		protected = "portfolio.nexus-lab.test"
+	}
+	domains := []string{"localhost", protected}
 	for _, dom := range domains {
 		var count int64
 		database.DB.Model(&models.DomainSubscription{}).Where("domain = ?", dom).Count(&count)
@@ -415,5 +429,5 @@ func SeedInitialDomainSubscriptions() {
 			database.DB.Create(&sub)
 		}
 	}
-	fmt.Printf("[SAAS-INIT] Successfully seeded %d dynamic secure domain subscriptions with target %s.\n", len(domains), target)
+	fmt.Printf("[SAAS-INIT] Seeded lab workspaces %v → %s (legacy demo domains purged).\n", domains, target)
 }

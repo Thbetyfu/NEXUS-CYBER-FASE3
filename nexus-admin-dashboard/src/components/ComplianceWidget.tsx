@@ -11,7 +11,7 @@ interface Standard {
 }
 
 export default function ComplianceWidget() {
-  const [targetDomain, setTargetDomain] = useState<string>('kemenkeu.go.id');
+  const [targetDomain, setTargetDomain] = useState<string>('portfolio.nexus-lab.test');
   const [overallScore, setOverallScore] = useState<number>(100.0);
   const [grade, setGrade] = useState<string>('AAA (EXCELLENT)');
   const [standards, setStandards] = useState<Standard[]>([]);
@@ -98,7 +98,7 @@ export default function ComplianceWidget() {
           value={targetDomain}
           onChange={(e) => setTargetDomain(e.target.value)}
           className="bg-black border border-cyan-500/40 rounded px-2.5 py-1 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono w-64"
-          placeholder="e.g. kemenkeu.go.id"
+          placeholder="e.g. portfolio.nexus-lab.test"
         />
         <span className="text-xs font-bold text-emerald-400 ml-auto">GRADE: {grade}</span>
       </div>

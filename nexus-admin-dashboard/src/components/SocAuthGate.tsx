@@ -49,13 +49,20 @@ export default function SocAuthGate({ children }: { children: React.ReactNode })
         body: JSON.stringify({ token }),
       });
       if (!res.ok) {
-        setError("Kunci operator tidak diterima.");
+        const body = await res.text().catch(() => "");
+        if (res.status === 403 && body.includes("CSRF")) {
+          setError("CSRF gagal — refresh halaman lalu coba lagi.");
+        } else {
+          setError("Kunci operator tidak diterima.");
+        }
         setBusy(false);
         return;
       }
       setState("ok");
     } catch {
-      setError("Tidak dapat mencapai control plane.");
+      setError(
+        "Tidak dapat mencapai control plane. Pastikan gateway :8081 hidup, lalu refresh.",
+      );
     } finally {
       setBusy(false);
     }

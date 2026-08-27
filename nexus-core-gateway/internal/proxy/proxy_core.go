@@ -82,12 +82,9 @@ func NewNexusProxy(
 	}
 	atomic.StorePointer(&np.proxyPtr, unsafe.Pointer(initialProxy))
 
-	// Inisialisasi rute standard di tabel dinamis.
+	// Inisialisasi rute lab — bukan ojk/kemenkeu/bi.localhost (warisan demo).
 	np.Router.AddRoute("localhost", target)
 	np.Router.AddRoute("127.0.0.1", target)
-	np.Router.AddRoute("ojk.localhost", target)
-	np.Router.AddRoute("kemenkeu.localhost", target)
-	np.Router.AddRoute("bi.localhost", target)
 	np.Router.AddRoute("*", target)
 	RegisterProtectedHost(np.Router, target)
 

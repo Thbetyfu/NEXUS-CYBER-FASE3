@@ -2,6 +2,15 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { gatewayURL } from '@/config';
+import {
+  approveCoworkJob,
+  canExportArtifact,
+  downloadJobArtifact,
+  errorMessage,
+  formatWasitDelta,
+  statusTone,
+  type ArtifactFormat,
+} from '@/lib/gaas-labels';
 
 interface CoworkJob {
   job_id: string;
@@ -14,14 +23,18 @@ interface CoworkJob {
   antibody_loop_ok: boolean | null;
 }
 
-export default function JobCoworkWidget() {
+interface JobCoworkWidgetProps {
+  /** When true, omit outer title (used inside Operator GaaS Console). */
+  compact?: boolean;
+}
+
+export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProps) {
   const [jobs, setJobs] = useState<CoworkJob[]>([]);
   const [title, setTitle] = useState('Weekly wasit');
   const [targetUrl, setTargetUrl] = useState('http://127.0.0.1:8080');
   const [autonomy, setAutonomy] = useState<'L0' | 'L1'>('L0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [storage, setStorage] = useState<string>('file');
 
   const refresh = useCallback(async () => {
@@ -57,10 +70,20 @@ export default function JobCoworkWidget() {
     return () => clearInterval(timer);
   }, [refresh]);
 
-  const startJob = async () => {
+  const runBusy = async (fn: () => Promise<void>, failFallback: string) => {
     setLoading(true);
     setError(null);
     try {
+      await fn();
+    } catch (err) {
+      setError(errorMessage(err, failFallback));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startJob = () =>
+    runBusy(async () => {
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,38 +92,33 @@ export default function JobCoworkWidget() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to start job');
       await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Job start failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 'Job start failed');
 
-  const approveJob = async (jobId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/jobs', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_id: jobId, operator: 'command-center' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Approve failed');
+  const approveJob = (jobId: string) =>
+    runBusy(async () => {
+      await approveCoworkJob(jobId, 'command-center');
       await refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Approve failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 'Approve failed');
+
+  const downloadArtifact = (jobId: string, format: ArtifactFormat) =>
+    runBusy(() => downloadJobArtifact(jobId, format), 'Download failed');
 
   return (
     <div className="flex flex-col gap-4 p-4 text-emerald-400 font-mono text-sm h-full overflow-auto">
-      <div className="border-b border-emerald-500/30 pb-3">
-        <h3 className="text-lg font-bold text-emerald-300">Job Cowork — GaaS Wasit</h3>
-        <p className="text-xs text-emerald-500/80">
-          Alur B: ukur → gerbang L0/L1 → tutup jujur · storage: {storage}
+      <div className={compact ? 'pb-1' : 'border-b border-emerald-500/30 pb-3'}>
+        <h3
+          className={
+            compact
+              ? 'text-sm font-bold text-emerald-300 uppercase tracking-widest'
+              : 'text-lg font-bold text-emerald-300'
+          }
+        >
+          {compact ? 'Job Cowork — jalankan siklus' : 'Job Cowork — GaaS Wasit'}
+        </h3>
+        <p className={compact ? 'text-[11px] text-emerald-500/70' : 'text-xs text-emerald-500/80'}>
+          {compact
+            ? `storage: ${storage}`
+            : `Alur B: ukur → gerbang L0/L1 → tutup jujur · storage: ${storage}`}
         </p>
       </div>
 
@@ -115,7 +133,7 @@ export default function JobCoworkWidget() {
           className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1 text-emerald-200 md:col-span-2"
           value={targetUrl}
           onChange={(e) => setTargetUrl(e.target.value)}
-          placeholder="Target URL"
+          placeholder="Target URL (lewat WAF)"
         />
         <select
           className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1"
@@ -128,6 +146,7 @@ export default function JobCoworkWidget() {
       </div>
 
       <button
+        type="button"
         onClick={startJob}
         disabled={loading}
         className="px-4 py-2 rounded bg-emerald-900/50 border border-emerald-400/40 hover:bg-emerald-800/50 disabled:opacity-50 w-fit"
@@ -148,7 +167,7 @@ export default function JobCoworkWidget() {
           >
             <div className="flex justify-between gap-2 flex-wrap">
               <span className="font-bold text-emerald-200">{job.title}</span>
-              <span className="text-xs px-2 py-0.5 rounded bg-emerald-950 border border-emerald-500/40">
+              <span className={`text-xs px-2 py-0.5 rounded border ${statusTone(job.status)}`}>
                 {job.status}
               </span>
             </div>
@@ -156,25 +175,52 @@ export default function JobCoworkWidget() {
               {job.job_id} · {job.target_url} · {job.autonomy_level}
             </div>
             {Object.keys(job.defense_deltas || {}).length > 0 && (
-              <div className="text-xs">
-                Delta:{' '}
-                {Object.entries(job.defense_deltas)
-                  .map(([k, v]) => `${k}=${v}`)
-                  .join(', ')}
-              </div>
+              <ul className="text-xs space-y-0.5 text-emerald-400/90">
+                {Object.entries(job.defense_deltas).map(([k, v]) => (
+                  <li key={k}>· {formatWasitDelta(k, v)}</li>
+                ))}
+              </ul>
             )}
             {job.residuals?.length > 0 && (
               <div className="text-amber-400 text-xs">Residual: {job.residuals.join(', ')}</div>
             )}
-            {job.status === 'PENDING_APPROVAL' && (
-              <button
-                onClick={() => approveJob(job.job_id)}
-                disabled={loading}
-                className="text-xs px-3 py-1 rounded border border-amber-500/40 text-amber-300 w-fit hover:bg-amber-950/40"
-              >
-                Approve ({job.autonomy_level})
-              </button>
+            {job.antibody_loop_ok === false && (
+              <div className="text-amber-300 text-xs">
+                antibody_loop_ok=false — jangan klaim CLOSED_OK jika replay_missed
+              </div>
             )}
+            <div className="flex flex-wrap gap-2">
+              {job.status === 'PENDING_APPROVAL' && (
+                <button
+                  type="button"
+                  onClick={() => approveJob(job.job_id)}
+                  disabled={loading}
+                  className="text-xs px-3 py-1 rounded border border-amber-500/40 text-amber-300 w-fit hover:bg-amber-950/40"
+                >
+                  Approve ({job.autonomy_level})
+                </button>
+              )}
+              {canExportArtifact(job.status) && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => downloadArtifact(job.job_id, 'md')}
+                    disabled={loading}
+                    className="text-xs px-3 py-1 rounded border border-teal-500/40 text-teal-300 w-fit hover:bg-teal-950/40"
+                  >
+                    Export MD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadArtifact(job.job_id, 'json')}
+                    disabled={loading}
+                    className="text-xs px-3 py-1 rounded border border-emerald-500/30 text-emerald-400/80 w-fit hover:bg-emerald-950/40"
+                  >
+                    Export JSON
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         ))}
       </div>

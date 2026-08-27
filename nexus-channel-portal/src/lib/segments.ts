@@ -2,10 +2,13 @@
 
 import { whatsappPackageUrl, whatsappUrl } from "./portal-config";
 
-export type SegmentId = "umkm" | "startup" | "sekolah" | "institusi" | "b2g";
+export type SegmentId = "umkm" | "startup" | "sekolah" | "corporat" | "pemerintah";
 
-/** Cabang harga: sudah punya website sendiri atau belum (bukan untuk institusi v1). */
+/** Cabang harga: sudah punya website sendiri atau belum (UMKM / sekolah / startup). */
 export type WebsiteStatus = "belum" | "sudah";
+
+/** Cabang Corporat: hosted (seperti Job/Loop biasa) vs on-prem (server milik klien). */
+export type DeployMode = "hosted" | "onprem";
 
 export type SegmentPlan = {
   name: string;
@@ -30,9 +33,12 @@ export type SegmentDef = {
   accent: "blue" | "green" | "amber" | "slate" | "ink";
   /** true = tanya “sudah punya website?” sebelum harga (UMKM / sekolah / startup). */
   askWebsite: boolean;
-  /** Dipakai jika askWebsite=false (institusi). */
+  /** true = tanya hosted vs on-prem (Corporat). */
+  askDeployMode: boolean;
+  /** Dipakai jika askWebsite=false dan askDeployMode=false (Pemerintah). */
   plans: SegmentPlan[];
   plansByWebsite?: Record<WebsiteStatus, SegmentPlan[]>;
+  plansByDeploy?: Record<DeployMode, SegmentPlan[]>;
   faqs: { q: string; a: string }[];
 };
 
@@ -41,8 +47,8 @@ export type SegmentDef = {
  * - Belum punya site → margin di template + pagar; tetap ≤ toleransi UMKM (20–35rb).
  * - Sudah punya site → tanpa slot template; pagar 15rb / +status 28rb (masih murah, tetap profit volume).
  * - Startup tanpa site → landing 45rb / tepi 75rb (bukan warung 20rb, bukan Job B2B).
- * - Institusi → tanpa cabang website v1 (B2B hosted).
- * - B2G → on-prem Edge + Loop wajib; tanpa kuis website; source tidak termasuk.
+ * - Corporat → cabang: hosted (Job/Loop) ATAU on-prem (besar / kritis seperti Pemerintah).
+ * - Pemerintah → on-prem Edge + Loop wajib; tanpa kuis website; source tidak termasuk.
  */
 export const SEGMENTS: SegmentDef[] = [
   {
@@ -56,6 +62,7 @@ export const SEGMENTS: SegmentDef[] = [
     badge: "Paling cocok mulai",
     accent: "blue",
     askWebsite: true,
+    askDeployMode: false,
     plans: [],
     plansByWebsite: {
       belum: [
@@ -147,6 +154,7 @@ export const SEGMENTS: SegmentDef[] = [
     badge: "Institusi pendidikan",
     accent: "amber",
     askWebsite: true,
+    askDeployMode: false,
     plans: [],
     plansByWebsite: {
       belum: [
@@ -233,6 +241,7 @@ export const SEGMENTS: SegmentDef[] = [
     badge: "Digital / early",
     accent: "green",
     askWebsite: true,
+    askDeployMode: false,
     plans: [],
     plansByWebsite: {
       belum: [
@@ -332,73 +341,128 @@ export const SEGMENTS: SegmentDef[] = [
     ],
   },
   {
-    id: "institusi",
-    href: "/institusi",
-    title: "Institusi",
-    short: "Fintech, integrator, kanal kritis — Job/Loop hosted (B2B). On-prem pemerintah → pintu B2G.",
-    headline: "Edge Antibody Cowork untuk kanal kritis",
+    id: "corporat",
+    href: "/corporat",
+    title: "Corporat",
+    short:
+      "Perusahaan / fintech / BUMN — pilih hosted (Job/Loop) atau on-prem jika sudah besar & kritis.",
+    headline: "Keamanan kanal untuk Corporat",
     subhead:
-      "Bukan paket Rp 20rb. Job/Loop dengan artefak jujur. Cabang “punya website?” belum dipakai di sini — scope kontrak beda.",
-    badge: "B2B / kritis",
+      "Ukuran kecil–menengah: beli Job/Loop hosted seperti segmen lain. Sudah besar / multi-DC / data sensitif: on-prem di server Anda — model sama dengan Pemerintah.",
+    badge: "B2B / perusahaan",
     accent: "slate",
     askWebsite: false,
-    plans: [
-      {
-        name: "Job Cowork",
-        tag: "PILOT",
-        forWho: "Audit / bukti sekali jalan untuk 1 host.",
-        price: "Rp 200.000",
-        sub: "sekali",
-        popular: true,
-        features: [
-          "Defense delta + antibody loop",
-          "Artefak MD/JSON",
-          "L0/L1 & residual jujur",
-          "Hosting pilot di infrastruktur operator",
-        ],
-        cta: whatsappPackageUrl("Institusi — Job Cowork Rp 200rb"),
-      },
-      {
-        name: "Loop GaaS",
-        tag: null,
-        forWho: "Retainership 1 host — pemeriksaan berkala.",
-        price: "Rp 300.000",
-        sub: "/ bulan",
-        popular: false,
-        features: ["1 Job / bulan", "Memori imun", "Operator + artefak"],
-        cta: whatsappPackageUrl("Institusi — Loop Rp 300rb"),
-      },
-      {
-        name: "Custom / multi-host",
-        tag: null,
-        forWho: "BUMN, multi-kanal, atau kebutuhan kontrak khusus.",
-        price: "Custom",
-        sub: "diskusi WA",
-        popular: false,
-        features: ["Scope per host", "Kontrak terpisah", "Bukan self-serve Rp 35rb"],
-        cta: whatsappUrl(
-          "Saya dari institusi/BUMN — mau diskusi Edge Antibody Cowork (bukan paket UMKM).",
-        ),
-      },
-    ],
+    askDeployMode: true,
+    plans: [],
+    plansByDeploy: {
+      hosted: [
+        {
+          name: "Job Cowork",
+          tag: "HOSTED",
+          forWho: "Audit / bukti sekali jalan untuk 1 host — di infrastruktur Nexus.",
+          price: "Rp 200.000",
+          sub: "sekali",
+          popular: true,
+          features: [
+            "Defense delta + antibody loop",
+            "Artefak MD/JSON",
+            "L0/L1 & residual jujur",
+            "Hosting pilot di PC/server operator + tunnel",
+          ],
+          cta: whatsappPackageUrl("Corporat — Hosted Job Cowork Rp 200rb"),
+        },
+        {
+          name: "Loop GaaS",
+          tag: null,
+          forWho: "Retainership 1 host — pemeriksaan berkala (hosted).",
+          price: "Rp 300.000",
+          sub: "/ bulan",
+          popular: false,
+          features: ["1 Job / bulan", "Memori imun", "Operator + artefak"],
+          cta: whatsappPackageUrl("Corporat — Hosted Loop Rp 300rb"),
+        },
+        {
+          name: "Custom / multi-host",
+          tag: null,
+          forWho: "Multi-kanal hosted atau kebutuhan kontrak khusus.",
+          price: "Custom",
+          sub: "diskusi WA",
+          popular: false,
+          features: ["Scope per host", "Kontrak terpisah", "Bukan self-serve Rp 35rb"],
+          cta: whatsappUrl(
+            "Saya dari corporat — mau diskusi paket Hosted Job/Loop (bukan UMKM).",
+          ),
+        },
+      ],
+      onprem: [
+        {
+          name: "Lisensi Edge On-Prem",
+          tag: "BESAR / KRITIS",
+          forWho: "Perusahaan besar — Edge di server/DC milik Anda.",
+          price: "Rp 18.000.000",
+          sub: "/ tahun",
+          popular: false,
+          features: [
+            "Image/binary Edge di server corporat",
+            "WAF + Reflex + antibodi cache (NEX-AI only)",
+            "Source code & SOC control plane TIDAK termasuk",
+            "Model sama Pemerintah — untuk skala besar",
+            "Pitching/arsitektur — packaging produksi belum selesai",
+          ],
+          cta: whatsappPackageUrl("Corporat — On-Prem Edge Rp 18jt/tahun"),
+        },
+        {
+          name: "Loop On-Prem (wajib)",
+          tag: "RETAINER",
+          forWho: "Tanpa Loop, lisensi & update antibodi tidak hidup penuh.",
+          price: "Rp 3.500.000",
+          sub: "/ bulan",
+          popular: true,
+          features: [
+            "Job terjadwal + artefak risiko",
+            "Update antibodi / memori imun",
+            "Dukungan operator L0/L1",
+            "Bukan SOC otonom 24/7",
+          ],
+          cta: whatsappPackageUrl("Corporat — On-Prem Loop Rp 3,5jt/bulan"),
+        },
+        {
+          name: "Custom / multi-DC",
+          tag: null,
+          forWho: "Multi-zona, air-gap terbatas, SIEM, pelatihan pemilik risiko.",
+          price: "Custom",
+          sub: "diskusi WA",
+          popular: false,
+          features: ["Scope per DC / host", "Integrasi log klien (terbatas)", "Bukan klaim sertifikasi"],
+          cta: whatsappUrl(
+            "Saya dari corporat besar — mau diskusi on-prem Edge + Loop (bukan hosted).",
+          ),
+        },
+      ],
+    },
     faqs: [
       {
-        q: "Apakah ini SLA pemerintah / sertifikasi?",
-        a: "Tidak. Pilot jujur di infrastruktur operator + tunnel. Untuk pengadaan formal / on-prem DC, lihat pintu B2G — masih tahap pitching, bukan produksi pengadaan selesai.",
+        q: "Kapan pilih Hosted vs On-Prem?",
+        a: "Hosted: cukup 1–beberapa host, bukti Job/Loop, anggaran ratusan ribu — mesin jalan di infrastruktur Nexus. On-Prem: data sensitif, kebijakan “harus di server kami”, multi-DC, atau skala besar — lisensi Edge + Loop wajib (harga jutaan).",
+      },
+      {
+        q: "Bedanya Corporat On-Prem dengan Pemerintah?",
+        a: "Teknis sama (Edge di DC klien + Loop). Pemerintah = pintu pengadaan/instansi. Corporat = perusahaan swasta/BUMN yang sudah besar. Source tetap tidak diserahkan.",
       },
     ],
   },
   {
-    id: "b2g",
-    href: "/b2g",
-    title: "B2G",
+    id: "pemerintah",
+    href: "/pemerintah",
+    title: "Pemerintah",
     short: "Instansi & DC on-prem — lisensi Edge + Loop wajib; source tidak diserahkan.",
     headline: "Edge on-prem untuk kanal instansi",
     subhead:
-      "Binary/image di DC Anda. Control plane & source tetap di Nexus. Loop wajib agar lisensi dan update hidup — bukan paket Rp 20rb.",
-    badge: "On-prem / pitching",
+      "Binary/image di DC pemerintah Anda. Control plane & source tetap di Nexus. Loop wajib agar lisensi dan update hidup — bukan paket Rp 20rb.",
+    badge: "Instansi / on-prem",
     accent: "ink",
     askWebsite: false,
+    askDeployMode: false,
     plans: [
       {
         name: "Lisensi Edge On-Prem",
@@ -414,7 +478,7 @@ export const SEGMENTS: SegmentDef[] = [
           "Masa berlaku lisensi terikat kontrak",
           "Pitching/arsitektur — packaging produksi belum selesai",
         ],
-        cta: whatsappPackageUrl("B2G — Lisensi Edge On-Prem Rp 18jt/tahun"),
+        cta: whatsappPackageUrl("Pemerintah — Lisensi Edge On-Prem Rp 18jt/tahun"),
       },
       {
         name: "Loop On-Prem (wajib)",
@@ -430,7 +494,7 @@ export const SEGMENTS: SegmentDef[] = [
           "Bukan SOC otonom 24/7",
           "Margin retainer — bukan harga UMKM",
         ],
-        cta: whatsappPackageUrl("B2G — Loop On-Prem Rp 3,5jt/bulan"),
+        cta: whatsappPackageUrl("Pemerintah — Loop On-Prem Rp 3,5jt/bulan"),
       },
       {
         name: "Custom / multi-DC",
@@ -446,7 +510,7 @@ export const SEGMENTS: SegmentDef[] = [
           "Bukan klaim sertifikasi regulator",
         ],
         cta: whatsappUrl(
-          "Saya dari instansi/B2G — mau diskusi paket on-prem Edge + Loop (bukan UMKM).",
+          "Saya dari instansi/pemerintah — mau diskusi paket on-prem Edge + Loop (bukan UMKM).",
         ),
       },
     ],
@@ -463,6 +527,10 @@ export const SEGMENTS: SegmentDef[] = [
         q: "Apakah ini sudah siap pengadaan pemerintah?",
         a: "Belum. Status = pitching & arsitektur. Packaging binary produksi, HPS formal, dan pilot DC instansi masih backlog.",
       },
+      {
+        q: "Saya perusahaan swasta besar, bukan instansi?",
+        a: "Pilih pintu Corporat → cabang On-Prem. Teknis sama; pintu Pemerintah khusus narasi instansi/pengadaan.",
+      },
     ],
   },
 ];
@@ -476,7 +544,12 @@ export function getSegment(id: SegmentId): SegmentDef {
 export function plansForSegment(
   segment: SegmentDef,
   website: WebsiteStatus | null,
+  deploy: DeployMode | null = null,
 ): SegmentPlan[] {
+  if (segment.askDeployMode) {
+    if (!deploy || !segment.plansByDeploy) return [];
+    return segment.plansByDeploy[deploy];
+  }
   if (!segment.askWebsite) return segment.plans;
   if (!website || !segment.plansByWebsite) return [];
   return segment.plansByWebsite[website];

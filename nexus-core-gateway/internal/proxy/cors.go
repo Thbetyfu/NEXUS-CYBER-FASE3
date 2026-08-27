@@ -13,20 +13,22 @@ const (
 )
 
 func parseDashboardAllowedOrigins() map[string]struct{} {
-	rawOrigins := strings.TrimSpace(os.Getenv("DASHBOARD_ALLOWED_ORIGINS"))
-	if rawOrigins == "" {
-		rawOrigins = defaultDashboardAllowedOrigins
-	}
-
 	allowed := make(map[string]struct{})
-	for _, origin := range strings.Split(rawOrigins, ",") {
-		normalized := strings.TrimSpace(origin)
-		if normalized == "" {
-			continue
+	add := func(raw string) {
+		for _, origin := range strings.Split(raw, ",") {
+			normalized := strings.TrimSpace(origin)
+			if normalized == "" {
+				continue
+			}
+			allowed[normalized] = struct{}{}
 		}
-		allowed[normalized] = struct{}{}
 	}
-
+	// Always keep lab defaults so a partial DASHBOARD_ALLOWED_ORIGINS env cannot
+	// accidentally strip localhost/127.0.0.1:3001 and break SOC login (CORS).
+	add(defaultDashboardAllowedOrigins)
+	if extra := strings.TrimSpace(os.Getenv("DASHBOARD_ALLOWED_ORIGINS")); extra != "" {
+		add(extra)
+	}
 	return allowed
 }
 

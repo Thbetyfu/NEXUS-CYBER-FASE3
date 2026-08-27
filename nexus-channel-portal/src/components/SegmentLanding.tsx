@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Globe, GlobeLock, Shield } from "lucide-react";
+import { ArrowLeft, Cloud, Globe, GlobeLock, Server, Shield } from "lucide-react";
 import { useState } from "react";
 import {
   plansForSegment,
+  type DeployMode,
   type SegmentDef,
   type WebsiteStatus,
 } from "@/lib/segments";
@@ -15,8 +16,18 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
   const [website, setWebsite] = useState<WebsiteStatus | null>(
     segment.askWebsite ? null : "sudah",
   );
-  const plans = plansForSegment(segment, segment.askWebsite ? website : null);
-  const showPlans = !segment.askWebsite || website !== null;
+  const [deploy, setDeploy] = useState<DeployMode | null>(
+    segment.askDeployMode ? null : "hosted",
+  );
+
+  const plans = plansForSegment(
+    segment,
+    segment.askWebsite ? website : null,
+    segment.askDeployMode ? deploy : null,
+  );
+  const showPlans =
+    (!segment.askWebsite || website !== null) &&
+    (!segment.askDeployMode || deploy !== null);
 
   return (
     <div className="hub-page" style={{ minHeight: "100vh" }}>
@@ -69,10 +80,47 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
           </section>
         )}
 
+        {segment.askDeployMode && (
+          <section className="web-status-block" aria-labelledby="deploy-mode-title">
+            <h2 id="deploy-mode-title" className="web-status-title">
+              Seberapa besar / di mana mesin jalan?
+            </h2>
+            <p className="web-status-hint">
+              Hosted = beli Job/Loop seperti segmen lain (mesin di Nexus). On-prem = perusahaan sudah
+              besar / data kritis — Edge di server Anda, model sama Pemerintah.
+            </p>
+            <div className="web-status-grid">
+              <button
+                type="button"
+                className={`web-status-btn${deploy === "hosted" ? " is-on" : ""}`}
+                onClick={() => setDeploy("hosted")}
+              >
+                <Cloud size={22} strokeWidth={1.75} />
+                <strong>Hosted</strong>
+                <span>Job/Loop di infrastruktur Nexus — ratusan ribu</span>
+              </button>
+              <button
+                type="button"
+                className={`web-status-btn${deploy === "onprem" ? " is-on" : ""}`}
+                onClick={() => setDeploy("onprem")}
+              >
+                <Server size={22} strokeWidth={1.75} />
+                <strong>On-prem (besar)</strong>
+                <span>Server milik Anda — lisensi jutaan + Loop wajib</span>
+              </button>
+            </div>
+            {deploy && (
+              <button type="button" className="web-status-reset" onClick={() => setDeploy(null)}>
+                Ganti jawaban
+              </button>
+            )}
+          </section>
+        )}
+
         <AnimatePresence mode="wait">
           {showPlans && (
             <motion.div
-              key={website ?? "fixed"}
+              key={`${website ?? "w"}-${deploy ?? "d"}`}
               id="harga"
               className="notion-pricing-grid"
               initial={{ opacity: 0, y: 12 }}
@@ -117,7 +165,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
           )}
         </AnimatePresence>
 
-        {segment.askWebsite && !website && (
+        {((segment.askWebsite && !website) || (segment.askDeployMode && !deploy)) && (
           <p className="text-center" style={{ color: "var(--notion-text-muted)", fontSize: 14 }}>
             Pilih salah satu di atas untuk melihat harga.
           </p>

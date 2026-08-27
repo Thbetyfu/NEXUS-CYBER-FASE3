@@ -173,7 +173,29 @@ export default function AiTerminalWidget() {
 		let term: any = null;
 		let fitAddon: any = null;
 		let eventSource: EventSource | null = null;
-		let reconnectTimeout: NodeJS.Timeout;
+		let reconnectTimeout: ReturnType<typeof setTimeout>;
+		let resizeObserver: ResizeObserver | null = null;
+		let fitRaf = 0;
+
+		const safeFit = () => {
+			if (!active || !fitAddon || !term || !containerRef.current) return;
+			const el = containerRef.current;
+			if (el.clientWidth < 8 || el.clientHeight < 8) return;
+			try {
+				// Core harus sudah siap setelah open(); fit sebelum itu → dimensions undefined
+				if (!term.element || !(term as any)._core) return;
+				fitAddon.fit();
+			} catch {
+				/* ignore race during unmount / zero-size window */
+			}
+		};
+
+		const scheduleFit = () => {
+			cancelAnimationFrame(fitRaf);
+			fitRaf = requestAnimationFrame(() => {
+				fitRaf = requestAnimationFrame(safeFit);
+			});
+		};
 
 		// Variabel untuk melacak status terminal dan CLI
 		let cmdBuffer = "";
@@ -183,7 +205,9 @@ export default function AiTerminalWidget() {
 			if (stored) {
 				try {
 					commandHistory = JSON.parse(stored);
-				} catch (e) {}
+				} catch {
+					/* ignore */
+				}
 			}
 		}
 		let historyIndex = -1;
@@ -191,94 +215,91 @@ export default function AiTerminalWidget() {
 		let activeSuggestionIndex = -1;
 
 		const initTerm = async () => {
-			// Dynamic imports untuk mencegah crash saat prerender Next.js
-			const { Terminal } = await import('xterm');
-			const { FitAddon: FitAddonClass } = await import('@xterm/addon-fit');
-			await import('xterm/css/xterm.css');
+			const { Terminal } = await import("xterm");
+			const { FitAddon: FitAddonClass } = await import("@xterm/addon-fit");
+			await import("xterm/css/xterm.css");
 
 			if (!active || !containerRef.current) return;
 
 			term = new Terminal({
 				cursorBlink: true,
 				theme: {
-					background: '#030507',
-					foreground: '#22d3ee', // Cyan-400
-					cursor: '#22d3ee',
-					black: '#000000',
-					red: '#f87171',
-					green: '#4ade80',
-					yellow: '#facc15',
-					blue: '#60a5fa',
-					magenta: '#c084fc',
-					cyan: '#22d3ee',
-					white: '#f3f4f6'
+					background: "#030507",
+					foreground: "#22d3ee",
+					cursor: "#22d3ee",
+					black: "#000000",
+					red: "#f87171",
+					green: "#4ade80",
+					yellow: "#facc15",
+					blue: "#60a5fa",
+					magenta: "#c084fc",
+					cyan: "#22d3ee",
+					white: "#f3f4f6",
 				},
 				fontSize: 11,
-				fontFamily: 'Courier New, Courier, monospace',
+				fontFamily: "Courier New, Courier, monospace",
 				rows: 24,
-				convertEol: true
+				convertEol: true,
 			});
 
 			fitAddon = new FitAddonClass();
 			term.loadAddon(fitAddon);
 			term.open(containerRef.current);
-			fitAddon.fit();
-
 			terminalInstanceRef.current = term;
+			scheduleFit();
 
-			// Cetak Boot Banner
 			term.writeln("\x1b[1;36mN EX US   C O R E   O S   v7.2\x1b[0m");
 			term.writeln("\x1b[90m> Loading secure cognitive streams...\x1b[0m");
 			term.write("\r\n\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
 
-			// Event handler untuk masukan keyboard
 			term.onData(async (data: string) => {
+				if (!active || !term) return;
 				// Handle Enter
-				if (data === '\r') {
-					term.write('\r\n');
+				if (data === "\r") {
+					term.write("\r\n");
 					const cmd = cmdBuffer.trim();
 					if (cmd !== "") {
-						// Simpan histori perintah
 						commandHistory.push(cmd);
 						if (commandHistory.length > 50) commandHistory.shift();
 						localStorage.setItem("nexus_cli_history", JSON.stringify(commandHistory));
 						historyIndex = -1;
 
-						if (cmd.toLowerCase() === 'clear') {
+						if (cmd.toLowerCase() === "clear") {
 							term.clear();
 							cmdBuffer = "";
 							term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m ");
 							return;
 						}
 
-						// Eksekusi CLI backend
 						term.write("\x1b[90mExecuting command...\x1b[0m\r\n");
-						
+
 						try {
-							const tokenRes = await fetch(gatewayURL("/api/csrf-token"), { credentials: "include" });
-							const { csrf_token } = tokenRes.ok ? await tokenRes.json() : { csrf_token: "" };
+							const tokenRes = await fetch(gatewayURL("/api/csrf-token"), {
+								credentials: "include",
+							});
+							const { csrf_token } = tokenRes.ok
+								? await tokenRes.json()
+								: { csrf_token: "" };
 
 							const res = await fetch(gatewayURL("/api/cli/execute"), {
-								method: 'POST',
-								headers: { 
-									'Content-Type': 'application/json',
-									...(csrf_token ? { "X-CSRF-Token": csrf_token } : {})
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									...(csrf_token ? { "X-CSRF-Token": csrf_token } : {}),
 								},
 								credentials: "include",
-								body: JSON.stringify({ command: cmd })
+								body: JSON.stringify({ command: cmd }),
 							});
 
 							if (res.ok) {
-								const data = await res.json();
-								const rawOutput = data.output || data.response || "[EMPTY_RESPONSE]";
-								
-								// Format output dengan warna ANSI
-								const formattedOutput = rawOutput.replace(/\r?\n/g, "\r\n");
-								term.writeln(formattedOutput);
+								const payload = await res.json();
+								const rawOutput =
+									payload.output || payload.response || "[EMPTY_RESPONSE]";
+								term.writeln(String(rawOutput).replace(/\r?\n/g, "\r\n"));
 							} else {
 								term.writeln("\x1b[1;31m[ERROR] Command routing failed.\x1b[0m");
 							}
-						} catch (err) {
+						} catch {
 							term.writeln("\x1b[1;31m[ERROR] Execution offline.\x1b[0m");
 						}
 					}
@@ -289,22 +310,19 @@ export default function AiTerminalWidget() {
 					return;
 				}
 
-				// Handle Backspace (DEL / \u007F)
-				if (data === '\u007F') {
+				if (data === "\u007F") {
 					if (cmdBuffer.length > 0) {
 						cmdBuffer = cmdBuffer.slice(0, -1);
-						term.write('\b \b');
+						term.write("\b \b");
 					}
 					suggestions = [];
 					activeSuggestionIndex = -1;
 					return;
 				}
 
-				// Handle Tab Autocomplete
-				if (data === '\t') {
+				if (data === "\t") {
 					const trimmed = cmdBuffer.trim();
-					
-					// Jika input kosong atau hanya diawali '/', tampilkan daftar bantuan
+
 					if (trimmed === "" || trimmed === "/") {
 						term.write("\r\n\x1b[90mAvailable Commands:\x1b[0m\r\n");
 						const colWidth = 18;
@@ -312,7 +330,6 @@ export default function AiTerminalWidget() {
 						let printed = 0;
 						allCommands.forEach((c) => {
 							const cleanCmd = c.trim();
-							// Tampilkan perintah yang diawali '/' agar visual rapi
 							if (cleanCmd.startsWith("/")) {
 								line += cleanCmd.padEnd(colWidth);
 								printed++;
@@ -330,22 +347,19 @@ export default function AiTerminalWidget() {
 					}
 
 					if (suggestions.length === 0) {
-						suggestions = allCommands.filter(c => c.startsWith(trimmed) && c !== trimmed);
+						suggestions = allCommands.filter((c) => c.startsWith(trimmed) && c !== trimmed);
 					}
 
 					if (suggestions.length > 0) {
 						activeSuggestionIndex = (activeSuggestionIndex + 1) % suggestions.length;
 						const completed = suggestions[activeSuggestionIndex];
-						
-						// Bersihkan baris input Xterm dan tulis suggestion yang baru
 						term.write("\r\x1b[K\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + completed);
 						cmdBuffer = completed;
 					}
 					return;
 				}
 
-				// Handle Arrow Up (Histori Perintah)
-				if (data === '\u001b[A') {
+				if (data === "\u001b[A") {
 					if (commandHistory.length > 0) {
 						historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
 						const histCmd = commandHistory[commandHistory.length - 1 - historyIndex];
@@ -355,8 +369,7 @@ export default function AiTerminalWidget() {
 					return;
 				}
 
-				// Handle Arrow Down (Histori Perintah)
-				if (data === '\u001b[B') {
+				if (data === "\u001b[B") {
 					if (historyIndex > 0) {
 						historyIndex--;
 						const histCmd = commandHistory[commandHistory.length - 1 - historyIndex];
@@ -370,42 +383,46 @@ export default function AiTerminalWidget() {
 					return;
 				}
 
-				// Abaikan escape keys lainnya
-				if (data.startsWith('\u001b')) {
+				if (data.startsWith("\u001b")) {
 					return;
 				}
 
-				// Karakter ketik biasa
 				cmdBuffer += data;
 				term.write(data);
 				suggestions = [];
 				activeSuggestionIndex = -1;
 			});
 
-			// Setup SSE untuk event streaming live logs ke Xterm
 			const connectSSE = () => {
-				eventSource = new EventSource(gatewayURL("/api/ai/stream"), { withCredentials: true });
+				if (!active) return;
+				eventSource = new EventSource(gatewayURL("/api/ai/stream"), {
+					withCredentials: true,
+				});
 
 				eventSource.onmessage = (e) => {
-					if (e.data === ': heartbeat') return;
+					if (!active || !term || e.data === ": heartbeat") return;
 
 					try {
 						const logData = JSON.parse(e.data);
 						const formattedAnsi = formatLogToAnsi(logData);
 
 						if (formattedAnsi) {
-							// Bersihkan baris input pengetikan aktif sementara, tulis logs, dan gambar ulang input
 							term.write("\r\x1b[K");
 							term.writeln(formattedAnsi);
 							term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + cmdBuffer);
 						}
-					} catch (err) {}
+					} catch {
+						/* ignore malformed SSE */
+					}
 				};
 
-				eventSource.onerror = (e) => {
+				eventSource.onerror = () => {
+					if (!active || !term) return;
 					if (eventSource?.readyState === EventSource.CLOSED) {
 						term.write("\r\x1b[K");
-						term.writeln("\x1b[1;31m[ERROR] Telemetry connection lost. Retrying in 5s...\x1b[0m");
+						term.writeln(
+							"\x1b[1;31m[ERROR] Telemetry connection lost. Retrying in 5s...\x1b[0m",
+						);
 						term.write("\x1b[1;32mnexus_admin@soc:~$\x1b[0m " + cmdBuffer);
 						reconnectTimeout = setTimeout(connectSSE, 5000);
 					}
@@ -413,26 +430,35 @@ export default function AiTerminalWidget() {
 			};
 
 			connectSSE();
+
+			if (containerRef.current && typeof ResizeObserver !== "undefined") {
+				resizeObserver = new ResizeObserver(() => scheduleFit());
+				resizeObserver.observe(containerRef.current);
+			}
 		};
 
 		initTerm();
 
-		const handleResize = () => {
-			if (fitAddon) {
-				try {
-					fitAddon.fit();
-				} catch (e) {}
-			}
-		};
-
-		window.addEventListener('resize', handleResize);
+		const handleResize = () => scheduleFit();
+		window.addEventListener("resize", handleResize);
 
 		return () => {
 			active = false;
-			window.removeEventListener('resize', handleResize);
-			if (term) term.dispose();
-			if (eventSource) eventSource.close();
+			window.removeEventListener("resize", handleResize);
+			cancelAnimationFrame(fitRaf);
+			resizeObserver?.disconnect();
+			resizeObserver = null;
 			clearTimeout(reconnectTimeout);
+			if (eventSource) eventSource.close();
+			eventSource = null;
+			fitAddon = null;
+			terminalInstanceRef.current = null;
+			try {
+				term?.dispose();
+			} catch {
+				/* ignore */
+			}
+			term = null;
 		};
 	}, []);
 

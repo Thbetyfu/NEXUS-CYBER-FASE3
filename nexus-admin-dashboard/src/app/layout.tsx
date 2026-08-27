@@ -14,7 +14,7 @@ const firaCode = Fira_Code({
 
 export const metadata: Metadata = {
   title: "Nexus Command Center",
-  description: "Secure MTD Financial Data Gateway",
+  description: "Nexus Operator GaaS Console — internal wasit Job Cowork",
 };
 
 export default function RootLayout({

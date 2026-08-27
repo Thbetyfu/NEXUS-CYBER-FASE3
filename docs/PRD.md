@@ -65,9 +65,10 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 
 - Export tabel delta, status antibodi, residual, log persetujuan (**Belum** implementasi penuh)
 
-### 4.4 Command Center
+### 4.4 Command Center / Operator GaaS Console
 
 - Operator internal saja; **bukan** produk yang dijual ke pemilik risiko kanal
+- Default UI: kanal aktif, antrian L0/L1, Job Cowork, unduh artefak; lab War Room/MTD/license **dihapus** dari dashboard
 
 ---
 

@@ -32,11 +32,16 @@ export function whatsappCoworkUrl(message?: string): string {
   return whatsappUrl(message ?? defaultMsg);
 }
 
-/** CTA khusus B2G on-prem */
-export function whatsappB2GUrl(message?: string): string {
+/** CTA khusus Pemerintah on-prem */
+export function whatsappPemerintahUrl(message?: string): string {
   const defaultMsg =
-    "Saya tertarik paket B2G on-prem Nexus Cyber — lisensi Edge + Loop wajib (bukan paket UMKM). Mau diskusi scope DC.";
+    "Saya tertarik paket Pemerintah on-prem Nexus Cyber — lisensi Edge + Loop wajib (bukan paket UMKM). Mau diskusi scope DC.";
   return whatsappUrl(message ?? defaultMsg);
+}
+
+/** Alias lama */
+export function whatsappB2GUrl(message?: string): string {
+  return whatsappPemerintahUrl(message);
 }
 
 export const CHANNEL_STARTER_API =
