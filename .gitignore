@@ -43,6 +43,8 @@ eggs/
 lib/
 !nexus-channel-portal/src/lib/
 !nexus-channel-portal/src/lib/**
+!nexus-admin-dashboard/src/lib/
+!nexus-admin-dashboard/src/lib/**
 lib64/
 parts/
 sdist/
@@ -102,6 +104,8 @@ eggs/
 lib/
 !nexus-channel-portal/src/lib/
 !nexus-channel-portal/src/lib/**
+!nexus-admin-dashboard/src/lib/
+!nexus-admin-dashboard/src/lib/**
 lib64/
 parts/
 sdist/
