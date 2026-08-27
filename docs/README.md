@@ -8,9 +8,15 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 
 | Berkas | Isi |
 | --- | --- |
-| [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | Dua lapisan — Starter + GaaS Job/L0/L1 |
+| [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | Lab target portofolio + dua lapisan Starter + GaaS Job/L0/L1 |
 | [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) | Entry UMKM form→template (**lab v0.1**) |
 | [NEXUS_CHANNEL_PORTAL.md](./NEXUS_CHANNEL_PORTAL.md) | Pintu jual B2C/B2B — `nexus-channel-portal/` |
+| [COWORK_B2B.md](./COWORK_B2B.md) | GTM & playbook Cowork B2B (prioritas Q9) |
+| [COWORK_B2G.md](./COWORK_B2G.md) | Pitching on-prem B2G — lisensi Edge + Loop wajib |
+| [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md) | Jual / COGS / margin per segmen (pilot) |
+| [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md) | Distribusi awal: PC 24/7 + tunnel · harga pilot |
+| [PC_MAIN_SERVER.md](./PC_MAIN_SERVER.md) | PC sebagai server utama — tanpa VPS/hotspot |
+| [JURY_PUBLIC_ACCESS.md](./JURY_PUBLIC_ACCESS.md) | Akses juri: `START-FOR-JURY.bat` + cloudflared |
 | [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) | Keputusan bisnis — tanya pemilik |
 | [CHANGELOG.md](../CHANGELOG.md) | Riwayat perilaku |
 | [CAPABILITIES.md](./CAPABILITIES.md) / [LIMITATIONS.md](./LIMITATIONS.md) | Kontrak kejujuran |

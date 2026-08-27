@@ -1,18 +1,42 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.0 / 2026-08-22  
-**Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md).
+**Versi:** 1.1.2 / 2026-08-23  
+**Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../AGENTS.md`](../AGENTS.md).
 
 ---
 
-## 0. Dua lapisan produk (strategi 2026-08-22)
+## 0. Lab target — apa yang dilindungi & kenapa
+
+Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **origin lab default**:
+
+| | |
+| --- | --- |
+| **Apa** | Website **portofolio** pemilik — submodule [`playground/Portofolio-Thoriq`](../playground/Portofolio-Thoriq) (atau mirror Vercel yang sama) |
+| **Di mana di stack** | Origin di belakang gateway; **bukan** diganti menjadi produk jual |
+| **Hostname** | Satu instance GaaS: `PROTECTED_HOST` (lab default **`portfolio.nexus-lab.test`**) |
+| **Alur** | Internet/tunnel → Caddy → **WAF `:8080`** (Reflex + antibodi) → portofolio (`deploy-local` → container `:3002` atau Vercel) |
+| **Kenapa** | Bukti **Alur A** + **Job Cowork** pada kanal HTTP nyata (gallery, vault, unggah) — bukan klaim CNAME massal atau landing saja |
+| **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) |
+| **Bukan** | Channel Starter UMKM; SOC publik; Loop penuh di harga Rp 20rb |
+
+Operasi lab: [`../deploy-local/README.md`](../deploy-local/README.md). Distribusi pilot (PC + tunnel): [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
+
+```text
+  Pengunjung → [Caddy / tunnel] → Nexus Gateway :8080 → Portofolio (origin)
+                                      ↑
+                         PROTECTED_HOST = portfolio.nexus-lab.test (lab)
+```
+
+---
+
+## 1. Dua lapisan produk (strategi 2026-08-22)
 
 Nexus Cyber **bukan** satu harga untuk semua segmen.
 
 | Lapisan | Nama | Target | Harga ilustrasi | Status kode |
 | --- | --- | --- | --- | --- |
 | **Entry** | **Channel Starter** | UMKM — website dari form + template | **~Rp 0–29rb/bulan** (validasi ≤20rb) | **Lab v0.1** — [`channel-starter/`](../channel-starter/) |
-| **Inti** | **Edge Antibody Cowork** (GaaS) | Kanal keuangan, fintech, integrator; upsell UMKM naik tier | Job / Loop **Rp 500rb–2jt+**/bulan | **Sudah ada** (lab + Job Cowork) |
+| **Inti** | **Edge Antibody Cowork** (GaaS) | Kanal keuangan, fintech, integrator; upsell UMKM naik tier | Job **Rp 200rb** · Loop **Rp 300rb**/bulan (pilot PC+tunnel) | **Sudah ada** (lab + Job Cowork) |
 
 ```text
   UMKM (form → template → site)          Institusi / upsell
@@ -30,7 +54,7 @@ Nexus Cyber **bukan** satu harga untuk semua segmen.
 
 ---
 
-## 1. Apa yang kami jual (bukan model langganan lama)
+## 2. Apa yang kami jual (bukan model langganan lama)
 
 **Nexus Cyber** bukan lagi **multi-tenant WAF legacy** (self-serve, CNAME massal, portal pelanggan, langganan per kursi).
 
@@ -49,7 +73,7 @@ Modul **`nexus-channel-portal/`**, pembayaran otomatis massal, F-10 back-office,
 
 ---
 
-## 2. Masalah yang diselesaikan
+## 3. Masalah yang diselesaikan
 
 Institusi keuangan dan kanal digital (ITSK, fintech, agensi web) mempercepat **inovasi layanan** (portal, API, onboarding). Setiap rilis menambah **risiko operasional dan siber** di permukaan HTTP.
 
@@ -67,7 +91,7 @@ Nexus GaaS mengisi irisan **identifikasi – pengendalian – pemantauan** untuk
 
 ---
 
-## 3. Solusi: tiga alur
+## 4. Solusi: tiga alur
 
 ```text
   Alur A (terus-menerus)     Alur B (Job Cowork)           Alur C (artefak)
@@ -95,7 +119,7 @@ Output ke pemilik risiko kanal: apa yang terukur, apa yang dikendalikan, apa yan
 
 ---
 
-## 4. Job Cowork — siklus hidup
+## 5. Job Cowork — siklus hidup
 
 | Status | Arti |
 | --- | --- |
@@ -111,7 +135,7 @@ Output ke pemilik risiko kanal: apa yang terukur, apa yang dikendalikan, apa yan
 
 ---
 
-## 5. Otonomi terbatas (L0 / L1)
+## 6. Otonomi terbatas (L0 / L1)
 
 | Level | Mesin | Manusia |
 | --- | --- | --- |
@@ -122,7 +146,7 @@ Tidak ada L2 “tanpa manusia” untuk aksi irreversibel (DNS produksi, hapus da
 
 ---
 
-## 6. Label wasit (defense delta)
+## 7. Label wasit (defense delta)
 
 | Label | Arti untuk risiko |
 | --- | --- |
@@ -137,7 +161,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 ---
 
-## 7. Cara jual
+## 8. Cara jual
 
 ### 7.1 GaaS (inti)
 
@@ -145,7 +169,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 | --- | --- | --- |
 | **Job GaaS** | Satu siklus ukur→kendalikan→uji pada satu host | Proyek berbatas (48–72 jam) |
 | **Loop GaaS** | Instance tetap + Job berkala (mingguan / per rilis) | Retainership |
-| **On-prem instance** | Gateway di mesin klien + operasi Job | Lisensi + opsi Loop |
+| **On-prem instance** | Gateway di mesin klien + operasi Job | Lisensi + **Loop wajib** (B2G) — lihat [COWORK_B2G.md](./COWORK_B2G.md) |
 
 ### 7.2 Channel Starter (entry — lab v0.1)
 
@@ -158,7 +182,7 @@ Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](.
 
 ---
 
-## 8. Moat (mengapa bukan “saya buat sendiri di Cursor”)
+## 9. Moat (mengapa bukan “saya buat sendiri di Cursor”)
 
 | Moat | Penjelasan |
 | --- | --- |
@@ -171,7 +195,7 @@ Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](.
 
 ---
 
-## 9. Ketahanan & inovasi keuangan (problem statement)
+## 10. Ketahanan & inovasi keuangan (problem statement)
 
 Dropdown kompetisi: **Penguatan Ketahanan dan Inovasi Keuangan → Manajemen Risiko**.
 
@@ -188,7 +212,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 
 ---
 
-## 10. Matriks implementasi (kode vs dokumen)
+## 11. Matriks implementasi (kode vs dokumen)
 
 | Komponen | Status | Lokasi |
 | --- | --- | --- |
@@ -209,7 +233,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 
 ---
 
-## 11. Dokumen terkait
+## 12. Dokumen terkait
 
 | Dokumen | Peran |
 | --- | --- |
@@ -220,11 +244,13 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | [`CAPABILITIES.md`](./CAPABILITIES.md) | Apa yang benar-benar jalan |
 | [`CHANNEL_STARTER.md`](./CHANNEL_STARTER.md) | Lapisan entry UMKM (rencana) |
 | [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md) | Keputusan bisnis — tanya pemilik |
-
----
-
+| [`COWORK_B2B.md`](./COWORK_B2B.md) | GTM Job/Loop B2B (hosted) |
+| [`COWORK_B2G.md`](./COWORK_B2G.md) | Pitching on-prem B2G — lisensi + Loop wajib; source tidak diserahkan |
+| [`PRICING_UNIT_ECONOMICS.md`](./PRICING_UNIT_ECONOMICS.md) | Jual / COGS / margin per segmen (pilot) |
+| [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md) | PC+tunnel tahap awal |
+| [`NEXUS_CHANNEL_PORTAL.md`](./NEXUS_CHANNEL_PORTAL.md) | Pintu jual multi-segmen |
 | [`LIMITATIONS.md`](./LIMITATIONS.md) | Apa yang tidak dijamin |
 
 ---
 
-*Pivot GaaS 2026-08-22; strategi dua lapisan + Channel Starter 2026-08-22.*
+*Pivot GaaS 2026-08-22; strategi dua lapisan + Channel Starter 2026-08-22; B2G pitching 2026-08-23; lab target portofolio untuk agen 2026-08-23.*

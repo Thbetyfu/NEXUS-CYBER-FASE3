@@ -1,107 +1,118 @@
 # ==============================================================================
-# NEXUS CYBER FASE 2 - CLOUDFLARE TUNNEL LAUNCHER (WINDOWS POWERSHELL)
+# NEXUS CYBER — Cloudflare Tunnel (Windows) — AKSES PUBLIK / JURI
 # ==============================================================================
-# Menghubungkan sistem Nexus Cyber yang berjalan di PC lokal ke internet publik
-# secara GRATIS via Cloudflare Tunnel (tanpa sewa VPS, tanpa port forwarding).
+# Default: port 80 (Caddy → WAF → portofolio). SELARAS docs/DISTRIBUTION_PILOT.md
 #
 # Usage:
-#   .\scripts\nexus-tunnel.ps1               # Default: tunnel ke port 8080 (WAF Gateway)
-#   .\scripts\nexus-tunnel.ps1 -Dashboard    # Tunnel ke port 3001 (SOC Dashboard)
-#   .\scripts\nexus-tunnel.ps1 -Port 80      # Tunnel ke port custom
+#   .\scripts\tunnel\nexus-tunnel.ps1              # port 80 (disarankan untuk juri)
+#   .\scripts\tunnel\nexus-tunnel.ps1 -Port 80     # sama
+#   .\scripts\tunnel\nexus-tunnel.ps1 -WafDirect   # port 8080 (bypass Caddy)
+#   .\scripts\tunnel\nexus-tunnel.ps1 -Port 3003   # Channel Portal (opsional)
+#
+# DILARANG untuk demo juri: -Dashboard / port 3001 / 8081 (SOC / control plane)
+# One-click: deploy-local\jury\START-FOR-JURY.bat
 # ==============================================================================
 
 param(
     [switch]$Dashboard,
+    [switch]$WafDirect,
+    [switch]$AllowExposeSoc,
     [int]$Port = 0
 )
 
-$TargetPort = 8080
-$TargetLabel = "WAF Core Gateway"
+$ErrorActionPreference = "Continue"
+
+$TargetPort = 80
+$TargetLabel = "Caddy :80 (WAF + portofolio) — mode juri"
 
 if ($Dashboard) {
+    if (-not $AllowExposeSoc) {
+        Write-Host "[BLOCKED] -Dashboard akan mengekspos SOC :3001 ke internet." -ForegroundColor Red
+        Write-Host "          Dilarang untuk juri / pilot publik (DISTRIBUTION_PILOT)." -ForegroundColor Red
+        Write-Host "          Jika sadar risiko lab internal saja: tambah -AllowExposeSoc" -ForegroundColor Yellow
+        exit 1
+    }
     $TargetPort = 3001
-    $TargetLabel = "SOC Command Center Dashboard"
+    $TargetLabel = "SOC Dashboard :3001 (EXPOSE — hanya lab internal)"
+} elseif ($WafDirect) {
+    $TargetPort = 8080
+    $TargetLabel = "WAF Gateway :8080 (langsung, tanpa Caddy)"
 } elseif ($Port -gt 0) {
+    if ($Port -eq 3001 -or $Port -eq 8081) {
+        if (-not $AllowExposeSoc) {
+            Write-Host "[BLOCKED] Port $Port adalah control plane / SOC. Jangan untuk juri." -ForegroundColor Red
+            Write-Host "          Override sadar: -AllowExposeSoc" -ForegroundColor Yellow
+            exit 1
+        }
+    }
     $TargetPort = $Port
-    $TargetLabel = "Custom Service (Port $Port)"
+    $TargetLabel = "Custom Port $Port"
 }
 
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "   NEXUS CYBER: CLOUDFLARE TUNNEL LAUNCHER                  " -ForegroundColor Cyan
-Write-Host "   Target: $TargetLabel (Port $TargetPort)                  " -ForegroundColor Cyan
+Write-Host "   NEXUS CYBER — Cloudflare Tunnel (juri / publik)" -ForegroundColor Cyan
+Write-Host "   Target: $TargetLabel" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 
-# ── Step 1: Deteksi & Install cloudflared ────────────────────────────────────
-Write-Host "`n[1/3] Checking cloudflared installation..." -ForegroundColor Yellow
+# ── Step 1: cloudflared ───────────────────────────────────────────────────────
+Write-Host "`n[1/3] Checking cloudflared..." -ForegroundColor Yellow
 
 $CloudflaredCmd = Get-Command cloudflared -ErrorAction SilentlyContinue
 
 if (-not $CloudflaredCmd) {
-    Write-Host "[!] cloudflared not found. Attempting auto-install..." -ForegroundColor Yellow
-
-    # Cek apakah winget tersedia (Windows 10/11 modern)
+    Write-Host "[!] cloudflared not found. Installing..." -ForegroundColor Yellow
     $WingetCmd = Get-Command winget -ErrorAction SilentlyContinue
     $ScoopCmd  = Get-Command scoop  -ErrorAction SilentlyContinue
 
     if ($WingetCmd) {
-        Write-Host "[*] Installing cloudflared via winget..." -ForegroundColor Cyan
-        winget install --id Cloudflare.cloudflared -e --silent
-        Write-Host "[OK] cloudflared installed via winget." -ForegroundColor Green
-        # Refresh PATH untuk sesi ini
+        winget install --id Cloudflare.cloudflared -e --accept-package-agreements --accept-source-agreements
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     } elseif ($ScoopCmd) {
-        Write-Host "[*] Installing cloudflared via Scoop..." -ForegroundColor Cyan
         scoop install cloudflared
-        Write-Host "[OK] cloudflared installed via Scoop." -ForegroundColor Green
     } else {
-        # Fallback: download binary langsung dari GitHub
-        Write-Host "[*] Downloading cloudflared binary from GitHub Releases..." -ForegroundColor Cyan
         $CloudflaredUrl = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-        $DestPath = "$env:LOCALAPPDATA\cloudflared\cloudflared.exe"
-
-        New-Item -ItemType Directory -Path "$env:LOCALAPPDATA\cloudflared" -Force | Out-Null
+        $DestDir = "$env:LOCALAPPDATA\cloudflared"
+        $DestPath = "$DestDir\cloudflared.exe"
+        New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
         Invoke-WebRequest -Uri $CloudflaredUrl -OutFile $DestPath -UseBasicParsing
-        # Tambahkan ke PATH sesi ini saja (tidak permanen, cukup untuk sesi ini)
-        $env:Path += ";$env:LOCALAPPDATA\cloudflared"
-        Write-Host "[OK] cloudflared downloaded to: $DestPath" -ForegroundColor Green
-        Write-Host "[i]  Untuk instalasi permanen, tambahkan folder tersebut ke System PATH." -ForegroundColor Yellow
+        $env:Path += ";$DestDir"
+        Write-Host "[OK] Downloaded: $DestPath" -ForegroundColor Green
     }
-} else {
-    $CloudflaredVersion = cloudflared --version 2>&1 | Select-Object -First 1
-    Write-Host "[OK] cloudflared detected: $CloudflaredVersion" -ForegroundColor Green
+    $CloudflaredCmd = Get-Command cloudflared -ErrorAction SilentlyContinue
+    if (-not $CloudflaredCmd) {
+        Write-Host "[ERROR] cloudflared masih tidak ditemukan. Install manual:" -ForegroundColor Red
+        Write-Host "  winget install Cloudflare.cloudflared" -ForegroundColor White
+        exit 1
+    }
 }
 
-# ── Step 2: Verifikasi layanan target aktif ───────────────────────────────────
-Write-Host "`n[2/3] Verifying Nexus Cyber service on port $TargetPort..." -ForegroundColor Yellow
+$ver = & cloudflared --version 2>&1 | Select-Object -First 1
+Write-Host "[OK] $ver" -ForegroundColor Green
 
+# ── Step 2: port check ────────────────────────────────────────────────────────
+Write-Host "`n[2/3] Verifying localhost:$TargetPort ..." -ForegroundColor Yellow
 try {
     $TcpClient = New-Object System.Net.Sockets.TcpClient
-    $Connected = $TcpClient.ConnectAsync("localhost", $TargetPort).Wait(2000)
+    $Connected = $TcpClient.ConnectAsync("127.0.0.1", $TargetPort).Wait(2000)
     $TcpClient.Close()
-
     if ($Connected) {
-        Write-Host "[OK] Service is running and listening on port $TargetPort." -ForegroundColor Green
+        Write-Host "[OK] Port $TargetPort listening." -ForegroundColor Green
     } else {
-        Write-Host "[!] No service detected on port $TargetPort." -ForegroundColor Red
-        Write-Host "    Pastikan Nexus Cyber sudah dijalankan terlebih dahulu:" -ForegroundColor Yellow
-        Write-Host "    Mode Docker : .\scripts\deploy-local-pc.ps1" -ForegroundColor White
-        Write-Host "    Mode Binary : .\scripts\deploy-local-pc.ps1 -Binary" -ForegroundColor White
-        Write-Host ""
-        Write-Host "    Melanjutkan tunnel launch anyway..." -ForegroundColor Yellow
+        Write-Host "[!] Port $TargetPort belum listen." -ForegroundColor Yellow
+        Write-Host "    Jalankan dulu: deploy-local\jury\START-FOR-JURY.bat" -ForegroundColor White
+        Write-Host "    atau: deploy-local\START-OFFLINE.bat" -ForegroundColor White
+        Write-Host "    Melanjutkan tunnel anyway..." -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "[i] Could not verify port $TargetPort. Proceeding with tunnel..." -ForegroundColor Yellow
+    Write-Host "[i] Tidak bisa cek port. Melanjutkan..." -ForegroundColor Yellow
 }
 
-# ── Step 3: Launch Cloudflare Tunnel ─────────────────────────────────────────
-Write-Host "`n[3/3] Launching Cloudflare Tunnel..." -ForegroundColor Yellow
-Write-Host "    Menghubungkan http://localhost:$TargetPort ke internet publik..." -ForegroundColor Cyan
-Write-Host "    Tekan Ctrl+C untuk menghentikan tunnel." -ForegroundColor White
-Write-Host ""
-Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "    Tunggu URL publik HTTPS muncul di bawah ini...          " -ForegroundColor Yellow
-Write-Host "============================================================" -ForegroundColor Cyan
+# ── Step 3: tunnel ────────────────────────────────────────────────────────────
+Write-Host "`n[3/3] Launching quick tunnel..." -ForegroundColor Yellow
+Write-Host "    Salin URL https://....trycloudflare.com di bawah." -ForegroundColor Cyan
+Write-Host "    Kirim ke juri / uji dari HP (bukan Wi-Fi rumah)." -ForegroundColor Cyan
+Write-Host "    Ctrl+C = stop tunnel. Lab Docker tetap jalan." -ForegroundColor White
+Write-Host "    JANGAN tunnel SOC. Docs: docs\JURY_PUBLIC_ACCESS.md" -ForegroundColor DarkYellow
 Write-Host ""
 
-# Jalankan tunnel (blocking - URL publik muncul di sini)
-cloudflared tunnel --url "http://localhost:$TargetPort"
+& cloudflared tunnel --url "http://127.0.0.1:$TargetPort"

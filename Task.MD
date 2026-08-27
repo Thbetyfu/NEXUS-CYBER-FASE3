@@ -1,6 +1,6 @@
 # Task & Backlog Nexus Cyber
 
-**Pembaruan:** 2026-08-22  
+**Pembaruan:** 2026-08-23  
 **Strategi:** [docs/PRODUCT_MODEL.md](docs/PRODUCT_MODEL.md) — **Channel Starter** (entry UMKM) + **GaaS Edge Antibody Cowork** (inti). Keputusan terbuka: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md).
 
 Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/README.md`.
@@ -67,6 +67,24 @@ Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/
 - [x] **P-2:** Form `/order` + proxy API ke channel-starter
 - [x] **P-3:** Pembayaran manual WA + keputusan Q2/Q4/Q7/Q8 di DECISIONS_OPEN
 - [ ] **P-4:** Midtrans webhook (ditunda)
+
+---
+
+## Milestone 20 — Cowork B2B GTM (prioritas Q9)
+
+- [x] **B2B-1:** Keputusan Q9 — fokus Cowork untuk klien B2B
+- [x] **B2B-2:** Dokumen [docs/COWORK_B2B.md](docs/COWORK_B2B.md) — playbook operator
+- [x] **B2B-3:** Halaman `/cowork` di Channel Portal
+- [x] **B2B-3b:** Keputusan distribusi PC 24/7 + tunnel + harga pilot Job Rp 200rb / Loop Rp 300rb — [docs/DISTRIBUTION_PILOT.md](docs/DISTRIBUTION_PILOT.md)
+- [x] **B2B-3c:** Portal multi-segmen satu situs — `/` hub + `/umkm` `/sekolah` `/startup` `/institusi` (UMKM 20rb+pagar, GaaS entry 35rb)
+- [x] **B2G-1:** Dokumen [docs/COWORK_B2G.md](docs/COWORK_B2G.md) + [docs/PRICING_UNIT_ECONOMICS.md](docs/PRICING_UNIT_ECONOMICS.md) — pitching on-prem (bukan produksi B2G selesai)
+- [x] **B2G-2:** Portal `/b2g` + hub segmen B2G (Edge lisensi + Loop wajib; source tidak termasuk)
+- [ ] **B2B-3d:** Setup tunnel produksi (cloudflared) + checklist PC 24/7 tanpa expose SOC
+- [ ] **B2B-4:** Satu pilot B2B — Job + artefak MD diserahkan ke pemilik risiko
+- [ ] **B2B-5:** Template proposal/kontrak B2B (MD)
+- [ ] **B2B-6:** Demo before/after terekam (lab + defense delta)
+- [ ] **B2G-3:** Packaging binary/image Edge berlisensi produksi
+- [ ] **B2G-4:** Pilot on-prem satu instansi (staging)
 
 ---
 

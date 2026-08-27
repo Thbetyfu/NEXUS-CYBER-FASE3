@@ -74,7 +74,7 @@ Moat GaaS: **jalur + wasit jujur + memori imun host** — bukan model GGUF atau 
 | Starter (subdomain, template) | Rp 0–29.000 | Tidak |
 | Usaha (domain, halaman+) | Rp 49.000–99.000 | Tidak |
 | Tepi (+ Alur A gateway) | Rp 149.000–299.000 | Tidak |
-| Cowork upsell | Rp 500.000–2.000.000+ | Ya |
+| Cowork upsell (pilot) | Job Rp 200.000 · Loop Rp 300.000/bln | Ya |
 
 Domain ± Rp 150–200rb/tahun — **disarankan terpisah** dari Starter Rp 20rb.
 

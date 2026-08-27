@@ -7,10 +7,21 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 ## [Unreleased]
 
 ### Added
+- **Cowork B2B GTM (Milestone 20):** keputusan Q9 (prioritas B2B Cowork), [`docs/COWORK_B2B.md`](docs/COWORK_B2B.md), halaman [`/cowork`](nexus-channel-portal/src/app/cowork/page.tsx) di Channel Portal.
+- **B2G pitching (Milestone 20.2d):** [`docs/COWORK_B2G.md`](docs/COWORK_B2G.md), [`docs/PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md), halaman [`/b2g`](nexus-channel-portal/src/app/b2g/page.tsx) — on-prem Edge + Loop wajib; **bukan** produksi pengadaan selesai.
 - **Channel Starter (Milestone 18 lab):** modul `channel-starter/` — form wizard, 3 template, CLI; **S-3 deploy lab** + **S-6 upsell Cowork**. **Belum:** billing otomatis, VPS wildcard/TLS produksi massal.
-- **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
+- **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
 
 ### Docs
+- **Lab target (agen):** origin default yang dilindungi = portofolio `playground/Portofolio-Thoriq` / `PROTECTED_HOST=portfolio.nexus-lab.test` — ditulis di [`AGENTS.md`](AGENTS.md), [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) §0, [`.agents/rules/nexus-rule.md`](.agents/rules/nexus-rule.md); tujuan = bukti Alur A + Job Cowork, bukan landing saja.
+- **B2G pitching package:** on-prem Edge lisensi + Loop wajib; source & control plane tidak diserahkan; keputusan di `DECISIONS_OPEN` (pitching ≠ produksi B2G).
+- **Unit ekonomi:** jual / COGS / margin per segmen × cabang website (asumsi pilot PC+tunnel) — [`PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md).
+- **Portal multi-segmen (satu situs):** hub `/` + `/umkm` · `/sekolah` · `/startup` · `/institusi` · `/b2g`; UMKM Rp 20rb termasuk pelindung; GaaS entry Rp 35rb; `/cowork` → `/institusi`.
+- **Cabang “sudah punya website?”:** setelah pilih peran (UMKM/sekolah/startup) harga menyesuaikan — belum: site+pagar; sudah: pagar lebih murah (15/28rb). Institusi & B2G tanpa cabang website. Hub `/` didesain ulang (ink+teal, daftar peran, alur tidak rapat).
+- **Distribusi pilot:** [`docs/DISTRIBUTION_PILOT.md`](docs/DISTRIBUTION_PILOT.md) — PC operator 24/7 + tunnel (tanpa VPS); SOC/DB tidak di-tunnel.
+- **PC main server + juri:** template [`deploy-local/.env.pc-server.template`](deploy-local/.env.pc-server.template), [`SETUP-ENV-PC-SERVER.bat`](deploy-local/jury/SETUP-ENV-PC-SERVER.bat), [`docs/PC_MAIN_SERVER.md`](docs/PC_MAIN_SERVER.md) §2, [`PREP-PC-SERVER.bat`](deploy-local/jury/PREP-PC-SERVER.bat), [`START-FOR-JURY.bat`](deploy-local/jury/START-FOR-JURY.bat).
+- **Harga Cowork tahap pilot:** Job **Rp 200.000** · Loop **Rp 300.000**/bulan — portal + `DECISIONS_OPEN` / `COWORK_B2B` / `CHANNEL_STARTER` / `PRODUCT_MODEL` / `BRD` diselaraskan.
+- **Harga B2G ilustrasi:** Lisensi Edge **Rp 18jt**/tahun · Loop On-Prem **Rp 3,5jt**/bulan · Custom.
 - **Strategi dua lapisan:** Channel Starter (entry UMKM ~Rp 20rb, **lab v0.1** di `channel-starter/`) + GaaS Edge Antibody Cowork (inti, **sudah** mesin Job/Loop).
 - Dokumen baru [`docs/CHANNEL_STARTER.md`](docs/CHANNEL_STARTER.md), [`docs/DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md).
 - Selaraskan [`docs/PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md) v1.1, [`docs/BRD.md`](docs/BRD.md) v2.1, [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md), [`LIMITATIONS.md`](docs/LIMITATIONS.md), [`CAPABILITIES.md`](docs/CAPABILITIES.md), [`ROADMAP.md`](ROADMAP.md) M18–M19, [`docs/NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`Task.MD`](Task.MD), [`README.md`](README.md), [`AGENTS.md`](AGENTS.md). Penamaan **legacy subscription** menggantikan istilah lama di docs hidup.

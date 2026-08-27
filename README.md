@@ -43,7 +43,19 @@ Pilih **satu** cara. Jangan jalankan `deploy-local/START.bat` bersamaan dengan `
 4. Buka **http://127.0.0.1** (Caddy → WAF). Bukti Nexus hanya lewat IP/laptop ini, **bukan** URL Vercel langsung.
 5. File `deploy-local/.env` dibuat otomatis dari `.env.example` pada start pertama. Ubah `REWARD_PASSWORD` / origin di situ jika perlu. Pager Telegram opsional: isi `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (lihat `deploy-local/blue-team/README.md`); jangan commit token.
 
-Hotspot blue/red team, Gallery, dan checklist uji: [`deploy-local/README.md`](./deploy-local/README.md). Matikan: `deploy-local\STOP.bat`.
+### Akses juri / publik — PC sebagai server (tanpa hotspot, tanpa VPS)
+
+PC high-end 24/7 **bisa** jadi host utama sementara. Juri akses lewat **Cloudflare Tunnel**, bukan join Wi‑Fi Anda:
+
+1. Docker Desktop **Running**
+2. Double-click **`deploy-local\jury\START-FOR-JURY.bat`**
+3. Salin URL `https://….trycloudflare.com` → kirim ke juri (uji dari HP data seluler)
+
+Portal jual (opsional, tunnel terpisah port 3003): [`docs/JURY_PUBLIC_ACCESS.md`](./docs/JURY_PUBLIC_ACCESS.md). Panduan lengkap PC server + persiapan ENV: [`docs/PC_MAIN_SERVER.md`](./docs/PC_MAIN_SERVER.md). Kebijakan: [`docs/DISTRIBUTION_PILOT.md`](./docs/DISTRIBUTION_PILOT.md).
+
+**PC baru:** jalankan sekali `deploy-local\jury\PREP-PC-SERVER.bat` sebelum `START-FOR-JURY.bat`.
+
+Hotspot hanya untuk latihan blue/red team lokal — **bukan** jalur juri. Matikan lab: `deploy-local\STOP.bat` atau `deploy-local\jury\STOP-FOR-JURY.bat`.
 
 ### Cara B — development (ubah kode gateway / dasbor)
 

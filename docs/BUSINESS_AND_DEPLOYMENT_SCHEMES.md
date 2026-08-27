@@ -95,7 +95,7 @@ Hanya perencanaan internal — lihat [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) un
 | Starter | Rp 0–29.000 | **Tidak** |
 | Usaha | Rp 49.000–99.000 | Tidak |
 | Tepi (+ Alur A) | Rp 149.000–299.000 | Tidak |
-| Cowork upsell | Rp 500.000–2.000.000+ | **Ya** |
+| Cowork upsell (pilot PC+tunnel) | Job Rp 200.000 · Loop Rp 300.000/bln | **Ya** |
 
 Domain tahunan **terpisah**. Validasi pasar: UMKM **≤ ~Rp 20.000** untuk tier dasar — detail [CHANNEL_STARTER.md](./CHANNEL_STARTER.md).
 

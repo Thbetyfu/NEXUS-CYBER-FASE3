@@ -44,7 +44,8 @@ Form (nama, kategori, WA, alamat, foto, warna)
 | **Starter** | Subdomain `nama.nexus.id`, 1 template, 5 section, SSL | **Rp 0–29.000** | Tidak |
 | **Usaha** | Domain sendiri, halaman tambahan, SEO dasar | **Rp 49.000–99.000** | Tidak |
 | **Tepi** | + gateway Alur A (Reflex, autoban) | **Rp 149.000–299.000** | Tidak |
-| **Cowork** | + Job/Loop + artefak risiko | **Rp 500.000–2.000.000+** | Ya |
+| **Cowork (pilot)** | + Job/Loop + artefak risiko | **Rp 200.000** (Job) / **Rp 300.000**/bln (Loop) — jalur `/institusi` | Ya |
+| **UMKM bundel** | Site + pelindung UMKM | **Rp 20.000**/bln; GaaS entry **Rp 35.000** — `/umkm` | Tepi dasar saja |
 
 **Domain** (± Rp 150–200rb/tahun) — **disarankan terpisah** dari Starter Rp 20rb.
 

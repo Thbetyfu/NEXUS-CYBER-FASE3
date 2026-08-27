@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Globe, Layers, Sparkles, Zap } from "lucide-react";
 
@@ -158,7 +159,9 @@ export function ProductLayersSection() {
           transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="notion-callout-content">
-            <strong>Fokus v1:</strong> B2C (UMKM) + B2B (integrator/fintech). B2G/E-Katalog belum prioritas.
+            <strong>Fokus pitching:</strong> B2C (UMKM/sekolah) + B2B (startup/institusi) + pintu{" "}
+            <Link href="/b2g">B2G on-prem</Link> (lisensi Edge + Loop wajib; source tidak diserahkan). SIPLah/E-Katalog
+            massal belum.
           </div>
         </motion.div>
       </motion.div>

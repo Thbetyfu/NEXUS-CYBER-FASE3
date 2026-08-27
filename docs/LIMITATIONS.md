@@ -1,6 +1,6 @@
 # Nexus Cyber Limitations
 
-Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-22.
+Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-23.
 
 ---
 
@@ -10,6 +10,8 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 2. **Bukan self-serve legacy** — F-10 **ditunda**; Starter v1 = **`nexus-channel-portal/`** + form + template.
 3. **Bukan SOC otonom 24/7** — Job Cowork + operator; manusia pemilik risiko L0/L1.
 4. **Rp ~20rb/bulan** — realistis hanya untuk **website template** shared; **tanpa** Job Cowork, domain included, atau support unlimited.
+4b. **Hosting tahap pilot** — PC operator 24/7 + tunnel; **bukan** SLA data center. Control plane SOC **tidak** dipublikasikan lewat tunnel. Lihat [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md).
+4c. **B2G on-prem** — pitching/arsitektur + pintu `/b2g` **ada**; packaging binary berlisensi produksi, pengadaan formal, dan pilot DC instansi **belum**. Source & control plane **tidak** diserahkan. Lihat [COWORK_B2G.md](./COWORK_B2G.md).
 5. **Bukan pentest exploit** — NEX-RED = wasit purple-team jinak.
 6. **Residual wajib jujur** — `origin_open` / `replay_missed` tidak disembunyikan.
 7. **Bukan GRC bank penuh** — irisan kanal digital saja.

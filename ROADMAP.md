@@ -98,14 +98,34 @@ Keputusan bisnis: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md) (Q2/Q4/Q7/Q8 
 
 ---
 
+## Milestone 20: Cowork B2B GTM (ACTIVE)
+
+*Prioritas Q9: demo & kontrak Job/Loop untuk fintech, integrator, kanal digital.*
+
+| Fase | Target | Status |
+| --- | --- | --- |
+| **20.0 Keputusan Q9** | Fokus B2B Cowork vs form→site | **Selesai** 2026-08-23 |
+| **20.1 Portal `/cowork`** | Landing B2B + paket + WA | **Selesai** |
+| **20.2 Playbook operator** | [COWORK_B2B.md](docs/COWORK_B2B.md) | **Selesai** |
+| **20.2b Distribusi pilot** | PC 24/7 + tunnel · harga per segmen | **Selesai** — [DISTRIBUTION_PILOT.md](docs/DISTRIBUTION_PILOT.md) |
+| **20.2c Portal multi-segmen** | Hub `/` + `/umkm` `/sekolah` `/startup` `/institusi` | **Selesai** |
+| **20.2d B2G pitching** | [COWORK_B2G.md](docs/COWORK_B2G.md) + `/b2g` + unit ekonomi | **Selesai** 2026-08-23 |
+| **20.3 Setup tunnel live** | cloudflared + hostname publik (tanpa expose SOC) | **Belum** |
+| **20.4 Pilot B2B** | Satu Job + artefak diserahkan | **Belum** |
+| **20.5 Proposal template** | MD kontrak ilustrasi | **Belum** |
+| **20.6 B2G produksi** | Packaging lisensi Edge + pilot DC klien | **Belum** (hanya pitching) |
+
+---
+
 ## Yang sengaja tidak di roadmap v1
 
 - Channel Portal self-serve billing otomatis, F-10, CNAME massal, SIPLah/E-Katalog massal  
 - eBPF XDP produksi, klaim SOC otonom 24/7  
 - Pentest exploit Shannon parity  
+- Pengadaan B2G formal selesai (HPS resmi, sertifikasi) — pitching package saja dulu  
 
 Roadmap bisnis detail: [docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md](docs/BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 
 ---
 
-*Roadmap v4 — pivot GaaS 2026-08-22.*
+*Roadmap v4 — pivot GaaS 2026-08-22; B2G pitching 2026-08-23.*
