@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -10,6 +11,25 @@ import (
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
+
+func waitForThreatLogCount(db *gorm.DB, want int, timeout time.Duration) (int64, error) {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		var count int64
+		if err := db.Model(&models.ThreatLog{}).Count(&count).Error; err != nil {
+			return 0, err
+		}
+		if int(count) >= want {
+			return count, nil
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	var count int64
+	if err := db.Model(&models.ThreatLog{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, fmt.Errorf("timeout waiting for %d threat logs, found %d", want, count)
+}
 
 func TestCryptographicAuditTrail(t *testing.T) {
 	// Bersihkan sisa-sisa file log test lokal jika ada dari crash sebelumnya
@@ -83,8 +103,10 @@ func TestCryptographicAuditTrail(t *testing.T) {
 		LatencyMS:    2,
 	})
 
-	// Berikan sedikit jeda waktu agar goroutine asinkron GORM DB selesai menulis ke DB in-memory
-	time.Sleep(200 * time.Millisecond)
+	// Tunggu goroutine persistensi DB selesai (pre-push CI bisa lebih lambat dari 200ms)
+	if _, err := waitForThreatLogCount(db, 3, 3*time.Second); err != nil {
+		t.Fatalf("Async threat log persist: %v", err)
+	}
 
 	// 4. Jalankan Verifikasi Rantai - Harus VALID
 	isValid, count, err := VerifyAuditChain(db)
