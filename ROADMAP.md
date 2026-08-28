@@ -115,6 +115,8 @@ Keputusan bisnis: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md) (Q2/Q4/Q7/Q8 
 | **20.5 Proposal template** | MD kontrak ilustrasi | **Belum** |
 | **20.6 B2G produksi** | Packaging lisensi Edge + pilot DC klien | **Belum** (hanya pitching) |
 
+Checklist operasi minggu demi minggu: [docs/PRODUCT_LAUNCH_30_DAYS.md](docs/PRODUCT_LAUNCH_30_DAYS.md).
+
 ---
 
 ## Yang sengaja tidak di roadmap v1

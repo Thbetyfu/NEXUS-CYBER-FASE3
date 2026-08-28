@@ -111,6 +111,8 @@ Lihat [LIMITATIONS.md](./LIMITATIONS.md), [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 | M20-4 | Template proposal/kontrak B2B (MD) | **Belum** |
 | M20-5 | Produksi VPS + TLS untuk host klien | **Belum** |
 
+Peluncuran produk (bukan lab-only): checklist 30 hari di [PRODUCT_LAUNCH_30_DAYS.md](./PRODUCT_LAUNCH_30_DAYS.md).
+
 ---
 
 *Cowork B2B GTM — selaras pivot GaaS 2026-08-23.*

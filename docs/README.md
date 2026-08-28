@@ -15,6 +15,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | [COWORK_B2G.md](./COWORK_B2G.md) | Pitching on-prem B2G — lisensi Edge + Loop wajib |
 | [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md) | Jual / COGS / margin per segmen (pilot) |
 | [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md) | Distribusi awal: PC 24/7 + tunnel · harga pilot |
+| [PRODUCT_LAUNCH_30_DAYS.md](./PRODUCT_LAUNCH_30_DAYS.md) | Checklist peluncuran produk tepat guna (30 hari) |
 | [PC_MAIN_SERVER.md](./PC_MAIN_SERVER.md) | PC sebagai server utama — tanpa VPS/hotspot |
 | [JURY_PUBLIC_ACCESS.md](./JURY_PUBLIC_ACCESS.md) | Akses juri: `START-FOR-JURY.bat` + cloudflared |
 | [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) | Keputusan bisnis — tanya pemilik |

@@ -99,6 +99,8 @@ Homepage `/` = hub pilih segmen. Setelah pilih peran: UMKM/sekolah/startup → *
 
 Sampai saat itu: **PC + tunnel = inti distribusi awal.**
 
+Rencana minggu 1–4 sampai keputusan VPS: [PRODUCT_LAUNCH_30_DAYS.md](./PRODUCT_LAUNCH_30_DAYS.md).
+
 ---
 
 *Distribusi pilot 2026-08-23 — selaras keputusan pemilik.*

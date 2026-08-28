@@ -17,6 +17,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
 
 ### Docs
+- **Peluncuran produk 30 hari:** checklist minggu 1–4 (publik tunnel → proposal → Job bayar → stabilisasi/VPS gate) — [`docs/PRODUCT_LAUNCH_30_DAYS.md`](docs/PRODUCT_LAUNCH_30_DAYS.md).
 - **SOC lab cleanup:** seed workspace OJK/BI/Kemenkeu diganti `portfolio.nexus-lab.test`; ikon desktop + default window Job Cowork & Laporan Compliance.
 - **B2G pitching package:** on-prem Edge lisensi + Loop wajib; source & control plane tidak diserahkan; keputusan di `DECISIONS_OPEN` (pitching ≠ produksi B2G).
 - **Unit ekonomi:** jual / COGS / margin per segmen × cabang website (asumsi pilot PC+tunnel) — [`PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md).

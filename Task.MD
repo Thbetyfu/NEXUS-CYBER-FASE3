@@ -83,6 +83,7 @@ Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/
 - [ ] **B2B-4:** Satu pilot B2B — Job + artefak MD diserahkan ke pemilik risiko
 - [ ] **B2B-5:** Template proposal/kontrak B2B (MD)
 - [ ] **B2B-6:** Demo before/after terekam (lab + defense delta)
+- [ ] **B2B-7:** Jalankan checklist 30 hari — [docs/PRODUCT_LAUNCH_30_DAYS.md](docs/PRODUCT_LAUNCH_30_DAYS.md)
 - [ ] **B2G-3:** Packaging binary/image Edge berlisensi produksi
 - [ ] **B2G-4:** Pilot on-prem satu instansi (staging)
 
