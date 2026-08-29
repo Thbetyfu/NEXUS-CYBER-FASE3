@@ -7,6 +7,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 ## [Unreleased]
 
 ### Added
+- **Context-Aware Workspace binding (SOC):** Active Workspace (`activeDomain`) is Single Source of Truth — switching Domain Switcher auto-binds Job Cowork, Forensic Logs, Metrics, IP/Ban, and Artefak/Compliance. Job target badge `Target: [host] (via WAF)`; no free-type raw URL. Global Overwatch (`all`) keeps combined monitoring; Start Job disabled until a workspace is selected. Onboard kanal still auto-selects the new domain (all windows re-bind). Job payload uses lab pattern `http://{protected_host}` (hosts/DNS → WAF); `origin_direct` twin unchanged for defense delta.
 - **Operator Onboard kanal (pilot):** di Operator GaaS Console — tempel origin URL (http/https) + protected host opsional → `POST /api/routes` mendaftarkan WAF route + `domain_subscriptions` / Domain Switcher; UI menampilkan protected URL vs origin. Bukan self-serve CNAME massal / Midtrans. Origin privat lab butuh `NEXUS_ALLOW_PRIVATE_ORIGINS=true`.
 
 ### Fixed

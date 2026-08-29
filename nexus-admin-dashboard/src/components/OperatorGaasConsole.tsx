@@ -20,8 +20,11 @@ import {
   downloadJobArtifact,
   errorMessage,
   isClosedJobStatus,
+  isGlobalWorkspace,
   onboardKanal,
   statusTone,
+  wafTargetForWorkspace,
+  workspaceTargetLabel,
   type ArtifactFormat,
   type OnboardKanalResult,
 } from '@/lib/gaas-labels';
@@ -164,8 +167,11 @@ export default function OperatorGaasConsole({
     }
   };
 
-  const host = status?.protected_host || DEFAULT_PROTECTED_HOST;
+  const host = isGlobalWorkspace(activeDomain)
+    ? status?.protected_host || DEFAULT_PROTECTED_HOST
+    : activeDomain;
   const bridgeOnline = status?.bridge === 'online';
+  const jobWafTarget = wafTargetForWorkspace(activeDomain);
 
   return (
     <div className="h-full overflow-auto p-4 flex flex-col gap-4 text-sm font-mono">
@@ -198,11 +204,20 @@ export default function OperatorGaasConsole({
           </div>
           <p className="text-white text-base font-bold break-all">{host}</p>
           <p className="text-[11px] text-gray-500">
-            Workspace UI: {activeDomain === 'all' ? 'semua (lab)' : activeDomain}
+            Workspace: {isGlobalWorkspace(activeDomain) ? 'GLOBAL_OVERWATCH' : activeDomain}
           </p>
-          <p className="text-[11px] text-gray-500">
-            Target Job default: {status?.live_target || 'http://127.0.0.1:8080'}
+          <p
+            className={`text-[11px] font-semibold ${
+              isGlobalWorkspace(activeDomain) ? 'text-amber-400/90' : 'text-emerald-400/90'
+            }`}
+          >
+            {workspaceTargetLabel(activeDomain)}
           </p>
+          {jobWafTarget && (
+            <p className="text-[10px] text-gray-600 break-all">
+              Job payload: {jobWafTarget} · live_env: {status?.live_target || 'http://127.0.0.1:8080'}
+            </p>
+          )}
         </div>
 
         <div className="rounded-xl border border-white/10 bg-black/35 p-3 space-y-2">
@@ -420,7 +435,7 @@ export default function OperatorGaasConsole({
       </div>
 
       <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/15 overflow-hidden min-h-[320px]">
-        <JobCoworkWidget compact />
+        <JobCoworkWidget compact activeDomain={activeDomain} />
       </div>
     </div>
   );

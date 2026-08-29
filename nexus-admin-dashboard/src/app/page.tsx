@@ -32,6 +32,7 @@ import OperatorGaasConsole from '@/components/OperatorGaasConsole';
 
 // Config
 import { gatewayURL } from '@/config';
+import { workspaceTargetLabel } from '@/lib/gaas-labels';
 
 // CSRF Token Helper
 const fetchCsrfToken = async (): Promise<string | null> => {
@@ -222,15 +223,16 @@ export interface BlacklistItem {
    Menggunakan Promise.all untuk mengambil data secara paralel dari endpoint /api/ip-monitoring
    dan /api/blacklist guna meminimalkan RTT (Round Trip Time) koneksi HTTP ke gateway control plane.
 */
-function useIPMonitoring(intervalMs: number = 4000) {
+function useIPMonitoring(domain: string = "all", intervalMs: number = 4000) {
   const [entries, setEntries] = useState<IPMonitoringEntry[]>([]);
   const [blacklist, setBlacklist] = useState<BlacklistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
+      const q = domain && domain !== "all" ? `?domain=${encodeURIComponent(domain)}` : "";
       const [ipRes, blRes] = await Promise.all([
-        fetch(gatewayURL("/api/ip-monitoring"), { cache: "no-store", credentials: "include" }),
+        fetch(gatewayURL(`/api/ip-monitoring${q}`), { cache: "no-store", credentials: "include" }),
         fetch(gatewayURL("/api/blacklist"), { cache: "no-store", credentials: "include" })
       ]);
       if (ipRes.ok) {
@@ -245,7 +247,7 @@ function useIPMonitoring(intervalMs: number = 4000) {
     } catch (err) {
       console.error("Error fetching IP monitoring data:", err);
     }
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     const initFetch = async () => {
@@ -634,7 +636,7 @@ const NCCDashboard = () => {
   // isUnlicensed kept inside useTelemetry but not rendered (no SaaS paywall on operator console)
   const { logs, metrics, history, ebpfData, isLive } = useTelemetry(gatewayURL(`/api/telemetry?domain=${activeDomain}`), 2000)
   const aiEvents = useAIEvents(gatewayURL("/api/ai-events"), 1000)
-  const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(3000)
+  const { entries: ipEntries, blacklist: ipBlacklist, refetch: refetchIpMonitoring } = useIPMonitoring(activeDomain, 3000)
 
   // System State
   const [isEmergency, setIsEmergency] = useState(false);
@@ -915,6 +917,9 @@ const NCCDashboard = () => {
               onClose={() => toggleWindow("metrics")}
             >
               <div className="p-4 flex flex-col gap-4">
+                <div className="rounded-lg border border-teal-500/25 bg-teal-950/20 px-3 py-1.5 text-[10px] font-mono text-teal-300/90">
+                  {workspaceTargetLabel(activeDomain)}
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#0f172a] border border-blue-500/20 rounded-xl p-4">
                     <p className="text-[9px] text-blue-400 uppercase font-black tracking-widest mb-1">Inbound Traffic</p>
@@ -1031,6 +1036,9 @@ const NCCDashboard = () => {
               <div className="h-full flex flex-col">
                 <div className="bg-[#090b0e] px-4 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
+                    <span className="text-[9px] text-teal-400/90 font-mono tracking-tight">
+                      {workspaceTargetLabel(activeDomain)}
+                    </span>
                     <span className="text-[9px] text-gray-500 font-mono tracking-tighter">VECTORS: REAL_TIME</span>
                     <select
                       value={logLimit}
@@ -1101,11 +1109,16 @@ const NCCDashboard = () => {
               onFocus={() => handleFocusWindow("ip-monitor")}
               onClose={() => toggleWindow("ip-monitor")}
             >
-              <IPMonitorConsole 
-                entries={ipEntries} 
-                blacklist={ipBlacklist} 
-                onRefetch={refetchIpMonitoring} 
-              />
+              <div className="flex flex-col h-full">
+                <div className="px-4 py-2 border-b border-white/5 text-[10px] font-mono text-teal-300/90 shrink-0">
+                  {workspaceTargetLabel(activeDomain)} · ban list tetap global di gateway
+                </div>
+                <IPMonitorConsole 
+                  entries={ipEntries} 
+                  blacklist={ipBlacklist} 
+                  onRefetch={refetchIpMonitoring} 
+                />
+              </div>
             </WindowFrame>
           )}
 
@@ -1125,7 +1138,7 @@ const NCCDashboard = () => {
               onFocus={() => handleFocusWindow("compliance-audit")}
               onClose={() => toggleWindow("compliance-audit")}
             >
-              <ComplianceWidget />
+              <ComplianceWidget activeDomain={activeDomain} />
             </WindowFrame>
           )}
 
@@ -1145,7 +1158,7 @@ const NCCDashboard = () => {
               onFocus={() => handleFocusWindow("job-cowork")}
               onClose={() => toggleWindow("job-cowork")}
             >
-              <JobCoworkWidget />
+              <JobCoworkWidget activeDomain={activeDomain} />
             </WindowFrame>
           )}
         </AnimatePresence>

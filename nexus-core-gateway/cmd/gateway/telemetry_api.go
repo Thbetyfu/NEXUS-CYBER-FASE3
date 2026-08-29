@@ -923,7 +923,61 @@ func ipMonitoringHandler(telemetry *logger.Logger) http.HandlerFunc {
 			return
 		}
 
+		filterDomain := strings.ToLower(r.URL.Query().Get("domain"))
+		if filterDomain == "" {
+			filterDomain = "all"
+		}
+
 		var list []IPMonitoringEntry
+
+		// Workspace-bound filter: aggregate from in-memory telemetry by TargetDomain
+		// (ThreatLog DB rows have no domain column — RAM path is SoT for per-workspace IP view).
+		if filterDomain != "all" {
+			logs := telemetry.GetRecentLogs()
+			ipMap := make(map[string]*IPMonitoringEntry)
+			for _, l := range logs {
+				if strings.ToLower(l.TargetDomain) != filterDomain {
+					continue
+				}
+				ip := l.SourceIP
+				if idx := strings.Index(ip, ":"); idx != -1 {
+					ip = ip[:idx]
+				}
+				entry, exists := ipMap[ip]
+				if !exists {
+					entry = &IPMonitoringEntry{
+						SourceIP:   ip,
+						LastActive: l.Timestamp,
+						IsBanned:   database.IsIPBlacklisted(ip),
+						UserAgent:  l.DeviceFingerprint,
+						Endpoints:  []string{},
+					}
+					ipMap[ip] = entry
+				}
+				entry.TotalRequests++
+				if l.Status == "BLOCKED" || l.Status == "RATE_LIMITED" || l.Status == "BANNED_IP_DIVERTED" {
+					entry.ThreatCount++
+				}
+				if l.Timestamp.After(entry.LastActive) {
+					entry.LastActive = l.Timestamp
+				}
+				found := false
+				for _, ep := range entry.Endpoints {
+					if ep == l.Endpoint {
+						found = true
+						break
+					}
+				}
+				if !found && l.Endpoint != "" {
+					entry.Endpoints = append(entry.Endpoints, l.Endpoint)
+				}
+			}
+			for _, v := range ipMap {
+				list = append(list, *v)
+			}
+			json.NewEncoder(w).Encode(list)
+			return
+		}
 
 		if database.DB != nil {
 			type DBResult struct {

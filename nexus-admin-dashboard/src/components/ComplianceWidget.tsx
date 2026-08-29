@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { isGlobalWorkspace, workspaceTargetLabel } from '@/lib/gaas-labels';
 
 interface Standard {
   id: string;
@@ -10,8 +11,14 @@ interface Standard {
   clausesPassed: number;
 }
 
-export default function ComplianceWidget() {
-  const [targetDomain, setTargetDomain] = useState<string>('portfolio.nexus-lab.test');
+interface ComplianceWidgetProps {
+  activeDomain: string;
+}
+
+export default function ComplianceWidget({ activeDomain }: ComplianceWidgetProps) {
+  const targetDomain = isGlobalWorkspace(activeDomain)
+    ? 'portfolio.nexus-lab.test'
+    : activeDomain;
   const [overallScore, setOverallScore] = useState<number>(100.0);
   const [grade, setGrade] = useState<string>('AAA (EXCELLENT)');
   const [standards, setStandards] = useState<Standard[]>([]);
@@ -70,7 +77,6 @@ export default function ComplianceWidget() {
 
   return (
     <div className="flex flex-col gap-4 p-4 text-cyan-400 font-mono text-sm">
-      {/* Header Banner */}
       <div className="flex items-center justify-between border-b border-cyan-500/30 pb-3">
         <div>
           <h3 className="text-lg font-bold text-cyan-300 flex items-center gap-2">
@@ -90,20 +96,16 @@ export default function ComplianceWidget() {
         </div>
       </div>
 
-      {/* Target Domain Input */}
-      <div className="flex items-center gap-3 bg-black/40 p-3 rounded border border-cyan-500/20">
-        <span className="text-xs text-cyan-500">AUDIT TARGET DOMAIN:</span>
-        <input
-          type="text"
-          value={targetDomain}
-          onChange={(e) => setTargetDomain(e.target.value)}
-          className="bg-black border border-cyan-500/40 rounded px-2.5 py-1 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400 font-mono w-64"
-          placeholder="e.g. portfolio.nexus-lab.test"
-        />
+      <div className="flex items-center gap-3 bg-black/40 p-3 rounded border border-cyan-500/20 flex-wrap">
+        <span className="text-xs text-cyan-500">AUDIT TARGET:</span>
+        <span className="text-xs font-semibold text-cyan-200 font-mono">
+          {isGlobalWorkspace(activeDomain)
+            ? `Global Overwatch → default ${targetDomain}`
+            : workspaceTargetLabel(activeDomain)}
+        </span>
         <span className="text-xs font-bold text-emerald-400 ml-auto">GRADE: {grade}</span>
       </div>
 
-      {/* Standards Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         {standards.map((std) => (
           <button
@@ -122,7 +124,6 @@ export default function ComplianceWidget() {
         ))}
       </div>
 
-      {/* Action Controls */}
       <div className="flex gap-2">
         <button
           onClick={() => handleExport('markdown')}
@@ -140,7 +141,6 @@ export default function ComplianceWidget() {
         </button>
       </div>
 
-      {/* Generated Report Display */}
       {exportedReport && (
         <div className="bg-black/80 border border-cyan-400 p-3 rounded flex flex-col gap-2">
           <div className="flex items-center justify-between">

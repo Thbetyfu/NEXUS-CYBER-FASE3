@@ -49,8 +49,10 @@ class JobCoworkOrchestrator:
         autonomy_level: AutonomyLevel = AutonomyLevel.L0,
         repo_path: str | None = None,
         scope: str = "hybrid-http-jinak",
+        protected_host: str | None = None,
     ) -> CoworkJob:
         job_id = f"JOB-{uuid.uuid4().hex[:8].upper()}"
+        host_key = (protected_host or "").strip().lower() or _host_key(target_url)
         job = CoworkJob(
             job_id=job_id,
             title=title,
@@ -58,10 +60,14 @@ class JobCoworkOrchestrator:
             autonomy_level=autonomy_level,
             repo_path=repo_path,
             scope=scope,
-            host_key=_host_key(target_url),
+            host_key=host_key,
             status=CoworkJobStatus.OPEN,
         )
-        self._log(job, "OPEN", f"Job opened for {target_url} ({autonomy_level.value})")
+        self._log(
+            job,
+            "OPEN",
+            f"Job opened for {target_url} host_key={host_key} ({autonomy_level.value})",
+        )
         self.store.save_job(job)
         sync_job(job)
         return job

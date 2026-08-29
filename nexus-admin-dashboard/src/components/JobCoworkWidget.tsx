@@ -8,7 +8,10 @@ import {
   downloadJobArtifact,
   errorMessage,
   formatWasitDelta,
+  isGlobalWorkspace,
   statusTone,
+  wafTargetForWorkspace,
+  workspaceTargetLabel,
   type ArtifactFormat,
 } from '@/lib/gaas-labels';
 
@@ -21,21 +24,30 @@ interface CoworkJob {
   defense_deltas: Record<string, number>;
   residuals: string[];
   antibody_loop_ok: boolean | null;
+  host_key?: string;
 }
 
 interface JobCoworkWidgetProps {
   /** When true, omit outer title (used inside Operator GaaS Console). */
   compact?: boolean;
+  /** Active Workspace — Single Source of Truth for Job target. */
+  activeDomain: string;
 }
 
-export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProps) {
+export default function JobCoworkWidget({
+  compact = false,
+  activeDomain,
+}: JobCoworkWidgetProps) {
   const [jobs, setJobs] = useState<CoworkJob[]>([]);
   const [title, setTitle] = useState('Weekly wasit');
-  const [targetUrl, setTargetUrl] = useState('http://127.0.0.1:8080');
   const [autonomy, setAutonomy] = useState<'L0' | 'L1'>('L0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storage, setStorage] = useState<string>('file');
+
+  const globalMode = isGlobalWorkspace(activeDomain);
+  const wafTarget = wafTargetForWorkspace(activeDomain);
+  const targetBadge = workspaceTargetLabel(activeDomain);
 
   const refresh = useCallback(async () => {
     try {
@@ -84,10 +96,18 @@ export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProp
 
   const startJob = () =>
     runBusy(async () => {
+      if (globalMode || !wafTarget) {
+        throw new Error('Pilih Active Workspace di taskbar sebelum Start Job (bukan Global Overwatch).');
+      }
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, target_url: targetUrl, autonomy_level: autonomy }),
+        body: JSON.stringify({
+          title,
+          target_url: wafTarget,
+          protected_host: activeDomain,
+          autonomy_level: autonomy,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to start job');
@@ -102,6 +122,21 @@ export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProp
 
   const downloadArtifact = (jobId: string, format: ArtifactFormat) =>
     runBusy(() => downloadJobArtifact(jobId, format), 'Download failed');
+
+  const workspaceJobs =
+    globalMode
+      ? jobs
+      : jobs.filter((j) => {
+          const key = (j.host_key || '').toLowerCase();
+          const host = activeDomain.toLowerCase();
+          if (key && (key === host || key === host.split(':')[0])) return true;
+          try {
+            const u = new URL(j.target_url);
+            return (u.hostname || '').toLowerCase() === host.split(':')[0];
+          } catch {
+            return j.target_url.includes(host);
+          }
+        });
 
   return (
     <div className="flex flex-col gap-4 p-4 text-emerald-400 font-mono text-sm h-full overflow-auto">
@@ -122,18 +157,28 @@ export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProp
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+      <div
+        className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
+          globalMode
+            ? 'border-amber-500/40 bg-amber-950/30 text-amber-200'
+            : 'border-emerald-500/40 bg-emerald-950/40 text-emerald-200'
+        }`}
+        title="Job menembak protected host lewat WAF — bukan origin mentah pelanggan"
+      >
+        {targetBadge}
+        {wafTarget && (
+          <span className="block mt-0.5 text-[10px] font-normal text-emerald-500/70">
+            Payload target_url: {wafTarget} (Host = workspace; origin_direct hanya di wasit internal)
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <input
-          className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1 text-emerald-200"
+          className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1 text-emerald-200 md:col-span-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Job title"
-        />
-        <input
-          className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1 text-emerald-200 md:col-span-2"
-          value={targetUrl}
-          onChange={(e) => setTargetUrl(e.target.value)}
-          placeholder="Target URL (lewat WAF)"
         />
         <select
           className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1"
@@ -148,19 +193,32 @@ export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProp
       <button
         type="button"
         onClick={startJob}
-        disabled={loading}
+        disabled={loading || globalMode || !wafTarget}
         className="px-4 py-2 rounded bg-emerald-900/50 border border-emerald-400/40 hover:bg-emerald-800/50 disabled:opacity-50 w-fit"
+        title={
+          globalMode
+            ? 'Pilih workspace di Domain Switcher (bukan Global Overwatch)'
+            : `Start Job → ${wafTarget}`
+        }
       >
-        {loading ? 'Running…' : 'Start Job Cowork'}
+        {loading
+          ? 'Running…'
+          : globalMode
+            ? 'Pilih workspace untuk Start Job'
+            : 'Start Job Cowork'}
       </button>
 
       {error && <p className="text-rose-400 text-xs">{error}</p>}
 
       <div className="space-y-2">
-        {jobs.length === 0 && (
-          <p className="text-emerald-600 text-xs">No jobs — start NEX-RED bridge on :3004</p>
+        {workspaceJobs.length === 0 && (
+          <p className="text-emerald-600 text-xs">
+            {globalMode
+              ? 'Global Overwatch — daftar semua Job. Pilih workspace untuk filter + Start.'
+              : 'No jobs for this workspace — start NEX-RED bridge on :3004'}
+          </p>
         )}
-        {jobs.map((job) => (
+        {workspaceJobs.map((job) => (
           <div
             key={job.job_id}
             className="border border-emerald-500/20 rounded p-3 bg-black/30 flex flex-col gap-2"
@@ -172,7 +230,7 @@ export default function JobCoworkWidget({ compact = false }: JobCoworkWidgetProp
               </span>
             </div>
             <div className="text-xs text-emerald-500/90">
-              {job.job_id} · {job.target_url} · {job.autonomy_level}
+              {job.job_id} · {job.host_key || job.target_url} · {job.autonomy_level}
             </div>
             {Object.keys(job.defense_deltas || {}).length > 0 && (
               <ul className="text-xs space-y-0.5 text-emerald-400/90">

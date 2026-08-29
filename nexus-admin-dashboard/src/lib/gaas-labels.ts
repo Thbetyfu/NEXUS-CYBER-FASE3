@@ -91,8 +91,36 @@ export async function downloadJobArtifact(
 export const DEFAULT_PROTECTED_HOST =
   process.env.NEXT_PUBLIC_PROTECTED_HOST || "portfolio.nexus-lab.test";
 
+/** Live WAF base from env (display / fallback only — Job binds to workspace host). */
+export const DEFAULT_LIVE_TARGET =
+  process.env.NEXT_PUBLIC_NEX_RED_LIVE_TARGET || "http://127.0.0.1:8080";
+
 const HOST_RE =
   /^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*(:\d+)?$/;
+
+/** Global Overwatch — combined monitoring; Job Cowork must pick a workspace. */
+export function isGlobalWorkspace(domain: string): boolean {
+  return !domain || domain === "all";
+}
+
+/**
+ * Workspace-bound Job target via WAF (lab pattern: hosts/DNS → gateway).
+ * Never returns raw customer origin — defense delta still uses NEX_RED_ORIGIN_DIRECT internally.
+ */
+export function wafTargetForWorkspace(activeDomain: string): string | null {
+  if (isGlobalWorkspace(activeDomain)) return null;
+  const host = normalizeProtectedHost(activeDomain);
+  if (!host) return null;
+  return `http://${host}`;
+}
+
+/** UI badge: Target: host (via WAF) */
+export function workspaceTargetLabel(activeDomain: string): string {
+  if (isGlobalWorkspace(activeDomain)) {
+    return "Target: (pilih workspace) — Global Overwatch";
+  }
+  return `Target: ${normalizeProtectedHost(activeDomain) || activeDomain} (via WAF)`;
+}
 
 /** Strip scheme/path from operator paste → hostname for protected kanal. */
 export function normalizeProtectedHost(raw: string): string {

@@ -33,13 +33,13 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 ## Batasan kode (demo & produksi)
 
 6. **Reflex = regex** — bukan AI pada setiap request; model reasoning opsional.
-7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Onboard kanal** = operator mendaftarkan route/workspace; bukan self-serve multi-tenant. Tunnel/Caddy hostname publik tetap di luar SOC.
-8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis.
+7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Onboard kanal** = operator mendaftarkan route/workspace; bukan self-serve multi-tenant. Tunnel/Caddy hostname publik tetap di luar SOC. **Workspace binding:** Job menembak protected host via WAF (`http://{host}`); Global Overwatch tidak menjalankan Job tanpa pilih workspace. Ban IP tetap global di gateway.
+8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis. Job host-key mengikuti Active Workspace; Host-header terpisah ke IP WAF belum end-to-end di NEX-RED agen (gunakan hostname yang resolve ke WAF).
 9. **PACS/Base64** — obfuskasi, bukan enkripsi.
-10. **NEX-RED origin direct** — hanya HTTP privat; publik/HTTPS ditolak untuk delta.
+10. **NEX-RED origin direct** — hanya HTTP privat; publik/HTTPS ditolak untuk delta. Operator UI **tidak** menarget origin sebagai Job primary target.
 11. **Telegram** — pager setelah ban; bukan GPS; bukan deteksi mandiri.
 12. **F-10 back-office** — ditunda; roster pelanggan **bukan** di SOC `:8081`.
-
+13. **IP/Ban per-workspace** — filter live dari telemetri RAM by `TargetDomain`; blacklist ban tetap gateway-global. ThreatLog DB belum punya kolom domain.
 ---
 
 ## Yang sengaja ditunda (legacy subscription)

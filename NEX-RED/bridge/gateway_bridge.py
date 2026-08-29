@@ -36,6 +36,8 @@ class TriggerScanRequest(BaseModel):
 class CreateJobRequest(BaseModel):
     title: str
     target_url: str = Field(default_factory=lambda: config.live_target)
+    # Workspace / protected host — sets host_key. Origin twin stays NEX_RED_ORIGIN_DIRECT.
+    protected_host: Optional[str] = None
     autonomy_level: str = "L0"
     repo_path: Optional[str] = None
     enable_llm: bool = False
@@ -164,6 +166,7 @@ def create_job(req: CreateJobRequest, background: BackgroundTasks):
         target_url=req.target_url,
         autonomy_level=_autonomy(req.autonomy_level),
         repo_path=req.repo_path,
+        protected_host=req.protected_host,
     )
 
     def _run() -> None:
