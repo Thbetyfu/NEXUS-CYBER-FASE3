@@ -323,16 +323,55 @@ func routesHandler(router *proxy.DynamicRouter, telemetry *logger.Logger) http.H
 						fmt.Printf("[PROVISIONER-ERROR] Failed to up container for %s on port %d: %v\n", d, p, err)
 					}
 				}(payload.Domain, port)
+			} else {
+				normalized, nerr := proxy.NormalizeProxyOrigin(targetURL)
+				if nerr != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": nerr.Error()})
+					return
+				}
+				targetURL = normalized
 			}
 
-			// 1. Add to Proxy Router
-			router.AddRoute(payload.Domain, targetURL)
+			// 1. Add to Proxy Router (scheme-safe origin)
+			if err := router.AddRoute(payload.Domain, targetURL); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": err.Error()})
+				return
+			}
 
-			// 2. Register in Telemetry so it appears in the dropdown immediately
+			// 2. Persist workspace so Domain Switcher + restart keep the mapping
+			if database.DB != nil {
+				var sub models.DomainSubscription
+				if err := database.DB.Where("domain = ?", payload.Domain).First(&sub).Error; err != nil {
+					sub = models.DomainSubscription{
+						Domain:   payload.Domain,
+						OriginIP: targetURL,
+						IsActive: true,
+						PlanType: "pilot",
+					}
+					if cerr := database.DB.Create(&sub).Error; cerr != nil {
+						fmt.Printf("[ROUTE-WARN] Failed to create domain_subscriptions for %s: %v\n", payload.Domain, cerr)
+					}
+				} else {
+					sub.OriginIP = targetURL
+					sub.IsActive = true
+					if serr := database.DB.Save(&sub).Error; serr != nil {
+						fmt.Printf("[ROUTE-WARN] Failed to update domain_subscriptions for %s: %v\n", payload.Domain, serr)
+					}
+				}
+			}
+
+			// 3. Register in Telemetry so it appears in the dropdown immediately
 			telemetry.AddDomain(payload.Domain)
 
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{"status": "success", "domain": payload.Domain, "target_url": targetURL})
+			json.NewEncoder(w).Encode(map[string]string{
+				"status":         "success",
+				"domain":         payload.Domain,
+				"target_url":     targetURL,
+				"protected_host": payload.Domain,
+			})
 			return
 		}
 	}

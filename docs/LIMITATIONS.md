@@ -33,8 +33,8 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 ## Batasan kode (demo & produksi)
 
 6. **Reflex = regex** — bukan AI pada setiap request; model reasoning opsional.
-7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork.
-8. **Satu `PROTECTED_HOST` per instance** — bukan multi-tenant otomatis.
+7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Onboard kanal** = operator mendaftarkan route/workspace; bukan self-serve multi-tenant. Tunnel/Caddy hostname publik tetap di luar SOC.
+8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis.
 9. **PACS/Base64** — obfuskasi, bukan enkripsi.
 10. **NEX-RED origin direct** — hanya HTTP privat; publik/HTTPS ditolak untuk delta.
 11. **Telegram** — pager setelah ban; bukan GPS; bukan deteksi mandiri.

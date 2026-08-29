@@ -165,6 +165,12 @@ func (dr *DynamicRouter) updateLocalCache(host, target string) {
 // Menggunakan Write-Lock (`Lock`) eksklusif untuk menghindari kondisi balapan data (race condition)
 // sewaktu memperbarui map cache memori. Sinkronisasi ke Redis dilakukan menggunakan batasan timeout 2 detik.
 func (dr *DynamicRouter) AddRoute(host, target string) error {
+	normalized, err := NormalizeProxyOrigin(target)
+	if err != nil {
+		return err
+	}
+	target = normalized
+
 	// 1. Perbarui Cache Memori Lokal (Penyediaan instan untuk request lokal)
 	dr.mu.Lock()
 	dr.cache[host] = RouteEntry{

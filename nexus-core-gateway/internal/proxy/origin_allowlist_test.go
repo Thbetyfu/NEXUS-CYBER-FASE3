@@ -1,8 +1,29 @@
 package proxy
 
 import (
+	"strings"
 	"testing"
 )
+
+func TestNormalizeProxyOrigin_AddsScheme(t *testing.T) {
+	got, err := NormalizeProxyOrigin("127.0.0.1:3002")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != "http://127.0.0.1:3002" {
+		t.Fatalf("got %q", got)
+	}
+	got, err = NormalizeProxyOrigin("https://example.com/path")
+	if err != nil || got != "https://example.com/path" {
+		t.Fatalf("https origin: got %q err %v", got, err)
+	}
+	if _, err := NormalizeProxyOrigin("ftp://example.com"); err == nil {
+		t.Fatal("ftp must be rejected")
+	}
+	if _, err := NormalizeProxyOrigin(""); err == nil {
+		t.Fatal("empty must be rejected")
+	}
+}
 
 func TestValidateProxyOrigin_BlocksPrivateAndMetadata(t *testing.T) {
 	t.Setenv("NEXUS_ALLOW_PRIVATE_ORIGINS", "")
@@ -20,6 +41,10 @@ func TestValidateProxyOrigin_BlocksPrivateAndMetadata(t *testing.T) {
 		if err := ValidateProxyOrigin(raw); err == nil {
 			t.Errorf("expected reject for %q", raw)
 		}
+	}
+	// Bare host without scheme must still be rejected as private (after normalize).
+	if err := ValidateProxyOrigin("10.0.0.5:8080"); err == nil || !strings.Contains(err.Error(), "private") {
+		t.Fatalf("bare private host should reject after normalize: %v", err)
 	}
 }
 

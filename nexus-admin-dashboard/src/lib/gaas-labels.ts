@@ -1,5 +1,7 @@
 /** Label wasit Job Cowork — jujur, bukan "hijau palsu". */
 
+import { gatewayURL } from "@/config";
+
 export const WASIT_LABELS: Record<string, string> = {
   waf_blocked: "WAF blokir (tepi menahan)",
   origin_open: "Origin terbuka (tanpa WAF lolos)",
@@ -88,3 +90,120 @@ export async function downloadJobArtifact(
 
 export const DEFAULT_PROTECTED_HOST =
   process.env.NEXT_PUBLIC_PROTECTED_HOST || "portfolio.nexus-lab.test";
+
+const HOST_RE =
+  /^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*(:\d+)?$/;
+
+/** Strip scheme/path from operator paste → hostname for protected kanal. */
+export function normalizeProtectedHost(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  try {
+    const withScheme = trimmed.includes("://") ? trimmed : `http://${trimmed}`;
+    const u = new URL(withScheme);
+    return u.host.toLowerCase();
+  } catch {
+    return trimmed.replace(/^https?:\/\//i, "").split("/")[0].toLowerCase();
+  }
+}
+
+/** Lab/pilot default: keep DEFAULT_PROTECTED_HOST, or suggest origin hostname. */
+export function deriveProtectedHost(originUrl: string): string {
+  try {
+    const host = new URL(originUrl).hostname.toLowerCase();
+    if (
+      host &&
+      host !== "localhost" &&
+      !/^\d{1,3}(\.\d{1,3}){3}$/.test(host) &&
+      host.includes(".")
+    ) {
+      return host;
+    }
+  } catch {
+    /* fall through */
+  }
+  return DEFAULT_PROTECTED_HOST;
+}
+
+export function validateOriginUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return "Origin URL wajib diisi.";
+  let u: URL;
+  try {
+    u = new URL(trimmed);
+  } catch {
+    return "Origin URL tidak valid. Contoh: https://site-lama.example.com";
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    return "Origin harus http:// atau https://";
+  }
+  if (!u.hostname) return "Origin harus punya hostname.";
+  return null;
+}
+
+export function validateProtectedHost(raw: string): string | null {
+  const host = normalizeProtectedHost(raw);
+  if (!host) return "Protected host wajib (atau biarkan default lab).";
+  if (!HOST_RE.test(host)) {
+    return "Format host tidak valid (contoh: portfolio.nexus-lab.test).";
+  }
+  return null;
+}
+
+export type OnboardKanalResult = {
+  domain: string;
+  target_url: string;
+  protected_host: string;
+  protected_url: string;
+};
+
+/** Register protected host → origin via control-plane POST /api/routes. */
+export async function onboardKanal(params: {
+  originUrl: string;
+  protectedHost: string;
+}): Promise<OnboardKanalResult> {
+  const originErr = validateOriginUrl(params.originUrl);
+  if (originErr) throw new Error(originErr);
+  const host = normalizeProtectedHost(params.protectedHost) || DEFAULT_PROTECTED_HOST;
+  const hostErr = validateProtectedHost(host);
+  if (hostErr) throw new Error(hostErr);
+
+  const tokenRes = await fetch(gatewayURL("/api/csrf-token"), {
+    credentials: "include",
+  });
+  const { csrf_token } = tokenRes.ok
+    ? await tokenRes.json()
+    : { csrf_token: "" };
+
+  const res = await fetch(gatewayURL("/api/routes"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrf_token ? { "X-CSRF-Token": csrf_token } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      domain: host,
+      target_url: params.originUrl.trim(),
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      (data as { message?: string }).message ||
+        `Onboard gagal (HTTP ${res.status})`
+    );
+  }
+  const domain =
+    (data as { domain?: string; protected_host?: string }).protected_host ||
+    (data as { domain?: string }).domain ||
+    host;
+  const target =
+    (data as { target_url?: string }).target_url || params.originUrl.trim();
+  return {
+    domain,
+    target_url: target,
+    protected_host: domain,
+    protected_url: `http://${domain}`,
+  };
+}

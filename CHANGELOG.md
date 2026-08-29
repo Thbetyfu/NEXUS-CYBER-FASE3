@@ -6,6 +6,12 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Added
+- **Operator Onboard kanal (pilot):** di Operator GaaS Console — tempel origin URL (http/https) + protected host opsional → `POST /api/routes` mendaftarkan WAF route + `domain_subscriptions` / Domain Switcher; UI menampilkan protected URL vs origin. Bukan self-serve CNAME massal / Midtrans. Origin privat lab butuh `NEXUS_ALLOW_PRIVATE_ORIGINS=true`.
+
+### Fixed
+- Gateway: origin reverse-proxy dinormalisasi ke URL absolut `http(s)://` (`NormalizeProxyOrigin`) di router + PACS auto-seed — hindari OriginIP bare `127.0.0.1` yang merusak `url.Parse` / tunnel pilot.
+
 ### Changed
 - **SOC → Operator GaaS saja:** kokpit `:3001` fokus kanal, antrian L0/L1, Job Cowork, artefak MD/JSON. **Dihapus** dari UI/kode dashboard: War Room, Defense Matrix, MTD Audit, Licensing SaaS, AI Cortex/Nechat, NEX-AI monitor window (+ API `/api/wargame`, `/api/license`). Ban dialog tanpa klaim XDP. Next rewrite `/api` = `fallback` agar `/api/gaas`, `/api/jobs`… lokal tetap jalan.
 

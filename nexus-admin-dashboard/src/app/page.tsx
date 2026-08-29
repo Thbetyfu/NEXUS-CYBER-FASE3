@@ -890,6 +890,10 @@ const NCCDashboard = () => {
                 metrics={metrics}
                 activeDomain={activeDomain}
                 onOpenOps={toggleWindow}
+                onKanalOnboarded={(result) => {
+                  setRefreshTrigger((prev) => prev + 1);
+                  setActiveDomain(result.protected_host);
+                }}
               />
             </WindowFrame>
           )}
@@ -1162,7 +1166,11 @@ const NCCDashboard = () => {
       />
 
       {/* Modals */}
-      <AddRouteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={() => {}} />
+      <AddRouteModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+      />
     </div>
   )
 }

@@ -27,11 +27,22 @@ func IsDomainActive(domain string) bool {
 	var sub models.DomainSubscription
 	err := database.DB.Where("domain = ?", domain).First(&sub).Error
 	if err != nil {
-		// If domain has never been registered, register it automatically as ACTIVE premium
-		// so that the zero-config integration works seamlessly out of the box!
+		// Auto-register unknown Host for lab stability — keep a real http(s) origin URL
+		// (bare "127.0.0.1" breaks reverse-proxy url.Parse / tunnel pilots).
+		origin := strings.TrimSpace(os.Getenv("TARGET_BACKEND"))
+		if origin == "" {
+			backendHost := os.Getenv("TARGET_BACKEND_HOST")
+			if backendHost == "" {
+				backendHost = "host.docker.internal"
+			}
+			origin = fmt.Sprintf("http://%s:3001", backendHost)
+		}
+		if normalized, nerr := NormalizeProxyOrigin(origin); nerr == nil {
+			origin = normalized
+		}
 		newSub := models.DomainSubscription{
 			Domain:   domain,
-			OriginIP: "127.0.0.1",
+			OriginIP: origin,
 			IsActive: true,
 			PlanType: "premium",
 		}
@@ -399,6 +410,9 @@ func SeedInitialDomainSubscriptions() {
 	target := os.Getenv("TARGET_BACKEND")
 	if target == "" {
 		target = fmt.Sprintf("http://%s:3001", backendHost)
+	}
+	if normalized, err := NormalizeProxyOrigin(target); err == nil {
+		target = normalized
 	}
 
 	// Hapus seed demo SaaS lama agar tidak muncul di Domain Switcher SOC.
