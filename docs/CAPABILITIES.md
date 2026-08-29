@@ -36,7 +36,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Vault lab | Brute-force password | autoban 5x | Nyata |
 | Abuse / flood | Request berlebih | Token bucket | Nyata (bukan DDoS kernel) |
 | Integritas template | Deface folder terpantau | BLAKE3 + restore RAM | Nyata, scope terbatas |
-| SOC / Operator GaaS Console | Kanal, **onboard origin→protected host**, **workspace-bound** Job L0/L1 + logs/metrics/IP/artefak, ban, CLI, telemetri | `:8081` + cookie · `:3001` | Nyata; internal; GaaS-only UI |
+| SOC / Operator GaaS Console | Kanal, **onboard Origin+host** (tanpa Docker auto UI), **workspace-bound** Job L0/L1 + logs/metrics/IP/artefak, ban, CLI, telemetri | `:8081` + cookie · `:3001` | Nyata; internal; GaaS-only UI |
 | Pager | Setelah autoban | Telegram env | Nyata jika dikonfigurasi |
 | NEX-RED agen | Hygiene HTTP jinak | recon / access / injection-hygiene / reporter | Nyata |
 | Reasoning AI | Opsional | `nex-ai-protect` async | Bergantung Ollama |
@@ -58,7 +58,7 @@ Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). **Defense delta:** `waf_block
 - **Control plane:** SOC path 404 di `:8080`
 - **Satu hostname:** `PROTECTED_HOST` — bukan CNAME massal legacy
 - **Command Center / Operator GaaS Console:** kokpit operator (kanal, **Onboard kanal** via `/api/routes`, Job L0/L1, artefak); Active Workspace mengikat semua jendela wasit ke protected host via WAF; bukan deliverable ke klien; tanpa War Room/MTD/license UI
-- **Onboard kanal (operator):** daftar satu host → origin di gateway; Domain Switcher ikut + auto-bind Job/logs; **bukan** portal pelanggan / CNAME massal / billing
+- **Onboard kanal (operator):** form **Origin URL** + **protected host / custom domain** (opsional, default lab) → `POST /api/routes`; Domain Switcher + Context-Aware auto-bind; DNS/CNAME/tunnel **di luar SOC** (pilot PC+tunnel); **tanpa** auto-provision Docker di UI operator; **bukan** Midtrans / CNAME massal / portal pelanggan. Channel Starter tetap entry terpisah untuk klien tanpa site.
 - **Job target:** UI mengikat `http://{activeDomain}` (via WAF). Host-header override terpisah atas `127.0.0.1:8080` **belum** di-plumb end-to-end di agen HTTP — lab mengandalkan hosts/DNS ke gateway (sama seperti `NEX_RED_LIVE_TARGET=http://PROTECTED_HOST`)
 
 ---

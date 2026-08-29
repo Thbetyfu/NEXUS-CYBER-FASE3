@@ -33,6 +33,8 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 
 Aturan emas: **jangan tunnel-kan control plane** ke internet.
 
+**Onboard kanal (operator):** di SOC hanya mendaftarkan **Origin URL** + **protected host** ke gateway. DNS/CNAME atau tunnel ke hostname publik tetap di PC/Caddy/cloudflared — **bukan** dari form SOC, **bukan** auto-provision Docker untuk klien Cowork. Channel Starter tetap jalur entry terpisah.
+
 ---
 
 ## 3. Checklist operasi PC 24/7

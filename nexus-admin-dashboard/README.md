@@ -8,11 +8,11 @@ Next.js dashboard untuk **operator Nexus** saja — **Operator GaaS Console** (k
 
 ## Yang ada
 
-- **Operator GaaS Console** — kanal aktif, **Onboard kanal** (origin URL → protected host via `POST /api/routes`), antrian L0/L1, Job Cowork, artefak MD/JSON
+- **Operator GaaS Console** — kanal aktif, **Onboard kanal** (Origin URL + protected host via `POST /api/routes`), antrian L0/L1, Job Cowork, artefak MD/JSON
 - Logs, IP/Ban, Terminal, Metrics, Laporan/Artefak
-- Domain/Workspace switcher (refresh setelah onboard)
+- Domain/Workspace switcher (Context-Aware: refresh + auto-bind setelah onboard)
 
-**Onboard kanal (operator pilot):** tempel origin lama → opsional set protected host (default lab `portfolio.nexus-lab.test`) → daftar rute WAF + workspace. Bukan self-serve multi-tenant / billing. Hostname publik (tunnel/Caddy) tetap di luar SOC.
+**Onboard kanal (operator pilot):** form hanya Origin URL + Protected host / custom domain (opsional; default lab `portfolio.nexus-lab.test`) → daftar rute WAF + workspace. DNS/CNAME atau tunnel dikonfigurasi **di luar SOC** (pilot = PC + tunnel). Bukan Midtrans, bukan self-serve CNAME massal, **bukan** auto-provision Docker. Channel Starter tetap pintu entry terpisah untuk klien tanpa site.
 
 ## Stack
 

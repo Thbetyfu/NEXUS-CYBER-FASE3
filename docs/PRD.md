@@ -68,8 +68,8 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 ### 4.4 Command Center / Operator GaaS Console
 
 - Operator internal saja; **bukan** produk yang dijual ke pemilik risiko kanal
-- Default UI: kanal aktif, **Onboard kanal** (origin → protected host via gateway routes), antrian L0/L1, Job Cowork, unduh artefak; lab War Room/MTD/license **dihapus** dari dashboard
-- Onboard = pilot operator (bukan self-serve CNAME / billing pelanggan)
+- Default UI: kanal aktif, **Onboard kanal** (Origin URL + protected host/custom domain via gateway routes), antrian L0/L1, Job Cowork, unduh artefak; lab War Room/MTD/license **dihapus** dari dashboard
+- Onboard = pilot operator (PC+tunnel; DNS di luar SOC; tanpa Docker auto di UI; bukan Midtrans / self-serve CNAME massal). Channel Starter tetap entry terpisah.
 
 ---
 

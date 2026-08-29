@@ -274,16 +274,18 @@ export default function OperatorGaasConsole({
           <Link2 size={14} /> Onboard kanal
         </div>
         <p className="text-[11px] text-teal-500/75 leading-relaxed max-w-3xl">
-          Operator pilot: tempel origin lama/tidak aman → daftar rute WAF → pengunjung memakai{' '}
-          <span className="text-teal-200">protected host</span>. Bukan self-serve CNAME massal /
-          billing. Origin privat (lab) butuh{' '}
+          Form operator: <span className="text-teal-200">Origin URL</span> +{' '}
+          <span className="text-teal-200">protected host / custom domain</span> → daftar rute WAF.
+          DNS/CNAME atau tunnel dikonfigurasi <span className="text-teal-200">di luar SOC</span>{' '}
+          (pilot = PC + tunnel). Bukan Midtrans, bukan self-serve CNAME massal, bukan auto-provision
+          Docker untuk klien Cowork. Origin privat (lab) butuh{' '}
           <code className="text-teal-400/90">NEXUS_ALLOW_PRIVATE_ORIGINS=true</code> di gateway.
         </p>
         <form onSubmit={submitOnboard} className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-bold text-teal-600/90 uppercase tracking-widest mb-1.5">
-                Origin URL (lama / unsafe) *
+                Origin URL *
               </label>
               <input
                 type="url"
@@ -296,7 +298,7 @@ export default function OperatorGaasConsole({
             </div>
             <div>
               <label className="block text-[10px] font-bold text-teal-600/90 uppercase tracking-widest mb-1.5">
-                Protected host (opsional)
+                Protected host / custom domain (opsional)
               </label>
               <input
                 type="text"
@@ -310,7 +312,8 @@ export default function OperatorGaasConsole({
                 className="w-full bg-black/40 border border-teal-500/25 rounded-lg px-3 py-2 text-sm text-teal-50 placeholder:text-gray-600 focus:outline-none focus:border-teal-400/50"
               />
               <p className="mt-1 text-[10px] text-gray-600">
-                Kosong / default lab: {DEFAULT_PROTECTED_HOST}. Publik masih butuh Caddy/tunnel.
+                Default lab: {DEFAULT_PROTECTED_HOST}. Publik tetap butuh DNS/CNAME atau tunnel di
+                luar SOC.
               </p>
             </div>
           </div>
@@ -351,8 +354,9 @@ export default function OperatorGaasConsole({
               </div>
             </div>
             <p className="text-[10px] text-gray-500">
-              Workspace &quot;{lastOnboard.protected_host}&quot; masuk Domain Switcher. Hostname
-              publik (trycloudflare / DNS) tetap dikonfigurasi di luar SOC.
+              Workspace &quot;{lastOnboard.protected_host}&quot; masuk Domain Switcher (Context-Aware
+              auto-bind). DNS/CNAME atau tunnel publik tetap di luar SOC — bukan provisioner dari
+              form ini.
             </p>
           </div>
         )}

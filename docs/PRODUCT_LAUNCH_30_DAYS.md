@@ -55,9 +55,11 @@ Setelah 30 hari, Nexus Cyber dianggap **sudah meluncur sebagai produk tepat guna
 ### Apa yang **tidak** dibangun minggu ini
 
 - Midtrans / webhook fail-closed  
-- Multi-tenant CNAME massal / provisioner  
+- Multi-tenant CNAME massal / provisioner / Docker auto-onboard di SOC  
 - Packaging binary B2G  
-- Fitur SOC baru di luar Job Cowork  
+- Fitur SOC baru di luar Job Cowork (SEO / Safe Browsing / Core Web Vitals FE)  
+
+**Onboard klien Cowork:** operator isi Origin + protected host di SOC; DNS/tunnel di luar — lihat [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md).
 
 ### Checkpoint Minggu 1
 

@@ -222,7 +222,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | Antibody loop (vaccine + replay) | Sudah ada | gateway lab handlers + NEX-RED |
 | Agen recon / access / hygiene / reporter | Sudah ada | NEX-RED `agents/crew.py` |
 | Telegram pager | Sudah ada (env) | gateway |
-| Command Center / Operator GaaS Console | Sudah ada (GaaS-only; **Onboard kanal** operator; lab War Room/MTD/license dihapus dari UI) | `:8081` / `:3001` |
+| Command Center / Operator GaaS Console | Sudah ada (GaaS-only; **Onboard** = origin + protected host; DNS/tunnel di luar SOC; tanpa Docker auto di UI operator; lab War Room/MTD/license dihapus) | `:8081` / `:3001` |
 | Entitas Job + orkestrasi | **Sudah ada** | `NEX-RED/jobs/` + bridge `:3004` |
 | Gerbang L0/L1 produk | **Sudah ada** | `PENDING_APPROVAL` + approve API/CLI |
 | Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` |

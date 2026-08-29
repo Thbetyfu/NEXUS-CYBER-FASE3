@@ -8,13 +8,14 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ### Added
 - **Context-Aware Workspace binding (SOC):** Active Workspace (`activeDomain`) is Single Source of Truth — switching Domain Switcher auto-binds Job Cowork, Forensic Logs, Metrics, IP/Ban, and Artefak/Compliance. Job target badge `Target: [host] (via WAF)`; no free-type raw URL. Global Overwatch (`all`) keeps combined monitoring; Start Job disabled until a workspace is selected. Onboard kanal still auto-selects the new domain (all windows re-bind). Job payload uses lab pattern `http://{protected_host}` (hosts/DNS → WAF); `origin_direct` twin unchanged for defense delta.
-- **Operator Onboard kanal (pilot):** di Operator GaaS Console — tempel origin URL (http/https) + protected host opsional → `POST /api/routes` mendaftarkan WAF route + `domain_subscriptions` / Domain Switcher; UI menampilkan protected URL vs origin. Bukan self-serve CNAME massal / Midtrans. Origin privat lab butuh `NEXUS_ALLOW_PRIVATE_ORIGINS=true`.
+- **Operator Onboard kanal (pilot):** di Operator GaaS Console — form **Origin URL** + **protected host / custom domain** (opsional) → `POST /api/routes` + Domain Switcher; DNS/tunnel di luar SOC; tanpa Docker auto di UI. Bukan Midtrans / CNAME massal. Origin privat lab butuh `NEXUS_ALLOW_PRIVATE_ORIGINS=true`.
 
 ### Fixed
 - Gateway: origin reverse-proxy dinormalisasi ke URL absolut `http(s)://` (`NormalizeProxyOrigin`) di router + PACS auto-seed — hindari OriginIP bare `127.0.0.1` yang merusak `url.Parse` / tunnel pilot.
 - Dashboard SOC: perbaikan transisi state pada `SocAuthGate.tsx` dengan AbortController + timeout 2 detik untuk mencegah UI stuck di layar "VERIFYING OPERATOR SESSION..." akibat race condition StrictMode pada Next.js Turbopack; penambahan `allowedDevOrigins` pada `next.config.ts`.
 
 ### Changed
+- **Onboard kanal FE (operator):** form hanya **Origin URL** + **Protected host / custom domain** (opsional, default lab). Copy jujur: DNS/CNAME atau tunnel di luar SOC; pilot = PC+tunnel; bukan Midtrans / self-serve CNAME massal. **Dihapus** checkbox Auto-Provision Docker dari `AddRouteModal` (Domain Switcher) — API gateway `target_url: "auto"` tetap ada untuk lab, tidak diekspos di jalur operator Cowork. Channel Starter tetap pintu entry terpisah (bukan dihapus). Context-Aware Workspace / auto-select setelah onboard tetap.
 - **SOC → Operator GaaS saja:** kokpit `:3001` fokus kanal, antrian L0/L1, Job Cowork, artefak MD/JSON. **Dihapus** dari UI/kode dashboard: War Room, Defense Matrix, MTD Audit, Licensing SaaS, AI Cortex/Nechat, NEX-AI monitor window (+ API `/api/wargame`, `/api/license`). Ban dialog tanpa klaim XDP. Next rewrite `/api` = `fallback` agar `/api/gaas`, `/api/jobs`… lokal tetap jalan.
 - **UI & Taskbar Polish:** menghapus badge redundan `TEPI ENFORCED` pada Taskbar, menghilangkan artefak/garis scrollbar, menyelaraskan tata letak tombol aplikasi dengan active indicator `teal`, serta merapikan ukuran dan batas vertikal Desktop Icons agar tidak bertabrakan dengan Taskbar.
 
