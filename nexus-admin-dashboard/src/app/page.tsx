@@ -270,22 +270,22 @@ interface DesktopIconProps {
 // Sub-component: Desktop Icon (Memoized for 60 FPS)
 const DesktopIcon = React.memo(({ id, label, icon: Icon, onClick, isOpen }: DesktopIconProps) => (
   <motion.button
-    whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+    whileHover={{ scale: 1.05, backgroundColor: "rgba(20, 184, 166, 0.08)" }}
     whileTap={{ scale: 0.95 }}
     onClick={() => onClick(id)}
-    className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-colors group w-24 ${
-      isOpen ? "bg-blue-500/5" : ""
+    className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all group w-20 ${
+      isOpen ? "bg-teal-500/10 shadow-[0_0_12px_rgba(20,184,166,0.15)]" : ""
     }`}
   >
-    <div className={`w-12 h-12 flex items-center justify-center rounded-2xl border transition-all ${
+    <div className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${
       isOpen 
-        ? "bg-blue-500/20 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]" 
-        : "bg-black/40 border-gray-800/50 group-hover:border-blue-500/30"
+        ? "bg-teal-500/20 border-teal-400/50 shadow-[0_0_15px_rgba(20,184,166,0.3)] text-teal-300" 
+        : "bg-black/50 border-gray-800/60 group-hover:border-teal-500/40 text-gray-400 group-hover:text-teal-300"
     }`}>
-      <Icon size={24} className={isOpen ? "text-blue-400" : "text-gray-400 group-hover:text-blue-300"} />
+      <Icon size={20} className={isOpen ? "text-teal-400" : "text-gray-400 group-hover:text-teal-300"} />
     </div>
-    <span className={`text-[10px] font-bold uppercase tracking-widest text-center ${
-      isOpen ? "text-blue-200" : "text-gray-500 group-hover:text-gray-300"
+    <span className={`text-[9px] font-mono font-bold uppercase tracking-wider text-center leading-tight line-clamp-2 ${
+      isOpen ? "text-teal-200" : "text-gray-400 group-hover:text-gray-200"
     }`}>
       {label}
     </span>
@@ -815,7 +815,7 @@ const NCCDashboard = () => {
       <main className="absolute inset-0 top-10 bottom-14 overflow-hidden p-6 z-10">
         
         {/* Desktop Icons — GaaS operator only */}
-        <div className="absolute top-8 left-8 flex flex-col gap-2 z-0">
+        <div className="absolute top-4 left-6 flex flex-col flex-wrap max-h-[calc(100vh-130px)] gap-1.5 z-0">
           <DesktopIcon
             id="operator-gaas"
             label="GaaS Console"

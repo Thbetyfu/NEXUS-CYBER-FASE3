@@ -11,9 +11,11 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ### Fixed
 - Gateway: origin reverse-proxy dinormalisasi ke URL absolut `http(s)://` (`NormalizeProxyOrigin`) di router + PACS auto-seed — hindari OriginIP bare `127.0.0.1` yang merusak `url.Parse` / tunnel pilot.
+- Dashboard SOC: perbaikan transisi state pada `SocAuthGate.tsx` dengan AbortController + timeout 2 detik untuk mencegah UI stuck di layar "VERIFYING OPERATOR SESSION..." akibat race condition StrictMode pada Next.js Turbopack; penambahan `allowedDevOrigins` pada `next.config.ts`.
 
 ### Changed
 - **SOC → Operator GaaS saja:** kokpit `:3001` fokus kanal, antrian L0/L1, Job Cowork, artefak MD/JSON. **Dihapus** dari UI/kode dashboard: War Room, Defense Matrix, MTD Audit, Licensing SaaS, AI Cortex/Nechat, NEX-AI monitor window (+ API `/api/wargame`, `/api/license`). Ban dialog tanpa klaim XDP. Next rewrite `/api` = `fallback` agar `/api/gaas`, `/api/jobs`… lokal tetap jalan.
+- **UI & Taskbar Polish:** menghapus badge redundan `TEPI ENFORCED` pada Taskbar, menghilangkan artefak/garis scrollbar, menyelaraskan tata letak tombol aplikasi dengan active indicator `teal`, serta merapikan ukuran dan batas vertikal Desktop Icons agar tidak bertabrakan dengan Taskbar.
 
 
 ### Added

@@ -127,6 +127,7 @@ share/python-wheels/
 *.crt
 
 # Project Specific
+logs/
 nexus_traffic.log
 financial.db
 vulnerable-financial-api/financial.db

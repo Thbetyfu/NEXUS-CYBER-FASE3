@@ -12,22 +12,36 @@ export default function SocAuthGate({ children }: { children: React.ReactNode })
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    let active = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      if (active) setState("login");
+    }, 2000);
+
     (async () => {
       try {
-        const res = await fetch(gatewayURL("/api/ai/status"), { credentials: "include", cache: "no-store" });
-        if (cancelled) return;
+        const res = await fetch(gatewayURL("/api/ai/status"), {
+          credentials: "include",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        if (!active) return;
         if (res.status === 401) {
           setState("login");
           return;
         }
         setState("ok");
       } catch {
-        if (!cancelled) setState("login");
+        clearTimeout(timeoutId);
+        if (active) setState("login");
       }
     })();
+
     return () => {
-      cancelled = true;
+      active = false;
+      clearTimeout(timeoutId);
+      controller.abort();
     };
   }, []);
 
