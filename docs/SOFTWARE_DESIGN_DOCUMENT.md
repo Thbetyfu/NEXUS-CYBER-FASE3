@@ -17,7 +17,7 @@ Sistem Nexus Cyber memisahkan **Data Plane** (WAF Gateway Go) dan **Control Plan
 
 Komponen utama (legacy desain):
 
-1.  **Reverse Proxy & Router Layer**:
+1.  **Reverse Proxy & Router Layer**: WAF `:8080` + golden GET cache RAM (HTTPS origin / env); bukan CDN.
 2.  **MTD Port Shuffler**: Goroutine independen yang memantau waktu rotasi port target, menghitung port acak menggunakan CSPRNG, dan menginstruksikan router proxy untuk mengubah alamat target secara dinamis.
 3.  **Active Deception Modules**:
     *   **HTTP Honeypot**: Server HTTP independen yang berjalan di port `:9090` untuk mendeteksi penyerang web scanning.
@@ -173,23 +173,23 @@ Diagram ini menjelaskan siklus periodik monitor integritas visual web yang memul
 sequenceDiagram
     autonumber
     actor Attacker as Peretas
-    participant Disk as Web Server Disk (templates/)
-    participant Monitor as IntegrityMonitor (Go goroutine)
-    participant RAM as Baseline RAM Cache (Steril SHA-256)
-    participant Log as Telemetry Log
+    participant Disk as Disk folder terpantau (lab: Portofolio-Thoriq)
+    participant Monitor as IntegrityMonitor (fsnotify + poll)
+    participant Pin as Snapshot pin BLAKE3
+    participant Log as Telemetry + Telegram pager
 
-    Attacker->>Disk: Unggah webshell / modifikasi index.html (Defacement)
+    Attacker->>Disk: Deface / hapus file / unggah berkas liar
     
-    loop Siklus Monitor Integritas (Setiap 2 Detik)
-        Monitor->>Disk: Pindai direktori terpantau & hitung hash BLAKE3
-        Monitor->>RAM: Bandingkan hash dengan RAM baseline steril
-        alt Terdeteksi ketidakcocokan hash (Modifikasi/Deface)
-            Monitor->>RAM: Salin ulang file visual steril asli dari RAM
-            Monitor->>Disk: Tulis ulang file steril asli ke disk (Instant Rollback ~600µs)
-            Monitor->>Log: Catat kejadian REPAIR_MODULE ke logs
-        else Terdeteksi file tidak dikenal (Anti-Webshell)
-            Monitor->>Disk: Hapus file ilegal (Webshell) dari disk
-            Monitor->>Log: Catat penghapusan file ilegal
+    loop Event fsnotify (cadangan poll 2s) — origin tidak di-restart
+        Monitor->>Disk: Hash BLAKE3
+        Monitor->>Pin: Bandingkan dengan snapshot pin
+        alt Hash ≠ pin (modifikasi/hapus)
+            Monitor->>Pin: Isi file dari snapshot
+            Monitor->>Disk: Tulis ulang (situs tetap dilayani)
+            Monitor->>Log: REPAIRING + pager jika TELEGRAM_* ada
+        else Berkas tidak ada di pin
+            Monitor->>Disk: Hapus berkas liar
+            Monitor->>Log: UNAUTHORIZED_FILE + pager
         end
     end
 ```

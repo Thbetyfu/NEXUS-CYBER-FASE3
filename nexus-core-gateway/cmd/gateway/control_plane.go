@@ -44,6 +44,7 @@ func registerAdminMux(gateway *proxy.NexusProxy, telemetry *logger.Logger, shuff
 	mux.HandleFunc("/api/report/generate", proxy.RequirePOST(reportGenerateHandler(telemetry)))
 	mux.HandleFunc("/api/stream/threats", threatsStreamHandler(gateway))
 	mux.HandleFunc("/api/ip-monitoring", ipMonitoringHandler(telemetry))
+	mux.HandleFunc("/api/incidents/digest", incidentDigestHandler())
 	mux.HandleFunc("/api/blacklist", blacklistListHandler())
 	mux.HandleFunc("/api/blacklist/ban", proxy.RequirePOST(blacklistBanHandler(telemetry)))
 	mux.HandleFunc("/api/blacklist/unban", proxy.RequirePOST(blacklistUnbanHandler(telemetry)))
@@ -70,6 +71,7 @@ func systemResetHandler(gateway *proxy.NexusProxy, telemetry *logger.Logger) htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		telemetry.ResetAll()
 		gateway.ResetAntibodies()
+		gateway.PurgeGoldenGETCache()
 		if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
 			ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 			defer cancel()

@@ -74,7 +74,7 @@ Model dasar Qwen2.5-3B *out-of-the-box* tidak cocok untuk produksi karena:
 Mitigasi dan perbaikan bug/celah keamanan harus bersifat otonom tanpa intervensi manual admin.
 1. **Recursive Self-Repair**: Menulis skrip perbaikan mandiri.
 2. **Virtual Patching Otonom**: Patching otonom terhadap ancaman baru. Antibodi yang dipelajari dari serangan zero-day yang berhasil terdeteksi oleh Otak Kanan (`nex-ai-protect`) secara otomatis divaksinasikan ke Otak Kiri (Reflex Layer) via `np.AddAntibody(payload)`.
-3. **Instant Rollback**: Jika baseline sistem berubah, rollback dilakukan dalam hitungan milidetik (*Zero-Downtime*).
+3. **Instant Rollback**: Deface di folder terpantau dikembalikan dari **snapshot pin** (fsnotify + poll) tanpa mematikan origin. Snapshot rusak ≠ re-baseline dari disk rusak. Bukan PITR database.
 
 ---
 

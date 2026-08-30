@@ -92,12 +92,46 @@ func main() {
 	}
 	defer telemetry.Close()
 
-	// Initialize System Integrity Monitor (Phase 8)
+	var gateway *proxy.NexusProxy
+
+	// Integrity monitor: pin snapshot + fsnotify restore (origin stays up).
 	monitoredDir := os.Getenv("INTEGRITY_MONITORED_DIR")
 	if monitoredDir == "" {
-		monitoredDir = "../Portfolio-website"
+		monitoredDir = "../playground/Portofolio-Thoriq"
 	}
-	integrityMonitor, err := repair.NewIntegrityMonitor(monitoredDir, telemetry)
+	integrityMonitor, err := repair.NewIntegrityMonitorWithOptions(repair.Options{
+		MonitoredDir: monitoredDir,
+		BaselinePath: os.Getenv("INTEGRITY_BASELINE_PATH"),
+		Telemetry:    telemetry,
+		Repin:        os.Getenv("INTEGRITY_REPIN") == "1",
+		OnAlert: func(msg string) {
+			if gateway != nil {
+				gateway.PurgeGoldenGETCache()
+			}
+			host := strings.TrimSpace(os.Getenv("PROTECTED_HOST"))
+			if host == "" {
+				host = "lab"
+			}
+			sample := msg
+			if len(sample) > 240 {
+				sample = sample[:240]
+			}
+			telemetry.LogTraffic(logger.TelemetryLog{
+				Timestamp:     time.Now(),
+				SourceIP:      "self-heal",
+				Endpoint:      "/integrity",
+				Method:        "FILE",
+				Status:        "BLOCKED",
+				ThreatDetail:  "INTEGRITY_RESTORE",
+				TargetDomain:  host,
+				PayloadSample: sample,
+			})
+			if database.ActiveThreatReporter == nil {
+				return
+			}
+			_ = database.ActiveThreatReporter.ReportThreat("self-heal", []int{15}, fmt.Sprintf("[%s] %s", host, msg))
+		},
+	})
 	if err != nil {
 		log.Printf("[SELF-HEAL-WARN] Integrity monitor initialization failed: %v", err)
 	} else {
@@ -197,8 +231,6 @@ func main() {
 		fmt.Sscanf(target[idx+1:], "%d", &targetPort)
 	}
 
-	var gateway *proxy.NexusProxy
-
 	shuffler := mtd.NewTopologyShuffler(
 		backendHost,       // baseHost
 		[]int{targetPort}, // portPool dinamis sesuai port backend
@@ -227,10 +259,13 @@ func main() {
 		log.Fatalf("[NEXUS] Failed to initiate proxy: %v", err)
 	}
 
-	// Sync active routes from PostgreSQL to Redis / Cache on boot
+	// Sync active routes from PostgreSQL to Redis / Cache on boot.
+	// Seed upserts lab aliases first; re-bind after sync so a leftover
+	// domain_subscriptions OriginIP cannot split named-host vs loopback.
 	if err := gateway.Router.SyncFromDatabase(); err != nil {
 		log.Printf("[NEXUS-WARN] Failed to sync dynamic routes from database: %v", err)
 	}
+	proxy.BindLabInstanceOrigin(gateway.Router, target)
 
 	// 7. Chain: BrowserIntegrity -> TokenBucket -> NexusProxy (defense-in-depth)
 	gatewayHandler := proxy.BrowserIntegrityCheck(rateLimiter.HTTPMiddleware(gateway))

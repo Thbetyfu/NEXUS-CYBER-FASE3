@@ -25,8 +25,8 @@ def _tag(findings: List[VulnerabilityFinding], name: str) -> List[VulnerabilityF
     return findings
 
 
-def recon(target_url: str) -> AgentOutcome:
-    mapper = SurfaceMapper(target_url)
+def recon(target_url: str, protected_host: str | None = None) -> AgentOutcome:
+    mapper = SurfaceMapper(target_url, protected_host=protected_host)
     findings = _tag(mapper.map(), "recon")
     return AgentOutcome(
         name="recon",
@@ -41,8 +41,8 @@ def recon(target_url: str) -> AgentOutcome:
     )
 
 
-def injection_hygiene(target_url: str, paths: Iterable[str]) -> AgentOutcome:
-    prober = DynamicBlackboxProber(target_url)
+def injection_hygiene(target_url: str, paths: Iterable[str], protected_host: str | None = None) -> AgentOutcome:
+    prober = DynamicBlackboxProber(target_url, protected_host=protected_host)
     findings = _tag(prober.run_dynamic_suite(paths), "injection-hygiene")
     return AgentOutcome(
         name="injection-hygiene",
@@ -60,9 +60,12 @@ def access(
     scan_id: str,
     *,
     enable_llm: bool = False,
+    protected_host: str | None = None,
 ) -> AgentOutcome:
     checks = plan_live_checks(list(hypotheses), list(paths), enable_llm=enable_llm)
-    findings, ran, mitigated = execute_live_checks(target_url, checks)
+    findings, ran, mitigated = execute_live_checks(
+        target_url, checks, protected_host=protected_host
+    )
     _tag(findings, "access")
     extra = {
         "live_checks_run": ran,
@@ -79,7 +82,9 @@ def access(
         extra["antibody_loop_ok"] = antibody_loop_ok(findings)
     if config.enable_browser:
         workspace = Path(config.workspaces_dir) / scan_id
-        browser_findings, browser_ran = execute_browser_checks(target_url, workspace)
+        browser_findings, browser_ran = execute_browser_checks(
+            target_url, workspace, protected_host=protected_host
+        )
         _tag(browser_findings, "access")
         findings.extend(browser_findings)
         ran += browser_ran

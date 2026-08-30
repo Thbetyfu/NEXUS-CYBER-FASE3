@@ -1,6 +1,6 @@
 # Panduan Unit Testing & Verifikasi — Nexus Cyber
 
-**Pembaruan:** 2026-08-22  
+**Pembaruan:** 2026-08-30  
 **Model produk:** [docs/PRODUCT_MODEL.md](docs/PRODUCT_MODEL.md) — GaaS Edge Antibody Cowork. Pengujian di bawah ini mengcover **mesin gateway + lab**; orkestrasi **Job Cowork** ada di `NEX-RED/tests/test_job_cowork.py`.
 
 ---
@@ -12,6 +12,8 @@ Backend Go di `nexus-core-gateway` — paket utama:
 | Paket | Fokus uji |
 | --- | --- |
 | `internal/proxy` | CSRF, middleware, dynamic router, PACS (obfuskasi — bukan enkripsi) |
+| `pkg/logger` | Telemetri, rantai audit, `NormalizeTargetHost`, persist `target_domain` |
+| `internal/database` | Job Cowork PG + digest insiden `threat_logs` + ban `intel_blacklist` selamat restart |
 | `internal/repair` | Integrity monitor BLAKE3, restore folder terpantau |
 | `internal/rasp` | RASP monitor (jika modul aktif di build) |
 | `cmd/gateway` | Handlers lab (vault autoban), CLI, webhook (**ditunda** produksi) |
@@ -20,15 +22,24 @@ Backend Go di `nexus-core-gateway` — paket utama:
 
 - **`TestCsrfShield`:** GET set cookie; POST tanpa token → 403; POST dengan token cocok → 200; bypass rute lab (`/api/verify-session`).
 - **`TestDynamicRouterWildcardAndFallback`:** satu `PROTECTED_HOST` / wildcard lab — **bukan** multi-tenant massal legacy.
+- **ROUTER-SYNC origin:** `TestSeedUpsertsStaleLabOriginToVercel`, `TestNamedHostAndLoopbackAgreeAfterRouterSync_*` — leftover `127.0.0.1:3001` tidak menimpa Vercel; START-OFFLINE tetap `portfolio:3002`.
+- **Lab session vs PoW:** `TestBrowserIntegrity_NamedHostWithoutSessionIsPoW` (pengunjung tetap challenge); `TestVerifySession_LabTokenMintsSession` / fail-closed env kosong. Bukan skip PoW publik.
+- **ROUTER-SYNC origin bind:** `TestSeedUpsertsStaleLabOriginToVercel` / `ToOfflinePortfolio`; `TestNamedHostAndLoopbackAgreeAfterRouterSync_Vercel` / `_Offline`; `TestRouterSyncWithoutRebindSplitsHosts` — leftover `127.0.0.1:3001` tidak membagi named-host vs loopback; host onboard ekstra tidak diubah.
+- **Degradasi Redis → antibodi RAM:** `TestProxy_AntibodyHoldsWhenRedisDisabled`, `TestProxy_AntibodyHoldsAfterRedisNil`, `TestProxy_AntibodyHoldsWithDeadRedisClient`, `TestProxy_AntibodyHoldsOnPOSTBodyWhenRedisDown` — token lab di query/body → **403**, origin dummy tidak dipanggil. `TestProxy_NoAntibodyReachesOrigin` — tanpa match → 200 origin. `TestProxy_AddAntibody_DegradedMode` — store RAM tanpa panic.
+- **Golden GET cache:** `TestGoldenGET_MissThenHit`, stale-if-5xx, skip `/api`/sesi/`Set-Cookie`/`private`, default HTTPS-only. `NEXUS_GOLDEN_GET_CACHE=0/1` override.
 - **PACS:** obfuskasi HTML — jangan klaim enkripsi enterprise di laporan uji.
 
 ### 1.2 Self-repair (`internal/repair`)
 
-- **`TestIntegrityMonitorRestoreAndPurge`:** modifikasi/hapus file baseline → restore; file ilegal → purge. **Hanya** folder yang dikonfigurasi.
+- **`TestIntegrityMonitorRestoreAndPurge`:** deface/hapus → restore; file liar → purge. **`TestIntegrityPinSurvivesRestartWithoutRebaseline`:** pin selamat “restart”. **`TestIntegrityAlertOnRestore`:** hook pager. **`TestUploadsDirIsNotPurged`:** foto di `uploads/` tidak dihapus.
 
 ### 1.3 Gateway handlers (`cmd/gateway`)
 
 - **`TestRewardUnlockAutoban`:** 5× password salah → ban; unban + password benar → reward link.
+- **`TestIncidentDigestRequiresWorkspace`:** `domain=all` / tanpa domain → 400.
+- **`TestQueryIncidentDigestFiltersByDomain`:** digest SQLite hanya host yang diminta; markdown tanpa payload.
+- **Ban selamat restart:** `TestBanSurvivesRestartViaDBWhenRAMEmpty` (RAM kosong → masih match lewat DB), `TestBanSurvivesRestartViaHydrateRAM` (hydrate lalu DB nil → RAM menahan), permanen / kedaluwarsa / unban. SQLite in-memory, bukan klaim Postgres produksi terhubung di CI.
+- **`TestNormalizeTargetHost` / `TestCryptographicAuditTrail`:** host tanpa port tersimpan di ThreatLog.
 - **`TestPaymentWebhookHandler`:** ada di kode uji — **pembayaran otomatis legacy ditunda**; jangan anggap produk jual aktif.
 - **`TestValidateDomainHandler`:** validasi domain untuk TLS ask — satu instance, bukan provisioner per tenant.
 
@@ -39,7 +50,7 @@ Backend Go di `nexus-core-gateway` — paket utama:
 Dari `nexus-core-gateway`:
 
 ```bash
-go test -v ./internal/proxy ./internal/repair ./cmd/gateway
+go test -v ./internal/proxy ./internal/repair ./internal/database ./pkg/logger ./cmd/gateway
 ```
 
 Paket tertentu:
@@ -47,6 +58,8 @@ Paket tertentu:
 ```bash
 go test -v ./internal/proxy
 go test -v ./internal/repair
+go test -v ./internal/database
+go test -v ./pkg/logger
 go test -v ./cmd/gateway
 ```
 
@@ -62,7 +75,7 @@ python NEX-RED/nexred.py scan -u http://127.0.0.1 -r . -m hybrid --no-llm
 
 Label wasit: `waf_blocked`, `origin_open`, `both_held`, `replay_missed`, `antibody_learned`. Detail: [NEX-RED/README.md](NEX-RED/README.md).
 
-**Job Cowork end-to-end:** `python -m unittest tests.test_job_cowork` (+ lab bridge `:3004` untuk UI).
+**Job Cowork end-to-end:** `python -m unittest tests.test_job_cowork tests.test_waf_bind tests.test_browser` (+ lab bridge `:3004` untuk UI). Host-header: TCP ke gateway + `Host: {protected_host}` tanpa file hosts. Browser: Chromium `--host-resolver-rules=MAP` ke IP WAF; missing Chromium = skip `sast_only` (bukan crash). PoW tanpa `NEX_RED_LAB_SESSION_TOKEN` = `sast_only`; token lab → `POST /api/verify-session` (bukan bypass pengunjung).
 
 ---
 

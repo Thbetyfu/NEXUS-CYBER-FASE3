@@ -28,6 +28,17 @@ func (np *NexusProxy) writeAntibodyCountHeader(w http.ResponseWriter) {
 	w.Header().Set("X-Nexus-Antibody-Count", strconv.Itoa(np.AntibodyCount()))
 }
 
+// writeVirtualPatchDrop returns HTTP 403 for a Layer 1 antibody match.
+// Origin is never contacted. Redis is not required — patches live in RAM first.
+func (np *NexusProxy) writeVirtualPatchDrop(w http.ResponseWriter) {
+	if np != nil {
+		np.writeAntibodyCountHeader(w)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusForbidden)
+	_, _ = w.Write([]byte(`{"status":"blocked","layer":"virtual-patch"}`))
+}
+
 // AntibodySignalHandler is the lab-safe public GET. Count only — never patch strings.
 func AntibodySignalHandler(np *NexusProxy) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

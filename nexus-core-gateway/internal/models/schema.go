@@ -50,6 +50,7 @@ type ThreatLog struct {
 	LatencyMs     int    `gorm:"type:int"` // Latensi pemrosesan internal gateway
 	PrevHash      string `gorm:"type:varchar(64);index"` // Hash entri log sebelumnya
 	Hash          string `gorm:"type:varchar(64);index"` // Hash SHA-256 entri log ini
+	TargetDomain  string `gorm:"type:varchar(255);index"` // Protected host (tanpa port) — filter workspace
 }
 
 // MTDAuditTrail memetakan tabel `mtd_audit_trail` untuk merekam rotasi konfigurasi pertahanan dinamis (MTD).

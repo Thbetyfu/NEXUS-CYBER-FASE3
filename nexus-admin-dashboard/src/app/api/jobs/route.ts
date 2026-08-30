@@ -16,8 +16,8 @@ function normalizeHost(raw: unknown): string {
 }
 
 /**
- * Resolve Job target: always WAF-bound protected host URL when workspace is set.
- * Pattern matches lab NEX_RED_LIVE_TARGET=http://{PROTECTED_HOST} (hosts/DNS → gateway).
+ * Resolve Job target: WAF-bound protected host URL when workspace is set.
+ * NEX-RED connects to the gateway IP and sends Host: {protected_host} (no hosts file).
  * Does not aim at raw customer origin — NEX-RED still uses NEX_RED_ORIGIN_DIRECT for delta.
  */
 function resolveJobTarget(body: {

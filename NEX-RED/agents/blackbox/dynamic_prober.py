@@ -12,16 +12,20 @@ from urllib.parse import urljoin
 
 import requests
 
+from agents.runtime.waf_bind import bind_waf_edge
 from core.config import config
 from core.types import Evidence, FindingSeverity, FindingSource, VulnerabilityFinding
 
 
 class DynamicBlackboxProber:
-    def __init__(self, target_url: str, timeout: int = 10):
-        self.target_url = target_url.rstrip("/")
+    def __init__(self, target_url: str, timeout: int = 10, protected_host: str | None = None):
+        bound, extra = bind_waf_edge(target_url, protected_host)
+        self.target_url = bound
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": config.user_agent})
+        if extra:
+            self.session.headers.update(extra)
         self.findings: List[VulnerabilityFinding] = []
         self.total_probes: int = 0
         self.mitigated_by_nexus: int = 0

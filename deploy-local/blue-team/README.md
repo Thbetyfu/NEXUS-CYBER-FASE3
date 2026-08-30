@@ -16,7 +16,7 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 5. Biarkan hotspot dan Docker tetap nyala sampai sesi selesai.
 6. Double-click **`STOP.bat`** untuk mematikan.
 
-`START-OFFLINE.bat` sama, tetapi origin-nya folder `playground/Portofolio-Thoriq` (tanpa Vercel).
+`START-OFFLINE.bat` sama, tetapi origin-nya folder `playground/Portofolio-Thoriq` (tanpa Vercel). Self-heal live: `dist/` di-bind ke container; deface `dist/index.html` harus kembali di situs tanpa restart origin.
 
 ## Kode + model: hard disk, bukan GitHub
 

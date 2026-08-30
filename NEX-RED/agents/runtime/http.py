@@ -8,6 +8,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 
+from agents.runtime.waf_bind import bind_waf_edge
 from core.config import config
 from sandbox.policy import is_url_allowed
 
@@ -31,11 +32,25 @@ def _join(base: str, path: str) -> str:
 
 
 class SafeHttpClient:
-    def __init__(self, target_url: str, timeout: int = 10):
-        self.target_url = target_url.rstrip("/")
+    def __init__(
+        self,
+        target_url: str,
+        timeout: int = 10,
+        *,
+        protected_host: str | None = None,
+        bind_edge: bool = True,
+    ):
+        bound, extra = bind_waf_edge(target_url, protected_host, edge=bind_edge)
+        self.logical_url = target_url.rstrip("/")
+        self.target_url = bound
         self.timeout = timeout
+        self._bind_edge = bind_edge
+        self._protected_host = protected_host
+        self._host_headers = extra
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": config.user_agent})
+        if extra:
+            self.session.headers.update(extra)
 
     def request(
         self,
@@ -44,7 +59,12 @@ class SafeHttpClient:
         json_body: Optional[Mapping[str, Any]] = None,
         headers: Optional[Mapping[str, str]] = None,
     ) -> HttpEvidence:
-        url = path if path.startswith("http") else _join(self.target_url, path)
+        if path.startswith("http"):
+            url, extra = bind_waf_edge(path, self._protected_host, edge=self._bind_edge)
+        else:
+            url = _join(self.target_url, path)
+            extra = self._host_headers
+        merged = {**extra, **(dict(headers) if headers else {})}
         if not is_url_allowed(url, self.target_url):
             return HttpEvidence(method=method.upper(), url=url, status=None, nexus_header=False, error="host_not_allowed")
         try:
@@ -52,7 +72,7 @@ class SafeHttpClient:
                 method.upper(),
                 url,
                 json=dict(json_body) if json_body else None,
-                headers=dict(headers) if headers else None,
+                headers=merged or None,
                 timeout=self.timeout,
                 allow_redirects=False,
             )

@@ -39,7 +39,7 @@ export default function JobCoworkWidget({
   activeDomain,
 }: JobCoworkWidgetProps) {
   const [jobs, setJobs] = useState<CoworkJob[]>([]);
-  const [title, setTitle] = useState('Weekly wasit');
+  const [title, setTitle] = useState('Wasit mingguan');
   const [autonomy, setAutonomy] = useState<'L0' | 'L1'>('L0');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,18 +110,18 @@ export default function JobCoworkWidget({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to start job');
+      if (!res.ok) throw new Error(data.error || 'Gagal memulai Job');
       await refresh();
-    }, 'Job start failed');
+    }, 'Gagal memulai Job');
 
   const approveJob = (jobId: string) =>
     runBusy(async () => {
       await approveCoworkJob(jobId, 'command-center');
       await refresh();
-    }, 'Approve failed');
+    }, 'Approve gagal');
 
   const downloadArtifact = (jobId: string, format: ArtifactFormat) =>
-    runBusy(() => downloadJobArtifact(jobId, format), 'Download failed');
+    runBusy(() => downloadJobArtifact(jobId, format), 'Unduh gagal');
 
   const workspaceJobs =
     globalMode
@@ -148,12 +148,12 @@ export default function JobCoworkWidget({
               : 'text-lg font-bold text-emerald-300'
           }
         >
-          {compact ? 'Job Cowork — jalankan siklus' : 'Job Cowork — GaaS Wasit'}
+          {compact ? 'Job Cowork — jalankan siklus' : 'Job Cowork — wasit GaaS'}
         </h3>
         <p className={compact ? 'text-[11px] text-emerald-500/70' : 'text-xs text-emerald-500/80'}>
           {compact
-            ? `storage: ${storage}`
-            : `Alur B: ukur → gerbang L0/L1 → tutup jujur · storage: ${storage}`}
+            ? `penyimpanan: ${storage}`
+            : `Alur B: ukur → gerbang L0/L1 → tutup jujur · penyimpanan: ${storage}`}
         </p>
       </div>
 
@@ -178,7 +178,7 @@ export default function JobCoworkWidget({
           className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1 text-emerald-200 md:col-span-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Job title"
+          placeholder="Judul Job"
         />
         <select
           className="bg-black/40 border border-emerald-500/30 rounded px-2 py-1"
@@ -198,14 +198,14 @@ export default function JobCoworkWidget({
         title={
           globalMode
             ? 'Pilih workspace di Domain Switcher (bukan Global Overwatch)'
-            : `Start Job → ${wafTarget}`
+            : `Mulai Job → ${wafTarget}`
         }
       >
         {loading
-          ? 'Running…'
+          ? 'Menjalankan…'
           : globalMode
             ? 'Pilih workspace untuk Start Job'
-            : 'Start Job Cowork'}
+            : 'Mulai Job Cowork'}
       </button>
 
       {error && <p className="text-rose-400 text-xs">{error}</p>}
@@ -215,7 +215,7 @@ export default function JobCoworkWidget({
           <p className="text-emerald-600 text-xs">
             {globalMode
               ? 'Global Overwatch — daftar semua Job. Pilih workspace untuk filter + Start.'
-              : 'No jobs for this workspace — start NEX-RED bridge on :3004'}
+              : 'Belum ada Job untuk workspace ini — pastikan bridge NEX-RED :3004 jalan'}
           </p>
         )}
         {workspaceJobs.map((job) => (
@@ -255,7 +255,7 @@ export default function JobCoworkWidget({
                   disabled={loading}
                   className="text-xs px-3 py-1 rounded border border-amber-500/40 text-amber-300 w-fit hover:bg-amber-950/40"
                 >
-                  Approve ({job.autonomy_level})
+                  Setujui ({job.autonomy_level})
                 </button>
               )}
               {canExportArtifact(job.status) && (
@@ -266,7 +266,7 @@ export default function JobCoworkWidget({
                     disabled={loading}
                     className="text-xs px-3 py-1 rounded border border-teal-500/40 text-teal-300 w-fit hover:bg-teal-950/40"
                   >
-                    Export MD
+                    Unduh MD
                   </button>
                   <button
                     type="button"
@@ -274,7 +274,7 @@ export default function JobCoworkWidget({
                     disabled={loading}
                     className="text-xs px-3 py-1 rounded border border-emerald-500/30 text-emerald-400/80 w-fit hover:bg-emerald-950/40"
                   >
-                    Export JSON
+                    Unduh JSON
                   </button>
                 </>
               )}

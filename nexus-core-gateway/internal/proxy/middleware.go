@@ -253,28 +253,62 @@ func (np *NexusProxy) VerifySessionHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	_ = r.ParseForm()
+	if labTokenAccepted(r) {
+		issueNexusSession(w, r, "/")
+		return
+	}
+
 	answer := r.FormValue("answer")
 	challengeToken := r.FormValue("challenge_token")
 
 	if targetPath, ok := verifyChallengeToken(challengeToken, answer, secret); ok {
-		expiry := time.Now().Add(24 * time.Hour).Unix()
-		token := generateToken(expiry, secret)
-
-		http.SetCookie(w, &http.Cookie{
-			Name:     "nexus_session",
-			Value:    token,
-			MaxAge:   86400,
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   envBool("SESSION_COOKIE_SECURE"),
-			SameSite: http.SameSiteLaxMode,
-		})
-
-		http.Redirect(w, r, targetPath, http.StatusFound)
+		issueNexusSession(w, r, targetPath)
 		return
 	}
 
 	http.Error(w, "Matrix Verification Failed. Bot Detected.", http.StatusForbidden)
+}
+
+// labSessionTokenFromEnv is the operator/Job secret. Empty = fail-closed
+// (named-host visitors still solve PoW; Job stays sast_only).
+func labSessionTokenFromEnv() string {
+	return strings.TrimSpace(os.Getenv("NEXUS_LAB_SESSION_TOKEN"))
+}
+
+func requestLabToken(r *http.Request) string {
+	if v := strings.TrimSpace(r.Header.Get("X-Nexus-Lab-Token")); v != "" {
+		return v
+	}
+	return strings.TrimSpace(r.FormValue("lab_token"))
+}
+
+func labTokenAccepted(r *http.Request) bool {
+	expected := labSessionTokenFromEnv()
+	if expected == "" {
+		return false
+	}
+	provided := requestLabToken(r)
+	if provided == "" {
+		return false
+	}
+	return hmac.Equal([]byte(provided), []byte(expected))
+}
+
+func issueNexusSession(w http.ResponseWriter, r *http.Request, targetPath string) {
+	secret := getSessionSecret()
+	expiry := time.Now().Add(24 * time.Hour).Unix()
+	token := generateToken(expiry, secret)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "nexus_session",
+		Value:    token,
+		MaxAge:   86400,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   envBool("SESSION_COOKIE_SECURE"),
+		SameSite: http.SameSiteLaxMode,
+	})
+	http.Redirect(w, r, sanitizeRelativeTarget(targetPath), http.StatusFound)
 }
 
 // generateToken menyusun token bertanda tangan kriptografi menggunakan HMAC-SHA256.

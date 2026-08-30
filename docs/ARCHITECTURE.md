@@ -65,7 +65,7 @@ flowchart TB
 
 ### Gateway (`nexus-core-gateway`)
 
-- Go `net/http`; Reflex regex; antibodi cache; Redis + PostgreSQL
+- Go `net/http`; Reflex regex; antibodi cache **RAM-first** (Redis share opsional; match Layer 1 → 403); golden GET cache (HTTPS origin); Redis + PostgreSQL (`intel_blacklist` hydrate ke RAM saat start; lab routes: seed upsert + ROUTER-SYNC lalu bind `TARGET_BACKEND` ke `PROTECTED_HOST`/loopback)
 - Lab antibody: `/nexred/lab/antibody-signal`, `/nexred/lab/vaccine-probe` (control plane)
 - eBPF: **stub**. Satu `PROTECTED_HOST` per instance
 

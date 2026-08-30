@@ -22,6 +22,11 @@ _LAB_ORIGIN_NAMES = {
 }
 
 
+def is_docker_origin_hostname(host: str) -> bool:
+    """Compose service names used as origin twin — not a protected kanal FQDN."""
+    return (host or "").lower() in _LAB_ORIGIN_NAMES
+
+
 def hostname_of(url: str) -> str:
     return (urlparse(url).hostname or "").lower()
 

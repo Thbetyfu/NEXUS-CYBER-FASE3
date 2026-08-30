@@ -3,8 +3,7 @@
 tmp_test
 mock_backend.js
 mock_backend.py
-gateway
-main
+nexus-gateway
 .dockerignore
 .gitignore
 Dockerfile

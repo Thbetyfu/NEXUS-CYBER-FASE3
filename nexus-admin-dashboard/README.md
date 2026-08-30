@@ -1,6 +1,6 @@
 # Nexus Cyber — Operator Console (kokpit GaaS)
 
-Next.js dashboard untuk **operator Nexus** saja — **Operator GaaS Console** (kanal, antrian L0/L1, Job Cowork, artefak), telemetri, CLI, ban/unban.
+Next.js dashboard untuk **operator Nexus** saja — **Konsol Operator GaaS** (kanal, antrian L0/L1, Job Cowork, artefak), telemetri, CLI, ban/unban.
 
 **Bukan** Channel Portal pelanggan. **Bukan** War Room / MTD / licensing SaaS (dihapus dari UI).
 
@@ -8,7 +8,8 @@ Next.js dashboard untuk **operator Nexus** saja — **Operator GaaS Console** (k
 
 ## Yang ada
 
-- **Operator GaaS Console** — kanal aktif, **Onboard kanal** (Origin URL + protected host via `POST /api/routes`), antrian L0/L1, Job Cowork, artefak MD/JSON
+- **Konsol Operator GaaS** — kanal aktif, **Onboard kanal** (Origin URL + protected host via `POST /api/routes`), antrian L0/L1, Job Cowork, artefak Job + digest insiden MD/JSON
+- **Panduan Penggunaan** — jendela in-app Bahasa Indonesia (ikon desktop / taskbar / tombol di konsol): alur pilot onboard → workspace → Job → approve → artefak, plus demo juri & batas jujur produk
 - Logs, IP/Ban, Terminal, Metrics, Laporan/Artefak
 - Domain/Workspace switcher (Context-Aware: refresh + auto-bind setelah onboard)
 
@@ -24,3 +25,5 @@ npm run dev -- -p 3001
 ```
 
 Login: `NEXUS_ADMIN_TOKEN` dari `deploy-local/.env` / gateway.
+
+**Buka Panduan:** ikon desktop **Panduan**, item taskbar **Panduan**, atau tombol **Panduan Penggunaan** di header Konsol GaaS.

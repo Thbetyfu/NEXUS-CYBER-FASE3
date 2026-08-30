@@ -59,7 +59,7 @@ export default function DomainSwitcher({ activeDomain, onDomainChange, onAddClic
                     <Globe className="w-4 h-4 text-blue-400" />
                 </div>
                 <div className="text-left">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter leading-none mb-1">Active Workspace</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter leading-none mb-1">Workspace aktif</p>
                     <p className="text-xs font-mono text-slate-200 truncate max-w-[150px]">
                         {activeDomain === 'all' ? 'GLOBAL_OVERWATCH' : activeDomain.toUpperCase()}
                     </p>
@@ -85,7 +85,7 @@ export default function DomainSwitcher({ activeDomain, onDomainChange, onAddClic
                                 className="flex items-center gap-2 w-full p-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-all group"
                             >
                                 <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                                Add New Workspace
+                                Tambah workspace
                             </button>
                         </div>
                         <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -102,7 +102,7 @@ export default function DomainSwitcher({ activeDomain, onDomainChange, onAddClic
                                             }`}
                                     >
                                         <span className="font-mono truncate max-w-[200px]">
-                                            {domain === 'all' ? 'All Workspaces (Global)' : domain}
+                                            {domain === 'all' ? 'Semua (Global Overwatch)' : domain}
                                         </span>
                                         {activeDomain === domain && <Check className="w-3 h-3" />}
                                     </button>

@@ -125,15 +125,16 @@ def _probe_origin(
 ) -> Optional[HttpEvidence]:
     if not origin_base:
         return None
-    return SafeHttpClient(origin_base).request(method, path, json_body=json_body, headers=headers)
+    return SafeHttpClient(origin_base, bind_edge=False).request(method, path, json_body=json_body, headers=headers)
 
 
 def execute_live_checks(
     target_url: str,
     checks: List[LiveCheck],
     origin_url: Optional[str] = None,
+    protected_host: Optional[str] = None,
 ) -> Tuple[List[VulnerabilityFinding], int, int]:
-    client = SafeHttpClient(target_url)
+    client = SafeHttpClient(target_url, protected_host=protected_host)
     origin_base = resolve_lab_origin(origin_url)
     findings: List[VulnerabilityFinding] = []
     mitigated = 0

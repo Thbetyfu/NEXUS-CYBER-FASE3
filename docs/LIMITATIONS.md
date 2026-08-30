@@ -1,6 +1,6 @@
 # Nexus Cyber Limitations
 
-Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-23.
+Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-29.
 
 ---
 
@@ -24,7 +24,7 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 
 1. Rekayasa sosial, akses fisik, insider shell, celah firmware
 2. Email / SMTP malware
-3. Pemulihan database — self-repair hanya file template terpantau
+3. Pemulihan database — self-repair hanya file di `INTEGRITY_MONITORED_DIR` (pin + fsnotify); origin Vercel remote tidak di-restore.
 4. DDoS volumetric — eBPF **stub**, tidak `XDP_DROP`
 5. RCE memori tanpa ubah file — self-repair tidak mendeteksi
 
@@ -33,13 +33,18 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 ## Batasan kode (demo & produksi)
 
 6. **Reflex = regex** — bukan AI pada setiap request; model reasoning opsional.
-7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Onboard kanal** = Origin URL + protected host saja; DNS/CNAME/tunnel di luar SOC; **tanpa** Docker auto-provision di jalur operator Cowork. Bukan self-serve multi-tenant / Midtrans. **Workspace binding:** Job menembak protected host via WAF (`http://{host}`); Global Overwatch tidak menjalankan Job tanpa pilih workspace. Ban IP tetap global di gateway.
-8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis / provisioner massal. Job host-key mengikuti Active Workspace; Host-header terpisah ke IP WAF belum end-to-end di NEX-RED agen (gunakan hostname yang resolve ke WAF).
+7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Panduan Penggunaan** in-app (ID) menjelaskan alur pilot; bukan mengganti `PRODUCT_MODEL` / `LIMITATIONS`. **Onboard kanal** = Origin URL + protected host saja; DNS/CNAME/tunnel di luar SOC; **tanpa** Docker auto-provision di jalur operator Cowork. Bukan self-serve multi-tenant / Midtrans. **Workspace binding:** Job menembak protected host via WAF (`http://{host}`); Global Overwatch tidak menjalankan Job tanpa pilih workspace. Ban IP tetap global di gateway.
+8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis / provisioner massal. Job host-key mengikuti Active Workspace. Agen HTTP **dan** Playwright bind ke IP WAF + nama kanal (header `Host` / Chromium MAP) tanpa file hosts. PoW hotspot di named-host tanpa sesi tetap `sast_only` di alur browser. Publik tetap butuh DNS/tunnel agar *pengunjung* sampai ke WAF. **Origin lab:** `TARGET_BACKEND` menimpa OriginIP leftover pada host instance saat boot (START.bat ↔ START-OFFLINE). Onboard host *tambahan* persist; onboard ulang origin pada `PROTECTED_HOST` instance sendiri **tertulis ulang** ke compose `TARGET_BACKEND` saat gateway restart. Di dalam container, `127.0.0.1:3001` bukan SOC host.
 9. **PACS/Base64** — obfuskasi, bukan enkripsi.
 10. **NEX-RED origin direct** — hanya HTTP privat; publik/HTTPS ditolak untuk delta. Operator UI **tidak** menarget origin sebagai Job primary target.
-11. **Telegram** — pager setelah ban; bukan GPS; bukan deteksi mandiri.
+11. **Telegram** — pager setelah ban **dan** setelah self-heal restore/purge (jika env diisi); bukan GPS; bukan deteksi mandiri di luar WAF/folder pin.
 12. **F-10 back-office** — ditunda; roster pelanggan **bukan** di SOC `:8081`.
-13. **IP/Ban per-workspace** — filter live dari telemetri RAM by `TargetDomain`; blacklist ban tetap gateway-global. ThreatLog DB belum punya kolom domain.
+13. **IP/Ban per-workspace** — filter dari `threat_logs.target_domain` (DB) dengan fallback RAM; blacklist ban tetap gateway-global. Baris ThreatLog lama tanpa domain tidak muncul di digest/IP workspace.
+14. **Digest insiden** — operator-only (`:8081`); bukan portal pelanggan; bukan sertifikasi BSSN/ISO; Global Overwatch tidak mengunduh.
+15. **Antibodi vs Redis** — kekebalan Layer 1 di **RAM node ini**. Redis mati: patch yang sudah di RAM tetap 403; patch baru tetap tercatat di RAM tetapi **tidak** disebar ke node lain sampai Redis hidup. Restart gateway tanpa Redis = RAM kosong (bukan persistensi PG). IP blacklist + Reflex masih diarahkan ke honeypot, bukan 403.
+16. **Ban IP vs restart** — baris aktif di `intel_blacklist` di-hydrate ke RAM saat `InitPostgres`. Tanpa Postgres (degraded), ban hanya `LocalBlacklist` dan **hilang** saat proses gateway restart. Ban kedaluwarsa / `is_active=false` tidak kembali. Bukan XDP kernel.
+17. **Golden GET cache** — bukan CDN penuh; TTL default 60s; stale 1 jam hanya jika origin **5xx**/gagal. Tidak menyimpan `/api`, `/nexred`, JSON, cookie sesi, `Set-Cookie` selain `nexus_csrf`, atau `private`/`no-store`. Origin `max-age=0`/`no-cache` **boleh** di-snapshot. Tanpa cookie `nexus_session`, Host `PROTECTED_HOST` kena **PoW 403** dulu (bukan cache). Restart gateway mengosongkan cache. Bukan pengganti origin Vercel untuk self-heal file.
+18. **Browser Job Chromium** — opsional. Default **drive folder NEX-RED** (`workspaces/.playwright-browsers` + `.tmp`), bukan Temp Windows di C:. Binary hilang → skip `sast_only`; Job HTTP tetap. Install: `NEX-RED/INSTALL-PLAYWRIGHT.bat`. PoW named-host tanpa `nexus_session` tetap `sast_only` (bukan gallery/vault selesai). Sesi lab hanya jika operator mengisi token yang sama di gateway + Job; **bukan** skip PoW pengunjung. Vaccine-probe HTTP tetap jalan tanpa PoW.
 ---
 
 ## Yang sengaja ditunda (legacy subscription)
@@ -52,4 +57,4 @@ Lihat [CHANGELOG.md](../CHANGELOG.md) Unreleased.
 
 ---
 
-*Limitations GaaS — 2026-08-22.*
+*Limitations GaaS — 2026-08-29 (degradasi antibodi RAM + ban PG hydrate + golden GET).*

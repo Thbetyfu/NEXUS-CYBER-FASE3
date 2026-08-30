@@ -76,18 +76,18 @@ func InitPostgres() {
 
 	log.Println("[DB-INIT] Auto-Migrations completed successfully.")
 	DB = db
+	HydrateActiveBlacklist()
 }
 
 // IsIPBlacklisted memeriksa apakah IP penyerang terdaftar dalam daftar hitam (blacklist) yang masih aktif.
 //
 // Alasan Teknis (Why):
-// Penyerang sering memalsukan port sumber (source port) untuk melewati pemeriksaan keamanan.
-// Fungsi ini melakukan normalisasi IP (stripping port) dengan membuang tanda titik dua ":" dan nomor port di belakangnya
-// sebelum melakukan query. Ini menjamin pemblokiran IP bersifat mutlak tanpa peduli port mana yang digunakan peretas.
+// RemoteAddr membawa host:port (IPv4 dan IPv6). Normalisasi memakai CleanReporterIP, bukan potong di colon pertama.
+// Setelah restart, RAM kosong sampai hydrate / hit DB; hit DB menuliskan kembali ke RAM agar request berikutnya O(1).
 func IsIPBlacklisted(ip string) bool {
-	// Normalisasi IP: Potong port jika ada (misal "192.168.1.10:49281" -> "192.168.1.10")
-	if idx := strings.Index(ip, ":"); idx != -1 {
-		ip = ip[:idx]
+	ip = CleanReporterIP(ip)
+	if ip == "" {
+		return false
 	}
 
 	// 1. Cek local in-memory blacklist
@@ -96,10 +96,8 @@ func IsIPBlacklisted(ip string) bool {
 			if time.Now().Before(expiresAt) {
 				return true
 			}
-			// Kedaluwarsa, hapus
 			LocalBlacklist.Delete(ip)
 		} else {
-			// Permanent ban di memori local
 			return true
 		}
 	}
@@ -110,10 +108,41 @@ func IsIPBlacklisted(ip string) bool {
 
 	var blacklist models.IntelBlacklist
 	now := time.Now()
-	
-	// Query dioptimalkan dengan memverifikasi masa berlaku blacklist (expires_at) secara real-time.
 	result := DB.Where("ip_address = ? AND is_active = true AND (expires_at IS NULL OR expires_at > ?)", ip, now).First(&blacklist)
-	return result.Error == nil
+	if result.Error != nil {
+		return false
+	}
+	rememberBlacklist(ip, blacklist.ExpiresAt)
+	return true
+}
+
+// HydrateActiveBlacklist memuat baris intel_blacklist yang masih aktif ke RAM.
+// Dipanggil saat start (restart gateway) agar Layer 0 tidak menunggu SQL di setiap request.
+func HydrateActiveBlacklist() {
+	if DB == nil {
+		return
+	}
+	var rows []models.IntelBlacklist
+	now := time.Now()
+	if err := DB.Where("is_active = ? AND (expires_at IS NULL OR expires_at > ?)", true, now).Find(&rows).Error; err != nil {
+		log.Printf("[DB-WARNING] blacklist hydrate failed: %v", err)
+		return
+	}
+	for _, row := range rows {
+		rememberBlacklist(CleanReporterIP(row.IPAddress), row.ExpiresAt)
+	}
+	log.Printf("[DB-INIT] Hydrated %d active blacklist IP(s) into RAM.", len(rows))
+}
+
+func rememberBlacklist(ip string, expiresAt *time.Time) {
+	if ip == "" {
+		return
+	}
+	if expiresAt != nil {
+		LocalBlacklist.Store(ip, *expiresAt)
+		return
+	}
+	LocalBlacklist.Store(ip, true)
 }
 
 // BanIP menambahkan IP ke daftar hitam di database dan RAM local.
@@ -205,18 +234,17 @@ func GetIPGeoInfo(ip string) (country, city, isp string, lat, lon float64) {
 //    dapat dijatuhkan seketika oleh kernel sebelum diproses di user-space, mengeliminasi CPU/memory amplification attack.
 // 3. Menyimpan data di PostgreSQL guna memenuhi klausul log audit ISO 27001 untuk pelaporan kepatuhan keamanan (ISMS).
 func BanIP(ip string, reason string, duration time.Duration) {
-	if idx := strings.Index(ip, ":"); idx != -1 {
-		ip = ip[:idx]
+	ip = CleanReporterIP(ip)
+	if ip == "" {
+		return
 	}
 
 	var expiresAt *time.Time
 	if duration > 0 {
 		exp := time.Now().Add(duration)
 		expiresAt = &exp
-		LocalBlacklist.Store(ip, exp)
-	} else {
-		LocalBlacklist.Store(ip, true) // Permanent
 	}
+	rememberBlacklist(ip, expiresAt)
 
 	// Register in eBPF map for kernel-level driver dropping (XDP_DROP)
 	bpfManager := bpf.NewBpfManager()
@@ -279,8 +307,9 @@ func BanIP(ip string, reason string, duration time.Duration) {
 // 3. Melakukan pembaruan non-destruktif di database PostgreSQL (mengubah is_active ke false) alih-alih menghapus barisnya,
 //    agar jejak audit forensik tentang kapan pemblokiran dilakukan dan dicabut tetap tersimpan untuk keperluan audit kepatuhan.
 func UnbanIP(ip string) {
-	if idx := strings.Index(ip, ":"); idx != -1 {
-		ip = ip[:idx]
+	ip = CleanReporterIP(ip)
+	if ip == "" {
+		return
 	}
 
 	LocalBlacklist.Delete(ip)

@@ -88,6 +88,42 @@ export async function downloadJobArtifact(
   URL.revokeObjectURL(url);
 }
 
+export async function downloadIncidentDigest(
+  domain: string,
+  hours: number,
+  format: ArtifactFormat
+): Promise<void> {
+  const host = normalizeProtectedHost(domain);
+  if (!host || isGlobalWorkspace(host)) {
+    throw new Error("Pilih workspace — Global Overwatch tidak mengunduh digest");
+  }
+  const windowHours = Number.isFinite(hours) && hours > 0 ? Math.min(Math.floor(hours), 168) : 24;
+  const res = await fetch(
+    `/api/incidents/digest?domain=${encodeURIComponent(host)}&hours=${windowHours}&format=${format}`
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      (data as { error?: string }).error || `Digest gagal (HTTP ${res.status})`
+    );
+  }
+
+  const body =
+    format === "md"
+      ? String((data as { markdown?: string }).markdown || "")
+      : JSON.stringify(data, null, 2);
+  const blob = new Blob([body], {
+    type: format === "md" ? "text/markdown" : "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safe = host.replace(/[^a-zA-Z0-9.-]+/g, "_");
+  a.download = `nexus-incidents-${safe}-${windowHours}h.${format}`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export const DEFAULT_PROTECTED_HOST =
   process.env.NEXT_PUBLIC_PROTECTED_HOST || "portfolio.nexus-lab.test";
 
@@ -104,7 +140,7 @@ export function isGlobalWorkspace(domain: string): boolean {
 }
 
 /**
- * Workspace-bound Job target via WAF (lab pattern: hosts/DNS → gateway).
+ * Workspace-bound Job target via WAF. NEX-RED binds TCP to the gateway and sends Host.
  * Never returns raw customer origin — defense delta still uses NEX_RED_ORIGIN_DIRECT internally.
  */
 export function wafTargetForWorkspace(activeDomain: string): string | null {

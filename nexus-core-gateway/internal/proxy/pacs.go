@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 
 	"github.com/nexus-cyber/nexus-core-gateway/internal/database"
@@ -29,17 +28,7 @@ func IsDomainActive(domain string) bool {
 	if err != nil {
 		// Auto-register unknown Host for lab stability — keep a real http(s) origin URL
 		// (bare "127.0.0.1" breaks reverse-proxy url.Parse / tunnel pilots).
-		origin := strings.TrimSpace(os.Getenv("TARGET_BACKEND"))
-		if origin == "" {
-			backendHost := os.Getenv("TARGET_BACKEND_HOST")
-			if backendHost == "" {
-				backendHost = "host.docker.internal"
-			}
-			origin = fmt.Sprintf("http://%s:3001", backendHost)
-		}
-		if normalized, nerr := NormalizeProxyOrigin(origin); nerr == nil {
-			origin = normalized
-		}
+		origin := LabInstanceOrigin()
 		newSub := models.DomainSubscription{
 			Domain:   domain,
 			OriginIP: origin,
@@ -403,17 +392,7 @@ func SeedInitialDomainSubscriptions() {
 		return
 	}
 
-	backendHost := os.Getenv("TARGET_BACKEND_HOST")
-	if backendHost == "" {
-		backendHost = "host.docker.internal"
-	}
-	target := os.Getenv("TARGET_BACKEND")
-	if target == "" {
-		target = fmt.Sprintf("http://%s:3001", backendHost)
-	}
-	if normalized, err := NormalizeProxyOrigin(target); err == nil {
-		target = normalized
-	}
+	target := LabInstanceOrigin()
 
 	// Hapus seed demo SaaS lama agar tidak muncul di Domain Switcher SOC.
 	legacy := []string{
@@ -425,23 +404,12 @@ func SeedInitialDomainSubscriptions() {
 		database.DB.Unscoped().Where("domain = ?", dom).Delete(&models.DomainSubscription{})
 	}
 
-	protected := strings.TrimSpace(os.Getenv("PROTECTED_HOST"))
-	if protected == "" {
-		protected = "portfolio.nexus-lab.test"
-	}
-	domains := []string{"localhost", protected}
+	// Upsert — leftover OriginIP (e.g. http://127.0.0.1:3001 from an older
+	// compose/.env) must not survive a START.bat ↔ START-OFFLINE switch.
+	// Extra onboarded hosts are not in this list and stay untouched.
+	domains := LabInstanceHosts()
 	for _, dom := range domains {
-		var count int64
-		database.DB.Model(&models.DomainSubscription{}).Where("domain = ?", dom).Count(&count)
-		if count == 0 {
-			sub := models.DomainSubscription{
-				Domain:   dom,
-				OriginIP: target,
-				IsActive: true,
-				PlanType: "premium",
-			}
-			database.DB.Create(&sub)
-		}
+		upsertLabSubscription(dom, target)
 	}
-	fmt.Printf("[SAAS-INIT] Seeded lab workspaces %v → %s (legacy demo domains purged).\n", domains, target)
+	fmt.Printf("[SAAS-INIT] Bound lab workspaces %v → %s (compose TARGET_BACKEND; leftover OriginIP overwritten).\n", domains, target)
 }

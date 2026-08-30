@@ -111,11 +111,11 @@ Request masuk `PROTECTED_HOST` → Reflex (regex) + antibodi cache → origin at
 
 Satu pekerjaan dengan tujuan, scope, dan status. Orkestrasi: recon → hygiene/access → defense delta → (opsional) pasang antibodi → vaccine-probe + replay → reporter.
 
-**Sudah ada** orkestrasi di `NEX-RED/jobs/` + bridge `:3004` + sync PostgreSQL via control plane `:8081`.
+**Sudah ada** orkestrasi di `NEX-RED/jobs/` + bridge `:3004` + sync PostgreSQL via control plane `:8081`. Agen HTTP bind ke listener WAF + `Host: {protected_host}` (tanpa file hosts); twin origin tetap `NEX_RED_ORIGIN_DIRECT`.
 
 ### Alur C — Artefak risiko
 
-Output ke pemilik risiko kanal: apa yang terukur, apa yang dikendalikan, apa yang masih terbuka, siapa yang setuju. **Sudah ada** ekspor MD/JSON per Job; PG `cowork_jobs` + artefak kolom.
+Output ke pemilik risiko kanal: apa yang terukur, apa yang dikendalikan, apa yang masih terbuka, siapa yang setuju. **Sudah ada** ekspor MD/JSON per Job (PG `cowork_jobs` + artefak kolom) dan digest insiden operator dari `threat_logs` per protected host (`GET /api/incidents/digest`). Bukan dashboard pelanggan.
 
 ---
 
@@ -225,7 +225,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | Command Center / Operator GaaS Console | Sudah ada (GaaS-only; **Onboard** = origin + protected host; DNS/tunnel di luar SOC; tanpa Docker auto di UI operator; lab War Room/MTD/license dihapus) | `:8081` / `:3001` |
 | Entitas Job + orkestrasi | **Sudah ada** | `NEX-RED/jobs/` + bridge `:3004` |
 | Gerbang L0/L1 produk | **Sudah ada** | `PENDING_APPROVAL` + approve API/CLI |
-| Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` |
+| Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` + digest ThreatLog operator |
 | Memori imun host persisten | **Sudah ada** | PG + file; `antibody_audits.job_id` opsional |
 | Channel Starter (form→template) | **Lab v0.1** | `channel-starter/` (Milestone 18) |
 | Channel Portal legacy / F-10 | **Ditunda** | F-10 back-office |

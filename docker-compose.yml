@@ -56,6 +56,8 @@ services:
       - "127.0.0.1:8081:8081" # SOC control plane — laptop only
     volumes:
       - ./nexus-core-gateway/geoip:/app/geoip
+      - ./playground/Portofolio-Thoriq:/origin-lab
+      - integrity_data:/app/data
     environment:
       - REDIS_URL=redis:6379
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -70,6 +72,8 @@ services:
       - NEXUS_ADMIN_TOKEN=${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - INTEGRITY_MONITORED_DIR=${INTEGRITY_MONITORED_DIR:-/origin-lab}
+      - INTEGRITY_BASELINE_PATH=${INTEGRITY_BASELINE_PATH:-/app/data/integrity-baseline.json}
     cap_add:
       - NET_ADMIN
     env_file:
@@ -145,3 +149,4 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  integrity_data:

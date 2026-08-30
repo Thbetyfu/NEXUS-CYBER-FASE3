@@ -1,6 +1,6 @@
 # Nexus Cyber Database Schema
 
-**Pembaruan:** 2026-08-22  
+**Pembaruan:** 2026-08-30  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Entitas **`jobs` GaaS** — migrasi PostgreSQL via GORM (`cowork_jobs`, dll.); file JSON di `NEX-RED/jobs/data/` tetap backup lokal.
 
 Skema **target** PostgreSQL untuk audit. Tabel di bawah harus dicek ulang terhadap migrasi GORM di `nexus-core-gateway` sebelum dianggap kontrak produksi. ISO 27001 di sini adalah *desain*, bukan sertifikat.
@@ -31,8 +31,11 @@ Tabel utama untuk merekam seluruh anomali dan serangan yang ditangkap oleh Nexus
 | `status` | `VARCHAR(50)` | Status penanganan (BLOCKED, ALLOWED, HONEYPOT). |
 | `threat_type` | `VARCHAR(100)` | Kategori serangan (SQL Injection, XSS, Brute Force). |
 | `severity` | `INTEGER` | Tingkat bahaya (1 = Rendah, 5 = Kritis). |
-| `payload_sample` | `TEXT` | Potongan data berbahaya yang dikirim penyerang. |
+| `payload_sample` | `TEXT` | Potongan data berbahaya yang dikirim penyerang (digest operator **tidak** mengekspor kolom ini). |
 | `user_agent` | `TEXT` | Informasi browser/bot penyerang. |
+| `latency_ms` | `INTEGER` | Latensi pemrosesan gateway. |
+| `prev_hash` / `hash` | `VARCHAR(64)` | Rantai audit SHA-256. |
+| `target_domain` | `VARCHAR(255)` | Protected host tanpa port — filter workspace & digest. Baris lama boleh kosong (tidak masuk digest). |
 
 ---
 
@@ -52,7 +55,7 @@ Tabel untuk mencatat aktivitas *Moving Target Defense* (MTD) seperti perputaran 
 ---
 
 ### 3. `intel_blacklist` (Daftar Cekal Dinamis)
-Tabel untuk menyimpan daftar IP yang telah diblokir secara permanen atau sementara. Gateway akan mengecek tabel (atau cache Redis dari tabel ini) sebelum memproses request.
+Tabel untuk menyimpan daftar IP yang telah diblokir secara permanen atau sementara. Gateway cek **RAM `LocalBlacklist` dulu**, lalu tabel ini. Saat start (`InitPostgres`), baris `is_active` yang belum kedaluwarsa di-hydrate ke RAM — ban selamat restart proses. **Bukan** cache Redis untuk ban.
 *   **Tujuan**: Mitigasi proaktif terhadap ancaman yang sudah diketahui (Zero-Trust).
 
 | Kolom | Tipe Data | Keterangan |
@@ -99,7 +102,7 @@ Tabel untuk mencatat setiap kali **NEX-AI Cognitive Core** (`nex-ai-protect`) me
 
 ### 6. `domain_subscriptions` (legacy subscription — **ditunda** GaaS v1)
 
-Skema target untuk multi-tenant / Telegram per domain. **Produk GaaS v1:** satu `PROTECTED_HOST` per instance; tabel ini belum kontrak jual aktif.
+Skema target untuk multi-tenant / Telegram per domain. **Produk GaaS v1:** satu `PROTECTED_HOST` per instance; tabel ini belum kontrak jual aktif. Lab boot **upsert** `OriginIP` untuk `PROTECTED_HOST` + loopback dari `TARGET_BACKEND` (ROUTER-SYNC tidak boleh memisah named-host vs `127.0.0.1`). Host onboard tambahan tidak diubah. Lab: seed **upsert** OriginIP host instance (`PROTECTED_HOST`, `localhost`, `127.0.0.1`) dari `TARGET_BACKEND` compose saat boot — leftover `http://127.0.0.1:3001` tidak menimpa Vercel/offline. Host onboard tambahan tidak di-upsert.
 *   **Tujuan**: Kontrol lisensi B2B/B2G dan routing pengiriman Notifikasi Push Telegram instan per-domain (Zero COGS).
 
 | Kolom | Tipe Data | Keterangan |

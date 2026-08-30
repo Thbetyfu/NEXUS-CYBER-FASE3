@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { isGlobalWorkspace, workspaceTargetLabel } from '@/lib/gaas-labels';
+import { isGlobalWorkspace, workspaceTargetLabel, downloadIncidentDigest, errorMessage } from '@/lib/gaas-labels';
 
 interface Standard {
   id: string;
@@ -28,6 +28,8 @@ export default function ComplianceWidget({ activeDomain }: ComplianceWidgetProps
   const [exportedReport, setExportedReport] = useState<string>('');
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const [digestMsg, setDigestMsg] = useState<string | null>(null);
+  const [digestBusy, setDigestBusy] = useState(false);
 
   useEffect(() => {
     fetch(`/api/compliance?domain=${encodeURIComponent(targetDomain)}`)
@@ -75,8 +77,57 @@ export default function ComplianceWidget({ activeDomain }: ComplianceWidgetProps
     }
   };
 
+  const handleIncidentDigest = async (format: 'md' | 'json') => {
+    setDigestBusy(true);
+    setDigestMsg(null);
+    try {
+      if (isGlobalWorkspace(activeDomain)) {
+        throw new Error('Pilih workspace — Global Overwatch tidak mengunduh digest');
+      }
+      await downloadIncidentDigest(activeDomain, 24, format);
+      setDigestMsg(`Digest ${format.toUpperCase()} (24 jam) diunduh`);
+    } catch (e) {
+      setDigestMsg(errorMessage(e, 'Unduh digest gagal'));
+    } finally {
+      setDigestBusy(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 p-4 text-cyan-400 font-mono text-sm">
+      <div className="rounded-lg border border-amber-500/25 bg-amber-950/20 p-3 space-y-2">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-amber-300">
+          Digest insiden (operator)
+        </p>
+        <p className="text-[11px] text-gray-400 leading-relaxed">
+          Jejak WAF per workspace dari database — serahkan ke pemilik risiko. Bukan skor ISO/BSSN,
+          bukan sertifikasi, bukan portal pelanggan. Eksport audit di bawah ini adalah lab/theater.
+        </p>
+        {isGlobalWorkspace(activeDomain) ? (
+          <p className="text-[11px] text-amber-300/90">Pilih workspace di Domain Switcher.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={digestBusy}
+              onClick={() => handleIncidentDigest('md')}
+              className="px-3 py-1.5 text-[10px] uppercase tracking-wider border border-amber-400/40 rounded text-amber-100 hover:bg-amber-900/40 disabled:opacity-50"
+            >
+              Digest MD (24 jam)
+            </button>
+            <button
+              type="button"
+              disabled={digestBusy}
+              onClick={() => handleIncidentDigest('json')}
+              className="px-3 py-1.5 text-[10px] uppercase tracking-wider border border-white/20 rounded text-gray-200 hover:bg-white/5 disabled:opacity-50"
+            >
+              Digest JSON
+            </button>
+          </div>
+        )}
+        {digestMsg && <p className="text-[11px] text-amber-200/90">{digestMsg}</p>}
+      </div>
+
       <div className="flex items-center justify-between border-b border-cyan-500/30 pb-3">
         <div>
           <h3 className="text-lg font-bold text-cyan-300 flex items-center gap-2">

@@ -95,6 +95,7 @@ func uploadShieldHandler(px *proxy.NexusProxy, telemetry *logger.Logger) http.Ha
 				PayloadSample: fmt.Sprintf("Filename: %s | Real MimeType: %s", header.Filename, contentType),
 				UserAgent:     r.UserAgent(),
 				LatencyMs:     1,
+				TargetDomain:  logger.NormalizeTargetHost(r.Host),
 			}
 			if database.DB != nil {
 				database.DB.Create(&tLog)
@@ -259,9 +260,10 @@ func rewardUnlockHandler(telemetry *logger.Logger) http.HandlerFunc {
 			Status:        "UNAUTHORIZED",
 			ThreatType:    "REWARD_PASSWORD_BRUTE_FORCE",
 			Severity:      3,
-			PayloadSample: fmt.Sprintf("Attempted Password: '%s' | Fail Count: %d/5", req.Password, attempts),
+			PayloadSample: fmt.Sprintf("Fail Count: %d/5", attempts),
 			UserAgent:     r.UserAgent(),
 			LatencyMs:     1,
+			TargetDomain:  logger.NormalizeTargetHost(r.Host),
 		}
 		if database.DB != nil {
 			database.DB.Create(&tLog)

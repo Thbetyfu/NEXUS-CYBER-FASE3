@@ -143,6 +143,7 @@ class ScanTarget(BaseModel):
     timeout_seconds: int = 300
     headers: Dict[str, str] = Field(default_factory=dict)
     enable_llm: bool = True
+    protected_host: Optional[str] = None
 
 
 class JobStepLog(BaseModel):

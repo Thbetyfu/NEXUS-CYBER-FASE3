@@ -22,6 +22,7 @@ from core.types import (
 from jobs.closure import resolve_closure, summarize_defense_deltas
 from jobs.orchestrator import JobCoworkOrchestrator
 from jobs.store import JobStore
+from core.orchestrator import NexRedOrchestrator
 
 
 def _finding(delta: DefenseDelta | None) -> VulnerabilityFinding:
@@ -124,6 +125,39 @@ class TestJobOrchestrator(unittest.TestCase):
             {CoworkJobStatus.CLOSED_OK, CoworkJobStatus.CLOSED_GAP, CoworkJobStatus.PARTIAL},
         )
         self.assertTrue(closed.approvals)
+
+    def test_measurement_passes_protected_host_to_scan(self):
+        job = self.engine.create_job(
+            title="Host bind",
+            target_url="http://portfolio.nexus-lab.test",
+            protected_host="portfolio.nexus-lab.test",
+        )
+        fake_scan = ScanResult(
+            scan_id="NEXRED-BIND",
+            target_url=job.target_url,
+            mode=ScanMode.HYBRID,
+            start_time=job.created_at,
+            end_time=job.created_at,
+            findings=[_finding(DefenseDelta.WAF_BLOCKED)],
+            live_checks_run=1,
+        )
+        seen: dict = {}
+
+        class Spy(NexRedOrchestrator):
+            def __init__(self, target):
+                seen["protected_host"] = target.protected_host
+                seen["target_url"] = target.target_url
+                super().__init__(target)
+
+            def execute(self):
+                return fake_scan
+
+        with patch("jobs.orchestrator.NexRedOrchestrator", Spy):
+            measured = self.engine.run_measurement(job.job_id, enable_llm=False)
+        self.assertEqual(seen.get("protected_host"), "portfolio.nexus-lab.test")
+        self.assertEqual(seen.get("target_url"), "http://portfolio.nexus-lab.test")
+        self.assertEqual(measured.status, CoworkJobStatus.PENDING_APPROVAL)
+        self.assertTrue(any("WAF bind" in step.message for step in measured.step_logs))
 
 
 if __name__ == "__main__":

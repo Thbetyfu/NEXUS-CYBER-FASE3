@@ -112,9 +112,9 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		// [LAYER 1: VIRTUAL PATCH IMMUNITY CHALLENGE]
 		// Alasan Arsitektural (Why):
 		// Sistem kekebalan adaptif (Adaptive Immune System). Ketika AI mendeteksi muatan serangan SQLi/XSS baru,
-		// pola muatan tersebut disimpan dalam bentuk tanda tangan "Antibodi" di memori.
-		// Request selanjutnya yang mengandung pola serupa akan langsung diblokir seketika secara O(1) di Layer 1
-		// tanpa membuang siklus CPU untuk memanggil Regex atau Model AI kembali.
+		// pola muatan tersebut disimpan dalam bentuk tanda tangan "Antibodi" di memori (RAM dulu, Redis opsional).
+		// Request selanjutnya yang mengandung pola serupa langsung 403 O(1) di Layer 1
+		// tanpa Regex, model AI, Redis, atau origin.
 		isPatched := false
 		np.Patches.Range(func(key, value interface{}) bool {
 			pattern := key.(string)
@@ -135,20 +135,25 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		}
 
 		if isPatched {
-			np.Logger.LogAIEvent(logger.AIEventLog{
-				Timestamp:    time.Now(),
-				Layer:        "Virtual-Patch",
-				Status:       "IMMUNE",
-				DetailAction: "[VIRTUAL PATCH] Instant Drop - Antibody Signature Match.",
-			})
+			// Instant 403 at the edge — RAM patches hold even if Redis is down.
+			// Honeypot diversion stays for blacklist IP and Reflex; antibody match
+			// must not depend on honeypot :9090 (would 502 and look like origin failure).
+			if np.Logger != nil {
+				np.Logger.LogAIEvent(logger.AIEventLog{
+					Timestamp:    time.Now(),
+					Layer:        "Virtual-Patch",
+					Status:       "IMMUNE",
+					DetailAction: "[VIRTUAL PATCH] Instant Drop - Antibody Signature Match.",
+				})
 
-			tLog.Status = "INSTANT_DROP_PATCH"
-			tLog.ThreatDetail = "VIRTUAL_PATCH_MATCH"
-			np.Logger.EnrichLog(&tLog, r)
-			np.Logger.LogTraffic(tLog)
+				tLog.Status = "INSTANT_DROP_PATCH"
+				tLog.ThreatDetail = "VIRTUAL_PATCH_MATCH"
+				np.Logger.EnrichLog(&tLog, r)
+				np.Logger.LogTraffic(tLog)
+			}
 
 			np.PublishThreat(r.RemoteAddr, "VIRTUAL_PATCH_IMMUNE")
-			np.routeToHoneypot(w, r)
+			np.writeVirtualPatchDrop(w)
 			return
 		}
 

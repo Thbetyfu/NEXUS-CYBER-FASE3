@@ -152,7 +152,7 @@ func (l *Logger) EnrichLog(log *TelemetryLog, r *http.Request) {
 	if host == "" {
 		host = "all"
 	}
-	log.TargetDomain = host
+	log.TargetDomain = NormalizeTargetHost(host)
 
 	uaStr := r.Header.Get("User-Agent")
 	deviceFP := r.Header.Get("X-Device-Fingerprint")
@@ -222,8 +222,8 @@ func (l *Logger) EnrichLog(log *TelemetryLog, r *http.Request) {
 // LogTraffic mencatat data statistik trafik ke berkas log, memori RAM, dan database relasional.
 //
 // Alasan Arsitektural (Why):
-// 1. Pembaruan metrik domain (`DomainStats`) dinormalisasi dengan membuang nomor port klien
-//    agar data tercatat bersih berdasarkan nama domain host utama (misal: "localhost:8080" -> "localhost").
+// 1. Pembaruan metrik domain (`DomainStats`) dinormalisasi tanpa skema/port (`NormalizeTargetHost`)
+//    agar `portfolio.nexus-lab.test:8080` dan IPv6 `[::1]:8080` tercatat sebagai host bersih.
 // 2. Penyimpanan ke database PostgreSQL dilakukan secara **asinkron** (`go func`). Operasi I/O jaringan ke DB
 //    relasional bisa memakan waktu hingga puluhan milidetik. Memindahkannya ke goroutine latar belakang
 //    memastikan latency gateway tidak terpengaruh oleh performa query basis data (ISO 25010 Efficiency).
@@ -231,6 +231,9 @@ func (l *Logger) EnrichLog(log *TelemetryLog, r *http.Request) {
 //    akan memicu error fatal (SQLSTATE 22021) jika mendeteksi deretan byte biner non-UTF8 (misalnya muatan eksploitasi buffer overflow).
 //    Pembersihan ini menjamin proses persistensi berjalan andal (Fault Tolerance).
 func (l *Logger) LogTraffic(log TelemetryLog) uuid.UUID {
+	if log.TargetDomain != "" {
+		log.TargetDomain = NormalizeTargetHost(log.TargetDomain)
+	}
 	logID := uuid.New()
 
 	// Tulis baris JSON ke berkas log lokal (JSON Lines standard)
@@ -261,10 +264,7 @@ func (l *Logger) LogTraffic(log TelemetryLog) uuid.UUID {
 
 	// 2. Perbarui Penghitung Multi-Tenant (Domain Stats)
 	if log.TargetDomain != "" {
-		dom := strings.ToLower(log.TargetDomain)
-		if idx := strings.Index(dom, ":"); idx != -1 {
-			dom = dom[:idx]
-		}
+		dom := log.TargetDomain
 
 		if _, ok := l.DomainStats[dom]; !ok {
 			l.DomainStats[dom] = &DomainStatsEntry{}
@@ -319,6 +319,7 @@ func (l *Logger) LogTraffic(log TelemetryLog) uuid.UUID {
 				PayloadSample: cleanPayload,
 				PrevHash:      prevHash,
 				Hash:          newHash,
+				TargetDomain:  l.TargetDomain,
 			}
 			dbLog.ID = logID
 			dbLog.CreatedAt = l.Timestamp
@@ -393,7 +394,8 @@ func (l *Logger) GetDomainStats(domain string) (Allowed, Blocked, Honeypot int) 
 	l.mu.RLock()
 	defer l.mu.RUnlock()
 
-	if stats, ok := l.DomainStats[domain]; ok {
+	dom := NormalizeTargetHost(domain)
+	if stats, ok := l.DomainStats[dom]; ok {
 		return stats.Allowed, stats.Blocked, stats.Honeypot
 	}
 	return 0, 0, 0
@@ -434,12 +436,12 @@ func (l *Logger) DeleteDomain(domain string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	dom := strings.ToLower(domain)
+	dom := NormalizeTargetHost(domain)
 	delete(l.DomainStats, dom)
 
 	filteredLogs := make([]TelemetryLog, 0)
 	for _, log := range l.recentLogs {
-		if strings.ToLower(log.TargetDomain) != dom {
+		if NormalizeTargetHost(log.TargetDomain) != dom {
 			filteredLogs = append(filteredLogs, log)
 		}
 	}
@@ -453,7 +455,7 @@ func (l *Logger) AddDomain(domain string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	dom := strings.ToLower(domain)
+	dom := NormalizeTargetHost(domain)
 	if _, ok := l.DomainStats[dom]; !ok {
 		l.DomainStats[dom] = &DomainStatsEntry{}
 		fmt.Printf("[DOMAIN-ADD] Domain '%s' manually registered in the matrix.\n", dom)

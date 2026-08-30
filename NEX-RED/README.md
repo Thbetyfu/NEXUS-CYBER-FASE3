@@ -16,7 +16,7 @@ It is **not** Shannon and **not** Strix. v5 is Jalan B **Fase 0–5 plus lab Jui
 4. **Live recon** — links and missing security headers.
 5. **Black-box posture** — benign JSON probes.
 6. **Live HTTP checks** — unauthenticated mutating route, public telemetry must not be SOC, WAF 403 = `mitigated_by_nexus`, **two accounts**, and **GET object without a session** (CWE-639).
-7. **Browser lab (optional)** — `NEX_RED_BROWSER=1` plus Playwright: benign gallery upload and five wrong vault passwords. Screenshots stay under `NEX-RED/workspaces/`.
+7. **Browser lab (optional)** — `NEX_RED_BROWSER=1` plus Playwright: benign gallery upload and five wrong vault passwords **through WAF** when a lab session exists (`NEX_RED_LAB_SESSION_TOKEN` matching gateway `NEXUS_LAB_SESSION_TOKEN` → `POST /api/verify-session` → `nexus_session`). Chromium MAP-s `PROTECTED_HOST` to the WAF IP (same bind as Job HTTP; no hosts file). Without that token, named-host PoW is recorded as `sast_only` (visitor Matrix Verification stays on). Screenshots stay under `NEX-RED/workspaces/`.
 8. **Job Cowork (GaaS)** — `nexred.py job run|approve|export`; bridge `POST /api/v1/jobs`; status `OPEN` → `CLOSED_OK`/`CLOSED_GAP`.
 9. **Scan jobs** — `POST /api/v1/scan` default `async_run=true`; poll `GET /api/v1/scan/{id}`.
 10. **Named agents** — `recon`, `injection-hygiene` (benign JSON / 500), `access` (session/IDOR/object GET), `reporter` (dedup). One agent exception → scan `PARTIAL`, others still run. Report has an **Agents** table.
@@ -33,16 +33,20 @@ Two-account live check needs a lab pair: `POST /nexred/lab/session-pair` returni
 pip install -r NEX-RED/requirements-browser.txt
 python -m playwright install chromium
 set NEX_RED_BROWSER=1
+rem Optional lab session (same value as gateway NEXUS_LAB_SESSION_TOKEN):
+rem set NEX_RED_LAB_SESSION_TOKEN=...
 ```
+
+Di Windows, Chromium dan temp Job **ikut drive NEX-RED** (`workspaces/.playwright-browsers`), bukan `C:\Temp`. Install: `NEX-RED/INSTALL-PLAYWRIGHT.bat`. Binary hilang = skip `sast_only`, bukan crash Job.
 
 ## What v5 does not do yet
 
 - Shannon/Strix-class proof-by-exploitation or exploit wordlists
-- Completing Gallery/vault through the hotspot PoW splash (skipped as `sast_only`)
+- Completing Gallery/vault on named-host PoW **without** a lab session (honest `sast_only`; visitors still solve Matrix Verification)
 - Full Docker egress lock (image + Python allow-list only)
 - 0% false-positive guarantee
 
-RoE: [`docs/ROE.md`](./docs/ROE.md). Live target: `NEX_RED_LIVE_TARGET` (lewat WAF / `PROTECTED_HOST`, bukan Vercel langsung). Juice Shop: [`lab/juice-shop/README.md`](./lab/juice-shop/README.md). Sandbox: [`sandbox/README.md`](./sandbox/README.md).
+RoE: [`docs/ROE.md`](./docs/ROE.md). Live target: `NEX_RED_LIVE_TARGET` / Job `http://{PROTECTED_HOST}` — agen HTTP **dan** Playwright bind TCP ke `NEXUS_GATEWAY_URL` + header `Host` / Chromium MAP (bukan Vercel langsung; bukan file hosts wajib). Juice Shop: [`lab/juice-shop/README.md`](./lab/juice-shop/README.md). Sandbox: [`sandbox/README.md`](./sandbox/README.md).
 
 ## CLI
 
@@ -60,7 +64,7 @@ python NEX-RED/nexred.py bridge -p 3004
 
 ```bash
 cd NEX-RED
-python -m unittest tests.test_nexred tests.test_live_http tests.test_hotspot_harness tests.test_browser tests.test_benchmark tests.test_juice_lab tests.test_crew tests.test_sandbox tests.test_planner tests.test_llm_eval tests.test_modelfiles
+python -m unittest tests.test_nexred tests.test_live_http tests.test_waf_bind tests.test_hotspot_harness tests.test_browser tests.test_benchmark tests.test_juice_lab tests.test_crew tests.test_sandbox tests.test_planner tests.test_llm_eval tests.test_modelfiles tests.test_job_cowork
 python nexred.py benchmark
 python nexred.py lab-juice
 python nexred.py llm-eval

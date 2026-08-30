@@ -9,7 +9,15 @@ import base64
 from pathlib import Path
 from typing import List, Tuple
 
-from agents.runtime.browser import assert_browser_target, playwright_importable, screenshot_path
+from agents.runtime.browser import (
+    assert_browser_target,
+    open_bound_page,
+    pin_playwright_runtime_dirs,
+    playwright_importable,
+    screenshot_path,
+)
+from agents.runtime.lab_session import obtain_lab_nexus_session
+from agents.runtime.waf_bind import BrowserWafBind, bind_waf_browser
 from core.config import config
 from core.types import Evidence, FindingSeverity, FindingSource, LiveVerdict, VulnerabilityFinding
 
@@ -40,8 +48,14 @@ def _finding(title: str, verdict: LiveVerdict, severity: FindingSeverity, endpoi
     )
 
 
-def execute_browser_checks(target_url: str, workspace: Path | None = None) -> Tuple[List[VulnerabilityFinding], int]:
+def execute_browser_checks(
+    target_url: str,
+    workspace: Path | None = None,
+    *,
+    protected_host: str | None = None,
+) -> Tuple[List[VulnerabilityFinding], int]:
     endpoint = target_url.rstrip("/") + "/"
+    bind = bind_waf_browser(endpoint, protected_host)
     if not config.enable_browser:
         return (
             [
@@ -55,7 +69,10 @@ def execute_browser_checks(target_url: str, workspace: Path | None = None) -> Tu
             ],
             0,
         )
-    blocked = assert_browser_target(endpoint, config.live_target or target_url)
+    allow_against = target_url
+    blocked = assert_browser_target(endpoint, allow_against)
+    if not blocked and bind.navigate_url:
+        blocked = assert_browser_target(bind.navigate_url, allow_against)
     if blocked:
         return (
             [
@@ -77,38 +94,64 @@ def execute_browser_checks(target_url: str, workspace: Path | None = None) -> Tu
                     LiveVerdict.SAST_ONLY,
                     FindingSeverity.INFO,
                     endpoint,
-                    "pip install playwright && playwright install chromium",
+                    "pip install playwright && python -m playwright install chromium",
                 )
             ],
             0,
         )
-    return _run_playwright(endpoint, workspace or Path(config.workspaces_dir) / "browser")
+    pin_playwright_runtime_dirs()
+    try:
+        return _run_playwright(bind, workspace or Path(config.workspaces_dir) / "browser")
+    except Exception as exc:
+        return (
+            [
+                _finding(
+                    "Chromium/Playwright runtime unavailable; browser lab flows skipped",
+                    LiveVerdict.SAST_ONLY,
+                    FindingSeverity.INFO,
+                    endpoint,
+                    type(exc).__name__ + ": " + str(exc).splitlines()[0][:180],
+                )
+            ],
+            0,
+        )
 
 
-def _run_playwright(endpoint: str, workspace: Path) -> Tuple[List[VulnerabilityFinding], int]:
+def _is_pow_splash(title: str) -> bool:
+    lower = (title or "").lower()
+    return "verifying" in lower or "matrix verification" in lower
+
+
+def _run_playwright(bind: BrowserWafBind, workspace: Path) -> Tuple[List[VulnerabilityFinding], int]:
     from playwright.sync_api import sync_playwright
 
+    endpoint = bind.navigate_url
     findings: List[VulnerabilityFinding] = []
     ran = 0
     png = workspace / "lab-upload.png"
     workspace.mkdir(parents=True, exist_ok=True)
     png.write_bytes(_PNG)
+    session = obtain_lab_nexus_session(endpoint, bind.logical_host or None)
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=True)
-        page = browser.new_page()
+        browser = None
         try:
+            browser, page = open_bound_page(playwright, bind, session_cookie=session)
             page.goto(endpoint, wait_until="domcontentloaded", timeout=25000)
             ran += 1
             title = page.title()
-            if "verifying" in title.lower() or "matrix verification" in title.lower():
+            if _is_pow_splash(title):
+                if session:
+                    reason = "lab session cookie did not pass Matrix Verification"
+                else:
+                    reason = "no lab session (NEX_RED_LAB_SESSION_TOKEN unset or rejected)"
                 findings.append(
                     _finding(
                         "Browser stopped on the session challenge (PoW); lab flows not completed",
                         LiveVerdict.SAST_ONLY,
                         FindingSeverity.INFO,
                         endpoint,
-                        f"title={title}",
+                        f"title={title}; {reason}",
                     )
                 )
                 return findings, ran
@@ -215,9 +258,13 @@ def _run_playwright(endpoint: str, workspace: Path) -> Tuple[List[VulnerabilityF
                     LiveVerdict.SAST_ONLY,
                     FindingSeverity.INFO,
                     endpoint,
-                    type(exc).__name__,
+                    type(exc).__name__ + ": " + str(exc).splitlines()[0][:180],
                 )
             )
         finally:
-            browser.close()
+            if browser is not None:
+                try:
+                    browser.close()
+                except Exception:
+                    pass
     return findings, ran

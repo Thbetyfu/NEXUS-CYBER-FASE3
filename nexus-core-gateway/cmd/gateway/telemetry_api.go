@@ -33,6 +33,18 @@ func isValidDomain(domain string) bool {
 	return domainRegex.MatchString(domain)
 }
 
+// parseWorkspaceDomain normalizes ?domain= for SOC filters. "all" stays Global Overwatch.
+func parseWorkspaceDomain(raw string) string {
+	d := strings.ToLower(strings.TrimSpace(raw))
+	if d == "" {
+		return "all"
+	}
+	if d == "all" {
+		return "all"
+	}
+	return logger.NormalizeTargetHost(d)
+}
+
 func configuredPaymentWebhookSecret() string {
 	secret := strings.TrimSpace(os.Getenv("NEXUS_PAYMENT_WEBHOOK_SECRET"))
 	if secret == "" {
@@ -71,10 +83,7 @@ func telemetryHandler(shuffler *mtd.TopologyShuffler, telemetry *logger.Logger, 
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		filterDomain := strings.ToLower(r.URL.Query().Get("domain"))
-		if filterDomain == "" {
-			filterDomain = "all"
-		}
+		filterDomain := parseWorkspaceDomain(r.URL.Query().Get("domain"))
 		backendStatus := "CONNECTED"
 		client := http.Client{Timeout: 300 * time.Millisecond}
 		pingResp, err := client.Get(backendTarget + "/api/status")
@@ -107,7 +116,7 @@ func telemetryHandler(shuffler *mtd.TopologyShuffler, telemetry *logger.Logger, 
 		} else {
 			var domainLogs []logger.TelemetryLog
 			for _, l := range allLogs {
-				if strings.ToLower(l.TargetDomain) == filterDomain {
+				if logger.NormalizeTargetHost(l.TargetDomain) == filterDomain {
 					domainLogs = append(domainLogs, l)
 				}
 			}
@@ -923,58 +932,24 @@ func ipMonitoringHandler(telemetry *logger.Logger) http.HandlerFunc {
 			return
 		}
 
-		filterDomain := strings.ToLower(r.URL.Query().Get("domain"))
-		if filterDomain == "" {
-			filterDomain = "all"
-		}
+		filterDomain := parseWorkspaceDomain(r.URL.Query().Get("domain"))
 
 		var list []IPMonitoringEntry
 
-		// Workspace-bound filter: aggregate from in-memory telemetry by TargetDomain
-		// (ThreatLog DB rows have no domain column — RAM path is SoT for per-workspace IP view).
 		if filterDomain != "all" {
+			norm := filterDomain
+			if database.DB != nil {
+				var rows []models.ThreatLog
+				err := database.DB.Where("target_domain = ?", norm).
+					Order("created_at desc").Limit(2000).Find(&rows).Error
+				if err == nil && len(rows) > 0 {
+					list = ipMonitoringFromThreatLogs(rows)
+					json.NewEncoder(w).Encode(list)
+					return
+				}
+			}
 			logs := telemetry.GetRecentLogs()
-			ipMap := make(map[string]*IPMonitoringEntry)
-			for _, l := range logs {
-				if strings.ToLower(l.TargetDomain) != filterDomain {
-					continue
-				}
-				ip := l.SourceIP
-				if idx := strings.Index(ip, ":"); idx != -1 {
-					ip = ip[:idx]
-				}
-				entry, exists := ipMap[ip]
-				if !exists {
-					entry = &IPMonitoringEntry{
-						SourceIP:   ip,
-						LastActive: l.Timestamp,
-						IsBanned:   database.IsIPBlacklisted(ip),
-						UserAgent:  l.DeviceFingerprint,
-						Endpoints:  []string{},
-					}
-					ipMap[ip] = entry
-				}
-				entry.TotalRequests++
-				if l.Status == "BLOCKED" || l.Status == "RATE_LIMITED" || l.Status == "BANNED_IP_DIVERTED" {
-					entry.ThreatCount++
-				}
-				if l.Timestamp.After(entry.LastActive) {
-					entry.LastActive = l.Timestamp
-				}
-				found := false
-				for _, ep := range entry.Endpoints {
-					if ep == l.Endpoint {
-						found = true
-						break
-					}
-				}
-				if !found && l.Endpoint != "" {
-					entry.Endpoints = append(entry.Endpoints, l.Endpoint)
-				}
-			}
-			for _, v := range ipMap {
-				list = append(list, *v)
-			}
+			list = ipMonitoringFromTelemetry(logs, norm)
 			json.NewEncoder(w).Encode(list)
 			return
 		}
@@ -1018,56 +993,80 @@ func ipMonitoringHandler(telemetry *logger.Logger) http.HandlerFunc {
 
 		// Fallback to in-memory aggregation if DB is nil or failed
 		if len(list) == 0 {
-			logs := telemetry.GetRecentLogs()
-			ipMap := make(map[string]*IPMonitoringEntry)
-
-			for _, l := range logs {
-				ip := l.SourceIP
-				// strip port
-				if idx := strings.Index(ip, ":"); idx != -1 {
-					ip = ip[:idx]
-				}
-
-				entry, exists := ipMap[ip]
-				if !exists {
-					entry = &IPMonitoringEntry{
-						SourceIP:   ip,
-						LastActive: l.Timestamp,
-						IsBanned:   database.IsIPBlacklisted(ip),
-						UserAgent:  l.DeviceFingerprint,
-						Endpoints:  []string{},
-					}
-					ipMap[ip] = entry
-				}
-
-				entry.TotalRequests++
-				if l.Status == "BLOCKED" || l.Status == "RATE_LIMITED" || l.Status == "BANNED_IP_DIVERTED" {
-					entry.ThreatCount++
-				}
-				if l.Timestamp.After(entry.LastActive) {
-					entry.LastActive = l.Timestamp
-				}
-
-				// Add unique endpoint
-				found := false
-				for _, ep := range entry.Endpoints {
-					if ep == l.Endpoint {
-						found = true
-						break
-					}
-				}
-				if !found && l.Endpoint != "" {
-					entry.Endpoints = append(entry.Endpoints, l.Endpoint)
-				}
-			}
-
-			for _, v := range ipMap {
-				list = append(list, *v)
-			}
+			list = ipMonitoringFromTelemetry(telemetry.GetRecentLogs(), "all")
 		}
 
 		json.NewEncoder(w).Encode(list)
 	}
+}
+
+func stripIPPort(ip string) string {
+	host, _, err := net.SplitHostPort(ip)
+	if err == nil && host != "" {
+		return strings.Trim(host, "[]")
+	}
+	return ip
+}
+
+func bumpIPMonitoring(ipMap map[string]*IPMonitoringEntry, ip, endpoint, status, ua string, ts time.Time) {
+	ip = stripIPPort(ip)
+	if ip == "" {
+		return
+	}
+	entry, exists := ipMap[ip]
+	if !exists {
+		entry = &IPMonitoringEntry{
+			SourceIP:   ip,
+			LastActive: ts,
+			IsBanned:   database.IsIPBlacklisted(ip),
+			UserAgent:  ua,
+			Endpoints:  []string{},
+		}
+		ipMap[ip] = entry
+	}
+	entry.TotalRequests++
+	if status == "BLOCKED" || status == "RATE_LIMITED" || status == "BANNED_IP_DIVERTED" {
+		entry.ThreatCount++
+	}
+	if ts.After(entry.LastActive) {
+		entry.LastActive = ts
+	}
+	if endpoint == "" {
+		return
+	}
+	for _, ep := range entry.Endpoints {
+		if ep == endpoint {
+			return
+		}
+	}
+	entry.Endpoints = append(entry.Endpoints, endpoint)
+}
+
+func ipMapToList(ipMap map[string]*IPMonitoringEntry) []IPMonitoringEntry {
+	list := make([]IPMonitoringEntry, 0, len(ipMap))
+	for _, v := range ipMap {
+		list = append(list, *v)
+	}
+	return list
+}
+
+func ipMonitoringFromTelemetry(logs []logger.TelemetryLog, filterDomain string) []IPMonitoringEntry {
+	ipMap := make(map[string]*IPMonitoringEntry)
+	for _, l := range logs {
+		if filterDomain != "all" && logger.NormalizeTargetHost(l.TargetDomain) != filterDomain {
+			continue
+		}
+		bumpIPMonitoring(ipMap, l.SourceIP, l.Endpoint, l.Status, l.DeviceFingerprint, l.Timestamp)
+	}
+	return ipMapToList(ipMap)
+}
+
+func ipMonitoringFromThreatLogs(rows []models.ThreatLog) []IPMonitoringEntry {
+	ipMap := make(map[string]*IPMonitoringEntry)
+	for _, row := range rows {
+		bumpIPMonitoring(ipMap, row.SourceIP, row.Endpoint, row.Status, row.UserAgent, row.CreatedAt)
+	}
+	return ipMapToList(ipMap)
 }
 
 // blacklistListHandler lists all active blacklisted IPs

@@ -42,6 +42,7 @@ type NexusProxy struct {
 	Honeypot  *mtd.HoneypotServer
 	Shuffler  *mtd.TopologyShuffler
 	Router    *DynamicRouter // Router multi-host dinamis terdistribusi
+	golden    *GoldenGETCache
 
 	// Peta antibodi (virtual patches) resident memori untuk pencocokan instan O(1)
 	Patches      sync.Map
@@ -79,17 +80,19 @@ func NewNexusProxy(
 		Honeypot:  honeypot,
 		Shuffler:  shuffler,
 		Router:    NewDynamicRouter(10 * time.Second), // Cache TTL lokal 10 detik
+		golden:    NewGoldenGETCacheForOrigin(target),
 	}
 	atomic.StorePointer(&np.proxyPtr, unsafe.Pointer(initialProxy))
 
-	// Inisialisasi rute lab — bukan ojk/kemenkeu/bi.localhost (warisan demo).
-	np.Router.AddRoute("localhost", target)
-	np.Router.AddRoute("127.0.0.1", target)
-	np.Router.AddRoute("*", target)
-	RegisterProtectedHost(np.Router, target)
+	// Lab Host aliases share this origin. ROUTER-SYNC may overwrite from
+	// Postgres; main re-binds after sync so named-host and loopback stay aligned.
+	BindLabInstanceOrigin(np.Router, target)
 
 	// Jalankan sinkronisasi background antibodi imun.
 	np.StartImmunitySync()
+	if np.golden != nil && np.golden.enabled {
+		fmt.Printf("[NEXUS] Golden GET cache enabled (ttl=%s, stale-if-5xx=%s)\n", np.golden.ttl, np.golden.stale)
+	}
 
 	return np, nil
 }
@@ -100,11 +103,11 @@ func NewNexusProxy(
 // Menjamin setiap node gateway Nexus saling berbagi ilmu pertahanan secara instan (Global Immunity Sync).
 //
 // Alasan Arsitektural (Why):
-// 1. Bootstrap Sync awal dijalankan seketika saat gateway start agar node langsung kebal dari seluruh
-//    serangan zero-day yang sudah dipelajari sebelumnya tanpa menunggu timer ticker pertama.
-// 2. Berlangganan (Subscribe) ke Redis Pub/Sub channel "nexus:virtual_patches:channel" untuk sinkronisasi
-//    real-time instan antar-VPS (multi-instance) ketika ada antibodi baru terdaftar.
-// 3. Loop ticker 10 detik tetap berjalan sebagai fallback sync apabila jaringan Pub/Sub sempat terputus/degradasi.
+//  1. Bootstrap Sync awal dijalankan seketika saat gateway start agar node langsung kebal dari seluruh
+//     serangan zero-day yang sudah dipelajari sebelumnya tanpa menunggu timer ticker pertama.
+//  2. Berlangganan (Subscribe) ke Redis Pub/Sub channel "nexus:virtual_patches:channel" untuk sinkronisasi
+//     real-time instan antar-VPS (multi-instance) ketika ada antibodi baru terdaftar.
+//  3. Loop ticker 10 detik tetap berjalan sebagai fallback sync apabila jaringan Pub/Sub sempat terputus/degradasi.
 func (np *NexusProxy) StartImmunitySync() {
 	if mtd.MtdRedis == nil || !mtd.MtdRedis.Enabled {
 		return
@@ -154,21 +157,22 @@ func (np *NexusProxy) StartImmunitySync() {
 	}()
 }
 
-// AddAntibody mendaftarkan pola serangan siber mencurigakan ke database memori lokal dan Redis terdistribusi.
+// AddAntibody mendaftarkan pola serangan ke RAM lokal dulu, lalu Redis jika hidup.
+// Redis mati / nil / Enabled=false tidak membatalkan kekebalan Layer 1 di node ini.
 func (np *NexusProxy) AddAntibody(payload string) {
 	// 1. Sisipkan ke cache lokal (O(1) protection) untuk proteksi instan sub-milidetik.
 	np.Patches.Store(payload, true)
 	atomic.AddInt32(&np.PatchesCount, 1)
 
 	// 2. Publikasikan secara asinkron ke server kluster Redis dan siarkan ke node lain via Pub/Sub.
-	if mtd.MtdRedis != nil && mtd.MtdRedis.Enabled {
+	wrap := mtd.MtdRedis
+	if wrap != nil && wrap.Enabled && wrap.Client != nil {
+		client := wrap.Client
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
-			// Simpan ke set terdistribusi
-			mtd.MtdRedis.Client.SAdd(ctx, "nexus:virtual_patches", payload)
-			// Siarkan event ke node VPS lain secara instan
-			mtd.MtdRedis.Client.Publish(ctx, "nexus:virtual_patches:channel", payload)
+			client.SAdd(ctx, "nexus:virtual_patches", payload)
+			client.Publish(ctx, "nexus:virtual_patches:channel", payload)
 		}()
 	}
 }
@@ -313,6 +317,14 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	dynProxy.Transport = &http.Transport{
 		DisableCompression: true,
 	}
+	// Vercel (and most HTTPS origins) require the origin Host/SNI, not the
+	// visitor Host (127.0.0.1 or PROTECTED_HOST). Default Director already
+	// rewrites URL; pin Host explicitly so a 308-to-vercel.com cannot sneak in.
+	origDirector := dynProxy.Director
+	dynProxy.Director = func(req *http.Request) {
+		origDirector(req)
+		req.Host = remote.Host
+	}
 
 	dynProxy.ModifyResponse = func(resp *http.Response) error {
 		// Deteksi tipe konten HTML untuk pengacakan sandi visual (PACS)
@@ -352,7 +364,19 @@ func (np *NexusProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return nil
 	}
 
+	if np.golden != nil {
+		np.golden.Wrap(dynProxy).ServeHTTP(w, r)
+		return
+	}
 	dynProxy.ServeHTTP(w, r)
+}
+
+// PurgeGoldenGETCache drops edge GET snapshots (self-heal restore, system reset).
+func (np *NexusProxy) PurgeGoldenGETCache() {
+	if np == nil || np.golden == nil {
+		return
+	}
+	np.golden.Purge()
 }
 
 // ThreatData merepresentasikan skema koordinat geografis serangan siber untuk peta ancaman 3D (3D Threat Map).
@@ -369,11 +393,11 @@ type ThreatData struct {
 // PublishThreat mempublikasikan visualisasi serangan siber otonom secara global dan real-time.
 //
 // Alasan Arsitektural (Why):
-// - Menggunakan pelacakan IP Geografis real-time via API eksternal (ip-api.com) jika IP bersifat publik.
-// - Menyediakan simulasi koordinat acak real-time berkoordinat negara peretas (China, Rusia, USA, Singapura, Jerman)
-//   jika sistem berjalan secara offline (Local Host Mode), menjaga kemeriahan visualisasi Command Center (NCC).
-// - Mengirim data serangan ke kluster Redis Pub/Sub untuk sinkronisasi multi-dashboard,
-//   serta menyiarkan acara (broadcast) secara aman ke Map Listener SSE internal tanpa penundaan (sub-milidetik latency).
+//   - Menggunakan pelacakan IP Geografis real-time via API eksternal (ip-api.com) jika IP bersifat publik.
+//   - Menyediakan simulasi koordinat acak real-time berkoordinat negara peretas (China, Rusia, USA, Singapura, Jerman)
+//     jika sistem berjalan secara offline (Local Host Mode), menjaga kemeriahan visualisasi Command Center (NCC).
+//   - Mengirim data serangan ke kluster Redis Pub/Sub untuk sinkronisasi multi-dashboard,
+//     serta menyiarkan acara (broadcast) secara aman ke Map Listener SSE internal tanpa penundaan (sub-milidetik latency).
 func (np *NexusProxy) PublishThreat(ip string, threatType string) {
 	var lat, lng float64
 	sourceName := "SIMULATED_VEC"

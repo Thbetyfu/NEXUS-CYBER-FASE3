@@ -63,7 +63,8 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 
 ### 4.3 Alur C — Artefak
 
-- Export tabel delta, status antibodi, residual, log persetujuan (**Belum** implementasi penuh)
+- Export Job: tabel delta, status antibodi, residual, log persetujuan (MD/JSON per Job)
+- Digest insiden operator: `GET /api/incidents/digest` dari `threat_logs` per protected host (bukan portal klien; bukan BSSN/ISO)
 
 ### 4.4 Command Center / Operator GaaS Console
 
@@ -109,9 +110,9 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 
 ### F-GaaS-05 — Artefak risiko
 
-- **Status:** **[Sudah ada]** — export MD/JSON per Job
+- **Status:** **[Sudah ada]** — export MD/JSON per Job + digest insiden ThreatLog per workspace (operator)
 - **User Story:** Sebagai pemilik risiko, saya menerima ringkasan siklus identifikasi–pengendalian–uji tanpa CLI.
-- **Acceptance Criteria:** Export berisi delta, antibodi, residual, persetujuan L0/L1
+- **Acceptance Criteria:** Export Job berisi delta, antibodi, residual, persetujuan L0/L1. Digest insiden memfilter `target_domain`; Global Overwatch ditolak; payload tidak diekspor.
 
 ### F-Channel-01 — Channel Starter (Milestone 18 — lab v0.1)
 
@@ -135,7 +136,7 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 | F-04–F-05 | AVSE / PACS | Sudah ada | PACS = obfuskasi |
 | F-06 | Legacy subscription licensing | **Ditunda** | Bukan roadmap GaaS v1 |
 | F-07 | SOC CLI | Sudah ada | Operator internal |
-| F-08 | Self-repair file | Sudah ada | Folder terpantau saja |
+| F-08 | Self-repair file | Sudah ada | Folder terpantau + pin snapshot + fsnotify; bukan DB |
 | F-09 | Gallery lab | Sudah ada | Lab |
 | F-10 | Back-office legacy | **Ditunda** | F-10 portal |
 

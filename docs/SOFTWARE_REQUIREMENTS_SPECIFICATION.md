@@ -25,7 +25,7 @@ Lab: `deploy-local/` — HTTP, satu hostname, bukan provisioner multi-tenant leg
 
 ### 1.2 Komponen
 
-1. **Core Gateway (Go)** — data plane `:8080`: WAF Reflex, antibodi cache, MTD, honeypot, AVSE, rate limit
+1. **Core Gateway (Go)** — data plane `:8080`: WAF Reflex, antibodi cache, golden GET (HTTPS origin), MTD, honeypot, AVSE, rate limit
 2. **Control plane** — `:8081`: telemetri, CLI, ban, lab antibody handlers
 3. **Command Center (Next.js)** — operator internal `:3001`
 4. **NEX-RED** — wasit defense delta, agen recon/access/hygiene/reporter, bridge `:3004`

@@ -13,6 +13,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 
+from agents.runtime.waf_bind import bind_waf_edge
 from core.config import config
 from core.types import Evidence, FindingSeverity, FindingSource, VulnerabilityFinding
 
@@ -27,11 +28,15 @@ _SECURITY_HEADERS = (
 
 
 class SurfaceMapper:
-    def __init__(self, target_url: str, timeout: int = 10):
-        self.target_url = target_url.rstrip("/")
+    def __init__(self, target_url: str, timeout: int = 10, protected_host: str | None = None):
+        self.logical_url = target_url.rstrip("/")
+        bound, extra = bind_waf_edge(target_url, protected_host)
+        self.target_url = bound
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": config.user_agent})
+        if extra:
+            self.session.headers.update(extra)
         self.discovered_paths: List[str] = []
         self.waf_detected = False
         self.reachable = False
@@ -58,7 +63,11 @@ class SurfaceMapper:
                 continue
             absolute = urljoin(self.target_url + "/", match)
             parsed = urlparse(absolute)
-            if parsed.netloc and parsed.netloc != urlparse(self.target_url).netloc:
+            allowed_net = {
+                urlparse(self.target_url).netloc.lower(),
+                urlparse(self.logical_url).netloc.lower(),
+            }
+            if parsed.netloc and parsed.netloc.lower() not in allowed_net:
                 continue
             if parsed.path:
                 paths.add(parsed.path)
@@ -73,9 +82,9 @@ class SurfaceMapper:
                     severity=FindingSeverity.LOW,
                     cwe_id="CWE-693",
                     owasp_category="A05:2021-Security Misconfiguration",
-                    target_endpoint=self.target_url,
+                    target_endpoint=self.logical_url,
                     param_or_source=",".join(missing),
-                    proof_of_concept=f"GET {self.target_url} returned {self.last_status}; missing headers: {', '.join(missing)}",
+                    proof_of_concept=f"GET {self.logical_url} returned {self.last_status}; missing headers: {', '.join(missing)}",
                     remediation="Set CSP, HSTS, X-Content-Type-Options, and X-Frame-Options on the edge proxy.",
                     source=FindingSource.RECON,
                     confidence=0.9,

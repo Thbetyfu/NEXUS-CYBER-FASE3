@@ -137,7 +137,9 @@ botnet_results.json
 nexus-brain-lab/
 NEXUS-CORE-BRAIN.Modelfile
 
-# NEX-RED generated artifacts
+# Integrity snapshots (self-heal pin — may contain site file bytes)
+.nexus-integrity-*.json
+nexus-core-gateway/data/
 NEX-RED/reports/
 NEX-RED/workspaces/
 

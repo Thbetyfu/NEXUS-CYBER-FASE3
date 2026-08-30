@@ -11,6 +11,7 @@ import {
   Radio,
   Link2,
   Loader2,
+  BookOpen,
 } from 'lucide-react';
 import JobCoworkWidget from './JobCoworkWidget';
 import {
@@ -18,6 +19,7 @@ import {
   approveCoworkJob,
   deriveProtectedHost,
   downloadJobArtifact,
+  downloadIncidentDigest,
   errorMessage,
   isClosedJobStatus,
   isGlobalWorkspace,
@@ -57,6 +59,7 @@ interface OperatorGaasConsoleProps {
 }
 
 const OPS_SHORTCUTS = [
+  { id: 'panduan', label: 'Panduan' },
   { id: 'forensic-logs', label: 'Logs' },
   { id: 'ip-monitor', label: 'IP / Ban' },
   { id: 'system-status', label: 'Terminal' },
@@ -81,6 +84,7 @@ export default function OperatorGaasConsole({
   const [onboardError, setOnboardError] = useState<string | null>(null);
   const [lastOnboard, setLastOnboard] = useState<OnboardKanalResult | null>(null);
   const [onboarding, setOnboarding] = useState(false);
+  const [digestHours, setDigestHours] = useState(24);
 
   const refresh = useCallback(async () => {
     try {
@@ -131,6 +135,12 @@ export default function OperatorGaasConsole({
       setMsg(`Artefak ${format.toUpperCase()} diunduh`);
     }, 'Unduh gagal');
 
+  const downloadDigest = (format: ArtifactFormat) =>
+    runBusy(async () => {
+      await downloadIncidentDigest(activeDomain, digestHours, format);
+      setMsg(`Digest insiden ${format.toUpperCase()} (${digestHours} jam) diunduh`);
+    }, 'Unduh digest gagal');
+
   const onOriginChange = (value: string) => {
     setOriginUrl(value);
     setOnboardError(null);
@@ -178,7 +188,7 @@ export default function OperatorGaasConsole({
       <div className="rounded-xl border border-teal-500/25 bg-teal-950/30 px-4 py-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.2em] text-teal-500/80 font-bold">
-            Operator GaaS Console
+            Konsol Operator GaaS
           </p>
           <p className="text-teal-100 font-semibold mt-0.5">
             Kokpit internal Nexus — bukan dashboard pelanggan
@@ -188,13 +198,22 @@ export default function OperatorGaasConsole({
             etalase jual; SOC ini = dapur wasit.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => refresh()}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-teal-400/90 border border-teal-500/30 rounded-lg px-3 py-1.5 hover:bg-teal-900/40"
-        >
-          <RefreshCw size={12} /> Refresh
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenOps('panduan')}
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-teal-100 border border-teal-400/40 rounded-lg px-3 py-1.5 bg-teal-900/50 hover:bg-teal-800/50"
+          >
+            <BookOpen size={12} /> Panduan Penggunaan
+          </button>
+          <button
+            type="button"
+            onClick={() => refresh()}
+            className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-teal-400/90 border border-teal-500/30 rounded-lg px-3 py-1.5 hover:bg-teal-900/40"
+          >
+            <RefreshCw size={12} /> Muat ulang
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -229,11 +248,11 @@ export default function OperatorGaasConsole({
           </p>
           <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
             <div>
-              <p className="text-gray-500">Allowed</p>
+              <p className="text-gray-500">Diizinkan</p>
               <p className="text-white font-bold">{metrics.allowed}</p>
             </div>
             <div>
-              <p className="text-gray-500">Blocked</p>
+              <p className="text-gray-500">Diblokir</p>
               <p className="text-rose-300 font-bold">{metrics.blocked}</p>
             </div>
             <div>
@@ -245,13 +264,13 @@ export default function OperatorGaasConsole({
 
         <div className="rounded-xl border border-white/10 bg-black/35 p-3 space-y-2">
           <div className="flex items-center gap-2 text-violet-300 text-[10px] uppercase tracking-widest font-bold">
-            <Shield size={14} /> Wasit bridge
+            <Shield size={14} /> Bridge wasit
           </div>
           <p className={`text-sm font-bold ${bridgeOnline ? 'text-emerald-400' : 'text-amber-400'}`}>
             NEX-RED :3004 — {bridgeOnline ? 'online' : 'offline'}
           </p>
           <p className="text-[11px] text-gray-400">
-            Jobs: {status?.job_count ?? 0} · Menunggu approve:{' '}
+            Job: {status?.job_count ?? 0} · Menunggu approve:{' '}
             <span className="text-sky-300 font-bold">{status?.pending_approval ?? 0}</span>
           </p>
           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -267,6 +286,57 @@ export default function OperatorGaasConsole({
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-amber-500/20 bg-amber-950/15 p-4 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-amber-400/90">
+              Digest insiden (Alur C)
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1 max-w-2xl leading-relaxed">
+              Jejak WAF dari <code className="text-amber-200/80">threat_logs</code> per workspace —
+              untuk pemilik risiko kanal, bukan dashboard pelanggan. Bukan sertifikasi BSSN/ISO.
+              Baris lama tanpa kolom domain tidak masuk.
+            </p>
+          </div>
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 flex items-center gap-2">
+            Jendela
+            <select
+              value={digestHours}
+              onChange={(e) => setDigestHours(Number(e.target.value))}
+              className="bg-black/50 border border-white/15 rounded px-2 py-1 text-xs text-gray-200"
+            >
+              <option value={24}>24 jam</option>
+              <option value={72}>72 jam</option>
+              <option value={168}>7 hari</option>
+            </select>
+          </label>
+        </div>
+        {isGlobalWorkspace(activeDomain) ? (
+          <p className="text-[11px] text-amber-300/90">
+            Pilih workspace di Domain Switcher — Global Overwatch tidak mengunduh digest.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => downloadDigest('md')}
+              className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-100 border border-amber-400/40 rounded-lg px-3 py-1.5 bg-amber-950/40 hover:bg-amber-900/40 disabled:opacity-50"
+            >
+              <Download size={12} /> Digest MD
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => downloadDigest('json')}
+              className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-200 border border-white/20 rounded-lg px-3 py-1.5 hover:bg-white/5 disabled:opacity-50"
+            >
+              <Download size={12} /> Digest JSON
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="rounded-xl border border-teal-500/30 bg-teal-950/20 p-4 space-y-3">
@@ -386,7 +456,7 @@ export default function OperatorGaasConsole({
                 onClick={() => approve(job.job_id)}
                 className="text-xs px-3 py-1.5 rounded-lg border border-amber-500/40 text-amber-200 bg-amber-950/40 hover:bg-amber-900/50 disabled:opacity-50"
               >
-                Approve {job.autonomy_level}
+                Setujui {job.autonomy_level}
               </button>
             </div>
           ))
@@ -429,7 +499,7 @@ export default function OperatorGaasConsole({
                         : 'flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-white/15 text-gray-300 hover:bg-white/5 disabled:opacity-50'
                     }
                   >
-                    <Download size={11} /> {format.toUpperCase()}
+                    <Download size={11} /> Unduh {format.toUpperCase()}
                   </button>
                 ))}
               </div>

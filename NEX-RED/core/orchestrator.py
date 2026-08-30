@@ -65,7 +65,7 @@ class NexRedOrchestrator:
 
         live_modes = {ScanMode.BLACKBOX, ScanMode.HYBRID, ScanMode.SCENARIO}
         if self.target.mode in live_modes and self.target.target_url:
-            rec = run_agent("recon", lambda: recon(self.target.target_url))
+            rec = run_agent("recon", lambda: recon(self.target.target_url, self.target.protected_host))
             agent_runs.append(_summary(rec))
             findings.extend(rec.findings)
             total_probes += rec.probes
@@ -82,7 +82,7 @@ class NexRedOrchestrator:
         if self.target.mode in {ScanMode.BLACKBOX, ScanMode.HYBRID} and self.target.target_url:
             hyg = run_agent(
                 "injection-hygiene",
-                lambda: injection_hygiene(self.target.target_url, paths),
+                lambda: injection_hygiene(self.target.target_url, paths, self.target.protected_host),
             )
             agent_runs.append(_summary(hyg))
             findings.extend(hyg.findings)
@@ -104,6 +104,7 @@ class NexRedOrchestrator:
                     paths,
                     self.scan_id,
                     enable_llm=self.target.enable_llm,
+                    protected_host=self.target.protected_host,
                 ),
             )
             agent_runs.append(_summary(acc))

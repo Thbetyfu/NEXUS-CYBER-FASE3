@@ -14,6 +14,7 @@ import {
   Terminal,
   ShieldCheck,
   LayoutDashboard,
+  BookOpen,
 } from "lucide-react";
 import DomainSwitcher from "./DomainSwitcher";
 
@@ -31,7 +32,8 @@ interface TaskbarProps {
 }
 
 const APPS = [
-  { id: "operator-gaas", icon: LayoutDashboard, label: "GaaS Console" },
+  { id: "operator-gaas", icon: LayoutDashboard, label: "Konsol GaaS" },
+  { id: "panduan", icon: BookOpen, label: "Panduan" },
   { id: "job-cowork", icon: ShieldCheck, label: "Job Cowork" },
   { id: "forensic-logs", icon: Activity, label: "Logs" },
   { id: "ip-monitor", icon: Shield, label: "IP / Ban" },
@@ -117,7 +119,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
               type="button"
               onClick={onDeleteDomain}
               className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all group"
-              title={`Purge Workspace: ${activeDomain}`}
+              title={`Hapus workspace: ${activeDomain}`}
             >
               <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
             </button>
@@ -126,7 +128,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             type="button"
             onClick={onReset}
             className="p-2 rounded-lg text-amber-500/80 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all group"
-            title="System Purge"
+            title="Purge sistem"
           >
             <RotateCcw
               size={16}
@@ -137,7 +139,7 @@ const Taskbar: React.FC<TaskbarProps> = ({
             type="button"
             onClick={onPanic}
             className="p-2 rounded-lg text-rose-500/80 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all group"
-            title="Emergency Rescue"
+            title="Panic / darurat"
           >
             <ShieldAlert size={16} className="group-hover:scale-125 transition-transform" />
           </button>

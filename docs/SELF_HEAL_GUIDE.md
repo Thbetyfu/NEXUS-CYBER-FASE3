@@ -1,73 +1,71 @@
 # Panduan Self-Heal
 
-**Pembaruan:** 2026-08-22  
-**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — komponen tepi Alur A; **bukan** pengganti Job Cowork atau RCE memori.
+**Pembaruan:** 2026-08-29  
+**Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — komponen tepi Alur A. Mengembalikan **file origin yang dipantau** tanpa mematikan website. Bukan PITR database, bukan RCE di memori proses, bukan HTML di Vercel kecuali salinan folder itu ada di disk yang dipantau.
 
-Integrity monitor di `nexus-core-gateway/internal/repair` memakai **BLAKE3**, baseline di RAM, restore folder yang dikonfigurasi. Bukan proteksi RCE di memori proses, bukan PITR database.
+Integrity monitor di `nexus-core-gateway/internal/repair`:
+
+- Baseline **dipin** ke berkas snapshot (BLAKE3 manifest). Restart gateway **tidak** mengambil ulang “asli” dari disk yang mungkin sudah di-deface.
+- Deteksi perubahan lewat **fsnotify** (cadangan poll 2 detik). Restore tulis file di tempat — proses origin tidak di-restart.
+- Pager Telegram (jika `TELEGRAM_*` diisi) pada restore/purge, lewat `ReportThreat` yang sama dengan autoban.
+- Restore/purge **mengosongkan golden GET cache** di WAF agar HTML tepi tidak menahan halaman deface (relevan jika cache diopt-in pada origin HTTP).
+- Folder default lab: `playground/Portofolio-Thoriq` (bukan portal OJK lama / `Portfolio-website`). `node_modules`, `.git`, `.next`, dan berkas &gt; 2 MiB dilewati.
 
 ---
 
-Nexus Cyber dilengkapi dengan modul keamanan otonom bernama **System Integrity Monitor (Self-Heal)**. Fitur ini dirancang untuk mendeteksi manipulasi berkas situs web secara instan (<10ms) dan mengembalikannya ke kondisi asli tanpa memerlukan campur tangan teknisi manusia.
+Nexus Cyber memakai **System Integrity Monitor (Self-Heal)** agar deface/webshell di folder terpantau dikembalikan tanpa campur tangan operator dan **tanpa mematikan situs**.
 
 ---
 
-## 1. Mekanisme Kerja Arsitektur Self-Heal
-
-Modul pemulihan ini berjalan secara asinkron sebagai thread latar belakang (*background worker*) pada WAF Gateway:
+## 1. Mekanisme
 
 ```text
-[ Berkas Frontend ] ◄── (Kondisi Asli) ──┐
-       │                                 │
-  (Pemindaian berkala)             (Restorasi Instan <10ms)
-       │                                 │
-       ▼                                 │
-[ Bandingkan Hash BLAKE3 ] ── (Berbeda) ─┘
+[ Pin snapshot (disk) ] ──muat saat start──► [ RAM baseline ]
+                                                    │
+[ fsnotify / poll ] ──hash ≠ pin──► tulis ulang file (situs tetap jalan)
+                                                    │
+                                           Telegram + log SOC
 ```
 
-1.  **Perekaman Baseline (Startup)**:
-    Saat WAF Gateway pertama kali dinyalakan, modul akan membaca seluruh isi file di direktori target secara rekursif, menghitung tanda tangan digitalnya menggunakan algoritma **BLAKE3 hashing**, dan menyimpan salinan isi file tersebut langsung di dalam RAM (Secure Memory Buffer).
-2.  **Pemindaian Berkala (Rescan)**:
-    Setiap interval waktu tertentu (default: 2 detik), sistem memindai kembali direktori target.
-3.  **Tindakan Restorasi Otomatis**:
-    -   **File Dimodifikasi**: Jika isi file diubah (misalnya peretas mengganti kode HTML/JS), hash BLAKE3 akan berbeda. Sistem langsung menimpa file tersebut menggunakan salinan asli dari RAM buffer.
-    -   **File Dihapus**: Jika file dihapus oleh peretas, sistem mendeteksi ketiadaan file dan langsung membuat ulang file tersebut dari RAM buffer.
-    -   **File Tidak Dikenal (Webshell)**: Jika peretas berhasil mengunggah berkas baru (misalnya file backdoor `webshell.php`), sistem mendeteksi berkas yang tidak terdaftar di memori awal dan langsung menghapusnya secara permanen.
+1. **Pin (pertama kali, atau `INTEGRITY_REPIN=1` pada pohon yang diketahui sehat)**  
+   Isi file terpantau di-hash BLAKE3, disimpan di `INTEGRITY_BASELINE_PATH` (default: berkas `.nexus-integrity-<hash>.json` di **induk** folder, bukan di dalam pohon yang di-purge).
+2. **Start berikutnya**  
+   Snapshot dimuat. Disk hidup yang berbeda → di-restore ke pin. Snapshot rusak/dipalsukan → **tidak** re-baseline dari disk; gateway log `SELF-HEAL-WARN` (set `INTEGRITY_REPIN=1` hanya jika pohon benar-benar sehat).
+3. **Live**  
+   Event fsnotify (debounce ~75ms) + poll 2 detik: file diubah/dihapus dikembalikan; file baru yang tidak ada di pin dihapus (anti-webshell di folder itu).
 
 ---
 
-## 2. Cara Menguji Fitur Self-Heal (Live Test)
+## 2. Uji lab (origin lokal)
 
-Anda dapat melakukan simulasi serangan peretasan untuk melihat bagaimana sistem memulihkan dirinya sendiri secara otomatis:
+Gateway harus berjalan dengan `INTEGRITY_MONITORED_DIR` menunjuk folder yang sama dengan yang Anda ubah (lab: submodule portofolio).
 
-### Prasyarat
-Pastikan WAF Gateway sedang berjalan. Jika belum, jalankan perintah start dev server.
+### Deface
+Ubah sebuah berkas sumber di folder itu (mis. di `playground/Portofolio-Thoriq`). Dalam waktu singkat isi kembali ke pin. Log: `[SELF-HEAL] [INTEGRITY_VIOLATION] Restored MODIFIED file: ...`  
+Jika Telegram dikonfigurasi, pager ikut (cooldown IP `self-heal` 15 menit, sama seperti pager ban).
 
-### Skenario 1: Simulasi Web Defacement (Modifikasi File)
-1.  Buka folder target yang dipantau (misalnya: `d:\0. Kerjaan\Nexus-Cyber\Nexus-Cyber-Fase2\Portfolio-website\dist`).
-2.  Buka file `index.html` menggunakan editor teks (Notepad / VS Code).
-3.  Ubah teks di dalamnya secara acak (misal mengganti judul halaman), lalu simpan berkas tersebut.
-4.  **Hasil**: Dalam waktu kurang dari 2 detik, file `index.html` akan kembali ke isi semula. Jika Anda melihat log di terminal WAF Gateway, akan muncul baris pemberitahuan:
-    `[SELF-HEAL] [INTEGRITY_VIOLATION] Restored MODIFIED file: index.html | Recovery: 1.5ms`
+### Hapus berkas
+Hapus berkas yang ada di pin → file muncul lagi dari snapshot.
 
-### Skenario 2: Simulasi Sabotase (Penghapusan File)
-1.  Masuk ke direktori `dist` dari portfolio website Anda.
-2.  Hapus file `index.html` atau file gambar aset di dalamnya secara permanen.
-3.  **Hasil**: File yang baru saja Anda hapus akan langsung muncul kembali di folder tersebut secara otomatis. Log terminal WAF Gateway akan memunculkan pesan:
-    `[SELF-HEAL] [INTEGRITY_VIOLATION] Restored DELETED file: index.html | Recovery: 2.1ms`
+### Berkas liar
+Buat `backdoor.php` di folder terpantau (bukan di `node_modules`) → dihapus.
 
-### Skenario 3: Simulasi Unggah Backdoor (Anti-Webshell)
-1.  Buat file baru di dalam direktori `dist` dengan nama `backdoor.php` atau `hack.txt` berisi kode acak.
-2.  **Hasil**: File baru tersebut akan dihapus secara instan dalam hitungan detik. Log terminal WAF Gateway akan memunculkan pesan:
-    `[SELF-HEAL] Removed unauthorized file: backdoor.php | Latency: 0.8ms`
+**Docker lab (START-OFFLINE):** `dist/` di-bind ke container origin `/app/dist` (Go FileServer). Gateway memantau `/origin-lab/dist` — **folder yang sama**. Pertama kali, entrypoint men-seed `dist` dari image jika `index.html` belum ada. Deface `playground/Portofolio-Thoriq/dist/index.html` (setelah seed) kembali di situs tanpa mematikan container. `dist/uploads` (foto tamu) tidak dihapus oleh self-heal.
+
+Origin **Vercel** (`START.bat` tanpa offline) tidak memakai bind-mount ini.
 
 ---
 
-## 3. Konfigurasi Direktori yang Dipantau
-
-Direktori yang dipantau dikonfigurasi melalui berkas **[.env](file:///d:/0.%20Kerjaan/Nexus-Cyber/Nexus-Cyber-Fase2/nexus-core-gateway/.env)** pada variabel:
+## 3. Konfigurasi
 
 ```env
-INTEGRITY_MONITORED_DIR=../Portfolio-website/dist
+INTEGRITY_MONITORED_DIR=../playground/Portofolio-Thoriq
+# INTEGRITY_BASELINE_PATH=  # kosong = default di induk folder
+# INTEGRITY_REPIN=1         # hanya saat Anda sengaja mengambil pin baru dari disk sehat
 ```
 
-Variabel ini menunjuk secara relatif ke folder web asli yang sedang disajikan kepada publik. Jika Anda ingin melindungi direktori lain (seperti folder static, template backend, atau landing page), Anda hanya perlu mengganti nilai variabel ini ke direktori tujuan dan melakukan restart pada WAF Gateway.
+`deploy-local` / Docker: `INTEGRITY_MONITORED_DIR=/origin-lab`, `INTEGRITY_BASELINE_PATH=/app/data/integrity-baseline.json`.
+
+Ganti folder jika instance melindungi site Channel Starter di disk, bukan portofolio.
+
+Tes unit: `go test ./internal/repair/` di `nexus-core-gateway`.

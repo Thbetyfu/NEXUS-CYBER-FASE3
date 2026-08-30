@@ -11,7 +11,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react"
 import {
   Shield, Activity, ShieldAlert, Cpu, Terminal,
   WifiOff, ShieldCheck,
-  Database, Users, Ban, LayoutDashboard
+  Database, Users, Ban, LayoutDashboard, BookOpen
 } from 'lucide-react';
 import {
   AreaChart, Area, CartesianGrid, ResponsiveContainer
@@ -29,6 +29,7 @@ import ComplianceWidget from '@/components/ComplianceWidget';
 import SocAuthGate from '@/components/SocAuthGate';
 import JobCoworkWidget from '@/components/JobCoworkWidget';
 import OperatorGaasConsole from '@/components/OperatorGaasConsole';
+import PanduanPenggunaan from '@/components/PanduanPenggunaan';
 
 // Config
 import { gatewayURL } from '@/config';
@@ -655,6 +656,7 @@ const NCCDashboard = () => {
     "ip-monitor": 16,
     "job-cowork": 18,
     "compliance-audit": 19,
+    "panduan": 21,
   });
 
   const handleFocusWindow = useCallback((id: string) => {
@@ -794,7 +796,7 @@ const NCCDashboard = () => {
             <WifiOff className="w-12 h-12 text-red-500" />
             <h2 className="text-xl font-bold text-white uppercase tracking-widest">Gateway Offline</h2>
             <button onClick={() => window.location.reload()} className="px-6 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded text-[10px] font-black uppercase tracking-widest transition-all">
-              Initiate Reconnect
+              Hubungkan ulang
             </button>
           </div>
         </div>
@@ -820,10 +822,17 @@ const NCCDashboard = () => {
         <div className="absolute top-4 left-6 flex flex-col flex-wrap max-h-[calc(100vh-130px)] gap-1.5 z-0">
           <DesktopIcon
             id="operator-gaas"
-            label="GaaS Console"
+            label="Konsol GaaS"
             icon={LayoutDashboard}
             onClick={toggleWindow}
             isOpen={openWindows.includes("operator-gaas")}
+          />
+          <DesktopIcon
+            id="panduan"
+            label="Panduan"
+            icon={BookOpen}
+            onClick={toggleWindow}
+            isOpen={openWindows.includes("panduan")}
           />
           <DesktopIcon
             id="job-cowork"
@@ -834,28 +843,28 @@ const NCCDashboard = () => {
           />
           <DesktopIcon
             id="forensic-logs"
-            label="Forensic Logs"
+            label="Logs Forensik"
             icon={Database}
             onClick={toggleWindow}
             isOpen={openWindows.includes("forensic-logs")}
           />
           <DesktopIcon
             id="ip-monitor"
-            label="IP Activity"
+            label="IP / Ban"
             icon={Users}
             onClick={toggleWindow}
             isOpen={openWindows.includes("ip-monitor")}
           />
           <DesktopIcon
             id="system-status"
-            label="Nexus Terminal"
+            label="Terminal"
             icon={Terminal}
             onClick={toggleWindow}
             isOpen={openWindows.includes("system-status")}
           />
           <DesktopIcon
             id="metrics"
-            label="System Metrics"
+            label="Metrics"
             icon={Activity}
             onClick={toggleWindow}
             isOpen={openWindows.includes("metrics")}
@@ -876,7 +885,7 @@ const NCCDashboard = () => {
             <WindowFrame
               key="operator-gaas"
               id="operator-gaas"
-              title="Operator GaaS Console"
+              title="Konsol Operator GaaS"
               icon={<LayoutDashboard size={14} />}
               initialX={120}
               initialY={36}
@@ -900,12 +909,31 @@ const NCCDashboard = () => {
             </WindowFrame>
           )}
 
+          {openWindows.includes("panduan") && (
+            <WindowFrame
+              key="panduan"
+              id="panduan"
+              title="Panduan Penggunaan"
+              icon={<BookOpen size={14} />}
+              initialX={160}
+              initialY={48}
+              width={900}
+              height={620}
+              zIndex={windowZIndices["panduan"] || 21}
+              isActive={focusedWindow === "panduan"}
+              onFocus={() => handleFocusWindow("panduan")}
+              onClose={() => toggleWindow("panduan")}
+            >
+              <PanduanPenggunaan />
+            </WindowFrame>
+          )}
+
           {/* Metrics Window */}
           {openWindows.includes("metrics") && (
             <WindowFrame
               key="metrics"
               id="metrics"
-              title="System Metrics"
+              title="Metrics Sistem"
               icon={<Activity size={14} />}
               initialX={140}
               initialY={40}
@@ -922,11 +950,11 @@ const NCCDashboard = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#0f172a] border border-blue-500/20 rounded-xl p-4">
-                    <p className="text-[9px] text-blue-400 uppercase font-black tracking-widest mb-1">Inbound Traffic</p>
+                    <p className="text-[9px] text-blue-400 uppercase font-black tracking-widest mb-1">Lalu lintas masuk</p>
                     <p className="text-2xl font-mono font-bold text-white">{metrics.allowed.toLocaleString()}</p>
                   </div>
                   <div className="bg-[#1a1010] border border-red-500/20 rounded-xl p-4">
-                    <p className="text-[9px] text-red-400 uppercase font-black tracking-widest mb-1">Threats Trapped</p>
+                    <p className="text-[9px] text-red-400 uppercase font-black tracking-widest mb-1">Ancaman terjebak</p>
                     <p className="text-2xl font-mono font-bold text-red-500">{metrics.honeypot.toLocaleString()}</p>
                   </div>
                 </div>
@@ -935,7 +963,7 @@ const NCCDashboard = () => {
                 <div className="bg-[#0b0e14] border border-emerald-500/20 rounded-xl p-4 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest flex items-center gap-1.5">
-                      <Cpu size={11} className="animate-pulse" /> Edge drop counters
+                      <Cpu size={11} className="animate-pulse" /> Counter drop tepi
                     </p>
                     <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/20">
                       GATEWAY (lab)
@@ -979,7 +1007,7 @@ const NCCDashboard = () => {
 
                 <div className="bg-black/40 border border-white/5 rounded-xl p-4 flex-1 overflow-hidden flex flex-col">
                   <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest mb-3 flex items-center gap-2">
-                    <ShieldCheck size={10} /> Active Interventions
+                    <ShieldCheck size={10} /> Intervensi aktif
                   </p>
                   <div className="flex-1 overflow-auto custom-scrollbar space-y-2 pr-2">
                     {aiEvents.slice(0, 8).map((ev, i) => (
@@ -1002,7 +1030,7 @@ const NCCDashboard = () => {
             <WindowFrame
               key="system-status"
               id="system-status"
-              title="Nexus Core Terminal"
+              title="Terminal Nexus"
               icon={<Terminal size={14} />}
               initialX={800}
               initialY={400}
@@ -1022,7 +1050,7 @@ const NCCDashboard = () => {
             <WindowFrame
               key="forensic-logs"
               id="forensic-logs"
-              title="Forensic Data Stream"
+              title="Logs Forensik"
               icon={<Database size={14} />}
               initialX={600}
               initialY={220}
@@ -1052,7 +1080,7 @@ const NCCDashboard = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-[8px] text-red-500 font-black uppercase tracking-widest">Telemetry Live</span>
+                    <span className="text-[8px] text-red-500 font-black uppercase tracking-widest">Telemetri live</span>
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto bg-[#07090c]">
@@ -1081,7 +1109,7 @@ const NCCDashboard = () => {
                             <span className={`px-2 py-0.5 rounded-[4px] font-black uppercase text-[8px] ${
                               log.status === "ALLOWED" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-red-500/10 text-red-500 border border-red-500/20"
                             }`}>
-                              {log.status === "ALLOWED" ? "Passed" : "Dropped"}
+                              {log.status === "ALLOWED" ? "Lolos" : "Ditolak"}
                             </span>
                           </td>
                         </tr>
@@ -1098,7 +1126,7 @@ const NCCDashboard = () => {
             <WindowFrame
               key="ip-monitor"
               id="ip-monitor"
-              title="IP Activity & Blacklist Console"
+              title="IP / Ban"
               icon={<Users size={14} />}
               initialX={320}
               initialY={120}
@@ -1147,7 +1175,7 @@ const NCCDashboard = () => {
             <WindowFrame
               key="job-cowork"
               id="job-cowork"
-              title="Job Cowork — GaaS Wasit"
+              title="Job Cowork — wasit GaaS"
               icon={<ShieldCheck size={14} />}
               initialX={280}
               initialY={90}

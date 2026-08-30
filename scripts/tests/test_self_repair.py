@@ -6,9 +6,12 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
-# Sibling folder Portfolio-website (may exist on local PC, or be absent on CI runners)
-TARGET_FILE = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "Portfolio-website", "index.html"))
-UNAUTHORIZED_FILE = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "Portfolio-website", "unauthorized_test_file.txt"))
+# Sibling lab origin (playground/Portofolio-Thoriq) — skip if submodule missing
+PORTFOLIO_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "playground", "Portofolio-Thoriq"))
+TARGET_FILE = os.path.abspath(os.path.join(PORTFOLIO_DIR, "src", "pages", "Gallery.tsx"))
+if not os.path.isfile(TARGET_FILE):
+    TARGET_FILE = os.path.abspath(os.path.join(PORTFOLIO_DIR, "index.html"))
+UNAUTHORIZED_FILE = os.path.abspath(os.path.join(PORTFOLIO_DIR, "unauthorized_test_file.txt"))
 
 def test_modification():
     print("\n[TEST 1] Testing Web Defacement Restoration (Modification Rollback)...")

@@ -8,6 +8,7 @@
 
 # Build artifacts
 nexus-core-gateway
+nexus-gateway
 *.exe
 *.out
 
@@ -21,6 +22,10 @@ nexus_traffic.log
 # Coverage reports
 coverage.out
 coverage.html
+
+# Integrity pin (file bytes)
+data/
+.nexus-integrity-*.json
 
 # IDE
 .vscode/

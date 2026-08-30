@@ -1,6 +1,6 @@
 # Command Center CLI Guide
 
-**Pembaruan:** 2026-08-22  
+**Pembaruan:** 2026-08-29  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — Command Center = **kokpit operator** GaaS, bukan produk ke pemilik risiko kanal.
 
 Perintah SOC lewat dasbor ke **`127.0.0.1:8081`** (`POST`, sesi operator). Bukan port WAF `:8080`.
@@ -42,14 +42,20 @@ python NEX-RED/nexred.py benchmark --live
 python NEX-RED/nexred.py llm-eval
 python NEX-RED/nexred.py sandbox
 python NEX-RED/nexred.py bridge -p 3004
-python NEX-RED/nexred.py job run --title "Lab wasit" -u http://127.0.0.1:8080 --autonomy L0
+python NEX-RED/nexred.py job run --title "Lab wasit" -u http://portfolio.nexus-lab.test --autonomy L0
 python NEX-RED/nexred.py job approve JOB-XXXXXXXX --operator "nama"
 python NEX-RED/nexred.py job show JOB-XXXXXXXX
 python NEX-RED/nexred.py job export JOB-XXXXXXXX --format md
 python NEX-RED/nexred.py job schedule-add --title "Weekly" -u http://127.0.0.1:8080 --interval-hours 168
 ```
 
-Job Cowork disinkronkan ke PostgreSQL jika gateway `:8081` + `POSTGRES_DSN` aktif (`NEXUS_CONTROL_PLANE_URL`, default `http://127.0.0.1:8081`). File backup: `NEX-RED/jobs/data/`.
+Job Cowork disinkronkan ke PostgreSQL jika gateway `:8081` + `POSTGRES_DSN` aktif (`NEXUS_CONTROL_PLANE_URL`, default `http://127.0.0.1:8081`). File backup: `NEX-RED/jobs/data/`. Job named-host bind TCP ke `NEXUS_GATEWAY_URL` (`http://127.0.0.1:8080`) + `Host`. Browser lab: `set NEX_RED_BROWSER=1` lalu `NEX-RED/INSTALL-PLAYWRIGHT.bat` (Chromium di drive repo, sama dengan `D:\NEXUS-CYBER-FASE3` di lab ini). Gallery/vault named-host butuh `NEX_RED_LAB_SESSION_TOKEN` = `NEXUS_LAB_SESSION_TOKEN` di gateway (bukan skip PoW pengunjung). Binary hilang = skip jujur, bukan PARTIAL.
+
+Digest insiden (operator, satu workspace — bukan `domain=all`):
+
+```bash
+curl -s "http://127.0.0.1:8081/api/incidents/digest?domain=portfolio.nexus-lab.test&hours=24&format=md"
+```
 
 `llm-eval` hanya `nex-ai-protect` (model milik Nexus). Tidak memakai Qwen/Llama meski ada di Ollama.
 Benchmark klasifikasi HTTP: `python NEX-AI/evaluation/run_benchmark.py --model nex-ai-reflex`.
@@ -58,7 +64,7 @@ Dataset lab: `python NEX-AI/scripts/collect_lab_dataset.py` (lalu ulang setelah 
 Juice Shop lab (loopback `:3003`): `NEX-RED/lab/juice-shop/START.bat` lalu `lab-juice`. Skor kelas, bukan pentest Shannon.
 Sandbox opsional: `NEX-RED/sandbox/START.bat` (uid 10001, tanpa Docker socket; bukan kunci internet kernel).
 
-Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_job_cowork tests.test_live_http tests.test_browser tests.test_benchmark tests.test_juice_lab tests.test_crew tests.test_sandbox tests.test_planner tests.test_llm_eval tests.test_modelfiles`
+Dari `NEX-RED/`: `python -m unittest tests.test_nexred tests.test_job_cowork tests.test_live_http tests.test_waf_bind tests.test_browser tests.test_benchmark tests.test_juice_lab tests.test_crew tests.test_sandbox tests.test_planner tests.test_llm_eval tests.test_modelfiles`
 
 ## 4. Tes lain
 
@@ -67,3 +73,5 @@ python scripts/tests/nexus_system_audit.py
 python scripts/tests/test_mtd_shuffle.py
 python scripts/tests/test_self_repair.py
 ```
+
+Live self-heal: gateway harus memantau `playground/Portofolio-Thoriq` (`INTEGRITY_MONITORED_DIR`). Offline Docker: `dist/index.html` (folder yang di-serve). Tanpa gateway, skrip me-skip. Tes unit Go: `go test ./internal/repair/` di `nexus-core-gateway`.

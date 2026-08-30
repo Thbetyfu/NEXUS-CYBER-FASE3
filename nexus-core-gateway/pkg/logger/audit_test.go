@@ -120,6 +120,35 @@ func TestCryptographicAuditTrail(t *testing.T) {
 		t.Errorf("Expected 3 threat logs in DB, found %d", count)
 	}
 
+	var persisted models.ThreatLog
+	if err := db.Where("source_ip = ?", "192.168.1.1").First(&persisted).Error; err != nil {
+		t.Fatalf("fetch persisted log: %v", err)
+	}
+	if persisted.TargetDomain != "" {
+		t.Errorf("expected empty TargetDomain when LogTraffic omitted host, got %q", persisted.TargetDomain)
+	}
+
+	l.LogTraffic(TelemetryLog{
+		Timestamp:    logTime.Add(3 * time.Second),
+		SourceIP:     "10.0.0.9",
+		Endpoint:     "/",
+		Method:       "GET",
+		Status:       "BLOCKED",
+		ThreatDetail: "XSS",
+		LatencyMS:    3,
+		TargetDomain: "portfolio.nexus-lab.test:8080",
+	})
+	if _, err := waitForThreatLogCount(db, 4, 3*time.Second); err != nil {
+		t.Fatalf("persist domain log: %v", err)
+	}
+	var withHost models.ThreatLog
+	if err := db.Where("source_ip = ?", "10.0.0.9").First(&withHost).Error; err != nil {
+		t.Fatalf("fetch host log: %v", err)
+	}
+	if withHost.TargetDomain != "portfolio.nexus-lab.test" {
+		t.Errorf("TargetDomain=%q want portfolio.nexus-lab.test", withHost.TargetDomain)
+	}
+
 	// 5. SIMULASI ATTACK 1: Manipulasi Konten (Tampering)
 	// Kita ubah data IP log kedua secara langsung di database untuk menyimulasikan modifikasi ilegal oleh hacker
 	var logToTamper models.ThreatLog

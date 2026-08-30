@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+from agents.runtime.waf_bind import bind_waf_edge
 from core.orchestrator import NexRedOrchestrator
 from core.types import (
     ApprovalRecord,
@@ -78,11 +79,15 @@ class JobCoworkOrchestrator:
             raise ValueError(f"Job {job_id} cannot measure from status {job.status.value}")
 
         self._log(job, "MEASURE", "Starting wasit pipeline (recon → hygiene → access)")
+        bound, host_hdrs = bind_waf_edge(job.target_url, job.host_key)
+        host_name = host_hdrs.get("Host") or "none"
+        self._log(job, "MEASURE", f"WAF bind TCP={bound} Host={host_name}")
         target = ScanTarget(
             target_url=job.target_url,
             repo_path=job.repo_path,
             mode=ScanMode.HYBRID,
             enable_llm=enable_llm,
+            protected_host=job.host_key or None,
         )
         result = NexRedOrchestrator(target).execute()
         job.scan_id = result.scan_id
