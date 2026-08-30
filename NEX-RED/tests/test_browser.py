@@ -103,6 +103,15 @@ class _LabPage(BaseHTTPRequestHandler):
 
 
 class TestBrowserFlows(unittest.TestCase):
+    def _skip_unless_chromium(self) -> None:
+        if not playwright_importable():
+            self.skipTest("Playwright not installed")
+        from agents.runtime.browser import chromium_present, pin_playwright_runtime_dirs
+
+        pinned = Path(pin_playwright_runtime_dirs())
+        if not chromium_present(pinned):
+            self.skipTest(f"Chromium not installed at {pinned}")
+
     def test_disabled_is_sast_only_and_runs_zero(self):
         previous = config.enable_browser
         config.enable_browser = False
@@ -127,8 +136,7 @@ class TestBrowserFlows(unittest.TestCase):
         self.assertIn("Playwright not installed", findings[0].title)
 
     def test_playwright_gallery_and_vault_ban(self):
-        if not playwright_importable():
-            self.skipTest("Playwright not installed")
+        self._skip_unless_chromium()
         server = HTTPServer(("127.0.0.1", 0), _LabPage)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -152,8 +160,7 @@ class TestBrowserFlows(unittest.TestCase):
         )
 
     def test_playwright_named_host_without_dns(self):
-        if not playwright_importable():
-            self.skipTest("Playwright not installed")
+        self._skip_unless_chromium()
         _LabPage.last_host = ""
         server = HTTPServer(("127.0.0.1", 0), _LabPage)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -254,8 +261,7 @@ class TestBrowserFlows(unittest.TestCase):
                 os.environ["TMP"] = prev_tmp
 
     def test_pow_without_lab_session_is_sast_only(self):
-        if not playwright_importable():
-            self.skipTest("Playwright not installed")
+        self._skip_unless_chromium()
         server = HTTPServer(("127.0.0.1", 0), _PowPage)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
