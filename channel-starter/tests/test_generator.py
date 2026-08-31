@@ -163,6 +163,24 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertFalse(is_safe_slug("a/b"))
         self.assertTrue(is_safe_slug("contoh-nexcent"))
 
+    def test_ensure_demo_site_copies_from_examples(self):
+        from channel_starter.generator import DEMO_SLUG, ensure_demo_site
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {
+                "business_name": "Contoh Nexcent",
+                "whatsapp": "6281234567890",
+                "slug": DEMO_SLUG,
+            },
+            sites_root=examples,
+        )
+        empty_sites = os.path.join(self.tmp.name, "empty-sites")
+        found = ensure_demo_site(sites_root=empty_sites, examples_root=examples)
+        self.assertIsNotNone(found)
+        self.assertTrue(Path(found).is_file())
+        self.assertIn("Contoh Nexcent", Path(found).read_text(encoding="utf-8"))
+
     def test_preview_prefers_generated_sites(self):
         from channel_starter.generator import resolve_preview_index
 

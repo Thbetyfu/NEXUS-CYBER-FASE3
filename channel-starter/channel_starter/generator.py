@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import sys
 import uuid
 from pathlib import Path
 
@@ -28,6 +30,9 @@ _CATEGORY_LABELS = {
     SiteCategory.JASA: "Jasa",
     SiteCategory.PROFIL: "Profil UMKM",
 }
+
+DEMO_SLUG = "contoh-nexcent"
+_DEMO_FILES = ("index.html", "manifest.json", "robots.txt", "vercel.json")
 
 _VERCEL_JSON = {
     "cleanUrls": True,
@@ -317,3 +322,46 @@ def preview_catalog(
         "generated": list_sites(sites_root),
         "examples": list_sites(examples_root if examples_root is not None else EXAMPLES_DIR),
     }
+
+
+def ensure_demo_site(
+    *,
+    sites_root: Path | str | None = None,
+    examples_root: Path | str | None = None,
+) -> Path | None:
+    """Make sure sites/contoh-nexcent exists so /preview never looks like a fatal JSON crash.
+
+    Copies the committed example; if that is missing too, generates a seed site.
+    Fail-soft: wizard still starts if copy/generate fails.
+    """
+    sites = Path(sites_root) if sites_root else SITES_DIR
+    examples = Path(examples_root) if examples_root else EXAMPLES_DIR
+    dest = sites / DEMO_SLUG
+    dest_index = dest / "index.html"
+    if dest_index.is_file():
+        return dest_index
+    try:
+        sites.mkdir(parents=True, exist_ok=True)
+        src = examples / DEMO_SLUG
+        if (src / "index.html").is_file():
+            dest.mkdir(parents=True, exist_ok=True)
+            for name in _DEMO_FILES:
+                item = src / name
+                if item.is_file():
+                    shutil.copy2(item, dest / name)
+            return dest_index if dest_index.is_file() else None
+        generate_from_dict(
+            {
+                "business_name": "Contoh Nexcent",
+                "category": "fnb",
+                "whatsapp": "6281234567890",
+                "theme": "hijau",
+                "slug": DEMO_SLUG,
+                "address": "Lab Channel Starter — bukan klien nyata",
+            },
+            sites_root=sites,
+        )
+        return dest_index if dest_index.is_file() else None
+    except Exception as exc:
+        print(f"ensure_demo_site skipped: {exc}", file=sys.stderr)
+        return None

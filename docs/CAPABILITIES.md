@@ -8,7 +8,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 
 | Kemampuan | Status | Catatan |
 | --- | --- | --- |
-| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent (Figma), 4 palet, form lengkap, Caddy header tepi, `vercel.json`; wizard `:3010` preview; demo git `sites/contoh-nexcent` (wizard lama hanya baca `sites/`); upsell Cowork terpisah |
+| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent (Figma), 4 palet, form lengkap, Caddy header tepi, `vercel.json`; wizard `:3010` preview HTML (bukan JSON 404 di browser); seed demo `sites/contoh-nexcent`; upsell Cowork terpisah |
 | Edge Antibody Cowork (Job/Loop) | **Sudah ada** | NEX-RED + gateway |
 
 ## Produk GaaS (mesin)

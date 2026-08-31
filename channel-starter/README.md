@@ -54,7 +54,7 @@ python cli.py serve
 
 Form wizard: http://127.0.0.1:3010/
 
-Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. Hasil generate klien di-gitignore; demo **`sites/contoh-nexcent`** ikut git (wizard lama hanya folder itu). Jika Simple Browser masih JSON `Site not found`, proses 3010 masih kode lama — `START-PREVIEW.bat` atau buka `sites/contoh-nexcent/index.html`.
+Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. `serve` men-seed demo `sites/contoh-nexcent`. Browser mendapat HTML, bukan JSON FastAPI. Jika Simple Browser masih JSON, proses 3010 masih kode lama — `START-PREVIEW.bat`.
 
 ## Struktur
 

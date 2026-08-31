@@ -100,7 +100,7 @@ python cli.py serve
 
 Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 ke preview, bukan JSON `/sites/{slug}`.
 
-**Kenapa Simple Browser masih JSON `{"detail":"Site not found"}`:** itu FastAPI **kode lama**. Wizard lama hanya baca `sites/{slug}/index.html`, bukan `examples/`. Simple Browser = localhost **PC Anda** (proses Python yang sudah jalan di `:3010`), bukan mesin agen. Demo yang ikut git: `sites/contoh-nexcent/` (pengecualian gitignore). Setelah `git pull`, refresh URL; jika masih JSON, hentikan Python di 3010 lalu `START-PREVIEW.bat` atau generate di form `/`. File langsung: `channel-starter/sites/contoh-nexcent/index.html`.
+**Kenapa Simple Browser masih JSON `{"detail":"Site not found"}`:** proses di `:3010` masih **kode lama**. Kode baru: browser dapat HTML (bukan JSON), `/sites/{slug}` 303 ke `/preview`, `serve` men-seed `sites/contoh-nexcent` dari `examples/` jika folder demo hilang. `git pull` + `START-PREVIEW.bat`. File langsung: `channel-starter/sites/contoh-nexcent/index.html`.
 
 ### Deploy subdomain (lab)
 

@@ -89,6 +89,37 @@ class TestPreviewServer(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_browser_never_gets_json_site_not_found(self):
+        try:
+            from fastapi.testclient import TestClient
+        except ImportError:
+            self.skipTest("fastapi TestClient unavailable")
+
+        client = TestClient(app)
+        html_headers = {"Accept": "text/html"}
+        bounced = client.get(
+            "/sites/slug-yang-tidak-ada",
+            headers=html_headers,
+            follow_redirects=False,
+        )
+        self.assertEqual(bounced.status_code, 303)
+        self.assertEqual(bounced.headers.get("location"), "/preview/slug-yang-tidak-ada")
+
+        followed = client.get("/sites/slug-yang-tidak-ada", headers=html_headers)
+        self.assertEqual(followed.status_code, 404)
+        self.assertIn("text/html", followed.headers.get("content-type", ""))
+        self.assertNotIn('"detail": "Site not found"', followed.text)
+        self.assertIn("Site tidak ada di komputer ini", followed.text)
+
+        api = client.get("/sites/slug-yang-tidak-ada", headers={"Accept": "application/json"})
+        self.assertEqual(api.status_code, 404)
+        self.assertEqual(api.json()["detail"], "Site not found")
+
+        bad = client.post("/generate", data={}, headers=html_headers)
+        self.assertEqual(bad.status_code, 400)
+        self.assertIn("text/html", bad.headers.get("content-type", ""))
+        self.assertIn("Kembali ke form", bad.text)
+
 
 if __name__ == "__main__":
     unittest.main()

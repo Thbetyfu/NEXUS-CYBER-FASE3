@@ -2,18 +2,33 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from html import escape
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from channel_starter.config import SERVE_PORT
 from channel_starter.deploy import deploy_manifest
-from channel_starter.generator import generate_from_dict, list_sites, preview_catalog, resolve_preview_index
+from channel_starter.generator import (
+    ensure_demo_site,
+    generate_from_dict,
+    list_sites,
+    preview_catalog,
+    resolve_preview_index,
+)
 from channel_starter.types import PricingTier, SiteManifest
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
 
-app = FastAPI(title="Nexus Channel Starter", version="0.1.0")
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    ensure_demo_site()
+    yield
+
+
+app = FastAPI(title="Nexus Channel Starter", version="0.1.0", lifespan=_lifespan)
 
 _FORM_HTML = """<!DOCTYPE html>
 <html lang="id">
@@ -197,13 +212,59 @@ async def generate_form(request: Request):
     return RedirectResponse(url=f"/preview/{manifest.slug}", status_code=303)
 
 
+def wants_html(request: Request) -> bool:
+    """Simple Browser / Chrome send text/html; API clients usually send */* or application/json."""
+    accept = (request.headers.get("accept") or "").lower()
+    if "text/html" in accept:
+        return True
+    dest = (request.headers.get("sec-fetch-dest") or "").lower()
+    return dest in {"document", "iframe"}
+
+
+def wizard_error_html(title: str, message: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{escape(title)}</title>
+  <style>
+    body {{ font-family: Inter, system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #4D4D4D; }}
+    h1 {{ color: #263238; }}
+  </style>
+</head>
+<body>
+  <h1>{escape(title)}</h1>
+  <p>{escape(message)}</p>
+  <p><a href="/">Kembali ke form</a> · <a href="/preview/contoh-nexcent">Buka contoh</a></p>
+</body>
+</html>"""
+
+
+@app.exception_handler(StarletteHTTPException)
+async def browser_http_exception(request: Request, exc: StarletteHTTPException):
+    """Avoid FastAPI JSON detail payloads in Simple Browser; they look like a crash."""
+    if request.url.path.startswith("/upsell") or not wants_html(request):
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+    if exc.status_code == 404:
+        parts = request.url.path.rstrip("/").split("/")
+        slug = parts[-1] if len(parts) >= 2 else ""
+        if slug in {"preview", "sites", "generate", ""}:
+            slug = "tidak-ditemukan"
+        return HTMLResponse(preview_missing_html(slug), status_code=404)
+    return HTMLResponse(wizard_error_html("Permintaan tidak bisa diproses", detail), status_code=exc.status_code)
+
+
 @app.get("/sites")
 def sites_list():
     return [m.model_dump(mode="json") for m in list_sites()]
 
 
 @app.get("/sites/{slug}")
-def site_detail(slug: str):
+def site_detail(slug: str, request: Request):
+    if wants_html(request):
+        return RedirectResponse(url=f"/preview/{slug}", status_code=303)
     for manifest in list_sites():
         if manifest.slug == slug:
             deploy = deploy_manifest(manifest)
@@ -334,6 +395,7 @@ def upsell_disable_route(slug: str):
 def main() -> None:
     import uvicorn
 
+    ensure_demo_site()
     uvicorn.run(app, host="127.0.0.1", port=SERVE_PORT)
 
 
