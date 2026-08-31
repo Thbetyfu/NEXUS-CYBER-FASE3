@@ -16,7 +16,7 @@ from channel_starter.config import (
     SITES_DIR,
     SUBDOMAIN_BASE,
 )
-from channel_starter.generator import list_sites
+from channel_starter.generator import list_sites, save_manifest
 from channel_starter.types import SiteManifest
 
 _GENERATED_HEADER = "# Channel Starter — auto-generated. Do not edit by hand.\n"
@@ -48,6 +48,12 @@ def render_site_caddy_block(manifest: SiteManifest) -> str:
         f"    file_server\n"
         f"    encode gzip\n"
         f"    header X-Nexus-Channel-Starter \"{manifest.site_id}\"\n"
+        f"    header X-Content-Type-Options nosniff\n"
+        f"    header X-Frame-Options DENY\n"
+        f"    header Referrer-Policy strict-origin-when-cross-origin\n"
+        f"    header Content-Security-Policy \"default-src 'self'; img-src 'self' https: data:; "
+        f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        f"font-src https://fonts.gstatic.com data:; script-src 'none'\"\n"
         f"}}\n"
     )
 
@@ -152,9 +158,16 @@ def reload_caddy(*, container: str | None = None) -> dict:
 
 
 def deploy_manifest(manifest: SiteManifest, *, sites_root: Path | str | None = None) -> dict:
-    """Finalize deploy metadata after generate_site."""
+    """Finalize Caddy routing after generate_site; optionally publish the site folder to Vercel."""
+    from channel_starter.vercel_publish import publish_site
+
     snippet = write_caddy_snippet(manifest, sites_root=sites_root)
     routing = apply_routing(sites_root=sites_root)
+    vercel = publish_site(manifest)
+    if vercel.get("url"):
+        manifest.vercel_url = vercel["url"]
+        manifest.vercel_project = str(vercel.get("project") or manifest.slug)
+        save_manifest(manifest, sites_root=sites_root)
     return {
         "site_id": manifest.site_id,
         "slug": manifest.slug,
@@ -164,6 +177,7 @@ def deploy_manifest(manifest: SiteManifest, *, sites_root: Path | str | None = N
         "caddy_snippet": str(snippet),
         "subdomain_base": SUBDOMAIN_BASE,
         "routing": routing,
+        "vercel": vercel,
         "upsell": {
             "note": manifest.upsell_note,
             "gaas_active": manifest.gaas_active,

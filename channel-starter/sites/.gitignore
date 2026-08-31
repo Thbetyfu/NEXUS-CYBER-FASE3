@@ -1,2 +1,11 @@
+# Hasil generate klien — jangan commit.
+# Kecuali demo `contoh-nexcent` + README folder ini.
 *
 !.gitignore
+!README.md
+!contoh-nexcent/
+!contoh-nexcent/index.html
+!contoh-nexcent/manifest.json
+!contoh-nexcent/robots.txt
+!contoh-nexcent/vercel.json
+!contoh-nexcent/PUBLISH.txt

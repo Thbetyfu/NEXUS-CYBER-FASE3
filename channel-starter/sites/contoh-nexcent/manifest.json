@@ -1,0 +1,90 @@
+{
+  "site_id": "CS-DEMO0001",
+  "slug": "contoh-nexcent",
+  "business_name": "Contoh Nexcent",
+  "category": "fnb",
+  "tier": "starter",
+  "subdomain": "contoh-nexcent.nexus-lab.test",
+  "output_dir": "sites/contoh-nexcent",
+  "index_path": "sites/contoh-nexcent/index.html",
+  "tagline": "Rasa lokal, pelayanan ramah \u2014 pesan hari ini via WhatsApp.",
+  "description": "Menu harian, camilan favorit, dan porsi keluarga. Pesan lewat WhatsApp untuk takeaway, delivery lokal, atau tanya stok hari ini.",
+  "whatsapp": "6281234567890",
+  "address": "Lab Channel Starter \u2014 bukan klien nyata",
+  "email": "",
+  "hours": "Setiap hari 09.00\u201321.00",
+  "instagram": "contoh.nexcent",
+  "headline": "Menu harian yang bikin",
+  "headline_accent": "langganan pulang",
+  "about_title": "Dapur rumahan, standar ramah tetangga",
+  "about_body": "Kami masak setiap hari dengan bahan segar. Tidak ada keranjang online yang ribet \u2014 cukup chat, konfirmasi menu, dan ambil atau antar sesuai janji.",
+  "extra_title": "Jam buka & cara pesan",
+  "extra_body": "Chat WhatsApp sebelum datang agar stok dipastikan. Bisa porsi harian, paket keluarga, atau pesanan acara kecil. Alamat dan jam operasional tercantum di footer.",
+  "quote": "Langganan nasi uduk di sini karena rasanya konsisten dan chat-nya cepat. Cocok buat yang tidak mau ribet buka aplikasi ojek.",
+  "quote_name": "Pelanggan tetap",
+  "quote_role": "Langganan minggu ini",
+  "partners": "Pasar pagi, Petani lokal, Komunitas RT",
+  "cta_label": "Pesan via WhatsApp",
+  "hero_image_url": "",
+  "logo_url": "",
+  "theme": "hijau",
+  "primary_color": "#4CAF4F",
+  "custom_domain": "",
+  "offerings": [
+    {
+      "title": "Menu harian",
+      "body": "Masakan yang habis di hari yang sama. Tanya stok via chat sebelum datang."
+    },
+    {
+      "title": "Takeaway & antar",
+      "body": "Bungkus rapi untuk dibawa pulang, atau antar di radius sekitar lokasi."
+    },
+    {
+      "title": "Paket acara kecil",
+      "body": "Nasi kotak dan camilan untuk arisan, rapat RT, atau kantor mini."
+    }
+  ],
+  "stats": [
+    {
+      "number": "100+",
+      "label": "Porsi / minggu"
+    },
+    {
+      "number": "4.9",
+      "label": "Rating pelanggan"
+    },
+    {
+      "number": "15 mnt",
+      "label": "Balasan chat"
+    },
+    {
+      "number": "1",
+      "label": "Dapur, bukan waralaba"
+    }
+  ],
+  "gallery": [
+    {
+      "image_url": "",
+      "title": "Menu andalan",
+      "caption": "Foto hidangan \u2014 unggah URL foto Anda."
+    },
+    {
+      "image_url": "",
+      "title": "Suasana warung",
+      "caption": "Tempat duduk atau etalase."
+    },
+    {
+      "image_url": "",
+      "title": "Paket keluarga",
+      "caption": "Porsi untuk dinikmati bareng."
+    }
+  ],
+  "created_at": "2026-08-31T00:00:00Z",
+  "upsell_note": "Keamanan wasit Nexus Cowork (Job/Loop GaaS) \u2014 paket terpisah, bukan termasuk Starter Rp ~20rb.",
+  "gaas_status": "none",
+  "gaas_tier": null,
+  "protected_host": "",
+  "cowork_job_id": "",
+  "loop_schedule_id": "",
+  "upsell_at": null
+}

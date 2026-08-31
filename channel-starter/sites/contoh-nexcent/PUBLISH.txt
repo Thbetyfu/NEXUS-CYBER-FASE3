@@ -1,0 +1,12 @@
+Channel Starter — pack host (lab v0.1)
+
+Situs: Contoh Nexcent
+Folder: sites/contoh-nexcent/  (demo git — tidak di-publish Vercel otomatis)
+
+Generate klien men-deploy folder situs ke project Vercel bernama slug
+jika VERCEL_TOKEN / vercel login ada. Demo ini dilewati.
+
+JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3.
+
+Preview lab: python cli.py serve → http://127.0.0.1:3010/preview/contoh-nexcent
+Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.

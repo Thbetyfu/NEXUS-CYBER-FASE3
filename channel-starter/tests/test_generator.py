@@ -26,8 +26,14 @@ class TestChannelStarterDeploy(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.sites_root = os.path.join(self.tmp.name, "sites")
+        self._prev_vercel = os.environ.get("CHANNEL_STARTER_VERCEL_PUBLISH")
+        os.environ["CHANNEL_STARTER_VERCEL_PUBLISH"] = "0"
 
     def tearDown(self):
+        if self._prev_vercel is None:
+            os.environ.pop("CHANNEL_STARTER_VERCEL_PUBLISH", None)
+        else:
+            os.environ["CHANNEL_STARTER_VERCEL_PUBLISH"] = self._prev_vercel
         self.tmp.cleanup()
 
     def test_generate_all_three_templates(self):
@@ -87,6 +93,46 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertIn("aggregate_caddy", deploy["routing"])
         self.assertEqual(len(list_sites(self.sites_root)), 1)
 
+    def test_nexcent_theme_and_publish_pack(self):
+        manifest = generate_from_dict(
+            {
+                "business_name": "Warung Palet",
+                "category": "fnb",
+                "whatsapp": "628111222333",
+                "theme": "hutan",
+                "custom_domain": "warungpalet.com",
+                "offering_1_title": "Nasi uduk",
+                "offering_1_body": "Porsi pagi.",
+                "hero_image_url": "javascript:alert(1)",
+            },
+            sites_root=self.sites_root,
+        )
+        html = open(manifest.index_path, encoding="utf-8").read()
+        self.assertIn("#1B5E1F", html)
+        self.assertIn("Nasi uduk", html)
+        self.assertIn("warungpalet.com", html)
+        self.assertIn("Tepi header Nexus", html)
+        self.assertNotIn("javascript:", html)
+        vercel_path = Path(manifest.output_dir) / "vercel.json"
+        self.assertTrue(vercel_path.is_file())
+        vercel = json.loads(vercel_path.read_text(encoding="utf-8"))
+        self.assertEqual(vercel["headers"][0]["headers"][-1]["value"], manifest.site_id)
+        publish = (Path(manifest.output_dir) / "PUBLISH.txt").read_text(encoding="utf-8")
+        self.assertIn("NEXUS-CYBER-FASE3", publish)
+        self.assertIn("men-deploy folder", publish)
+        self.assertIn("JANGAN Connect Git", publish)
+        self.assertIn("warung-palet", publish)
+
+    def test_caddy_starter_sends_security_headers(self):
+        manifest = generate_from_dict(
+            {"business_name": "Toko Header", "category": "jasa", "whatsapp": "6281234567890"},
+            sites_root=self.sites_root,
+        )
+        block = render_site_caddy_block(manifest)
+        self.assertIn("X-Content-Type-Options nosniff", block)
+        self.assertIn("Content-Security-Policy", block)
+        self.assertIn("file_server", block)
+
     def test_starter_tier_copy_honest(self):
         form = SiteForm(
             business_name="UMKM",
@@ -97,6 +143,73 @@ class TestChannelStarterDeploy(unittest.TestCase):
         with open(manifest.index_path, encoding="utf-8") as handle:
             html = handle.read()
         self.assertIn("bukan termasuk Starter", html)
+
+    def test_preview_falls_back_to_examples(self):
+        from channel_starter.generator import is_safe_slug, resolve_preview_index
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {
+                "business_name": "Contoh Nexcent",
+                "category": "fnb",
+                "whatsapp": "6281234567890",
+                "slug": "contoh-nexcent",
+            },
+            sites_root=examples,
+        )
+        found = resolve_preview_index(
+            "contoh-nexcent",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIsNotNone(found)
+        self.assertIn("Contoh Nexcent", Path(found).read_text(encoding="utf-8"))
+        empty = resolve_preview_index(
+            "warung-uji-figma",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIsNone(empty)
+        self.assertFalse(is_safe_slug("../etc"))
+        self.assertFalse(is_safe_slug("a/b"))
+        self.assertTrue(is_safe_slug("contoh-nexcent"))
+
+    def test_ensure_demo_site_copies_from_examples(self):
+        from channel_starter.generator import DEMO_SLUG, ensure_demo_site
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {
+                "business_name": "Contoh Nexcent",
+                "whatsapp": "6281234567890",
+                "slug": DEMO_SLUG,
+            },
+            sites_root=examples,
+        )
+        empty_sites = os.path.join(self.tmp.name, "empty-sites")
+        found = ensure_demo_site(sites_root=empty_sites, examples_root=examples)
+        self.assertIsNotNone(found)
+        self.assertTrue(Path(found).is_file())
+        self.assertIn("Contoh Nexcent", Path(found).read_text(encoding="utf-8"))
+
+    def test_preview_prefers_generated_sites(self):
+        from channel_starter.generator import resolve_preview_index
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {"business_name": "Dari Contoh", "whatsapp": "6281234567890", "slug": "sama"},
+            sites_root=examples,
+        )
+        generate_from_dict(
+            {"business_name": "Dari Sites", "whatsapp": "6281234567890", "slug": "sama"},
+            sites_root=self.sites_root,
+        )
+        found = resolve_preview_index(
+            "sama",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIn("Dari Sites", Path(found).read_text(encoding="utf-8"))
 
     def test_site_address_http_for_lab(self):
         self.assertTrue(site_address("foo.nexus-lab.test").startswith("http://"))
