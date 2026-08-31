@@ -2,19 +2,47 @@
 
 from __future__ import annotations
 
+import json
 import uuid
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from channel_starter.config import SITES_DIR, SUBDOMAIN_BASE, TEMPLATES_DIR
+from channel_starter.form_fields import inflate_flat_fields
 from channel_starter.presets import apply_presets
-from channel_starter.types import GaasUpsellStatus, PricingTier, SiteCategory, SiteForm, SiteManifest
+from channel_starter.themes import NEUTRAL, resolve_theme
+from channel_starter.types import (
+    GalleryItem,
+    GaasUpsellStatus,
+    Offering,
+    PricingTier,
+    SiteCategory,
+    SiteForm,
+    SiteManifest,
+    StatItem,
+)
 
 _CATEGORY_LABELS = {
     SiteCategory.FNB: "Kuliner / F&B",
     SiteCategory.JASA: "Jasa",
     SiteCategory.PROFIL: "Profil UMKM",
+}
+
+_VERCEL_JSON = {
+    "cleanUrls": True,
+    "trailingSlash": False,
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {"key": "X-Content-Type-Options", "value": "nosniff"},
+                {"key": "X-Frame-Options", "value": "DENY"},
+                {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"},
+                {"key": "X-Nexus-Channel-Starter", "value": "edge-headers"},
+            ],
+        }
+    ],
 }
 
 
@@ -34,12 +62,20 @@ def _env() -> Environment:
     )
 
 
+def _as_models(form: SiteForm) -> tuple[list[Offering], list[StatItem], list[GalleryItem]]:
+    return (list(form.offerings), list(form.stats), list(form.gallery))
+
+
 def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dict:
     gaas_active = manifest.gaas_active if manifest else False
     tier = manifest.tier if manifest else form.tier
+    theme = resolve_theme(form.theme, form.primary_color)
+    public_host = (manifest.custom_domain if manifest and manifest.custom_domain else "") or (
+        form.custom_domain or (manifest.subdomain if manifest else f"{form.resolved_slug()}.{SUBDOMAIN_BASE}")
+    )
     if gaas_active:
         upsell_note = (
-            f"Perlindungan Nexus { _tier_label(manifest.gaas_tier or tier) } aktif "
+            f"Perlindungan Nexus {_tier_label(manifest.gaas_tier or tier)} aktif "
             f"— wasit GaaS di {manifest.protected_host or manifest.subdomain}."
         )
     else:
@@ -47,6 +83,7 @@ def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dic
             "Keamanan wasit Nexus Cowork (Job/Loop GaaS) — paket terpisah, "
             "bukan termasuk Starter Rp ~20rb."
         )
+    offerings, stats, gallery = _as_models(form)
     return {
         "business_name": form.business_name,
         "tagline": form.tagline,
@@ -54,7 +91,28 @@ def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dic
         "whatsapp": form.whatsapp,
         "address": form.address,
         "email": form.email,
-        "primary_color": form.primary_color,
+        "hours": form.hours,
+        "instagram": form.instagram,
+        "headline": form.headline,
+        "headline_accent": form.headline_accent,
+        "about_title": form.about_title,
+        "about_body": form.about_body,
+        "extra_title": form.extra_title,
+        "extra_body": form.extra_body,
+        "quote": form.quote,
+        "quote_name": form.quote_name,
+        "quote_role": form.quote_role,
+        "cta_label": form.cta_label or "Hubungi kami",
+        "hero_image_url": form.hero_image_url,
+        "logo_url": form.logo_url,
+        "offerings": offerings,
+        "stats": stats,
+        "gallery": gallery,
+        "partners": form.partner_list(),
+        "theme": theme,
+        "neutrals": NEUTRAL,
+        "primary_color": theme.primary,
+        "public_host": public_host,
         "category_label": _CATEGORY_LABELS.get(form.category, form.category.value),
         "tier_label": _tier_label(tier),
         "upsell_note": upsell_note,
@@ -65,12 +123,26 @@ def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dic
     }
 
 
+def _write_publish_pack(out_dir: Path, manifest: SiteManifest) -> None:
+    """Artefak host: Vercel headers + domain lab. Bukan auto-deploy akun Vercel."""
+    payload = dict(_VERCEL_JSON)
+    payload["headers"][0]["headers"][-1] = {
+        "key": "X-Nexus-Channel-Starter",
+        "value": manifest.site_id,
+    }
+    (out_dir / "vercel.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "robots.txt").write_text(
+        "User-agent: *\nAllow: /\n",
+        encoding="utf-8",
+    )
+
+
 def _write_html(form: SiteForm, manifest: SiteManifest, *, sites_root: Path) -> Path:
     ctx = _render_context(form, manifest)
-    template_path = f"{form.template_name()}/index.html"
-    html = _env().get_template(template_path).render(**ctx)
+    html = _env().get_template("_base.html").render(**ctx)
     index_path = Path(manifest.index_path)
     index_path.write_text(html, encoding="utf-8")
+    _write_publish_pack(Path(manifest.output_dir), manifest)
     return index_path
 
 
@@ -89,9 +161,8 @@ def get_manifest(slug: str, *, sites_root: Path | str | None = None) -> SiteMani
     return SiteManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
 
 
-def regenerate_site_html(manifest: SiteManifest, *, sites_root: Path | str | None = None) -> Path:
-    root = Path(sites_root) if sites_root else SITES_DIR
-    form = SiteForm(
+def _form_from_manifest(manifest: SiteManifest) -> SiteForm:
+    return SiteForm(
         business_name=manifest.business_name,
         category=manifest.category,
         tagline=manifest.tagline,
@@ -99,16 +170,46 @@ def regenerate_site_html(manifest: SiteManifest, *, sites_root: Path | str | Non
         whatsapp=manifest.whatsapp if len(manifest.whatsapp or "") >= 8 else "6281234567890",
         address=manifest.address,
         email=manifest.email,
+        hours=manifest.hours,
+        instagram=manifest.instagram,
+        headline=manifest.headline,
+        headline_accent=manifest.headline_accent,
+        about_title=manifest.about_title,
+        about_body=manifest.about_body,
+        extra_title=manifest.extra_title,
+        extra_body=manifest.extra_body,
+        quote=manifest.quote,
+        quote_name=manifest.quote_name,
+        quote_role=manifest.quote_role,
+        partners=manifest.partners,
+        cta_label=manifest.cta_label,
+        hero_image_url=manifest.hero_image_url,
+        logo_url=manifest.logo_url,
+        theme=manifest.theme,
         primary_color=manifest.primary_color,
+        custom_domain=manifest.custom_domain,
+        offerings=manifest.offerings,
+        stats=manifest.stats,
+        gallery=manifest.gallery,
         tier=manifest.tier,
         slug=manifest.slug,
     )
-    return _write_html(form, manifest, sites_root=root)
+
+
+def regenerate_site_html(manifest: SiteManifest, *, sites_root: Path | str | None = None) -> Path:
+    root = Path(sites_root) if sites_root else SITES_DIR
+    return _write_html(_form_from_manifest(manifest), manifest, sites_root=root)
+
+
+def _fill_form(form: SiteForm) -> SiteForm:
+    merged = apply_presets(form.model_dump())
+    return SiteForm.model_validate(merged)
 
 
 def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> SiteManifest:
     root = Path(sites_root) if sites_root else SITES_DIR
     root.mkdir(parents=True, exist_ok=True)
+    form = _fill_form(form)
 
     slug = form.resolved_slug()
     out_dir = root / slug
@@ -129,7 +230,27 @@ def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> Si
         whatsapp=form.whatsapp,
         address=form.address,
         email=form.email,
+        hours=form.hours,
+        instagram=form.instagram,
+        headline=form.headline,
+        headline_accent=form.headline_accent,
+        about_title=form.about_title,
+        about_body=form.about_body,
+        extra_title=form.extra_title,
+        extra_body=form.extra_body,
+        quote=form.quote,
+        quote_name=form.quote_name,
+        quote_role=form.quote_role,
+        partners=form.partners,
+        cta_label=form.cta_label,
+        hero_image_url=form.hero_image_url,
+        logo_url=form.logo_url,
+        theme=form.theme,
         primary_color=form.primary_color,
+        custom_domain=form.custom_domain,
+        offerings=form.offerings,
+        stats=form.stats,
+        gallery=form.gallery,
     )
     _write_html(form, manifest, sites_root=root)
     save_manifest(manifest, sites_root=root)
@@ -137,8 +258,7 @@ def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> Si
 
 
 def generate_from_dict(data: dict, *, sites_root: Path | str | None = None) -> SiteManifest:
-    merged = apply_presets(dict(data))
-    form = SiteForm.model_validate(merged)
+    form = SiteForm.model_validate(inflate_flat_fields(dict(data)))
     return generate_site(form, sites_root=sites_root)
 
 

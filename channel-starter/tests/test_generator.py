@@ -87,6 +87,41 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertIn("aggregate_caddy", deploy["routing"])
         self.assertEqual(len(list_sites(self.sites_root)), 1)
 
+    def test_nexcent_theme_and_publish_pack(self):
+        manifest = generate_from_dict(
+            {
+                "business_name": "Warung Palet",
+                "category": "fnb",
+                "whatsapp": "628111222333",
+                "theme": "hutan",
+                "custom_domain": "warungpalet.com",
+                "offering_1_title": "Nasi uduk",
+                "offering_1_body": "Porsi pagi.",
+                "hero_image_url": "javascript:alert(1)",
+            },
+            sites_root=self.sites_root,
+        )
+        html = open(manifest.index_path, encoding="utf-8").read()
+        self.assertIn("#1B5E1F", html)
+        self.assertIn("Nasi uduk", html)
+        self.assertIn("warungpalet.com", html)
+        self.assertIn("Tepi header Nexus", html)
+        self.assertNotIn("javascript:", html)
+        vercel_path = Path(manifest.output_dir) / "vercel.json"
+        self.assertTrue(vercel_path.is_file())
+        vercel = json.loads(vercel_path.read_text(encoding="utf-8"))
+        self.assertEqual(vercel["headers"][0]["headers"][-1]["value"], manifest.site_id)
+
+    def test_caddy_starter_sends_security_headers(self):
+        manifest = generate_from_dict(
+            {"business_name": "Toko Header", "category": "jasa", "whatsapp": "6281234567890"},
+            sites_root=self.sites_root,
+        )
+        block = render_site_caddy_block(manifest)
+        self.assertIn("X-Content-Type-Options nosniff", block)
+        self.assertIn("Content-Security-Policy", block)
+        self.assertIn("file_server", block)
+
     def test_starter_tier_copy_honest(self):
         form = SiteForm(
             business_name="UMKM",

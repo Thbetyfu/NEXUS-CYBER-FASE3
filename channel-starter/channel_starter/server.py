@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from channel_starter.config import SERVE_PORT, SITES_DIR
 from channel_starter.deploy import deploy_manifest
 from channel_starter.generator import generate_from_dict, list_sites
-from channel_starter.types import SiteCategory, PricingTier
+from channel_starter.types import PricingTier
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
 
 app = FastAPI(title="Nexus Channel Starter", version="0.1.0")
@@ -22,47 +20,149 @@ _FORM_HTML = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Channel Starter — Buat Website UMKM</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
-    label { display: block; margin-top: 1rem; font-weight: 600; }
-    input, select, textarea { width: 100%; padding: .5rem; margin-top: .25rem; }
-    button { margin-top: 1.5rem; padding: .75rem 1.5rem; background: #0ea5e9; color: #fff; border: 0; border-radius: 6px; cursor: pointer; }
-    .note { font-size: .85rem; color: #64748b; margin-top: 1rem; }
+    body { font-family: Inter, system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #4D4D4D; }
+    h1 { color: #263238; }
+    fieldset { border: 1px solid #ABBED1; border-radius: 8px; margin: 1.25rem 0; padding: 1rem 1.1rem 1.25rem; }
+    legend { font-weight: 600; padding: 0 .4rem; }
+    label { display: block; margin-top: .85rem; font-weight: 600; font-size: .92rem; }
+    input, select, textarea { width: 100%; padding: .5rem; margin-top: .25rem; box-sizing: border-box; }
+    .themes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: .5rem; }
+    .themes label { display: flex; align-items: center; gap: 8px; font-weight: 500; margin: 0; }
+    .swatch { width: 28px; height: 28px; border-radius: 4px; border: 1px solid #ABBED1; }
+    button { margin-top: 1.5rem; padding: .75rem 1.5rem; background: #4CAF4F; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    .note { font-size: .85rem; color: #717171; margin-top: 1rem; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <h1>Channel Starter</h1>
-  <p>Form → template → site statis. Rule-based, bukan LLM berat.</p>
+  <p>Form lengkap → template Nexcent (Figma) → site statis siap WA. Rule-based, bukan LLM.</p>
   <form method="post" action="/generate">
-    <label>Nama usaha</label>
-    <input name="business_name" required maxlength="80" placeholder="Warung Bu Siti" />
-    <label>Kategori</label>
-    <select name="category">
-      <option value="fnb">Kuliner / F&B</option>
-      <option value="jasa">Jasa</option>
-      <option value="profil" selected>Profil UMKM</option>
-    </select>
-    <label>WhatsApp (08xx atau 62xx)</label>
-    <input name="whatsapp" required placeholder="6281234567890" />
-    <label>Alamat (opsional)</label>
-    <input name="address" placeholder="Jl. Contoh No. 1" />
-    <label>Email (opsional)</label>
-    <input name="email" type="email" />
-    <label>Tagline (kosong = preset kategori)</label>
-    <input name="tagline" />
-    <label>Deskripsi (kosong = preset kategori)</label>
-    <textarea name="description" rows="3"></textarea>
-    <label>Warna utama</label>
-    <input name="primary_color" value="#0ea5e9" />
-    <label>Paket</label>
-    <select name="tier">
-      <option value="starter" selected>Starter (~Rp 0–29rb) — website saja</option>
-      <option value="usaha">Usaha (Rp 49–99rb)</option>
-      <option value="tepi">Tepi + WAF</option>
-      <option value="cowork">Cowork GaaS (Job/Loop terpisah)</option>
-    </select>
+    <fieldset>
+      <legend>Usaha</legend>
+      <label>Nama usaha</label>
+      <input name="business_name" required maxlength="80" placeholder="Warung Bu Siti" />
+      <div class="row">
+        <div>
+          <label>Kategori</label>
+          <select name="category">
+            <option value="fnb">Kuliner / F&amp;B</option>
+            <option value="jasa">Jasa</option>
+            <option value="profil" selected>Profil UMKM</option>
+          </select>
+        </div>
+        <div>
+          <label>WhatsApp</label>
+          <input name="whatsapp" required placeholder="08xxxxxxxxxx" />
+        </div>
+      </div>
+      <label>Alamat</label>
+      <input name="address" placeholder="Jl. Contoh No. 1, Kota" />
+      <div class="row">
+        <div>
+          <label>Email</label>
+          <input name="email" type="email" />
+        </div>
+        <div>
+          <label>Jam operasional</label>
+          <input name="hours" placeholder="Setiap hari 09.00–21.00" />
+        </div>
+      </div>
+      <label>Instagram (tanpa @)</label>
+      <input name="instagram" placeholder="warungbusiti" />
+    </fieldset>
+    <fieldset>
+      <legend>Warna (4 palet Figma)</legend>
+      <div class="themes">
+        <label><input type="radio" name="theme" value="hijau" checked /> <span class="swatch" style="background:#4CAF4F"></span> Hijau</label>
+        <label><input type="radio" name="theme" value="biru" /> <span class="swatch" style="background:#2194F3"></span> Biru</label>
+        <label><input type="radio" name="theme" value="navy" /> <span class="swatch" style="background:#263238"></span> Navy</label>
+        <label><input type="radio" name="theme" value="hutan" /> <span class="swatch" style="background:#1B5E1F"></span> Hutan</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Teks hero &amp; tentang</legend>
+      <label>Judul hero (kosong = preset)</label>
+      <input name="headline" placeholder="Menu harian yang bikin" />
+      <label>Kata aksen (warna brand)</label>
+      <input name="headline_accent" placeholder="langganan pulang" />
+      <label>Tagline</label>
+      <input name="tagline" />
+      <label>Deskripsi</label>
+      <textarea name="description" rows="3"></textarea>
+      <label>Judul tentang</label>
+      <input name="about_title" />
+      <label>Isi tentang</label>
+      <textarea name="about_body" rows="3"></textarea>
+      <label>Judul blok tambahan</label>
+      <input name="extra_title" />
+      <label>Isi blok tambahan</label>
+      <textarea name="extra_body" rows="3"></textarea>
+      <label>Teks tombol</label>
+      <input name="cta_label" placeholder="Pesan via WhatsApp" />
+    </fieldset>
+    <fieldset>
+      <legend>Tiga layanan</legend>
+      <label>Layanan 1 — judul</label><input name="offering_1_title" />
+      <label>Layanan 1 — isi</label><textarea name="offering_1_body" rows="2"></textarea>
+      <label>Layanan 2 — judul</label><input name="offering_2_title" />
+      <label>Layanan 2 — isi</label><textarea name="offering_2_body" rows="2"></textarea>
+      <label>Layanan 3 — judul</label><input name="offering_3_title" />
+      <label>Layanan 3 — isi</label><textarea name="offering_3_body" rows="2"></textarea>
+    </fieldset>
+    <fieldset>
+      <legend>Angka usaha</legend>
+      <div class="row">
+        <div><label>Angka 1</label><input name="stat_1_number" placeholder="100+" /><label>Label 1</label><input name="stat_1_label" placeholder="Porsi / minggu" /></div>
+        <div><label>Angka 2</label><input name="stat_2_number" /><label>Label 2</label><input name="stat_2_label" /></div>
+        <div><label>Angka 3</label><input name="stat_3_number" /><label>Label 3</label><input name="stat_3_label" /></div>
+        <div><label>Angka 4</label><input name="stat_4_number" /><label>Label 4</label><input name="stat_4_label" /></div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Foto (URL https)</legend>
+      <label>Logo</label><input name="logo_url" placeholder="https://..." />
+      <label>Foto hero</label><input name="hero_image_url" placeholder="https://..." />
+      <label>Galeri 1 — URL</label><input name="gallery_1_url" />
+      <label>Galeri 1 — judul</label><input name="gallery_1_title" />
+      <label>Galeri 1 — keterangan</label><input name="gallery_1_caption" />
+      <label>Galeri 2 — URL</label><input name="gallery_2_url" />
+      <label>Galeri 2 — judul</label><input name="gallery_2_title" />
+      <label>Galeri 2 — keterangan</label><input name="gallery_2_caption" />
+      <label>Galeri 3 — URL</label><input name="gallery_3_url" />
+      <label>Galeri 3 — judul</label><input name="gallery_3_title" />
+      <label>Galeri 3 — keterangan</label><input name="gallery_3_caption" />
+    </fieldset>
+    <fieldset>
+      <legend>Testimoni &amp; mitra</legend>
+      <label>Kutipan</label><textarea name="quote" rows="2"></textarea>
+      <div class="row">
+        <div><label>Nama</label><input name="quote_name" /></div>
+        <div><label>Peran</label><input name="quote_role" /></div>
+      </div>
+      <label>Mitra (pisah koma)</label>
+      <input name="partners" placeholder="Pasar pagi, Petani lokal" />
+    </fieldset>
+    <fieldset>
+      <legend>Domain &amp; paket</legend>
+      <label>Domain kustom (opsional, contoh tokoanda.com)</label>
+      <input name="custom_domain" placeholder="kosong = {slug}.nexus-lab.test" />
+      <label>Paket</label>
+      <select name="tier">
+        <option value="starter" selected>Starter (~Rp 20rb) — site + domain lab + header tepi</option>
+        <option value="usaha">Usaha (Rp 49–99rb)</option>
+        <option value="tepi">Tepi + WAF gateway</option>
+        <option value="cowork">Cowork GaaS (Job/Loop terpisah)</option>
+      </select>
+    </fieldset>
     <button type="submit">Generate site</button>
   </form>
-  <p class="note">Starter Rp ~20rb <strong>tidak</strong> termasuk Job Cowork / Loop GaaS.</p>
+  <p class="note">
+    Starter menulis <code>vercel.json</code> (siap <code>vercel deploy</code>) dan header keamanan Caddy.
+    Job Cowork / Loop GaaS <strong>bukan</strong> paket Rp 20rb. Satu lab WAF = satu PROTECTED_HOST (portofolio),
+    bukan klaim *.vercel.app otomatis di belakang wasit.
+  </p>
   <p><a href="/sites">Daftar site</a></p>
 </body>
 </html>"""
@@ -74,31 +174,14 @@ def form_page() -> str:
 
 
 @app.post("/generate")
-def generate_form(
-    business_name: str = Form(...),
-    category: SiteCategory = Form(SiteCategory.PROFIL),
-    whatsapp: str = Form(...),
-    address: str = Form(""),
-    email: str = Form(""),
-    tagline: str = Form(""),
-    description: str = Form(""),
-    primary_color: str = Form("#0ea5e9"),
-    tier: PricingTier = Form(PricingTier.STARTER),
-):
-    payload = {
-        "business_name": business_name,
-        "category": category,
-        "whatsapp": whatsapp,
-        "address": address,
-        "email": email,
-        "tagline": tagline,
-        "description": description,
-        "primary_color": primary_color,
-        "tier": tier,
-    }
+async def generate_form(request: Request):
+    form = await request.form()
+    payload = {key: str(value).strip() for key, value in form.items()}
+    if not payload.get("business_name") or not payload.get("whatsapp"):
+        raise HTTPException(status_code=400, detail="business_name and whatsapp are required")
     try:
         manifest = generate_from_dict(payload)
-        deploy = deploy_manifest(manifest)
+        deploy_manifest(manifest)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return RedirectResponse(url=f"/sites/{manifest.slug}", status_code=303)

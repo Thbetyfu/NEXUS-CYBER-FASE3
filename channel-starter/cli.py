@@ -28,7 +28,9 @@ def cmd_generate(args: argparse.Namespace) -> int:
             email=args.email or "",
             tagline=args.tagline or "",
             description=args.description or "",
-            primary_color=args.color,
+            theme=args.theme,
+            primary_color=args.color or "",
+            custom_domain=args.domain or "",
             tier=PricingTier(args.tier),
             slug=args.slug or "",
         )
@@ -124,7 +126,9 @@ def build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--email", default="")
     gen.add_argument("--tagline", default="")
     gen.add_argument("--description", default="")
-    gen.add_argument("--color", default="#0ea5e9")
+    gen.add_argument("--theme", choices=["hijau", "biru", "navy", "hutan"], default="hijau")
+    gen.add_argument("--color", default="", help="Ignored unless it matches a theme hex; prefer --theme")
+    gen.add_argument("--domain", default="", help="Custom domain host, e.g. tokoanda.com")
     gen.add_argument("--tier", choices=[t.value for t in PricingTier], default="starter")
     gen.add_argument("--slug", default="")
     gen.add_argument("--json-file", help="Path to JSON form payload")

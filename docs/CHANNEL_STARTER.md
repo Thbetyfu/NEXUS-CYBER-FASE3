@@ -21,18 +21,18 @@ Channel Starter = **funnel acquisition** + integrator mandiri (tim Nexus juga bo
 | **Bukan LLM berat** | Form wizard → merge ke template (rule-based); copy preset per kategori |
 | **Template seragam** | 3–5 layout (toko, jasa, koperasi ringan, profil UMKM) |
 | **End-to-end otomatis** | Deploy shared infra; minim sentuhan manusia per pelanggan |
-| **Jujur harga** | Rp ~20rb = website saja; keamanan wasit = paket terpisah |
+| **Jujur harga** | Rp ~20rb = website Nexcent + domain lab + header tepi; wasit Job = paket terpisah |
 
 ---
 
 ## 3. Alur pelanggan (target)
 
 ```text
-Form (nama, kategori, WA, alamat, foto, warna)
-  → Generator (JSON → template static)
-  → Deploy (subdomain atau domain klien)
-  → Site live (HTTPS)
-  → [Opsional] upsell Loop GaaS / tepi Nexus
+Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain kustom opsional)
+  → Generator (JSON → template Nexcent)
+  → Deploy (subdomain lab `{slug}.nexus-lab.test` + `vercel.json`)
+  → Site live (HTTP lab / HTTPS jika domain publik di-CNAME operator)
+  → [Opsional] upsell Loop GaaS / tepi WAF gateway (satu PROTECTED_HOST per lab)
 ```
 
 ---
@@ -41,7 +41,7 @@ Form (nama, kategori, WA, alamat, foto, warna)
 
 | Paket | Isi | Harga ilustrasi/bulan | Job Cowork |
 | --- | --- | --- | --- |
-| **Starter** | Subdomain `nama.nexus.id`, 1 template, 5 section, SSL | **Rp 0–29.000** | Tidak |
+| **Starter** | Subdomain lab `nama.nexus-lab.test`, template Nexcent, 4 palet, `vercel.json`, header tepi Caddy | **Rp 0–29.000** | Tidak |
 | **Usaha** | Domain sendiri, halaman tambahan, SEO dasar | **Rp 49.000–99.000** | Tidak |
 | **Tepi** | + gateway Alur A (Reflex, autoban) | **Rp 149.000–299.000** | Tidak |
 | **Cowork (pilot)** | + Job/Loop + artefak risiko | **Rp 200.000** (Job) / **Rp 300.000**/bln (Loop) — jalur `/institusi` | Ya |
@@ -82,7 +82,7 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 | Komponen | Status |
 | --- | --- |
 | Form wizard pelanggan | **Lab v0.1** — `channel-starter/channel_starter/server.py` + `cli.py serve` |
-| Template engine (3 layout) | **Lab v0.1** — `fnb`, `jasa`, `profil` (Jinja2 rule-based) |
+| Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
 | Portal self-serve billing Rp 20rb | **Portal v0.1 manual WA** — Midtrans **ditunda** |
 | Lab portofolio (`playground/Portofolio-Thoriq`) | Referensi UX unggah/vault — **bukan** produk Channel Starter |
@@ -94,7 +94,7 @@ Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **C
 ```powershell
 cd channel-starter
 pip install -r requirements.txt
-python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 081234567890
+python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 081234567890 --theme hijau
 python cli.py serve
 ```
 

@@ -175,7 +175,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
-| **Starter** | Form → template → deploy subdomain | ~Rp 0–29rb/bulan |
+| **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab + `vercel.json` + header tepi Caddy | ~Rp 0–29rb/bulan |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).

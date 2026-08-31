@@ -48,6 +48,12 @@ def render_site_caddy_block(manifest: SiteManifest) -> str:
         f"    file_server\n"
         f"    encode gzip\n"
         f"    header X-Nexus-Channel-Starter \"{manifest.site_id}\"\n"
+        f"    header X-Content-Type-Options nosniff\n"
+        f"    header X-Frame-Options DENY\n"
+        f"    header Referrer-Policy strict-origin-when-cross-origin\n"
+        f"    header Content-Security-Policy \"default-src 'self'; img-src 'self' https: data:; "
+        f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        f"font-src https://fonts.gstatic.com data:; script-src 'none'\"\n"
         f"}}\n"
     )
 
