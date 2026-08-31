@@ -49,11 +49,11 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 
 ## Pembayaran
 
-- **IDR (kontak):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway)
-- **Kredit (kasir v0):** unit **Kredit** di `/order` — 1 Kr = Rp 1.000; Starter = **20 Kr**. Sesi **tamu** (cookie httpOnly `nexus_portal_sid`, UUID) atau **akun** (email + scrypt). Keran `POST /api/kredit/faucet` dan generate memakai **ledger identitas itu**, bukan satu wallet `lab` untuk semua browser. Generate menolak jika saldo di bawah 20 Kr (HTTP 402); gagal upstream → refund. Kode `ORDER-xxxx` di `/order` dan teks WA (cocokkan TF nanti). Halaman `/order` **tidak** memakai Framer Motion `opacity: 0`. Logo: `public/brand/nexus-kredit.svg`.
+- **IDR (kontak on-prem):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway). **Hanya** Corporat **On-prem** + **Pemerintah**. Bukan DANA webhook.
+- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup (landing, pagar, tepi) dan Corporat **hosted** = **Beli di portal** — `/order` atau `/daftar` / `/masuk`. Unit **Kredit** di `/order` — 1 Kr = Rp 1.000; Starter = **20 Kr** (generate fail-closed). Sesi **tamu** (cookie httpOnly `nexus_portal_sid`, UUID) atau **akun** (email + scrypt). Keran `POST /api/kredit/faucet` (lab, **bukan** settlement IDR). Kode `ORDER-xxxx` di `/order`. Logo: `public/brand/nexus-kredit.svg`.
 - **Akun v0:** `/masuk` `/daftar` / “Lanjut sebagai tamu”. Boleh telusur `/` `/umkm` tanpa login. Bukan SSO; tamu hilang jika cookie dihapus. Bukan login operator `:3001`. Daftar dari tamu memindahkan Kredit tamu ke akun.
 - **Top-up IDR (disepakati, belum dikode):** **QRIS milik pemilik** dan/atau **VA bank milik pemilik** → bukti transfer → operator **approve** jika bukti aman → Kredit masuk. **Bukan** Midtrans, Stripe, atau PSP pihak ketiga.
-- **Bukan:** beli Job Cowork 200 Kr dari portal. **Bukan** F-10 roster. **Bukan** Connect Git monorepo ke project warung. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Pagar tipis.
+- **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = CTA portal (`/order`) + operator menjalankan Job. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Pagar tipis.
 
 ---
 
@@ -65,4 +65,4 @@ Portal legacy submodule **digantikan** folder **`nexus-gaas-web/`** (lab di FASE
 
 ---
 
-*2026-09-01 — akun pelanggan v0 (tamu/daftar/masuk); Kredit per identitas*
+*2026-09-01 — CTA self-serve Kredit (`/order`); WhatsApp hanya on-prem*

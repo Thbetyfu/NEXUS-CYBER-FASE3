@@ -1,10 +1,10 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Building2, CheckCircle2, Globe, MessageCircle, Package, RotateCcw, Shield, Sparkles, Store } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Globe, CreditCard, Package, RotateCcw, Shield, Sparkles, Store } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { WaCta } from "./Navbar";
-import { whatsappCoworkUrl, whatsappPackageUrl } from "@/lib/portal-config";
+import { PlanCta } from "./Navbar";
+import { PORTAL_DAFTAR, PORTAL_ORDER } from "@/lib/portal-config";
 
 export type Audience = "umkm" | "bisnis";
 
@@ -17,6 +17,7 @@ type Plan = {
   popular: boolean;
   features: string[];
   cta: string;
+  ctaLabel: string;
 };
 
 type QuizScores = { umkm: number; bisnis: number; integrator: boolean };
@@ -61,7 +62,7 @@ const WORDS = ["website UMKM cepat.", "kanal digital aman.", "template siap jual
 
 const FLOW_STEPS = [
   { icon: Package, label: "Jawab 3 pertanyaan", color: "var(--notion-blue)" },
-  { icon: MessageCircle, label: "Hubungi WA", color: "#25D366" },
+  { icon: CreditCard, label: "Isi Kredit", color: "var(--notion-blue)" },
   { icon: CheckCircle2, label: "Tim proses", color: "var(--notion-green)" },
   { icon: Globe, label: "Selesai", color: "#8b5cf6" },
 ];
@@ -80,7 +81,8 @@ export const UMKM_PLANS: Plan[] = [
       "Isi data lewat form — tanpa coding",
       "Bukan paket keamanan / wasit",
     ],
-    cta: whatsappPackageUrl("Website UMKM Rp 20rb"),
+    cta: PORTAL_ORDER,
+    ctaLabel: "Isi Kredit",
   },
   {
     name: "Website Usaha",
@@ -90,7 +92,8 @@ export const UMKM_PLANS: Plan[] = [
     sub: "/ bulan",
     popular: false,
     features: ["Domain sendiri (biaya domain terpisah)", "Halaman tambahan", "SEO dasar", "Support email"],
-    cta: whatsappPackageUrl("Website Usaha"),
+    cta: PORTAL_ORDER,
+    ctaLabel: "Beli di portal",
   },
 ];
 
@@ -108,7 +111,8 @@ export const BISNIS_PLANS: Plan[] = [
       "Persetujuan sebelum tindakan",
       "Hosting tahap awal di infrastruktur operator (bukan VPS)",
     ],
-    cta: whatsappPackageUrl("Keamanan Wasit Job Rp 200rb"),
+    cta: PORTAL_ORDER,
+    ctaLabel: "Beli di portal",
   },
   {
     name: "Wasit Berkala (Loop)",
@@ -123,7 +127,8 @@ export const BISNIS_PLANS: Plan[] = [
       "Riwayat residual per host",
       "Harga maks daftar v1 (pilot)",
     ],
-    cta: whatsappPackageUrl("Wasit Berkala Loop Rp 300rb/bulan"),
+    cta: PORTAL_ORDER,
+    ctaLabel: "Beli di portal",
   },
   {
     name: "Paket Integrator",
@@ -133,7 +138,8 @@ export const BISNIS_PLANS: Plan[] = [
     sub: "multi-klien",
     popular: false,
     features: ["Bangun kanal + opsi wasit", "Kontrak pisah: site vs keamanan", "Diskusi scope per klien"],
-    cta: whatsappCoworkUrl("Saya integrator — mau diskusi paket site + wasit"),
+    cta: PORTAL_DAFTAR,
+    ctaLabel: "Masuk portal",
   },
 ];
 
@@ -181,8 +187,8 @@ function HeroFlowVisual() {
 
   const hints = [
     "Jawab 3 pertanyaan singkat — kami arahkan ke paket yang cocok.",
-    "Tombol WhatsApp sudah berisi nama paket — tinggal konfirmasi.",
-    "Tim Nexus proses — website ~1×24 jam; wasit sesuai scope.",
+    "Beli di portal: isi Kredit di `/order` (lab keran). WhatsApp hanya on-prem.",
+    "Tim Nexus proses — website ~1×24 jam; Job hosted = operator.",
     "Website dan keamanan = produk berbeda, harga berbeda.",
   ];
 
@@ -252,7 +258,7 @@ function PlanCard({ plan, index, recommended }: { plan: Plan; index: number; rec
           <li key={f}>{f}</li>
         ))}
       </ul>
-      <WaCta label="Pesan via WhatsApp" href={plan.cta} primary={recommended ?? plan.popular} />
+      <PlanCta label={plan.ctaLabel} href={plan.cta} primary={recommended ?? plan.popular} />
     </motion.div>
   );
 }

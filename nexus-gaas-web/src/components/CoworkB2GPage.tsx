@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { getSegment } from "@/lib/segments";
 import { whatsappPemerintahUrl } from "@/lib/portal-config";
-import { Navbar, WaCta } from "./Navbar";
+import { Navbar, PlanCta, WaCta } from "./Navbar";
 
 const WHERE = [
   {
@@ -146,8 +146,8 @@ export function CoworkB2GPage() {
             className="text-center"
             style={{ color: "var(--notion-text-muted)", fontSize: 14, marginBottom: 20 }}
           >
-            Harga bukan HPS resmi. Kasir: Kredit. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (belum
-            dikode). WhatsApp = kontak, bukan gateway.
+            Harga bukan HPS resmi. WhatsApp = kontak on-prem (bukan gateway, bukan DANA/Midtrans).
+            Self-serve UMKM–startup = Kredit di `/order` (keran lab, bukan settlement IDR).
           </p>
           <div className="notion-pricing-grid">
             {plans.map((plan, i) => (
@@ -181,7 +181,7 @@ export function CoworkB2GPage() {
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <WaCta label="Pesan via WhatsApp" href={plan.cta} primary={plan.popular} />
+                <PlanCta label={plan.ctaLabel} href={plan.cta} primary={plan.popular} />
               </motion.div>
             ))}
           </div>

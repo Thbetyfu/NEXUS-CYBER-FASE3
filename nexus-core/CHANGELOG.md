@@ -6,7 +6,11 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Changed
+- **Channel Portal CTA Kredit:** UMKM / sekolah / startup (landing, pagar, tepi) dan Corporat **hosted** (Job/Loop) memakai `/order` atau `/daftar` — bukan “Pesan via WhatsApp”. WhatsApp `62895603358692` hanya Corporat **On-prem** + Pemerintah. Lab = keran Kredit (bukan settlement IDR / Midtrans). Starter 20 Kr tetap fail-closed. Job 200 Kr bukan self-serve kasir Starter.
+
 ### Docs
+- **Copy portal CTA Kredit:** self-serve = `/order`; WhatsApp hanya on-prem. [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md).
 - **Path CURRENT:** indeks docs = dua folder in-repo (bukan “dua repo”); Channel Starter / `START.ps1` memakai prefix `nexus-core/`.
 - **Sinkron path docs hidup (split pohon):** setelah `nexus-gaas-web/` + `nexus-core/`, dokumen Hidup di `nexus-core/docs/` memakai path dari git root (`nexus-core/deploy-local/START.bat`, portal `nexus-gaas-web/` + `npm run dev :3003`, Channel Starter `nexus-core/channel-starter` `:3010`, kontrak `nexus-core/docs/`). **`.agents/` tidak di git** — hanya `AGENTS.md` di akar yang di-commit; clone GitHub tidak membawa aturan Cursor. Indeks: [`docs/README.md`](docs/README.md). Tata letak: [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
 - **Pohon in-repo `nexus-gaas-web/` + `nexus-core/`:** git root `D:\NEXUS`. Portal lab = `nexus-gaas-web/` (bukan `nexus-channel-portal/`). Mesin = `nexus-core/`. `START.bat` = `nexus-core\deploy-local\START.bat`. README arsitektur: payung [`../README.md`](../README.md), mesin [`README.md`](README.md), portal [`../nexus-gaas-web/README.md`](../nexus-gaas-web/README.md) (`:3003`, Kredit, bukan Midtrans, generate `:3010`). `.agents/` gitignore di akar — aturan agen lokal, tidak di remote. Salinan `D:\nexus-gaas-web` opsional, boleh drift. Vercel: repo GaaS dari root, atau FASE3 Root Directory `nexus-gaas-web` (discouraged). [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
@@ -54,7 +58,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 - **Nexus Channel Portal (Milestone 19):** modul **`nexus-gaas-web/`** (dulu `nexus-channel-portal/`) — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
 
 ### Docs
-- **Copy startup jujur (45rb / 75rb):** `/startup` 45rb = landing + **header tepi** (bukan WAF). 75rb Tepi = **Alur A Reflex** (`--tier tepi`, 1 host lab, mesin pagar tipis) — **bukan** Job, **bukan** “alert operator” / Telegram ke pelanggan (pager ban = operator lab). Kartu portal + `DECISIONS_OPEN` / `CHANNEL_STARTER` / `NEXUS_CHANNEL_PORTAL`.
+- **Copy portal CTA Kredit:** self-serve = `/order`; WhatsApp hanya on-prem. [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md). `/startup` 45rb = landing + **header tepi** (bukan WAF). 75rb Tepi = **Alur A Reflex** (`--tier tepi`, 1 host lab, mesin pagar tipis) — **bukan** Job, **bukan** “alert operator” / Telegram ke pelanggan (pager ban = operator lab). Kartu portal + `DECISIONS_OPEN` / `CHANNEL_STARTER` / `NEXUS_CHANNEL_PORTAL`.
 - **Copy portal jujur (nama + status):** paket 20rb UMKM **Website Starter** (bukan “Website Aman”). **Pagar tipis** 35rb/28rb = WAF Reflex judi/deface, 1 host lab (`--tier tepi`), bukan Job. 15rb/20rb tetap header tepi. `DECISIONS_OPEN` / `CHANNEL_STARTER` / `NEXUS_CHANNEL_PORTAL`.
 - **Pagar UMKM jujur:** Channel Starter / paket Rp 20rb = site + **header tepi**. **Pagar tipis** (35rb/28rb) = Reflex di tepi, satu `PROTECTED_HOST` per lab, bukan Job, bukan pulih Vercel. Copy `/umkm` `/sekolah` `/order`.
 - **Rute portal kanonik + copy kasir:** docs memakai `/corporat` dan `/pemerintah`; alias `/institusi` `/b2g` `/cowork` tetap redirect. Copy `/order`, fitur hub, B2G, lampiran WA: lab = Kredit + keran; produksi = QRIS/VA milik pemilik + bukti + approve (belum); WhatsApp = chat, bukan gateway. Bukan perubahan routing.

@@ -3,8 +3,8 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, FileCheck, RefreshCw, Shield } from "lucide-react";
 import Link from "next/link";
-import { Navbar, WaCta } from "./Navbar";
-import { whatsappCoworkUrl, whatsappPackageUrl } from "@/lib/portal-config";
+import { Navbar, PlanCta } from "./Navbar";
+import { PORTAL_DAFTAR, PORTAL_ORDER } from "@/lib/portal-config";
 
 const DELIVERABLES = [
   {
@@ -41,7 +41,7 @@ const PLANS = [
       "Gerbang L0/L1",
       "CLOSED_GAP jika residual",
     ],
-    cta: whatsappPackageUrl("Job Cowork B2B Rp 200rb"),
+    cta: PORTAL_ORDER,
     highlight: true,
   },
   {
@@ -55,7 +55,7 @@ const PLANS = [
       "Operator + artefak berkala",
       "Harga maks daftar v1 (pilot)",
     ],
-    cta: whatsappPackageUrl("Loop GaaS B2B Rp 300rb/bulan"),
+    cta: PORTAL_ORDER,
     highlight: false,
   },
   {
@@ -68,7 +68,7 @@ const PLANS = [
       "Loop multi-host (manual ops)",
       "Demo before/after untuk klien Anda",
     ],
-    cta: whatsappCoworkUrl("Saya integrator — mau diskusi bundle Cowork B2B"),
+    cta: PORTAL_DAFTAR,
     highlight: false,
   },
 ];
@@ -122,7 +122,7 @@ export function CoworkB2BPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <WaCta label="Diskusi Cowork B2B" href={whatsappCoworkUrl()} primary />
+            <PlanCta label="Beli di portal" href={PORTAL_ORDER} primary />
             <Link href="/" className="notion-button" style={{ padding: "12px 24px" }}>
               Lihat Channel Starter UMKM
             </Link>
@@ -206,7 +206,11 @@ export function CoworkB2BPage() {
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <WaCta label="Hubungi via WhatsApp" href={plan.cta} primary={plan.highlight} />
+                <PlanCta
+                  label={plan.name === "Integrator bundle" ? "Masuk portal" : "Beli di portal"}
+                  href={plan.cta}
+                  primary={plan.highlight}
+                />
               </motion.div>
             ))}
           </div>

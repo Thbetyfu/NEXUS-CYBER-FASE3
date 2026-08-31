@@ -183,7 +183,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 **Kredit (lab sekarang):** unit kasir Channel Starter di `/order`. **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. Form tampil tanpa animasi `opacity: 0`. **Bukan** e-money, **bukan** jual Job 200 Kredit dari portal. CLI `channel-starter` tetap tanpa debit.
 
-**Top-up IDR (disepakati, belum dikode):** pelanggan bayar ke **QRIS milik pemilik** atau **VA bank milik pemilik** → kirim bukti → operator **approve** jika bukti aman → Kredit masuk. **Bukan** PSP pihak ketiga (Midtrans/Stripe). WhatsApp = saluran kontak, bukan payment gateway.
+**Top-up IDR (disepakati, belum dikode):** pelanggan bayar ke **QRIS milik pemilik** atau **VA bank milik pemilik** → kirim bukti → operator **approve** jika bukti aman → Kredit masuk. **Bukan** PSP pihak ketiga (Midtrans/Stripe). WhatsApp = saluran on-prem (Corporat On-prem + Pemerintah), bukan payment gateway. UMKM–startup + Corporat hosted = beli di `/order`.
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 

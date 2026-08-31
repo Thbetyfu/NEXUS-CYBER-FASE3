@@ -1,6 +1,11 @@
 /** Segmen portal — satu website, banyak halaman (/umkm, /startup, …) */
 
-import { whatsappPackageUrl, whatsappUrl } from "./portal-config";
+import {
+  PORTAL_DAFTAR,
+  PORTAL_ORDER,
+  whatsappPackageUrl,
+  whatsappUrl,
+} from "./portal-config";
 
 export type SegmentId = "umkm" | "startup" | "sekolah" | "corporat" | "pemerintah";
 
@@ -19,6 +24,8 @@ export type SegmentPlan = {
   popular: boolean;
   features: string[];
   cta: string;
+  /** Tombol kartu. Internal = Kredit/portal; WA hanya on-prem. */
+  ctaLabel: string;
 };
 
 export type SegmentDef = {
@@ -81,7 +88,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan WAF Reflex, bukan pulih template / filter judi",
             "Bukan Job Cowork / laporan institusi",
           ],
-          cta: whatsappPackageUrl("UMKM — Belum punya web · Website Starter Rp 20rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Isi Kredit",
         },
         {
           name: "Pagar tipis (tepi shared)",
@@ -97,7 +105,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
             "Satu slug aktif per instance lab — bukan CNAME massal",
           ],
-          cta: whatsappPackageUrl("UMKM — Belum punya web · Pagar tipis tepi Rp 35rb (1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
       sudah: [
@@ -115,7 +124,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Anti-deface/judi butuh Pagar tipis 28rb (tepi WAF, 1 host lab)",
             "Bukan Job Cowork / laporan formal",
           ],
-          cta: whatsappPackageUrl("UMKM — Sudah punya web · Pagar header Rp 15rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Isi Kredit",
         },
         {
           name: "Pagar tipis (tepi shared)",
@@ -130,7 +140,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan pulih Vercel / restore file origin remote",
             "*.vercel.app langsung TIDAK dilindungi; trafik harus ke PROTECTED_HOST",
           ],
-          cta: whatsappPackageUrl("UMKM — Sudah punya web · Pagar tipis tepi Rp 28rb (1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
     },
@@ -174,7 +185,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan WAF Reflex / pulih template / filter judi",
             "Bukan klaim compliance data siswa penuh",
           ],
-          cta: whatsappPackageUrl("Sekolah — Belum punya web · Website Rp 20rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Isi Kredit",
         },
         {
           name: "Pagar tipis (tepi shared)",
@@ -189,7 +201,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan Job Cowork / Loop; bukan debit Starter 20 Kr",
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
           ],
-          cta: whatsappPackageUrl("Sekolah — Belum punya web · Pagar tipis tepi Rp 35rb (1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
       sudah: [
@@ -207,7 +220,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Tanpa rebuild konten dari Nexus",
             "Anti-deface/judi butuh Pagar tipis 28rb (tepi WAF, 1 host lab)",
           ],
-          cta: whatsappPackageUrl("Sekolah — Sudah punya web · Pagar header Rp 15rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Isi Kredit",
         },
         {
           name: "Pagar tipis (tepi shared)",
@@ -222,7 +236,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan pulih Vercel / restore origin remote",
             "*.vercel.app langsung TIDAK dilindungi",
           ],
-          cta: whatsappPackageUrl("Sekolah — Sudah punya web · Pagar tipis tepi Rp 28rb (1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
     },
@@ -266,7 +281,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan WAF Reflex, bukan filter judi / pulih Vercel",
             "Bukan Loop / Job wasit formal",
           ],
-          cta: whatsappPackageUrl("Startup — Belum punya web · Landing+pagar Rp 45rb (header tepi, bukan WAF)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Isi Kredit",
         },
         {
           name: "Landing + Tepi (Alur A)",
@@ -282,7 +298,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
             "Bukan alert Telegram ke pelanggan (pager ban = operator lab)",
           ],
-          cta: whatsappPackageUrl("Startup — Belum punya web · Landing+Tepi Rp 75rb (Alur A Reflex, 1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
         {
           name: "Job Wasit (on-demand)",
@@ -295,8 +312,10 @@ export const SEGMENTS: SegmentDef[] = [
             "1 Job Cowork + artefak MD/JSON",
             "Defense delta + antibody loop",
             "Gerbang L0/L1",
+            "Job = operator (bukan 200 Kr self-serve di kasir Starter). Beli/isi Kredit di portal — bukan WhatsApp.",
           ],
-          cta: whatsappPackageUrl("Startup — Belum punya web · Job Wasit Rp 200rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
       sudah: [
@@ -314,7 +333,8 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
             "Bukan alert Telegram ke pelanggan (pager ban = operator lab)",
           ],
-          cta: whatsappPackageUrl("Startup — Sudah punya web · Tepi Rp 75rb (Alur A Reflex, 1 host lab, bukan Job)"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
         {
           name: "Job Wasit (on-demand)",
@@ -328,8 +348,10 @@ export const SEGMENTS: SegmentDef[] = [
             "Defense delta + antibody loop",
             "Gerbang L0/L1",
             "Bisa ditambah di atas Tepi",
+            "Job = operator (bukan 200 Kr self-serve). Beli di portal / Kredit — bukan WhatsApp.",
           ],
-          cta: whatsappPackageUrl("Startup — Sudah punya web · Job Wasit Rp 200rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
         {
           name: "Loop Startup",
@@ -338,8 +360,9 @@ export const SEGMENTS: SegmentDef[] = [
           price: "Rp 300.000",
           sub: "/ bulan",
           popular: false,
-          features: ["Semua Job Wasit", "Jadwal bulanan", "Memori imun per host"],
-          cta: whatsappPackageUrl("Startup — Sudah punya web · Loop Rp 300rb"),
+          features: ["Semua Job Wasit", "Jadwal bulanan", "Memori imun per host", "Loop hosted = operator, bukan WhatsApp."],
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
       ],
     },
@@ -358,7 +381,7 @@ export const SEGMENTS: SegmentDef[] = [
       "Perusahaan / fintech / BUMN — pilih hosted (Job/Loop) atau on-prem jika sudah besar & kritis.",
     headline: "Keamanan kanal untuk Corporat",
     subhead:
-      "Ukuran kecil–menengah: beli Job/Loop hosted seperti segmen lain. Sudah besar / multi-DC / data sensitif: on-prem di server Anda — model sama dengan Pemerintah.",
+      "Ukuran kecil–menengah: beli Job/Loop hosted di portal (Kredit) — bukan WhatsApp. Sudah besar / multi-DC / data sensitif: on-prem di server Anda — model sama dengan Pemerintah (WA).",
     badge: "B2B / perusahaan",
     accent: "slate",
     askWebsite: false,
@@ -378,8 +401,10 @@ export const SEGMENTS: SegmentDef[] = [
             "Artefak MD/JSON",
             "L0/L1 & residual jujur",
             "Hosting pilot di PC/server operator + tunnel",
+            "Job hosted = operator (bukan 200 Kr self-serve Starter). Beli di portal / Kredit — bukan WhatsApp.",
           ],
-          cta: whatsappPackageUrl("Corporat — Hosted Job Cowork Rp 200rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
         {
           name: "Loop GaaS",
@@ -389,19 +414,19 @@ export const SEGMENTS: SegmentDef[] = [
           sub: "/ bulan",
           popular: false,
           features: ["1 Job / bulan", "Memori imun", "Operator + artefak"],
-          cta: whatsappPackageUrl("Corporat — Hosted Loop Rp 300rb"),
+          cta: PORTAL_ORDER,
+          ctaLabel: "Beli di portal",
         },
         {
           name: "Custom / multi-host",
           tag: null,
           forWho: "Multi-kanal hosted atau kebutuhan kontrak khusus.",
           price: "Custom",
-          sub: "diskusi WA",
+          sub: "diskusi portal",
           popular: false,
-          features: ["Scope per host", "Kontrak terpisah", "Bukan self-serve Rp 35rb"],
-          cta: whatsappUrl(
-            "Saya dari corporat — mau diskusi paket Hosted Job/Loop (bukan UMKM).",
-          ),
+          features: ["Scope per host", "Kontrak terpisah", "Bukan self-serve Rp 35rb", "Bukan WhatsApp — hosted = Kredit / masuk portal."],
+          cta: PORTAL_DAFTAR,
+          ctaLabel: "Masuk portal",
         },
       ],
       onprem: [
@@ -420,6 +445,7 @@ export const SEGMENTS: SegmentDef[] = [
             "Pitching/arsitektur — packaging produksi belum selesai",
           ],
           cta: whatsappPackageUrl("Corporat — On-Prem Edge Rp 18jt/tahun"),
+          ctaLabel: "Pesan via WhatsApp",
         },
         {
           name: "Loop On-Prem (wajib)",
@@ -435,6 +461,7 @@ export const SEGMENTS: SegmentDef[] = [
             "Bukan SOC otonom 24/7",
           ],
           cta: whatsappPackageUrl("Corporat — On-Prem Loop Rp 3,5jt/bulan"),
+          ctaLabel: "Pesan via WhatsApp",
         },
         {
           name: "Custom / multi-DC",
@@ -447,13 +474,14 @@ export const SEGMENTS: SegmentDef[] = [
           cta: whatsappUrl(
             "Saya dari corporat besar — mau diskusi on-prem Edge + Loop (bukan hosted).",
           ),
+          ctaLabel: "Pesan via WhatsApp",
         },
       ],
     },
     faqs: [
       {
         q: "Kapan pilih Hosted vs On-Prem?",
-        a: "Hosted: cukup 1–beberapa host, bukti Job/Loop, anggaran ratusan ribu — mesin jalan di infrastruktur Nexus. On-Prem: data sensitif, kebijakan “harus di server kami”, multi-DC, atau skala besar — lisensi Edge + Loop wajib (harga jutaan).",
+        a: "Hosted: cukup 1–beberapa host, bukti Job/Loop, anggaran ratusan ribu — mesin di Nexus; beli di portal (Kredit), bukan WhatsApp. On-Prem: data sensitif, kebijakan “harus di server kami”, multi-DC, atau skala besar — lisensi Edge + Loop wajib (harga jutaan); kontak WhatsApp.",
       },
       {
         q: "Bedanya Corporat On-Prem dengan Pemerintah?",
@@ -489,6 +517,7 @@ export const SEGMENTS: SegmentDef[] = [
           "Pitching/arsitektur — packaging produksi belum selesai",
         ],
         cta: whatsappPackageUrl("Pemerintah — Lisensi Edge On-Prem Rp 18jt/tahun"),
+        ctaLabel: "Pesan via WhatsApp",
       },
       {
         name: "Loop On-Prem (wajib)",
@@ -505,6 +534,7 @@ export const SEGMENTS: SegmentDef[] = [
           "Margin retainer — bukan harga UMKM",
         ],
         cta: whatsappPackageUrl("Pemerintah — Loop On-Prem Rp 3,5jt/bulan"),
+        ctaLabel: "Pesan via WhatsApp",
       },
       {
         name: "Custom / multi-DC",
@@ -522,6 +552,7 @@ export const SEGMENTS: SegmentDef[] = [
         cta: whatsappUrl(
           "Saya dari instansi/pemerintah — mau diskusi paket on-prem Edge + Loop (bukan UMKM).",
         ),
+        ctaLabel: "Pesan via WhatsApp",
       },
     ],
     faqs: [

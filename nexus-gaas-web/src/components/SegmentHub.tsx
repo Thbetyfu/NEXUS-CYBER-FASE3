@@ -7,10 +7,10 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  CreditCard,
   Globe,
   GraduationCap,
   Landmark,
-  MessageCircle,
   Rocket,
   Shield,
   Sparkles,
@@ -40,7 +40,7 @@ const WORDS = [
 
 const FLOW_STEPS = [
   { icon: Sparkles, label: "Pilih peran", color: "var(--hub-accent)" },
-  { icon: MessageCircle, label: "Hubungi WA", color: "#128C7E" },
+  { icon: CreditCard, label: "Isi Kredit", color: "var(--hub-accent)" },
   { icon: CheckCircle2, label: "Tim proses", color: "var(--hub-ink)" },
   { icon: Globe, label: "Site / Job live", color: "var(--hub-accent)" },
 ];
@@ -91,7 +91,7 @@ function HeroFlow() {
 
   const hints = [
     "Pilih UMKM, sekolah, startup, corporat, atau pemerintah — harga tidak dicampur.",
-    "WhatsApp untuk chat paket. Lab: Kredit + keran. Bayar IDR: QRIS/VA milik Nexus + bukti + approve (belum).",
+    "UMKM–startup dan Corporat hosted: beli di portal (`/order` / `/daftar`) dengan Kredit. WhatsApp hanya on-prem (Corporat / Pemerintah). Bukan Midtrans.",
     "Proses di PC operator + tunnel — tanpa VPS dulu (on-prem = DC klien).",
     "Website live, Job wasit, atau pitch on-prem — sesuai peran Anda.",
   ];
@@ -161,8 +161,8 @@ export function SegmentHub() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            Satu portal. Lima peran. UMKM–startup: cabang website. Corporat: hosted atau on-prem
-            (jika besar). Pemerintah: on-prem di DC instansi.
+            Satu portal. Lima peran. UMKM–startup: cabang website, beli Kredit di situs. Corporat hosted:
+            portal. On-prem (besar) dan Pemerintah: WhatsApp.
           </motion.p>
 
           <motion.a

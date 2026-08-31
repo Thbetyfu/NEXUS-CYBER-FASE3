@@ -15,7 +15,7 @@ Deploy publik kanonik: repo [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbety
 | Port lab | **3003** (`npm run dev`) |
 | Kasir | **Kredit** per identitas (cookie tamu atau akun) — lab: keran + Starter **20 Kr** di `/order` |
 | Pembayaran IDR | **Bukan** Midtrans/Stripe. Berikutnya (disepakati, **belum dikode**): QRIS/VA milik pemilik → bukti → approve → Kredit |
-| Kontak | WhatsApp manual `62895603358692` (chat, bukan gateway pembayaran) |
+| Kontak | WhatsApp `62895603358692` **hanya on-prem** (Corporat On-prem + Pemerintah). UMKM–startup + Corporat hosted = `/order` Kredit |
 
 Login / daftar / tamu = **pelanggan storefront** (`/masuk`, `/daftar`). Bukan login operator Nexus.
 

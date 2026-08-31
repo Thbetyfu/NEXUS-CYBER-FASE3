@@ -239,7 +239,7 @@ export default function OrderPage() {
         orderId: data.orderId,
       });
     } catch {
-      setFormError("Portal tidak menghubungi Channel Starter. Site bisa digenerate operator setelah WA.");
+      setFormError("Portal tidak menghubungi Channel Starter. Site bisa digenerate operator setelah isi Kredit.");
     } finally {
       setBusy(false);
     }

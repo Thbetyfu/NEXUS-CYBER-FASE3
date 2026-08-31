@@ -10,7 +10,7 @@ import {
   type SegmentDef,
   type WebsiteStatus,
 } from "@/lib/segments";
-import { Navbar, WaCta } from "./Navbar";
+import { Navbar, PlanCta } from "./Navbar";
 
 export function SegmentLanding({ segment }: { segment: SegmentDef }) {
   const [website, setWebsite] = useState<WebsiteStatus | null>(
@@ -86,8 +86,8 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               Seberapa besar / di mana mesin jalan?
             </h2>
             <p className="web-status-hint">
-              Hosted = beli Job/Loop seperti segmen lain (mesin di Nexus). On-prem = perusahaan sudah
-              besar / data kritis — Edge di server Anda, model sama Pemerintah.
+              Hosted = beli Job/Loop di portal (Kredit), mesin di Nexus. On-prem = perusahaan sudah
+              besar / data kritis — Edge di server Anda, model sama Pemerintah (WhatsApp).
             </p>
             <div className="web-status-grid">
               <button
@@ -158,7 +158,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
                       <li key={f}>{f}</li>
                     ))}
                   </ul>
-                  <WaCta label="Pesan via WhatsApp" href={plan.cta} primary={plan.popular} />
+                  <PlanCta label={plan.ctaLabel} href={plan.cta} primary={plan.popular} />
                 </motion.div>
               ))}
             </motion.div>

@@ -14,7 +14,8 @@
 | **Pagar tipis (2026-08-31)** | SKU portal **35rb** (belum punya web) / **28rb** (sudah) = tepi shared: upsell `--tier tepi` → WAF Reflex judi/deface, **satu** host per lab. **Bukan** Starter 20 Kr, **bukan** Job, **bukan** Loop, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung |
 | Harga Starter exact | **Rp 20.000/bulan** |
 | Subdomain produksi | **`*.nexus.id`** |
-| Pembayaran v1 (kontak) | WhatsApp `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* (saluran manusia, **bukan** gateway PSP) |
+| Pembayaran v1 (kontak) | WhatsApp `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* (saluran manusia, **bukan** gateway PSP). **Hanya on-prem publik:** Corporat On-prem + Pemerintah |
+| **CTA portal (2026-09-01)** | UMKM / sekolah / startup (site, pagar, tepi) + Corporat **hosted** = `/order` atau `/daftar` (Kredit). Bukan “Pesan via WhatsApp”. Job 200 Kr **bukan** self-serve kasir Starter (operator). Lab = keran, bukan settlement IDR / Midtrans |
 | **Kredit (mata uang kasir)** | Nama **Kredit** (**Kr**). **1 Kr = Rp 1.000**. SKU Starter = **20 Kr** di `/order`. Debit fail-closed; refund jika generate gagal. **Bukan** Job 200 Kr dari portal. **Bukan** e-money. Ledger **per tamu/akun** (bukan satu file `lab` untuk semua browser) |
 | **Akun pelanggan portal v0 (2026-09-01)** | Channel Portal `:3003` saja: tamu (cookie httpOnly) / daftar / masuk. **Bukan** Operator Console `:3001`. **Bukan** F-10 roster/SOC. **Bukan** SSO. Daftar dari sesi tamu memindahkan Kredit tamu ke akun |
 | **Top-up Kredit (2026-08-31)** | **Bukan** PSP pihak ketiga (Midtrans, Stripe, dll.) — **jangan** dikerjakan. Jalur yang disepakati (**belum dikode**): bayar ke **QRIS milik pemilik** dan/atau **Virtual Account bank milik pemilik** → kirim **bukti transfer** → operator **approve** jika bukti aman/sah → Kredit masuk ledger. Lab sekarang: keran `POST /api/kredit/faucet` (bukan settlement IDR) |

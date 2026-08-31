@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
 import { AuthLinks } from "@/components/AuthLinks";
+import { isWhatsAppHref } from "@/lib/portal-config";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -85,6 +86,16 @@ export function Navbar() {
   );
 }
 
+const ctaStyle = (primary: boolean) =>
+  ({
+    padding: primary ? "12px 28px" : "10px 20px",
+    fontSize: "15px",
+    width: "100%",
+    justifyContent: "center",
+    display: "inline-flex",
+    alignItems: "center",
+  }) as const;
+
 export function WaCta({
   label,
   href,
@@ -100,19 +111,41 @@ export function WaCta({
       target="_blank"
       rel="noopener"
       className={primary ? "notion-button notion-button-primary" : "notion-button"}
-      style={{
-        padding: primary ? "12px 28px" : "10px 20px",
-        fontSize: "15px",
-        width: "100%",
-        justifyContent: "center",
-        display: "inline-flex",
-        alignItems: "center",
-      }}
+      style={ctaStyle(primary)}
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
     >
       {label}
       {primary && <ArrowRight size={16} style={{ marginLeft: 8, display: "inline" }} />}
     </motion.a>
+  );
+}
+
+/** Internal `/order` / `/daftar` vs WhatsApp (on-prem saja). */
+export function PlanCta({
+  label,
+  href,
+  primary = false,
+}: {
+  label?: string;
+  href: string;
+  primary?: boolean;
+}) {
+  const wa = isWhatsAppHref(href);
+  const text = label ?? (wa ? "Pesan via WhatsApp" : "Beli di portal");
+  if (wa) {
+    return <WaCta label={text} href={href} primary={primary} />;
+  }
+  return (
+    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }} style={{ width: "100%" }}>
+      <Link
+        href={href}
+        className={primary ? "notion-button notion-button-primary" : "notion-button"}
+        style={ctaStyle(primary)}
+      >
+        {text}
+        {primary && <ArrowRight size={16} style={{ marginLeft: 8, display: "inline" }} />}
+      </Link>
+    </motion.div>
   );
 }

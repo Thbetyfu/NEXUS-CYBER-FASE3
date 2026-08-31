@@ -16,6 +16,15 @@ export const SALES = {
   currency: "IDR",
 } as const;
 
+/** Kasir self-serve (Kredit). Bukan WhatsApp. */
+export const PORTAL_ORDER = "/order";
+export const PORTAL_DAFTAR = "/daftar";
+export const PORTAL_MASUK = "/masuk";
+
+export function isWhatsAppHref(href: string): boolean {
+  return href.startsWith("https://wa.me/");
+}
+
 export function whatsappUrl(message?: string): string {
   const text = encodeURIComponent(message ?? SALES.waMessage);
   return `https://wa.me/${SALES.whatsapp}?text=${text}`;
