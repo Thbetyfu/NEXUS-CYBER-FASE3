@@ -91,7 +91,7 @@ NEX-RED scan (setelah WAF hidup, lewat Caddy jika lab Docker):
 python NEX-RED/nexred.py scan -u http://127.0.0.1 -r . -m hybrid --no-llm
 ```
 
-Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
+Lab `deploy-local/START.bat` **wajib** `nex-ai-protect` + `nex-ai-reflex` di Ollama lokal (salin GGUF + `IMPORT-OLLAMA.bat`, bukan Hub). Tanpa itu stack tidak start. Setelah hidup, WAF request path tetap Reflex regex; reasoning tetap asinkron. CI: `NEX_AI_REQUIRED=0`.
 
 ### 1. Pemuatan Modul Keamanan (Boot Sequence)
 ![System Boot Sequence](./docs/img/Opening-Nexus-Cyber.jpeg)
@@ -118,7 +118,7 @@ Ollama / `nex-ai-protect` **opsional**. Tanpa model, WAF tetap Reflex regex.
 | **NEX-RED** | SAST + HTTP jinak + Juice Shop kelas + **defense delta** lab (WAF vs origin); **bukan** proof-by-exploitation |
 | **Channel Portal / billing otomatis** | **Portal v1 manual WA** — Midtrans **ditunda** |
 
-Reflex sinkron di request path. Reasoning (`nex-ai-protect` / API) **opsional dan asinkron** jika dikonfigurasi — bukan Qwen 235B wajib di setiap request.
+Reflex sinkron di request path. Reasoning (`nex-ai-protect`) **asinkron** — bukan Qwen 235B wajib di setiap request. Start lab tetap fail-closed tanpa kedua nama NEX-AI lokal.
 
 ---
 

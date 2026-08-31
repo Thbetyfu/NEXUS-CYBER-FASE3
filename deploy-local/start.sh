@@ -22,6 +22,28 @@ if [[ ! -f .env ]]; then
   echo "[OK] .env dibuat dari .env.example"
 fi
 
+echo "[1/4] Memeriksa NEX-AI lokal (nex-ai-protect + nex-ai-reflex)..."
+CHECK_PY="$(cd "$(dirname "$0")/.." && pwd)/scripts/check_nex_ai.py"
+if [[ -z "${NEX_AI_REQUIRED:-}" ]]; then
+  NEX_AI_REQUIRED="$(grep -E '^NEX_AI_REQUIRED=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r"' | head -n1 || true)"
+  export NEX_AI_REQUIRED
+fi
+if [[ "${NEX_AI_REQUIRED:-}" =~ ^(0|false|no|off)$ ]]; then
+  echo "[NEX-AI] Gerbang dilewati (NEX_AI_REQUIRED=${NEX_AI_REQUIRED}). Bukan unduhan Hub."
+else
+  if command -v python3 >/dev/null 2>&1; then
+    python3 "$CHECK_PY"
+  elif command -v python >/dev/null 2>&1; then
+    python "$CHECK_PY"
+  else
+    echo "Model AI tidak ada. Silakan pasang terlebih dahulu."
+    echo "Python 3 diperlukan untuk memeriksa NEX-AI di Ollama lokal."
+    echo "Bobot TIDAK diunduh dari Ollama Hub. Jangan ollama pull qwen / llama / gpt."
+    echo "Salin nex_ai_q4_k_m.gguf ke folder nex-ai-models/ lalu jalankan nex-ai-models/IMPORT-OLLAMA.bat"
+    exit 1
+  fi
+fi
+
 COMPOSE=(docker compose --project-name nexus-local -f docker-compose.yml)
 if [[ "$OFFLINE" -eq 1 ]]; then
   COMPOSE+=(-f docker-compose.offline.yml)
@@ -30,10 +52,10 @@ else
   echo "[MODE] Origin Vercel: https://portfolio-website-three-ruddy-65.vercel.app"
 fi
 
-echo "[1/3] Build & start..."
+echo "[2/4] Build & start..."
 "${COMPOSE[@]}" up -d --build
 
-echo "[2/3] Menunggu gateway :8080..."
+echo "[3/4] Menunggu gateway :8080..."
 ready=0
 for _ in $(seq 1 45); do
   code="$(curl -sS -o /dev/null --max-time 3 -w "%{http_code}" http://127.0.0.1:8080/ || true)"
@@ -50,7 +72,7 @@ else
   echo "[PERINGATAN] :8080 belum merespons. Cek: docker logs nexus-local-gateway"
 fi
 
-echo "[3/3] Alamat akses"
+echo "[4/4] Alamat akses"
 echo "  Laptop ini      :  http://127.0.0.1"
 echo "  Gateway langsung :  http://127.0.0.1:8080"
 PROTECTED_HOST="$(grep -E '^PROTECTED_HOST=' .env 2>/dev/null | cut -d= -f2- | tr -d '\r' | head -n1)"

@@ -26,8 +26,10 @@ Urutan: blue team dulu sampai kartu lab muncul → red team join `NEXUS-BLUE-LAB
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) terpasang dan **sudah running** (ikon paus tidak sedang starting).
 2. Port **80** dan **8080** belum dipakai (matikan `start-dev.bat` / compose root jika masih hidup).
 3. Laptop terhubung internet (build image + origin Vercel).
+4. **NEX-AI lokal** sudah terdaftar di Ollama host: `nex-ai-protect` **dan** `nex-ai-reflex`. Salin `nex_ai_q4_k_m.gguf` ke `nex-ai-models\` lalu jalankan `nex-ai-models\IMPORT-OLLAMA.bat`. **Bukan** `ollama pull` dari Hub. Cek: `CHECK-NEX-AI.bat` atau `ollama list`.
+5. **Python 3** di PATH (hanya untuk gerbang `scripts/check_nex_ai.py` sebelum compose).
 
-Tidak perlu Go, Node, atau Python untuk mode default.
+Tidak perlu Go atau Node untuk mode default. Tanpa langkah 4, START **berhenti sebelum** `docker compose up` (pesan Indonesia + jeda). CI: `NEX_AI_REQUIRED=0` (eksplisit; bukan fallback Hub).
 
 Lab **Juice Shop** untuk skor kelas NEX-RED (bukan hotspot red team): [`NEX-RED/lab/juice-shop/README.md`](../NEX-RED/lab/juice-shop/README.md) — hanya `127.0.0.1:3003`.
 
@@ -51,6 +53,7 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 | File | Fungsi |
 | --- | --- |
 | `ALLOW-DEV-LAPTOP.bat` | Sekali: firewall lab + Defender tidak tanya terus |
+| `CHECK-NEX-AI.bat` | Cek Ollama lokal punya `nex-ai-protect` + `nex-ai-reflex` (helper yang sama dipakai START) |
 | `START-OFFLINE.bat` | Sama, origin = `playground/Portofolio-Thoriq` (tanpa Vercel) |
 | `STATUS.bat` | Lihat kontainer hidup/mati |
 | `STOP.bat` | Matikan stack (data Postgres tetap di volume Docker) |
@@ -107,6 +110,7 @@ python NEX-RED/nexred.py scan -u http://127.0.0.1 -m blackbox --no-llm
 
 ## Kalau gagal
 
+- **Model AI tidak ada. Silakan pasang terlebih dahulu.** — Ollama belum nyala, atau `nex-ai-protect` / `nex-ai-reflex` belum diimpor. Salin `nex_ai_q4_k_m.gguf` ke `nex-ai-models\` lalu `IMPORT-OLLAMA.bat`. Jangan `ollama pull qwen` / `llama` / `gpt`. CI saja: `NEX_AI_REQUIRED=0`.
 - **Docker Desktop is not running** — buka Docker Desktop, tunggu sampai Ready, klik `START.bat` lagi.
 - **port is already allocated** — `STOP.bat`, atau matikan compose di root repo (`docker compose down`).
 - **Halaman kosong / 502** — `STATUS.bat`, lalu `docker logs nexus-local-gateway`.

@@ -15,7 +15,7 @@
 | Perlu VPS dulu? | **Tidak wajib** — VPS nanti jika SLA/volume menuntut |
 | Juri bisa akses dari HP / internet mana pun? | **Ya** — lewat URL `https://….trycloudflare.com` |
 | Portal jual + bikin site UMKM bisa hidup di PC yang sama? | **Ya (lab)** — portal + Channel Starter CLI; billing otomatis **belum** |
-| GPU 3080 Ti wajib? | **Tidak** untuk akses publik; **opsional** untuk NEX-AI lokal |
+| GPU 3080 Ti wajib? | **Tidak**. Ollama + GGUF lokal **wajib** untuk `START` lab; GPU hanya mempercepat |
 
 **Hotspot** hanya untuk latihan blue/red team di Wi‑Fi lokal (`deploy-local/blue-team/`). **Bukan** jalur utama distribusi atau juri.
 
@@ -41,7 +41,7 @@ Urutan disarankan untuk PC Windows kosong. Jangan loncat ke `START-FOR-JURY` seb
 
 | Software | Kapan perlu | Catatan |
 | --- | --- | --- |
-| **Ollama** | Opsional | Hanya jika NEX-AI lokal (`nex-ai-protect` / `nex-ai-reflex`) — GPU 3080 Ti membantu |
+| **Ollama** | **Wajib untuk START lab** | Daftarkan `nex-ai-protect` + `nex-ai-reflex` dari `nex-ai-models\IMPORT-OLLAMA.bat` (salin GGUF; **bukan** Hub). GPU 3080 Ti membantu, tidak wajib |
 | **Go 1.22+** | Tidak untuk mode jury | Hanya jika ubah kode gateway (`start-dev.bat`) |
 | **Akun Cloudflare** | Nanti (URL tetap) | Quick tunnel **tidak** wajib akun; named tunnel + domain butuh login |
 
@@ -166,23 +166,25 @@ CHANNEL_STARTER_URL=http://127.0.0.1:3010
 
 Pembayaran v1 **tidak** butuh ENV — manual WhatsApp `62895603358692` (hardcoded di UI).
 
-#### D. NEX-AI lokal (opsional — manfaatkan 3080 Ti)
+#### D. NEX-AI lokal (wajib untuk START / START-FOR-JURY)
 
 1. Install **Ollama** → https://ollama.com/download  
-2. Import model dari `nex-ai-models/` (lihat `docs/NEX_AI_RUNTIME.md`)  
+2. Salin `nex_ai_q4_k_m.gguf` ke `nex-ai-models\` lalu `IMPORT-OLLAMA.bat` (lihat `docs/NEX_AI_RUNTIME.md`). **Jangan** `ollama pull qwen` / `llama` / `gpt`.  
 3. Pastikan di `deploy-local/.env`:
 
 ```env
+NEX_AI_REQUIRED=1
 NEX_AI_ENDPOINT=http://host.docker.internal:11434/api/chat
 NEX_AI_MODEL_REFLEX=nex-ai-reflex
 NEX_AI_MODEL_REASONING=nex-ai-protect
 ```
 
-Tanpa Ollama: lab + tunnel juri **tetap jalan** (WAF regex, NEX-RED bisa `--no-llm`).
+Tanpa kedua nama di `ollama list`, `START.bat` / `START-FOR-JURY.bat` **berhenti sebelum** compose. CI: `NEX_AI_REQUIRED=0`. Request path tetap Reflex regex.
 
 ### 2.6 Checklist “PC siap jadi server”
 
 - [ ] Git, Docker Desktop, Node 20+, Python 3.10+ terpasang  
+- [ ] Ollama + `nex-ai-protect` / `nex-ai-reflex` (GGUF + `IMPORT-OLLAMA.bat`, bukan Hub)  
 - [ ] `git submodule update --init --recursive` sukses  
 - [ ] `PREP-PC-SERVER.bat` selesai tanpa error kritis  
 - [ ] `deploy-local/.env` ada; password/token **sudah diganti**  

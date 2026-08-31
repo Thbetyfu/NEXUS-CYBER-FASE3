@@ -60,6 +60,9 @@ func main() {
 		HandleSimCLI(os.Args[1:])
 		return
 	}
+	if err := ai.EnforceNexAIRequired(context.Background()); err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("[NEXUS] NEXUS CYBER GATEWAY - ENTERPRISE PRODUCTION INITIALIZING...")
 
 	ctx, cancel := context.WithCancel(context.Background())

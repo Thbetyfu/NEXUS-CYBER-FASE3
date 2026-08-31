@@ -8,7 +8,7 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 
 ## 1 klik
 
-1. Docker Desktop sudah Ready.
+1. Docker Desktop sudah Ready. Ollama host sudah punya `nex-ai-protect` **dan** `nex-ai-reflex` (`IMPORT-OLLAMA.bat` — bukan Hub). Tanpa itu START berhenti sebelum compose.
 2. Disarankan: internet lewat **kabel Ethernet** (Wi-Fi laptop dipakai untuk hotspot). Kalau hanya ada satu Wi-Fi, Windows kadang gagal share; skrip akan membuka Settings.
 3. Double-click **`START.bat`** (akan minta Administrator).
    Sekali di laptop ini: `deploy-local\ALLOW-DEV-LAPTOP.bat` supaya Firewall/Defender tidak muncul terus.

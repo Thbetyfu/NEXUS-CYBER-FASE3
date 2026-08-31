@@ -14,6 +14,47 @@ Write-Host "============================================================" -Foreg
 Write-Host "  Nexus Cyber  |  deploy-local  |  1-klik lab laptop" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 
+function Test-NexAIRequiredOff {
+    return $env:NEX_AI_REQUIRED -match '^(?i)(0|false|no|off)$'
+}
+
+function Invoke-NexAIGate {
+    if (Test-NexAIRequiredOff) {
+        Write-Host "[NEX-AI] Gerbang dilewati (NEX_AI_REQUIRED=$($env:NEX_AI_REQUIRED)). Bukan unduhan Hub." -ForegroundColor Yellow
+        return
+    }
+
+    $script = Join-Path $PSScriptRoot "..\scripts\check_nex_ai.py"
+    if (-not (Test-Path -LiteralPath $script)) {
+        Write-Host "[GAGAL] scripts\check_nex_ai.py tidak ditemukan." -ForegroundColor Red
+        exit 1
+    }
+
+    $ran = $false
+    if (Get-Command py -ErrorAction SilentlyContinue) {
+        & py -3 -- "$script"
+        $ran = $true
+    } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+        & python -- "$script"
+        $ran = $true
+    } elseif (Get-Command python3 -ErrorAction SilentlyContinue) {
+        & python3 -- "$script"
+        $ran = $true
+    }
+
+    if (-not $ran) {
+        Write-Host "Model AI tidak ada. Silakan pasang terlebih dahulu." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Python 3 diperlukan untuk memeriksa NEX-AI di Ollama lokal." -ForegroundColor Red
+        Write-Host "Bobot TIDAK diunduh dari Ollama Hub. Jangan ollama pull qwen / llama / gpt."
+        Write-Host "Salin nex_ai_q4_k_m.gguf ke folder nex-ai-models\ lalu jalankan nex-ai-models\IMPORT-OLLAMA.bat"
+        exit 1
+    }
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
+}
+
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     Write-Host "[GAGAL] Docker belum terpasang. Install Docker Desktop, lalu coba lagi." -ForegroundColor Red
     exit 1
@@ -33,6 +74,14 @@ if (-not (Test-Path $envFile)) {
     Copy-Item -LiteralPath $example -Destination $envFile
     Write-Host "[OK] .env dibuat dari .env.example" -ForegroundColor Green
 }
+if (-not $env:NEX_AI_REQUIRED) {
+    $nexLine = Get-Content -LiteralPath $envFile -ErrorAction SilentlyContinue |
+        Where-Object { $_ -match '^\s*NEX_AI_REQUIRED=' } |
+        Select-Object -First 1
+    if ($nexLine) {
+        $env:NEX_AI_REQUIRED = ($nexLine -split '=', 2)[1].Trim().Trim('"').Trim("'")
+    }
+}
 
 $composeArgs = @(
     "--project-name", "nexus-local",
@@ -45,14 +94,17 @@ if ($Offline) {
     Write-Host "[MODE] Origin Vercel: https://portfolio-website-three-ruddy-65.vercel.app" -ForegroundColor Yellow
 }
 
-Write-Step "[1/3] Build & start (pertama kali bisa beberapa menit)..."
+Write-Step "[1/4] Memeriksa NEX-AI lokal (nex-ai-protect + nex-ai-reflex)..."
+Invoke-NexAIGate
+
+Write-Step "[2/4] Build & start (pertama kali bisa beberapa menit)..."
 & docker compose @composeArgs up -d --build
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[GAGAL] docker compose gagal. Cek apakah port 80/8080 sudah dipakai stack lain." -ForegroundColor Red
     exit 1
 }
 
-Write-Step "[2/3] Menunggu gateway merespons di :8080..."
+Write-Step "[3/4] Menunggu gateway merespons di :8080..."
 $ready = $false
 for ($i = 0; $i -lt 45; $i++) {
     try {
@@ -74,7 +126,7 @@ if (-not $ready) {
     Write-Host "[OK] Gateway merespons." -ForegroundColor Green
 }
 
-Write-Step "[3/3] Alamat akses"
+Write-Step "[4/4] Alamat akses"
 Write-Host "  Laptop ini     :  http://127.0.0.1"
 Write-Host "  Gateway langsung:  http://127.0.0.1:8080"
 

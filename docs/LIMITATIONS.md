@@ -1,6 +1,6 @@
 # Nexus Cyber Limitations
 
-Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-29.
+Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md). Pembaruan: 2026-08-31.
 
 ---
 
@@ -32,7 +32,7 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 
 ## Batasan kode (demo & produksi)
 
-6. **Reflex = regex** — bukan AI pada setiap request; model reasoning opsional.
+6. **Reflex = regex** — bukan AI pada setiap request; reasoning `nex-ai-protect` tetap asinkron setelah lab hidup. **Start lab `deploy-local` fail-closed:** tanpa `nex-ai-protect` **dan** `nex-ai-reflex` di Ollama lokal, `START.bat` / `START-OFFLINE.bat` tidak menyalakan stack. Bukan unduhan Ollama Hub. CI: `NEX_AI_REQUIRED=0`. Gateway `go test` tidak memanggil Ollama kecuali env itu `1`.
 7. **Command Center / Operator GaaS bukan publik** — `:8081` / `:3001` loopback; SOC API 404 di `:8080`. Bukan dashboard pelanggan; UI lab (War Room/MTD/license) **dihapus** — fokus Job Cowork. **Panduan Penggunaan** in-app (ID) menjelaskan alur pilot; bukan mengganti `PRODUCT_MODEL` / `LIMITATIONS`. **Onboard kanal** = Origin URL + protected host saja; DNS/CNAME/tunnel di luar SOC; **tanpa** Docker auto-provision di jalur operator Cowork. Bukan self-serve multi-tenant / Midtrans. **Workspace binding:** Job menembak protected host via WAF (`http://{host}`); Global Overwatch tidak menjalankan Job tanpa pilih workspace. Ban IP tetap global di gateway.
 8. **Satu `PROTECTED_HOST` fokus per instance (pilot)** — onboard UI boleh daftar host tambahan di router, tetapi model jual tetap satu kanal fokus; bukan CNAME massal otomatis / provisioner massal. Job host-key mengikuti Active Workspace. Agen HTTP **dan** Playwright bind ke IP WAF + nama kanal (header `Host` / Chromium MAP) tanpa file hosts. PoW hotspot di named-host tanpa sesi tetap `sast_only` di alur browser. Publik tetap butuh DNS/tunnel agar *pengunjung* sampai ke WAF. **Origin lab:** `TARGET_BACKEND` menimpa OriginIP leftover pada host instance saat boot (START.bat ↔ START-OFFLINE). Onboard host *tambahan* persist; onboard ulang origin pada `PROTECTED_HOST` instance sendiri **tertulis ulang** ke compose `TARGET_BACKEND` saat gateway restart. Di dalam container, `127.0.0.1:3001` bukan SOC host.
 9. **PACS/Base64** — obfuskasi, bukan enkripsi.
@@ -57,4 +57,4 @@ Lihat [CHANGELOG.md](../CHANGELOG.md) Unreleased.
 
 ---
 
-*Limitations GaaS — 2026-08-29 (degradasi antibodi RAM + ban PG hydrate + golden GET).*
+*Limitations GaaS — 2026-08-31 (gerbang NEX-AI lab fail-closed + degradasi antibodi RAM + ban PG hydrate + golden GET).*
