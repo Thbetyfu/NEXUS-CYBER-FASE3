@@ -7,6 +7,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 ## [Unreleased]
 
 ### Docs
+- **README pohon:** [`nexus-core/README.md`](README.md) (peran tepi/kokpit/wasit/cetak/runtime/AI, folder disk tanpa rename) + [`../nexus-gaas-web/README.md`](../nexus-gaas-web/README.md) (portal `:3003`, Kredit, bukan Midtrans, generate `:3010`). `.agents/` di gitignore akar — aturan agen lokal, tidak di remote.
 - **Pohon in-repo `nexus-gaas-web/` + `nexus-core/`:** git root tetap `D:\NEXUS`. Portal lab = `nexus-gaas-web/` (bukan `nexus-channel-portal/`). Mesin = `nexus-core/`. `START.bat` = `nexus-core\deploy-local\START.bat`. Salinan `D:\nexus-gaas-web` opsional, boleh drift. Vercel: repo GaaS dari root, atau FASE3 Root Directory `nexus-gaas-web` (discouraged). [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
 - **Dua repo (bukan submodule):** situs jual Vercel kanonik = **nexus-gaas-web** GitHub (`D:\nexus-gaas-web` opsional → [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS)). Jangan Connect `warung-*` ke FASE3.
 

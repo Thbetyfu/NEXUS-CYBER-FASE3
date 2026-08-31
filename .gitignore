@@ -1,3 +1,6 @@
+# Agent rules — local only, not on remote
+.agents/
+
 # Editor/OS
 .vscode/
 .idea/

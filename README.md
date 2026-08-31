@@ -9,4 +9,4 @@ Git root tetap **`D:\NEXUS`**. Dua produk di dalam repo ini — **bukan** submod
 
 **Produksi situs jual kanonik:** repo terpisah [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS). Salinan kerja opsional di **`D:\nexus-gaas-web`** (di luar git ini) boleh tetap ada — lab in-repo dan folder saudara **bisa drift** sampai owner pilih satu kanonik. **Jangan** Connect project `warung-*` ke FASE3. **Jangan** tunnel-kan SOC `:3001`/`:8081`.
 
-Agen: [`AGENTS.md`](./AGENTS.md). Tata letak: [`nexus-core/docs/REPO_LAYOUT.md`](./nexus-core/docs/REPO_LAYOUT.md). Changelog mesin: [`nexus-core/CHANGELOG.md`](./nexus-core/CHANGELOG.md).
+Agen: [`AGENTS.md`](./AGENTS.md) menunjuk aturan di **`.agents/`** pada laptop — folder itu **gitignore**, tidak di-push. Tata letak: [`nexus-core/docs/REPO_LAYOUT.md`](./nexus-core/docs/REPO_LAYOUT.md). Changelog mesin: [`nexus-core/CHANGELOG.md`](./nexus-core/CHANGELOG.md).

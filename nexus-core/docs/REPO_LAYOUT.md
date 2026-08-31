@@ -25,7 +25,19 @@ Channel Portal (Next.js `:3003`). Generate site tetap ke Channel Starter lokal *
 
 ## nexus-core
 
-WAF Go, NEX-RED, Command Center `:3001`, generator `channel-starter/`, `deploy-local/START.bat`. Jangan nested `.git`. Jangan tunnel-kan SOC. Jangan Connect project `warung-*` ke FASE3.
+Mesin (bukan situs jual). Path 1 klik dari git root: **`nexus-core\deploy-local\START.bat`** (bukan `D:\NEXUS\deploy-local\` lama). Nama folder di disk — jangan `git mv`:
+
+| Folder | Peran | Legend opsional |
+| --- | --- | --- |
+| `nexus-core-gateway/` | tepi WAF `:8080` | edge |
+| `nexus-admin-dashboard/` | kokpit `:3001` | operator |
+| `NEX-RED/` | wasit Job | cowork |
+| `channel-starter/` | cetak site `:3010` | starter |
+| `deploy-local/` | nyalakan mesin | runtime |
+| `docs/` `scripts/` `postgres-init/` | kontrak, otomasi, SQL init | — |
+| `NEX-AI/` | AI milik pemilik | ai |
+
+Jangan nested `.git`. Jangan tunnel-kan SOC. Jangan Connect project `warung-*` ke FASE3. Detail: [`../README.md`](../README.md).
 
 ## Bukan
 

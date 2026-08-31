@@ -1,5 +1,7 @@
 # Nexus Cyber — deploy lokal 1 klik
 
+Folder ini = **`nexus-core/deploy-local/`** (git root `D:\NEXUS`). 1 klik: **`nexus-core\deploy-local\START.bat`**. Bukan `D:\NEXUS\deploy-local\` di akar repo (sisa pohon lama).
+
 Lab **Alur A** (tepi) + uji **Alur B** (NEX-RED wasit). Model produk: [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md).
 
 Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di laptop, lalu mem-proxy situs portofolio di belakangnya.
