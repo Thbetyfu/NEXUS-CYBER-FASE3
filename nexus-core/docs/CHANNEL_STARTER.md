@@ -1,7 +1,7 @@
 # Channel Starter — Website Template UMKM (Lapisan Entry)
 
 **Versi:** 0.1.0 / 2026-08-22  
-**Status:** **Lab v0.1** — generator form→template ada di `channel-starter/`; billing & deploy produksi **belum**.  
+**Status:** **Lab v0.1** — generator form→template ada di `nexus-core/channel-starter/`; billing & deploy produksi **belum**.  
 **Induk strategi:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) § Lapisan produk.
 
 ---
@@ -96,7 +96,7 @@ Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **C
 ### Quick start (lab)
 
 ```powershell
-cd channel-starter
+cd nexus-core\channel-starter
 pip install -r requirements.txt
 python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 081234567890 --theme hijau
 python cli.py serve
@@ -110,7 +110,7 @@ Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 
 
 ```powershell
 python cli.py deploy apply
-cd ..\deploy-local
+cd D:\NEXUS\nexus-core\deploy-local
 .\START.bat    # Administrator — tulis hosts + mount Caddy
 ```
 
@@ -120,7 +120,7 @@ Buka: `http://{slug}.nexus-lab.test` (contoh `http://warung-bu-siti.nexus-lab.te
 
 ```powershell
 python cli.py upsell enable --slug warung-bu-siti --tier tepi
-cd ..\deploy-local
+cd D:\NEXUS\nexus-core\deploy-local
 docker compose up -d gateway channel-origin
 python ..\channel-starter\cli.py deploy apply --reload
 ```

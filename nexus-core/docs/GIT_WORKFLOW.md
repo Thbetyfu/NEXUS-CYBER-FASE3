@@ -21,13 +21,15 @@ Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./
 git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
 ```
 
+Clone **tidak** berisi `.agents/` (gitignore). `AGENTS.md` di akar tetap ada dan menunjuk `nexus-core/docs/`.
+
 ## Update
 
 ```bash
 git pull origin main
 ```
 
-Commit: conventional commits. Perubahan perilaku → [`CHANGELOG.md`](../CHANGELOG.md) + dokumen hidup ([docs/README.md](./README.md)).
+Commit: conventional commits. Perubahan perilaku → [`CHANGELOG.md`](../CHANGELOG.md) + dokumen hidup ([`nexus-core/docs/README.md`](./README.md)).
 
 ## Yang tidak di-commit (gitignore)
 
@@ -35,13 +37,13 @@ Source Control harus berisi **kode produk**, bukan sampah lab. Sudah di `.gitign
 
 | Jangan push | Kenapa |
 | --- | --- |
-| `NEX-RED/jobs/data/*.json`, `JOB-*.json`, `*_scan.json`, `schedules.json` | Hasil Job Cowork di mesin operator; backup lokal. `immune_memory.json` **tetap** di Git. |
-| `channel-starter/sites/*` kecuali `contoh-nexcent/` + README | Hasil generate klien; publish ke Vercel per folder, bukan ke monorepo. |
+| `nexus-core/NEX-RED/jobs/data/*.json`, `JOB-*.json`, `*_scan.json`, `schedules.json` | Hasil Job Cowork di mesin operator; backup lokal. `immune_memory.json` **tetap** di Git. |
+| `nexus-core/channel-starter/sites/*` kecuali `contoh-nexcent/` + README | Hasil generate klien; publish ke Vercel per folder, bukan ke monorepo. |
 | `/*.png`, `.playwright-mcp/` | Screenshot / log agen di akar repo, bukan aset produk. |
 | `.vercel/`, `.env*` | Link CLI Vercel + rahasia. **Jangan** Connect Git monorepo Nexus ke project warung. |
 | `/playground/`, `archives/*.zip` | Lab tree diarsip di luar Git. Jangan commit unzip. |
-| `NEX-RED/reports/`, `NEX-RED/workspaces/` | Laporan scan + Chromium lab. |
-| `.agents/` | Aturan agen **lokal** (Cursor); **tidak** di remote. CI GitLab tidak membaca folder ini. |
+| `nexus-core/NEX-RED/reports/`, `nexus-core/NEX-RED/workspaces/` | Laporan scan + Chromium lab. |
+| `.agents/` | Aturan agen **lokal** (Cursor) di git root; **gitignore**, tidak di remote. CI GitLab tidak membaca folder ini. |
 
 File **sudah ter-track** (status `M`, misalnya `package.json`) tidak hilang hanya karena gitignore — buang perubahan lokal (`git restore`) jika tidak sengaja, atau commit jika memang perbaikan produk.
 

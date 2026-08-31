@@ -1,6 +1,6 @@
 # Panduan Deployment Nexus Cyber
 
-**Pembaruan:** 2026-08-22  
+**Pembaruan:** 2026-09-01  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — GaaS instance per kanal (satu `PROTECTED_HOST`), bukan CNAME massal legacy.
 
 Lab tercepat: [`deploy-local/README.md`](../deploy-local/README.md). **Jangan** tunnel-kan control plane (`:8081` / dasbor `:3001`) ke internet untuk demo hotspot.
@@ -20,7 +20,7 @@ Dokumen ini mencakup dua opsi:
 
 ### Mode 1-klik (disarankan untuk demo laptop)
 
-Folder **`deploy-local/`** di root repo: double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Satu nama lab: `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) — HTTP + berkas `hosts`, bukan Let's Encrypt untuk `.test`. Pager Telegram opsional: `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` di `.env` (lihat [`deploy-local/blue-team/README.md`](../deploy-local/blue-team/README.md)). Lihat [`deploy-local/README.md`](../deploy-local/README.md).
+Folder **`nexus-core/deploy-local/`** (bukan `deploy-local/` di akar git): double-click `START.bat` di Windows, atau `./start.sh` di Linux/macOS. Origin default adalah portofolio Vercel di belakang WAF. Satu nama lab: `PROTECTED_HOST` (default `portfolio.nexus-lab.test`) — HTTP + berkas `hosts`, bukan Let's Encrypt untuk `.test`. Pager Telegram opsional: `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` di `.env` (lihat [`deploy-local/blue-team/README.md`](../deploy-local/blue-team/README.md)). Lihat [`deploy-local/README.md`](../deploy-local/README.md).
 
 ### Satu hostname (GaaS instance — bukan CNAME massal legacy)
 
@@ -35,12 +35,12 @@ Pastikan **Docker Desktop** sudah aktif, lalu:
 
 #### Windows PowerShell:
 ```powershell
-.\scripts\deploy\local\deploy-local-pc.ps1
+.\nexus-core\scripts\deploy\local\deploy-local-pc.ps1
 ```
 
 #### Linux / WSL / macOS:
 ```bash
-bash scripts/deploy/local/deploy-local-pc.sh
+bash nexus-core/scripts/deploy/local/deploy-local-pc.sh
 ```
 
 ### Mode B: Binary Manual (Tanpa Docker)
@@ -49,12 +49,12 @@ Cocok jika Docker tidak tersedia. Hanya menjalankan Gateway binary:
 
 #### Windows PowerShell:
 ```powershell
-.\scripts\deploy\local\deploy-local-pc.ps1 -Binary
+.\nexus-core\scripts\deploy\local\deploy-local-pc.ps1 -Binary
 ```
 
 #### Linux / WSL / macOS:
 ```bash
-bash scripts/deploy/local/deploy-local-pc.sh --binary
+bash nexus-core/scripts/deploy/local/deploy-local-pc.sh --binary
 ```
 
 > **Catatan Mode B**: Postgres, Redis, dan Dashboard Next.js **tidak dijalankan** secara otomatis. Pastikan Anda menyiapkan dependensi tersebut secara manual atau via `docker compose up postgres redis -d`.
@@ -78,25 +78,25 @@ Cloudflare menyediakan IP publik dan HTTPS gratis. PC tidak perlu IP publik stat
 #### Windows PowerShell:
 ```powershell
 # Tunnel ke WAF Gateway (port 8080) — default
-.\scripts\tunnel\nexus-tunnel.ps1
+.\nexus-core\scripts\tunnel\nexus-tunnel.ps1
 
 # Tunnel ke SOC Dashboard (port 3001)
-.\scripts\tunnel\nexus-tunnel.ps1 -Dashboard
+.\nexus-core\scripts\tunnel\nexus-tunnel.ps1 -Dashboard
 
 # Tunnel ke port custom
-.\scripts\tunnel\nexus-tunnel.ps1 -Port 80
+.\nexus-core\scripts\tunnel\nexus-tunnel.ps1 -Port 80
 ```
 
 #### Linux / WSL / macOS:
 ```bash
 # Tunnel ke WAF Gateway (port 8080) — default
-bash scripts/tunnel/nexus-tunnel.sh
+bash nexus-core/scripts/tunnel/nexus-tunnel.sh
 
 # Tunnel ke SOC Dashboard (port 3001)
-bash scripts/tunnel/nexus-tunnel.sh --dashboard
+bash nexus-core/scripts/tunnel/nexus-tunnel.sh --dashboard
 
 # Tunnel ke port custom
-bash scripts/tunnel/nexus-tunnel.sh --port 80
+bash nexus-core/scripts/tunnel/nexus-tunnel.sh --port 80
 ```
 
 ### Metode 2: Perintah Manual (Tanpa Skrip)
@@ -164,7 +164,7 @@ URL HTTPS publik tersebut dapat langsung dibagikan ke klien/penguji.
    ```bash
    git clone <URL_REPOSITORI_ANDA> Nexus-Cyber-Fase2
    cd Nexus-Cyber-Fase2
-   sudo bash scripts/deploy/vps/deploy-biznet-gio.sh
+   sudo bash nexus-core/scripts/deploy/vps/deploy-biznet-gio.sh
    ```
 
 3. Skrip akan secara otomatis:
@@ -213,13 +213,13 @@ docker compose restart dashboard
 
 ### Menutup Semua Layanan:
 ```bash
-bash scripts/ops/nexus-kill.sh
+bash nexus-core/scripts/ops/nexus-kill.sh
 # atau:
 docker compose down
 ```
 
 ### Membaca Log Audit Keamanan:
 ```bash
-python scripts/tests/test_mtd_shuffle.py
-python scripts/tests/test_self_repair.py
+python nexus-core/scripts/tests/test_mtd_shuffle.py
+python nexus-core/scripts/tests/test_self_repair.py
 ```

@@ -21,7 +21,7 @@
 
 Jika Anda mengubah **perilaku** sistem (kode gateway, dasbor, NEX-RED, Caddy, compose):
 
-1. Ikuti `.agents/rules/nexus-rule.md` (termasuk bagian **docs-sync**).
+1. Ikuti `.agents/rules/nexus-rule.md` (termasuk bagian **docs-sync**). Folder **`.agents/`** ada di laptop saja (**gitignore**, tidak di-push).
 2. Jalankan pola `.agents/agents/docs-sync.md`: perbarui dokumen **hidup** di `nexus-core/docs/README.md` dan `nexus-core/CHANGELOG.md` dalam perubahan yang sama; selaraskan dengan `nexus-core/docs/PRODUCT_MODEL.md`.
 3. Control plane: `.agents/agents/soc-control-plane.md`. Identitas HTTP: `.agents/agents/request-identity.md`.
 

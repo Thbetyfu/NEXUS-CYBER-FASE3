@@ -24,7 +24,7 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 
 | Layanan | Publik? | Catatan |
 | --- | --- | --- |
-| Channel Portal (`nexus-channel-portal`) | **Ya** | Pintu jual |
+| Channel Portal (`nexus-gaas-web`, `:3003`) | **Ya** | Pintu jual — `npm run dev`; generate butuh `:3010` |
 | Site UMKM / origin Channel Starter | **Ya** | Subdomain lewat Caddy/WAF |
 | WAF data plane (HTTP/HTTPS) | **Ya** | Satu atau beberapa `PROTECTED_HOST` |
 | Command Center / SOC (`:3001`, `:8081`) | **Tidak** | Hanya localhost / VPN |

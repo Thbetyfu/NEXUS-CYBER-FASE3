@@ -18,7 +18,7 @@
 | **Kredit (mata uang kasir)** | Nama **Kredit** (**Kr**). **1 Kr = Rp 1.000**. SKU Starter = **20 Kr** di `/order`. Debit fail-closed; refund jika generate gagal. **Bukan** Job 200 Kr dari portal. **Bukan** e-money. Ledger **per tamu/akun** (bukan satu file `lab` untuk semua browser) |
 | **Akun pelanggan portal v0 (2026-09-01)** | Channel Portal `:3003` saja: tamu (cookie httpOnly) / daftar / masuk. **Bukan** Operator Console `:3001`. **Bukan** F-10 roster/SOC. **Bukan** SSO. Daftar dari sesi tamu memindahkan Kredit tamu ke akun |
 | **Top-up Kredit (2026-08-31)** | **Bukan** PSP pihak ketiga (Midtrans, Stripe, dll.) — **jangan** dikerjakan. Jalur yang disepakati (**belum dikode**): bayar ke **QRIS milik pemilik** dan/atau **Virtual Account bank milik pemilik** → kirim **bukti transfer** → operator **approve** jika bukti aman/sah → Kredit masuk ledger. Lab sekarang: keran `POST /api/kredit/faucet` (bukan settlement IDR) |
-| Portal jual | **Reuse desain** portal legacy → modul baru **`nexus-channel-portal/`** (bukan submodule lama) |
+| Portal jual | **Reuse desain** portal legacy → **`nexus-gaas-web/`** (lab in-repo; dulu `nexus-channel-portal/`; bukan submodule) |
 | Nama entry | **Channel Starter** |
 | Upsell keamanan | Job Cowork / Loop = **paket terpisah** |
 | **Harga Cowork tahap pilot** | **Job Rp 200.000** (sekali) · **Loop Rp 300.000**/bulan (maks daftar v1) — lihat [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md) |

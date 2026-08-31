@@ -42,7 +42,7 @@ Juri (HP / laptop jaringan mana pun)
 4. PC: sleep OFF (untuk sesi juri / 24/7)
 5. Internet aktif (tunnel butuh ke Cloudflare)
 
-**PC baru belum install apa pun?** Jalankan dulu **`deploy-local/jury/PREP-PC-SERVER.bat`** — unduh image Docker, npm, pip, buat `.env`. Daftar software + ENV: [`PC_MAIN_SERVER.md`](./PC_MAIN_SERVER.md) §2.
+**PC baru belum install apa pun?** Jalankan dulu **`nexus-core/deploy-local/jury/PREP-PC-SERVER.bat`** — unduh image Docker, npm, pip, buat `.env`. Daftar software + ENV: [`PC_MAIN_SERVER.md`](./PC_MAIN_SERVER.md) §2.
 
 ---
 
@@ -51,13 +51,13 @@ Juri (HP / laptop jaringan mana pun)
 ### PC baru — persiapan sekali
 
 1. Install Git, Docker Desktop, Node 20+, Python 3.10+ (lihat [`PC_MAIN_SERVER.md`](./PC_MAIN_SERVER.md) §2)
-2. Double-click **`deploy-local\jury\SETUP-ENV-PC-SERVER.bat`** (atau lewat `PREP-PC-SERVER.bat`)
+2. Double-click **`nexus-core\deploy-local\jury\SETUP-ENV-PC-SERVER.bat`** (atau lewat `PREP-PC-SERVER.bat`)
 3. Simpan **`NEXUS_ADMIN_TOKEN`** yang ditampilkan — untuk login SOC lokal
-4. Sekali: **`deploy-local\ALLOW-DEV-LAPTOP.bat`** (UAC Yes)
+4. Sekali: **`nexus-core\deploy-local\ALLOW-DEV-LAPTOP.bat`** (UAC Yes)
 
 ### Satu klik demo juri (disarankan)
 
-1. Buka folder `deploy-local\jury\`
+1. Buka folder `nexus-core\deploy-local\jury\`
 2. Double-click **`START-FOR-JURY.bat`**
 3. Tunggu lab Docker offline hidup
 4. Di jendela tunnel, salin URL `https://….trycloudflare.com`
@@ -88,8 +88,9 @@ Portal jual (opsional, jendela kedua):
 cd d:\NEXUS\nexus-gaas-web
 npm install
 npm run dev
-# lalu di jendela lain:
-.\scripts\tunnel\nexus-tunnel.ps1 -Port 3003
+# lalu di jendela lain, dari git root:
+cd d:\NEXUS
+.\nexus-core\scripts\tunnel\nexus-tunnel.ps1 -Port 3003
 ```
 
 ---

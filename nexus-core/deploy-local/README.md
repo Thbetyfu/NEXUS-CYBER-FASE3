@@ -10,7 +10,7 @@ Alur yang benar untuk bukti:
 
 `pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. **Channel Portal (jual)** bukan folder ini — dari git root: `cd nexus-gaas-web && npm run dev` (`:3003`); generate tetap butuh Channel Starter `:3010`.
 
 ## Skenario lab: hotspot blue team
 

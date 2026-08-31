@@ -1,6 +1,6 @@
 # Nexus Cyber Capabilities
 
-Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED`. **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) (GaaS Edge Antibody Cowork). Pembaruan: 2026-08-31.
+Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED`. **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) (GaaS Edge Antibody Cowork). Pembaruan: 2026-09-01.
 
 ---
 

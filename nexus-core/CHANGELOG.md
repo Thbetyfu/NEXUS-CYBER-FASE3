@@ -2,20 +2,20 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/). Tanggal memakai kalender lokal proyek (WIB).
 
-Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan indeks di `docs/README.md`) wajib diubah dalam commit yang sama jika perilaku pengguna berubah.
+Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus-core/docs/LIMITATIONS.md`, dan indeks di `nexus-core/docs/README.md`) wajib diubah dalam commit yang sama jika perilaku pengguna berubah.
 
 ## [Unreleased]
 
 ### Docs
-- **README pohon:** [`nexus-core/README.md`](README.md) (peran tepi/kokpit/wasit/cetak/runtime/AI, folder disk tanpa rename) + [`../nexus-gaas-web/README.md`](../nexus-gaas-web/README.md) (portal `:3003`, Kredit, bukan Midtrans, generate `:3010`). `.agents/` di gitignore akar — aturan agen lokal, tidak di remote.
-- **Pohon in-repo `nexus-gaas-web/` + `nexus-core/`:** git root tetap `D:\NEXUS`. Portal lab = `nexus-gaas-web/` (bukan `nexus-channel-portal/`). Mesin = `nexus-core/`. `START.bat` = `nexus-core\deploy-local\START.bat`. Salinan `D:\nexus-gaas-web` opsional, boleh drift. Vercel: repo GaaS dari root, atau FASE3 Root Directory `nexus-gaas-web` (discouraged). [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
+- **Sinkron path docs hidup (split pohon):** setelah `nexus-gaas-web/` + `nexus-core/`, dokumen Hidup di `nexus-core/docs/` memakai path dari git root (`nexus-core/deploy-local/START.bat`, portal `nexus-gaas-web/` + `npm run dev :3003`, Channel Starter `nexus-core/channel-starter` `:3010`, kontrak `nexus-core/docs/`). **`.agents/` tidak di git** — hanya `AGENTS.md` di akar yang di-commit; clone GitHub tidak membawa aturan Cursor. Indeks: [`docs/README.md`](docs/README.md). Tata letak: [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
+- **Pohon in-repo `nexus-gaas-web/` + `nexus-core/`:** git root `D:\NEXUS`. Portal lab = `nexus-gaas-web/` (bukan `nexus-channel-portal/`). Mesin = `nexus-core/`. `START.bat` = `nexus-core\deploy-local\START.bat`. README arsitektur: payung [`../README.md`](../README.md), mesin [`README.md`](README.md), portal [`../nexus-gaas-web/README.md`](../nexus-gaas-web/README.md) (`:3003`, Kredit, bukan Midtrans, generate `:3010`). `.agents/` gitignore di akar — aturan agen lokal, tidak di remote. Salinan `D:\nexus-gaas-web` opsional, boleh drift. Vercel: repo GaaS dari root, atau FASE3 Root Directory `nexus-gaas-web` (discouraged). [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
 - **Dua repo (bukan submodule):** situs jual Vercel kanonik = **nexus-gaas-web** GitHub (`D:\nexus-gaas-web` opsional → [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS)). Jangan Connect `warung-*` ke FASE3.
 
 ### Added
-- **Akun pelanggan Channel Portal v0:** login / daftar / tamu di `nexus-channel-portal/` (`:3003` saja). Cookie httpOnly `nexus_portal_sid` (UUID); ledger `data/kredit-guest-{sid}.json` atau `kredit-account-{id}.json`. Keran + generate **wajib** ledger sesi, bukan wallet `lab` global. Daftar dari tamu memindahkan Kredit. Bukan Midtrans, bukan F-10, bukan SOC publik. Uji `npm test` di `nexus-channel-portal`.
+- **Akun pelanggan Channel Portal v0:** login / daftar / tamu di `nexus-gaas-web/` (`:3003` saja). Cookie httpOnly `nexus_portal_sid` (UUID); ledger `data/kredit-guest-{sid}.json` atau `kredit-account-{id}.json`. Keran + generate **wajib** ledger sesi, bukan wallet `lab` global. Daftar dari tamu memindahkan Kredit. Bukan Midtrans, bukan F-10, bukan SOC publik. Uji `npm test` di `nexus-gaas-web`.
 - **Pagar tipis UMKM (tepi, bukan Starter 20 Kr):** Reflex injeksi judi/deface di WAF `:8080` (`internal/ai/reflex_filter.go`). Upsell `python cli.py upsell enable --slug … --tier tepi` mem-flip Caddy ke gateway **tanpa** Job. Portal `/umkm` `/sekolah` kartu 35rb/28rb = Pagar tipis (1 host lab). `*.vercel.app` langsung tidak dilindungi; bukan pulih Vercel; bukan Loop di 20rb. Uji `go test ./internal/ai/` + `python -m unittest` channel-starter.
 - **Channel Starter template Nexcent (Figma):** layout `Contoh-landing-page-nexus` (hero dua kolom, kartu layanan, angka, galeri, footer gelap) di `templates/_base.html`. **4 palet** dari style guide: hijau `#4CAF4F`, biru `#2194F3`, navy `#263238`, hutan `#1B5E1F`. Form `/order` + wizard `:3010` mengisi hero, jam, IG, 3 layanan, 4 angka, URL foto, testimoni, domain kustom opsional. Generate menulis `vercel.json` + header tepi Caddy (nosniff/frame/CSP). **Bukan** Job Cowork di Rp 20rb; **bukan** auto-CNAME publik; **bukan** klaim `*.vercel.app` sudah di belakang WAF. Uji `python -m unittest` di `channel-starter/tests`.
-- **Kredit lab (Channel Starter v0):** unit **Kredit** di portal `/order` — 1 Kr = Rp 1.000, Starter = 20 Kr. Keran lab; generate fail-closed (402 jika saldo kurang); gagal Channel Starter → refund. Form `/order` **tanpa** Framer Motion `opacity: 0` (SSR tampil, bukan halaman putih). Bukan Midtrans, bukan e-money, bukan beli Job 200 Kr dari portal. Uji `npm test` di `nexus-channel-portal`.
+- **Kredit lab (Channel Starter v0):** unit **Kredit** di portal `/order` — 1 Kr = Rp 1.000, Starter = 20 Kr. Keran lab; generate fail-closed (402 jika saldo kurang); gagal Channel Starter → refund. Form `/order` **tanpa** Framer Motion `opacity: 0` (SSR tampil, bukan halaman putih). Bukan Midtrans, bukan e-money, bukan beli Job 200 Kr dari portal. Uji `npm test` di `nexus-gaas-web`.
 - **Gerbang NEX-AI fail-closed (lab PC):** `START.bat` / `START-OFFLINE.bat` / `START-FOR-JURY.bat` (via `START.ps1`) + `start.sh` menolak `docker compose up` jika `nex-ai-protect` **dan** `nex-ai-reflex` belum ada di Ollama lokal (`GET /api/tags`). Helper satu: `scripts/check_nex_ai.py` + `deploy-local/CHECK-NEX-AI.bat`. Pesan ID jujur: salin `nex_ai_q4_k_m.gguf` ke `nex-ai-models\` lalu `IMPORT-OLLAMA.bat` — **bukan** `ollama pull` Hub. Gateway: `NEX_AI_REQUIRED=1` di compose deploy-local; `go test` / `go run` tanpa env **tidak** memanggil Ollama. CI: `NEX_AI_REQUIRED=0` (eksplisit). Uji `scripts/tests/test_check_nex_ai.py` + `go test ./internal/ai/`.
 - **Ban IP selamat restart:** `BanIP` menulis `intel_blacklist` + RAM; `InitPostgres` memanggil `HydrateActiveBlacklist`. RAM kosong setelah restart tetap diblokir via DB, lalu diisi ulang ke RAM. Uji `go test ./internal/database/` — `TestBanSurvivesRestartViaDBWhenRAMEmpty`, `TestBanSurvivesRestartViaHydrateRAM`, permanen / kedaluwarsa / unban. Tanpa Postgres, ban hanya RAM (hilang saat restart).
 - **Golden GET cache (WAF):** snapshot RAM untuk GET/HEAD publik (HTML/CSS/JS/gambar/font) setelah lolos WAF. Default **nyala** jika origin `https` (Vercel); **mati** untuk origin HTTP docker/loopback (START-OFFLINE). Origin 5xx → sajikan `X-Nexus-Cache: STALE` sampai `NEXUS_GOLDEN_GET_STALE_SECONDS`. Cookie `nexus_csrf` tidak menghalangi store. Reverse-proxy **memaksa Host origin** (bukan `127.0.0.1`) agar Vercel tidak 308 ke vercel.com. Purge saat self-heal restore + `/api/system/reset`. Bukan CDN; bukan `/api` / cookie sesi / `Set-Cookie` non-csrf / `Cache-Control: private|no-store`.
@@ -47,10 +47,10 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 
 ### Added
-- **Cowork B2B GTM (Milestone 20):** keputusan Q9 (prioritas B2B Cowork), [`docs/COWORK_B2B.md`](docs/COWORK_B2B.md), halaman [`/cowork`](nexus-channel-portal/src/app/cowork/page.tsx) di Channel Portal.
-- **B2G pitching (Milestone 20.2d):** [`docs/COWORK_B2G.md`](docs/COWORK_B2G.md), [`docs/PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md), halaman [`/b2g`](nexus-channel-portal/src/app/b2g/page.tsx) — on-prem Edge + Loop wajib; **bukan** produksi pengadaan selesai.
+- **Cowork B2B GTM (Milestone 20):** keputusan Q9 (prioritas B2B Cowork), [`docs/COWORK_B2B.md`](docs/COWORK_B2B.md), halaman [`/cowork`](../nexus-gaas-web/src/app/cowork/page.tsx) di Channel Portal.
+- **B2G pitching (Milestone 20.2d):** [`docs/COWORK_B2G.md`](docs/COWORK_B2G.md), [`docs/PRICING_UNIT_ECONOMICS.md`](docs/PRICING_UNIT_ECONOMICS.md), halaman [`/b2g`](../nexus-gaas-web/src/app/b2g/page.tsx) — on-prem Edge + Loop wajib; **bukan** produksi pengadaan selesai.
 - **Channel Starter (Milestone 18 lab):** modul `channel-starter/` — form wizard, 3 template, CLI; **S-3 deploy lab** + **S-6 upsell Cowork**. **Belum:** billing otomatis, VPS wildcard/TLS produksi massal.
-- **Nexus Channel Portal (Milestone 19):** modul `nexus-channel-portal/` — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
+- **Nexus Channel Portal (Milestone 19):** modul **`nexus-gaas-web/`** (dulu `nexus-channel-portal/`) — landing animasi, harga B2C/B2B/B2G, form `/order`, proxy ke channel-starter, pembayaran manual WA `62895603358692`. Submodule legacy digantikan modul monorepo.
 
 ### Docs
 - **Copy startup jujur (45rb / 75rb):** `/startup` 45rb = landing + **header tepi** (bukan WAF). 75rb Tepi = **Alur A Reflex** (`--tier tepi`, 1 host lab, mesin pagar tipis) — **bukan** Job, **bukan** “alert operator” / Telegram ke pelanggan (pager ban = operator lab). Kartu portal + `DECISIONS_OPEN` / `CHANNEL_STARTER` / `NEXUS_CHANNEL_PORTAL`.
@@ -77,7 +77,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - Selaraskan [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/CAPABILITIES.md`](docs/CAPABILITIES.md), [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md), [`docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md`](docs/SOFTWARE_REQUIREMENTS_SPECIFICATION.md), [`docs/SOFTWARE_DESIGN_DOCUMENT.md`](docs/SOFTWARE_DESIGN_DOCUMENT.md), [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md), [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md), [`docs/README.md`](docs/README.md), root [`README.md`](README.md), [`AGENTS.md`](AGENTS.md).
 - Root: [`ROADMAP.md`](ROADMAP.md) v4 (Milestone 17 GaaS), [`Task.MD`](Task.MD) backlog GaaS, [`UNIT_TESTING.md`](UNIT_TESTING.md) selaras kejujuran kode.
 - Selaraskan markdown repo: komponen README, `deploy-local/`, `scripts/`, `.agents/`, banner arsip `docs/reports/*` dan evaluasi lama.
-- Portal legacy dan F-10 ditandai **ditunda** di docs hidup; pintu jual v1 = `nexus-channel-portal/`.
+- Portal legacy dan F-10 ditandai **ditunda** di docs hidup; pintu jual v1 = `nexus-gaas-web/`.
 
 ### Added
 - **Job Cowork (GaaS Alur B):** entitas `CoworkJob` + status `OPEN` → `MEASURED` → `PENDING_APPROVAL` → `VERIFYING` → `CLOSED_OK` / `CLOSED_GAP` / `PARTIAL` di `NEX-RED/jobs/`.
@@ -110,7 +110,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 - NEX-RED + gateway: sinyal lab **count-only** `GET /nexred/lab/antibody-signal` dan `POST /nexred/lab/vaccine-probe` (token konstan, bukan payload exploit). Pola virtual patch tidak dipublikasikan di WAF. `antibody_learned` jika jumlah ≥ 1 dan replay tetap 403.
 - NEX-RED: Sprint 3 **hotspot harness** — dari IP privat (bukan loopback): `:8081`/`:3001`/Postgres/Redis harus tertutup; `:9090` tercatat sebagai tarpit. `NEX_RED_HOTSPOT_HARNESS=0` mematikan.
 - Pager Telegram lab: jika `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` diisi di `deploy-local/.env`, gateway mengirim pesan ke HP **setelah** WAF sudah mem-ban IP. Teks jujur (bukan GPS, bukan tembus VPN). IP privat/lab tidak dipetakan ke GeoIP WAN laptop blue team. Cooldown 15 menit per IP. Butuh internet keluar ke `api.telegram.org`.
-- Portal legacy submodule digantikan **`nexus-channel-portal/`** di monorepo (2026-08-22).
+- Portal legacy submodule digantikan **`nexus-gaas-web/`** di monorepo (dulu nama folder `nexus-channel-portal/`, 2026-08-22).
 
 ### Changed
 - NEX-RED: pemeriksaan Juice Shop diperluas (GET objek/keranjang/kartu/whoami tanpa sesi; 401/403 tercatat sebagai `rejected`). Scan biasa: hipotesis CWE-639 juga GET objek tanpa `Authorization`. Tetap tanpa payload exploit.
@@ -134,7 +134,7 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ### Planned
 - Fail-closed webhook pembayaran (secret wajib di env; tidak dikerjakan pada sprint ini atas permintaan pemilik).
-- Back-office super-admin **saat produk dijual**: jumlah user, daftar situs per pelanggan, sisa masa aktif. Hidup di **`nexus-channel-portal/`** (F-10 ditunda), bukan tab di `nexus-admin-dashboard` (SOC). Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`. Tidak dikerjakan sampai ada tenant bayar / pemilik minta.
+- Back-office super-admin **saat produk dijual**: jumlah user, daftar situs per pelanggan, sisa masa aktif. Hidup di **`nexus-gaas-web/`** (F-10 ditunda), bukan tab di `nexus-admin-dashboard` (SOC). Loopback/VPN; token terpisah dari `NEXUS_ADMIN_TOKEN`. Tidak dikerjakan sampai ada tenant bayar / pemilik minta.
 
 ## [2026-08-15]
 

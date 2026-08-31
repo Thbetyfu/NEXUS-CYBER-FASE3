@@ -6,7 +6,8 @@ Dua produk di **satu git** (`NEXUS-CYBER-FASE3`), **bukan** submodule, **bukan**
 ```
 D:\NEXUS/                 # git root
   README.md               # payung dua produk
-  AGENTS.md
+  AGENTS.md               # menunjuk .agents/ lokal
+  .agents/                # gitignore — tidak di-push
   nexus-gaas-web/         # Channel Portal (dulu nexus-channel-portal)
   nexus-core/             # WAF, NEX-RED, channel-starter, deploy-local, docs, …
 ```

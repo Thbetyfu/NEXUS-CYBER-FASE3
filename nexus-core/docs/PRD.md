@@ -4,7 +4,7 @@
 **Versi PRD:** v3.1.0 / 2026-08-22  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — dua lapisan (Starter + GaaS). Keputusan: [DECISIONS_OPEN.md](./DECISIONS_OPEN.md).
 
-**Status implementasi (selaras kode, 2026-08-22):** **GaaS:** WAF, Job Cowork, PG sync — **sudah ada**. **Channel Starter:** form→template — **lab v0.1** (`channel-starter/`). **Channel Portal:** `nexus-channel-portal/` v0.1. F-10 **ditunda**. Reflex = regex; eBPF stub.
+**Status implementasi (selaras kode, 2026-09-01):** **GaaS:** WAF, Job Cowork, PG sync — **sudah ada**. **Channel Starter:** form→template — **lab v0.1** (`nexus-core/channel-starter/`). **Channel Portal:** `nexus-gaas-web/` v0.1. F-10 **ditunda**. Reflex = regex; eBPF stub.
 
 ---
 

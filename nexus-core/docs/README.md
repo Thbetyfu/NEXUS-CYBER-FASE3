@@ -28,7 +28,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) / [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Skema & repair |
 | [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) / [REPO_LAYOUT.md](./REPO_LAYOUT.md) / [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Dua repo (core vs GaaS web), clone tanpa submodule, AI |
 | [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) | Lab tree `playground/` diarsip — origin = Vercel + WAF |
-| [../README.md](../README.md) / [../../AGENTS.md](../../AGENTS.md) / [../ROADMAP.md](../ROADMAP.md) / [../Task.MD](../Task.MD) / [../UNIT_TESTING.md](../UNIT_TESTING.md) | nexus-core + agen di git root |
+| [../README.md](../README.md) / [../../AGENTS.md](../../AGENTS.md) / [../ROADMAP.md](../ROADMAP.md) / [../Task.MD](../Task.MD) / [../UNIT_TESTING.md](../UNIT_TESTING.md) | nexus-core + **`AGENTS.md` di git root** (folder **`.agents/` gitignore**, tidak di remote) |
 | [../nexus-core-gateway/README.md](../nexus-core-gateway/README.md) | Gateway |
 | [../nexus-admin-dashboard/README.md](../nexus-admin-dashboard/README.md) | Operator kokpit |
 | [../../nexus-gaas-web/README.md](../../nexus-gaas-web/README.md) | Channel Portal (jual) |
@@ -38,8 +38,8 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 
 ## Beku (arsip — banner `Arsip historis` di header)
 
-- `docs/reports/*` — QA pada tanggal di header
-- `docs/VULNERABILITY_ASSESSMENT.md`, `INTELLIGENCE_GAP.md`, `ENTERPRISE_THREAT_INTEL_PLAN.md`, `NEX_AI_*`, `PERFORMANCE_ESTIMATION.md`, `PRD_Template_Siap_AI.md`
+- `nexus-core/docs/reports/*` — QA pada tanggal di header
+- `VULNERABILITY_ASSESSMENT.md`, `INTELLIGENCE_GAP.md`, `ENTERPRISE_THREAT_INTEL_PLAN.md`, `NEX_AI_*` (arsip), `PERFORMANCE_ESTIMATION.md`, `PRD_Template_Siap_AI.md` di folder docs ini
 - `NEX-AI/*.md`, `nex-ai-models/README.md` — submodul latih/evaluasi
 - `strix/`, `Soup/`, `shannon/` — pihak ketiga; **tidak** diselaraskan GaaS
 

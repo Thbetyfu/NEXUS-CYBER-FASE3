@@ -86,7 +86,7 @@ Siapkan **satu skenario** untuk pitch:
 2. **Antibody:** vaccine-probe → replay masih 403 (`antibody_learned`).
 3. **Artefak:** export MD dengan tabel delta + status Job — bukan klaim Shannon.
 
-Lab: `deploy-local/START.bat` + checklist red team.
+Lab: `nexus-core/deploy-local/START.bat` + checklist red team.
 
 ---
 

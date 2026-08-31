@@ -7,7 +7,7 @@ Pemilik meminta cabut lab tree dari kode karena tahap **deploy**. Cadangan zip (
 | | |
 | --- | --- |
 | **Origin yang dilindungi** | Portofolio **Vercel** di belakang WAF (`TARGET_BACKEND` + `PROTECTED_HOST`) |
-| **Start** | `deploy-local/START.bat` — **bukan** `START-OFFLINE.bat` |
+| **Start** | `nexus-core/deploy-local/START.bat` — **bukan** `START-OFFLINE.bat` |
 | **Repo origin** | [Thbetyfu/Portofolio-Thoriq](https://github.com/Thbetyfu/Portofolio-Thoriq) (terpisah; jangan Connect Git monorepo Nexus ke project warung) |
 | **Self-heal file** | Hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal. File di Vercel **tidak** di-restore |
 

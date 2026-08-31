@@ -2,7 +2,7 @@
 
 **Produksi (Vercel):** repo **nexus-gaas-web** — [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS), folder kerja opsional `D:\nexus-gaas-web`. Deploy dari **root** repo itu. Alternatif (discouraged): Connect FASE3 dengan Vercel **Root Directory `nexus-gaas-web`**. Owner (re)connect di dashboard; agen tidak mengklik UI Vercel. **Jangan** Connect `warung-*` ke FASE3.
 
-**Lab (in-repo):** `nexus-gaas-web/` di git root · port **3003**. Generate tetap `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
+**Lab (in-repo):** `cd nexus-gaas-web && npm run dev` · port **3003**. Generate tetap butuh Channel Starter **`:3010`** (`CHANNEL_STARTER_URL=http://127.0.0.1:3010`). Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
 
 **Peran:** Pintu jual **satu situs**, multi-segmen — UMKM · Sekolah · Startup · **Corporat** · **Pemerintah**
 

@@ -1,7 +1,7 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.3 / 2026-08-31  
-**Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../AGENTS.md`](../AGENTS.md).
+**Versi:** 1.1.4 / 2026-09-01  
+**Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
 
@@ -19,7 +19,7 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) |
 | **Bukan** | Channel Starter UMKM; SOC publik; Loop penuh di harga Rp 20rb |
 
-Operasi lab: [`../deploy-local/README.md`](../deploy-local/README.md). Distribusi pilot (PC + tunnel): [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
+Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/README.md`](../deploy-local/README.md). Portal lab: `cd nexus-gaas-web && npm run dev` (`:3003`; generate masih butuh channel-starter `:3010`). Distribusi pilot (PC + tunnel): [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
 
 ```text
   Pengunjung → [Caddy / tunnel] → Nexus Gateway :8080 → Portofolio Vercel (origin)
@@ -35,7 +35,7 @@ Nexus Cyber **bukan** satu harga untuk semua segmen.
 
 | Lapisan | Nama | Target | Harga ilustrasi | Status kode |
 | --- | --- | --- | --- | --- |
-| **Entry** | **Channel Starter** | UMKM — website dari form + template | **~Rp 0–29rb/bulan** (validasi ≤20rb) | **Lab v0.1** — [`channel-starter/`](../channel-starter/) |
+| **Entry** | **Channel Starter** | UMKM — website dari form + template | **~Rp 0–29rb/bulan** (validasi ≤20rb) | **Lab v0.1** — [`nexus-core/channel-starter/`](../channel-starter/) |
 | **Inti** | **Edge Antibody Cowork** (GaaS) | Kanal keuangan, fintech, integrator; upsell UMKM naik tier | Job **Rp 200rb** · Loop **Rp 300rb**/bulan (pilot PC+tunnel) | **Sudah ada** (lab + Job Cowork) |
 
 ```text

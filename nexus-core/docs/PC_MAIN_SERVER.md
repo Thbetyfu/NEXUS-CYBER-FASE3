@@ -19,9 +19,9 @@
 
 **Hotspot** hanya untuk latihan blue/red team di Wi‑Fi lokal (`deploy-local/blue-team/`). **Bukan** jalur utama distribusi atau juri.
 
-**PC masih baru / belum install apa pun?** Ikuti **§2** dulu (unduh software + ENV), jalankan **`deploy-local/jury/PREP-PC-SERVER.bat`**, baru **`START-FOR-JURY.bat`**.
+**PC masih baru / belum install apa pun?** Ikuti **§2** dulu (unduh software + ENV), jalankan **`nexus-core/deploy-local/jury/PREP-PC-SERVER.bat`**, baru **`nexus-core/deploy-local/jury/START-FOR-JURY.bat`**.
 
-**Buat `.env` otomatis:** **`deploy-local/jury/SETUP-ENV-PC-SERVER.bat`** (password acak) · template manual: **`deploy-local/.env.pc-server.template`**
+**Buat `.env` otomatis:** **`nexus-core/deploy-local/jury/SETUP-ENV-PC-SERVER.bat`** (password acak) · template manual: **`nexus-core/deploy-local/.env.pc-server.template`**
 
 ---
 
@@ -49,13 +49,14 @@ Urutan disarankan untuk PC Windows kosong. Jangan loncat ke `START-FOR-JURY` seb
 
 1. Power plan → **Never sleep** / hibernate off  
 2. Docker Desktop → Settings → **Start Docker Desktop when you log in**  
-3. Double-click **`deploy-local/ALLOW-DEV-LAPTOP.bat`** → **Yes** di UAC (firewall port 80/8080)
+3. Double-click **`nexus-core/deploy-local/ALLOW-DEV-LAPTOP.bat`** → **Yes** di UAC (firewall port 80/8080)
 
 ### 2.2 Clone repository
 
 ```powershell
 git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
 cd NEXUS-CYBER-FASE3
+# git root = folder ini (di mesin owner: D:\NEXUS). Mesin = nexus-core\. Portal = nexus-gaas-web\.
 ```
 
 Tidak ada submodule. Origin portofolio = Vercel di belakang WAF. `START-OFFLINE` ditolak — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md).
@@ -65,7 +66,7 @@ Tidak ada submodule. Origin portofolio = Vercel di belakang WAF. `START-OFFLINE`
 **Satu klik (disarankan):**
 
 ```text
-deploy-local\jury\PREP-PC-SERVER.bat
+nexus-core\deploy-local\jury\PREP-PC-SERVER.bat
 ```
 
 Skrip ini: cek Git/Docker/Node/Python, buat `.env` dari contoh, `docker compose pull`, `npm install` portal, `pip install` channel-starter, cek/install cloudflared.
@@ -106,7 +107,7 @@ Build image gateway pertama kali terjadi saat **`START-FOR-JURY.bat`** (bukan ha
 
 | Variabel | Default lab | Wajib ubah? | Kapan ubah |
 | --- | --- | --- | --- |
-| `TARGET_BACKEND` | URL Vercel portofolio | Tidak jika pakai **OFFLINE** | Offline: origin dari container portofolio |
+| `TARGET_BACKEND` | URL Vercel portofolio | Tidak jika pakai **`START.bat`** | Origin lab = Vercel di belakang WAF; `START-OFFLINE` **ditolak** |
 | `TARGET_BACKEND_HOST` | host Vercel | Sama | Selaraskan dengan `TARGET_BACKEND` |
 | `PROTECTED_HOST` | `portfolio.nexus-lab.test` | Tidak untuk lab | Named tunnel nanti: hostname publik demo |
 | `POSTGRES_PASSWORD` | `nexus_local_dev_only` | **Disarankan** sebelum 24/7 | Ganti string kuat |
@@ -163,7 +164,7 @@ Pembayaran v1 **tidak** butuh ENV — manual WhatsApp `62895603358692` (hardcode
 #### D. NEX-AI lokal (wajib untuk START / START-FOR-JURY)
 
 1. Install **Ollama** → https://ollama.com/download  
-2. Salin `nex_ai_q4_k_m.gguf` ke `nex-ai-models\` lalu `IMPORT-OLLAMA.bat` (lihat `docs/NEX_AI_RUNTIME.md`). **Jangan** `ollama pull qwen` / `llama` / `gpt`.  
+2. Salin `nex_ai_q4_k_m.gguf` ke `nexus-core\nex-ai-models\` lalu `IMPORT-OLLAMA.bat` (lihat `nexus-core/docs/NEX_AI_RUNTIME.md`). **Jangan** `ollama pull qwen` / `llama` / `gpt`.  
 3. Pastikan di `deploy-local/.env`:
 
 ```env
@@ -217,7 +218,7 @@ PC Windows 24/7 (Docker Desktop)
 ### A. Demo juri — portofolio di belakang WAF (siap hari ini)
 
 1. Docker Desktop **Running**
-2. Double-click **`deploy-local/jury/START-FOR-JURY.bat`**
+2. Double-click **`nexus-core/deploy-local/jury/START-FOR-JURY.bat`**
 3. Salin URL `https://….trycloudflare.com` dari jendela tunnel
 4. Uji dari HP (**data seleler**, bukan Wi‑Fi rumah)
 5. Kirim URL ke juri
@@ -237,7 +238,7 @@ npm run dev
 Terminal 2 — tunnel portal (jendela terpisah):
 
 ```powershell
-cd d:\NEXUS-CYBER-FASE3
+cd d:\NEXUS\nexus-core
 .\scripts\tunnel\nexus-tunnel.ps1 -Port 3003
 ```
 
@@ -250,7 +251,7 @@ Kirim **URL tunnel kedua** ke juri untuk halaman `/`, `/umkm`, `/order`, dll.
 Setelah lab Docker jalan (`START.bat` atau lewat jury):
 
 ```powershell
-cd d:\NEXUS-CYBER-FASE3\channel-starter
+cd d:\NEXUS\nexus-core\channel-starter
 python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 081234567890
 python cli.py deploy apply
 python cli.py deploy reload
@@ -268,7 +269,7 @@ Alur **beli (lab):** pelanggan isi form portal → cek **Kredit** → generate d
 - [ ] Windows: sleep/hibernate **OFF**
 - [ ] UPS disarankan (listrik putus = semua down)
 - [ ] Docker Desktop: start otomatis (Settings → General)
-- [ ] `deploy-local/jury/START-FOR-JURY.bat` atau Task Scheduler untuk stack lab
+- [ ] `nexus-core/deploy-local/jury/START-FOR-JURY.bat` atau Task Scheduler untuk stack lab
 - [ ] cloudflared: install via winget; nanti jadikan **Windows Service** untuk restart otomatis
 - [ ] Backup mingguan: `.env`, `channel-starter/sites`, artefak Job
 - [ ] Copy jujur ke juri/klien: *pilot di infrastruktur operator — bukan SLA data center*
