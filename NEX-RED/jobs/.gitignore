@@ -1,0 +1,4 @@
+# Misplaced JobStore writes — canonical dir is jobs/data/
+JOB-*.json
+*_scan.json
+schedules.json

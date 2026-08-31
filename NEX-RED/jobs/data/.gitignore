@@ -1,0 +1,3 @@
+# Runtime JobStore JSON (JOB-{id}.json, {id}_scan.json). Keep .gitkeep.
+*.json
+!.gitkeep
