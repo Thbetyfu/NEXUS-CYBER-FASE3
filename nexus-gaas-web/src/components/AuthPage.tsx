@@ -29,7 +29,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         setError(data.error || "Gagal");
         return;
       }
-      router.push("/order");
+      router.push("/");
       router.refresh();
     } catch {
       setError("Portal tidak merespons");
@@ -43,7 +43,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     setError("");
     try {
       await continueAsGuest();
-      router.push("/order");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sesi tamu gagal");
     } finally {
@@ -106,7 +106,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           )}
         </p>
         <button type="button" className="notion-button auth-guest-btn" onClick={() => void guest()} disabled={busy}>
-          Lanjut sebagai tamu — uji tanpa daftar
+          Lanjut sebagai tamu
         </button>
         <p className="auth-honest">
           Tamu = cookie <code>nexus_portal_sid</code> di browser ini; ganti HP atau hapus cookie = saldo tamu hilang.

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, FileCheck, RefreshCw, Shield } from "lucide-react";
 import Link from "next/link";
 import { Navbar, PlanCta } from "./Navbar";
-import { PORTAL_DAFTAR, PORTAL_ORDER } from "@/lib/portal-config";
+import { PORTAL_DAFTAR } from "@/lib/portal-config";
 
 const DELIVERABLES = [
   {
@@ -41,8 +41,7 @@ const PLANS = [
       "Gerbang L0/L1",
       "CLOSED_GAP jika residual",
     ],
-    cta: PORTAL_ORDER,
-    highlight: true,
+    cta: "/pesan/corporat-job",
   },
   {
     name: "Loop GaaS",
@@ -55,8 +54,7 @@ const PLANS = [
       "Operator + artefak berkala",
       "Harga maks daftar v1 (pilot)",
     ],
-    cta: PORTAL_ORDER,
-    highlight: false,
+    cta: "/pesan/corporat-loop",
   },
   {
     name: "Integrator bundle",
@@ -122,7 +120,7 @@ export function CoworkB2BPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <PlanCta label="Beli di portal" href={PORTAL_ORDER} primary />
+            <PlanCta label="Ajukan Job hosted" href="/pesan/corporat-job" primary />
             <Link href="/" className="notion-button" style={{ padding: "12px 24px" }}>
               Lihat Channel Starter UMKM
             </Link>
@@ -207,7 +205,7 @@ export function CoworkB2BPage() {
                   ))}
                 </ul>
                 <PlanCta
-                  label={plan.name === "Integrator bundle" ? "Masuk portal" : "Beli di portal"}
+                  label={plan.name === "Integrator bundle" ? "Masuk portal" : "Ajukan ke operator"}
                   href={plan.cta}
                   primary={plan.highlight}
                 />

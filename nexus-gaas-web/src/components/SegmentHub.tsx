@@ -39,10 +39,10 @@ const WORDS = [
 ];
 
 const FLOW_STEPS = [
-  { icon: Sparkles, label: "Pilih peran", color: "var(--hub-accent)" },
-  { icon: CreditCard, label: "Isi Kredit", color: "var(--hub-accent)" },
-  { icon: CheckCircle2, label: "Tim proses", color: "var(--hub-ink)" },
-  { icon: Globe, label: "Site / Job live", color: "var(--hub-accent)" },
+  { icon: Sparkles, label: "Pilih segmen", color: "var(--hub-accent)" },
+  { icon: CreditCard, label: "Isi form paket", color: "var(--hub-accent)" },
+  { icon: CheckCircle2, label: "Bayar Kredit", color: "var(--hub-ink)" },
+  { icon: Globe, label: "Site / tugas selesai", color: "var(--hub-accent)" },
 ];
 
 function TypingHeadline() {
@@ -90,10 +90,10 @@ function HeroFlow() {
   }, []);
 
   const hints = [
-    "Pilih UMKM, sekolah, startup, corporat, atau pemerintah — harga tidak dicampur.",
-    "UMKM–startup dan Corporat hosted: beli di portal (`/order` / `/daftar`) dengan Kredit. WhatsApp hanya on-prem (Corporat / Pemerintah). Bukan Midtrans.",
-    "Proses di PC operator + tunnel — tanpa VPS dulu (on-prem = DC klien).",
-    "Website live, Job wasit, atau pitch on-prem — sesuai peran Anda.",
+    "Satu pintu: UMKM, sekolah, startup, corporat, atau pemerintah.",
+    "Kartu paket membuka form paket itu — bukan dump /order, bukan WhatsApp (kecuali on-prem).",
+    "Starter: keran lab + debit 20 Kr fail-closed. Bukan Midtrans. Job 200 Kr bukan kasir otomatis.",
+    "Generate site Starter, atau tugas tepi/Job ke operator. WhatsApp hanya Corporat on-prem & Pemerintah.",
   ];
 
   return (
@@ -161,8 +161,8 @@ export function SegmentHub() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            Satu portal. Lima peran. UMKM–startup: cabang website, beli Kredit di situs. Corporat hosted:
-            portal. On-prem (besar) dan Pemerintah: WhatsApp.
+            Satu alur. Pilih segmen → form paket → Kredit Nexus. WhatsApp hanya on-prem (Corporat besar /
+            Pemerintah).
           </motion.p>
 
           <motion.a
@@ -213,7 +213,7 @@ export function SegmentHub() {
                       <span className="hub-role-short">{seg.short}</span>
                     </span>
                     <span className="hub-role-go">
-                      Masuk <ArrowRight size={16} />
+                      Pilih <ArrowRight size={16} />
                     </span>
                   </Link>
                 </motion.li>

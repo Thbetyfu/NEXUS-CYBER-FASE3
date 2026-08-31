@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Cloud, Globe, GlobeLock, Server, Shield } from "lucide-react";
-import { useState } from "react";
 import {
   plansForSegment,
   type DeployMode,
@@ -13,12 +14,43 @@ import {
 import { Navbar, PlanCta } from "./Navbar";
 
 export function SegmentLanding({ segment }: { segment: SegmentDef }) {
-  const [website, setWebsite] = useState<WebsiteStatus | null>(
-    segment.askWebsite ? null : "sudah",
+  return (
+    <Suspense fallback={<div className="hub-page" style={{ minHeight: "50vh" }} />}>
+      <SegmentLandingInner segment={segment} />
+    </Suspense>
   );
-  const [deploy, setDeploy] = useState<DeployMode | null>(
-    segment.askDeployMode ? null : "hosted",
+}
+
+function SegmentLandingInner({ segment }: { segment: SegmentDef }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const situsParam = searchParams.get("situs");
+  const modeParam = searchParams.get("mode");
+  const [website, setWebsite] = useState<WebsiteStatus | null>(() =>
+    segment.askWebsite
+      ? situsParam === "belum" || situsParam === "sudah"
+        ? situsParam
+        : null
+      : "sudah",
   );
+  const [deploy, setDeploy] = useState<DeployMode | null>(() =>
+    segment.askDeployMode
+      ? modeParam === "hosted" || modeParam === "onprem"
+        ? modeParam
+        : null
+      : "hosted",
+  );
+
+  const setQuery = (key: string, value: string | null) => {
+    if (key === "situs") setWebsite(value === "belum" || value === "sudah" ? value : null);
+    if (key === "mode") setDeploy(value === "hosted" || value === "onprem" ? value : null);
+    const next = new URLSearchParams(searchParams.toString());
+    if (value == null) next.delete(key);
+    else next.set(key, value);
+    const q = next.toString();
+    router.replace(q ? `${segment.href}?${q}` : segment.href, { scroll: false });
+  };
 
   const plans = plansForSegment(
     segment,
@@ -56,7 +88,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               <button
                 type="button"
                 className={`web-status-btn${website === "belum" ? " is-on" : ""}`}
-                onClick={() => setWebsite("belum")}
+                onClick={() => setQuery("situs", "belum")}
               >
                 <Globe size={22} strokeWidth={1.75} />
                 <strong>Belum punya</strong>
@@ -65,7 +97,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               <button
                 type="button"
                 className={`web-status-btn${website === "sudah" ? " is-on" : ""}`}
-                onClick={() => setWebsite("sudah")}
+                onClick={() => setQuery("situs", "sudah")}
               >
                 <GlobeLock size={22} strokeWidth={1.75} />
                 <strong>Sudah punya</strong>
@@ -73,7 +105,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               </button>
             </div>
             {website && (
-              <button type="button" className="web-status-reset" onClick={() => setWebsite(null)}>
+              <button type="button" className="web-status-reset" onClick={() => setQuery("situs", null)}>
                 Ganti jawaban
               </button>
             )}
@@ -93,7 +125,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               <button
                 type="button"
                 className={`web-status-btn${deploy === "hosted" ? " is-on" : ""}`}
-                onClick={() => setDeploy("hosted")}
+                onClick={() => setQuery("mode", "hosted")}
               >
                 <Cloud size={22} strokeWidth={1.75} />
                 <strong>Hosted</strong>
@@ -102,7 +134,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               <button
                 type="button"
                 className={`web-status-btn${deploy === "onprem" ? " is-on" : ""}`}
-                onClick={() => setDeploy("onprem")}
+                onClick={() => setQuery("mode", "onprem")}
               >
                 <Server size={22} strokeWidth={1.75} />
                 <strong>On-prem (besar)</strong>
@@ -110,7 +142,7 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
               </button>
             </div>
             {deploy && (
-              <button type="button" className="web-status-reset" onClick={() => setDeploy(null)}>
+              <button type="button" className="web-status-reset" onClick={() => setQuery("mode", null)}>
                 Ganti jawaban
               </button>
             )}
@@ -189,8 +221,6 @@ export function SegmentLanding({ segment }: { segment: SegmentDef }) {
 
         <p className="text-center" style={{ marginTop: 28, fontSize: 13, color: "var(--notion-text-muted)" }}>
           Bukan segmen ini? <Link href="/">Pilih lagi</Link>
-          {" · "}
-          <Link href="/order">Form isi data website</Link>
         </p>
       </main>
 

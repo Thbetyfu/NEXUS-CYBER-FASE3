@@ -29,17 +29,17 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Kasir Kredit",
-    desc: "Lab: keran Kredit di `/order` (bukan settlement IDR). Produksi: QRIS/VA milik Nexus + bukti + approve (belum). WhatsApp hanya on-prem, bukan gateway.",
+    desc: "Lab: keran Kredit di form paket /pesan/… (bukan settlement IDR). Produksi: QRIS/VA milik Nexus + bukti + approve (belum). WhatsApp hanya on-prem, bukan gateway.",
     color: "var(--notion-yellow)",
     bg: "var(--notion-yellow-bg)",
   },
 ];
 
 const STEPS = [
-  { n: "01", title: "Pilih paket", desc: "Starter 20rb, Pagar tipis 35rb, atau Cowork wasit." },
-  { n: "02", title: "Isi Kredit", desc: "Keran lab di `/order` atau daftar akun. Bukan Midtrans." },
-  { n: "03", title: "Generate / operator", desc: "Starter fail-closed 20 Kr. Job hosted = operator, bukan 200 Kr self-serve." },
-  { n: "04", title: "Site live", desc: "slug.nexus-lab.test / upsell tepi. WhatsApp hanya on-prem." },
+  { n: "01", title: "Pilih segmen", desc: "UMKM / sekolah / startup / corporat / pemerintah." },
+  { n: "02", title: "Isi form paket", desc: "Bukan dump kasir. Starter = 20 Kr fail-closed." },
+  { n: "03", title: "Bayar Kredit", desc: "Keran lab. Bukan Midtrans. Job 200 Kr bukan self-serve." },
+  { n: "04", title: "Selesai", desc: "Site generate atau tugas operator. WhatsApp hanya on-prem." },
 ];
 
 export function FeaturesSection() {

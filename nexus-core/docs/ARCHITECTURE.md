@@ -80,7 +80,7 @@ flowchart TB
 
 ### Channel Portal (monorepo)
 
-- `nexus-gaas-web/` — landing, harga, form `/order`, WA manual
+- `nexus-gaas-web/` — landing, harga, form `/pesan/{sku}`, WA on-prem
 
 ---
 

@@ -78,9 +78,6 @@ export function AuthLinks({ compact = false }: { compact?: boolean }) {
       <Link href="/daftar" className="notion-navbar-link">
         Daftar
       </Link>
-      <Link href="/order" className="notion-navbar-link">
-        Uji tanpa daftar
-      </Link>
     </div>
   );
 }

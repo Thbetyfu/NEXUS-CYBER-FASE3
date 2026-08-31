@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.4 / 2026-09-01  
+**Versi:** 1.1.5 / 2026-09-01  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -71,7 +71,7 @@ Nama produk: **Edge Antibody Cowork**.
 | Pentest exploit | Wasit HTTP jinak + virtual patch di tepi |
 | Klaim “anti zero-day” | Residual eksplisit + `replay_missed` = belum selesai |
 
-Modul **`nexus-gaas-web/`** adalah pintu jual v1. **Kredit** (keran lab + debit Starter 20 Kr) ada di `/order`, **per identitas** (tamu cookie atau akun). Top-up IDR yang disepakati: **QRIS / VA bank milik pemilik** + bukti transfer + approve operator — **bukan** Midtrans/Stripe. Alur itu **belum dikode**. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
+Modul **`nexus-gaas-web/`** adalah pintu jual v1. Alur: **pilih segmen → form paket `/pesan/{sku}` → Kredit** (keran lab + debit Starter **20 Kr**, fail-closed), **per identitas** (tamu cookie atau akun). Alias `/order` mengarah ke Starter UMKM. Top-up IDR yang disepakati: **QRIS / VA bank milik pemilik** + bukti transfer + approve operator — **bukan** Midtrans/Stripe. Alur itu **belum dikode**. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
 
 ---
 
@@ -181,9 +181,9 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 | **Pagar tipis** | Upsell `--tier tepi`: Caddy ke WAF + Reflex judi/deface. **Satu** `PROTECTED_HOST` per lab. Bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb (belum punya web) / 28rb (sudah). **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 
-**Kredit (lab sekarang):** unit kasir Channel Starter di `/order`. **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. Form tampil tanpa animasi `opacity: 0`. **Bukan** e-money, **bukan** jual Job 200 Kredit dari portal. CLI `channel-starter` tetap tanpa debit.
+**Kredit (lab sekarang):** unit kasir Channel Starter di `/pesan/{sku}` (Starter = `/pesan/umkm-starter`; `/order` redirect). **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. **Bukan** e-money, **bukan** jual Job 200 Kredit otomatis dari portal. CLI `channel-starter` tetap tanpa debit.
 
-**Top-up IDR (disepakati, belum dikode):** pelanggan bayar ke **QRIS milik pemilik** atau **VA bank milik pemilik** → kirim bukti → operator **approve** jika bukti aman → Kredit masuk. **Bukan** PSP pihak ketiga (Midtrans/Stripe). WhatsApp = saluran on-prem (Corporat On-prem + Pemerintah), bukan payment gateway. UMKM–startup + Corporat hosted = beli di `/order`.
+**Top-up IDR (disepakati, belum dikode):** pelanggan bayar ke **QRIS milik pemilik** atau **VA bank milik pemilik** → kirim bukti → operator **approve** jika bukti aman → Kredit masuk. **Bukan** PSP pihak ketiga (Midtrans/Stripe). WhatsApp = saluran on-prem (Corporat On-prem + Pemerintah), bukan payment gateway. UMKM–startup + Corporat hosted = form `/pesan/{sku}`.
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 

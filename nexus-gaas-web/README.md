@@ -13,9 +13,10 @@ Deploy publik kanonik: repo [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbety
 | Nama | Channel Portal (jual) |
 | Stack | **Next.js** 16 · React 19 · Tailwind 4 · Framer Motion |
 | Port lab | **3003** (`npm run dev`) |
-| Kasir | **Kredit** per identitas (cookie tamu atau akun) — lab: keran + Starter **20 Kr** di `/order` |
+| Kasir | **Kredit** per identitas — lab: keran + Starter **20 Kr** di `/pesan/umkm-starter` (`/order` alias) |
+| Kontak | WhatsApp **hanya on-prem**. UMKM–startup + Corporat hosted = form `/pesan/{sku}` |
 | Pembayaran IDR | **Bukan** Midtrans/Stripe. Berikutnya (disepakati, **belum dikode**): QRIS/VA milik pemilik → bukti → approve → Kredit |
-| Kontak | WhatsApp `62895603358692` **hanya on-prem** (Corporat On-prem + Pemerintah). UMKM–startup + Corporat hosted = `/order` Kredit |
+| WhatsApp | `62895603358692` **hanya on-prem** (Corporat On-prem + Pemerintah) |
 
 Login / daftar / tamu = **pelanggan storefront** (`/masuk`, `/daftar`). Bukan login operator Nexus.
 
@@ -25,7 +26,7 @@ Generate situs **membutuhkan** Channel Starter di mesin core:
 
 `NEXT_PUBLIC_CHANNEL_STARTER_URL` / proxy → **`http://127.0.0.1:3010`**
 
-Form `/order` → sesi (`nexus_portal_sid`) → ledger Kredit identitas itu → `POST` generate. Saldo kurang = **402**. CLI `channel-starter` di core tetap bisa generate tanpa debit (jalur operator).
+Form `/pesan/umkm-starter` → sesi (`nexus_portal_sid`) → ledger Kredit identitas itu → `POST` generate. Saldo kurang = **402**. CLI `channel-starter` di core tetap bisa generate tanpa debit (jalur operator). `/order` redirect ke form Starter.
 
 Mesin tepi, Job, dan `START.bat`: [`../nexus-core/README.md`](../nexus-core/README.md). Model: [`../nexus-core/docs/PRODUCT_MODEL.md`](../nexus-core/docs/PRODUCT_MODEL.md).
 

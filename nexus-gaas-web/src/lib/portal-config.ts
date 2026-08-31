@@ -17,7 +17,7 @@ export const SALES = {
 } as const;
 
 /** Kasir self-serve (Kredit). Bukan WhatsApp. */
-export const PORTAL_ORDER = "/order";
+export const PORTAL_ORDER = "/pesan/umkm-starter";
 export const PORTAL_DAFTAR = "/daftar";
 export const PORTAL_MASUK = "/masuk";
 

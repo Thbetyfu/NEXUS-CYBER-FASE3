@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
@@ -9,6 +10,8 @@ import { isWhatsAppHref } from "@/lib/portal-config";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const path = usePathname() ?? "/";
+  const onHub = path === "/";
 
   return (
     <nav className="notion-navbar">
@@ -35,12 +38,11 @@ export function Navbar() {
       </div>
       <div className="flex gap-2 notion-navbar-actions desktop-only">
         <AuthLinks />
-        <Link href="/order" className="notion-button">
-          Pesan
-        </Link>
-        <Link href="/" className="notion-button notion-button-primary">
-          Pilih segmen
-        </Link>
+        {!onHub && (
+          <Link href="/" className="notion-navbar-link">
+            Semua segmen
+          </Link>
+        )}
       </div>
       <button
         type="button"
@@ -74,11 +76,8 @@ export function Navbar() {
           <Link href="/daftar" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Daftar
           </Link>
-          <Link href="/order" className="notion-navbar-link" onClick={() => setOpen(false)}>
-            Uji tanpa daftar
-          </Link>
           <Link href="/" className="notion-button notion-button-primary" onClick={() => setOpen(false)}>
-            Pilih segmen
+            Semua segmen
           </Link>
         </div>
       )}
@@ -121,7 +120,7 @@ export function WaCta({
   );
 }
 
-/** Internal `/order` / `/daftar` vs WhatsApp (on-prem saja). */
+/** Internal `/pesan/{sku}` vs WhatsApp (on-prem saja). */
 export function PlanCta({
   label,
   href,
@@ -132,7 +131,7 @@ export function PlanCta({
   primary?: boolean;
 }) {
   const wa = isWhatsAppHref(href);
-  const text = label ?? (wa ? "Pesan via WhatsApp" : "Beli di portal");
+  const text = label ?? (wa ? "Pesan via WhatsApp" : "Isi form paket");
   if (wa) {
     return <WaCta label={text} href={href} primary={primary} />;
   }
