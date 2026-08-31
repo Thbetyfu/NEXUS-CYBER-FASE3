@@ -1,2 +1,10 @@
+# Hasil generate klien — jangan commit.
+# Kecuali demo `contoh-nexcent`: wizard lama hanya baca folder ini,
+# jadi Simple Browser :3010 tetap bisa setelah git pull tanpa kode baru.
 *
 !.gitignore
+!contoh-nexcent/
+!contoh-nexcent/index.html
+!contoh-nexcent/manifest.json
+!contoh-nexcent/robots.txt
+!contoh-nexcent/vercel.json

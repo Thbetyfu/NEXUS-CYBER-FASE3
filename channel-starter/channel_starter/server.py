@@ -43,11 +43,10 @@ _FORM_HTML = """<!DOCTYPE html>
   <p>Form lengkap → template Nexcent (Figma) → site statis siap WA. Rule-based, bukan LLM.</p>
   <div class="banner">
     <strong>Preview hanya di komputer yang menjalankan wizard ini.</strong>
-    Folder <code>sites/</code> tidak masuk git — clone/pull saja tidak membuat
-    <code>/preview/warung-uji-figma</code>. Setelah Generate, browser diarahkan ke HTML preview
-    (bukan JSON). Tanpa generate, buka
-    <a href="/preview/contoh-nexcent">contoh Nexcent</a>
-    atau <a href="/preview">daftar preview</a>.
+    Kalau Simple Browser JSON <code>Site not found</code>, proses di :3010 masih kode lama —
+    <code>START-PREVIEW.bat</code> atau generate di form ini. Demo git:
+    <a href="/preview/contoh-nexcent">/preview/contoh-nexcent</a>
+    (<code>sites/contoh-nexcent</code>). Hasil generate klien lain tidak ikut git.
   </div>
   <form method="post" action="/generate">
     <fieldset>
@@ -244,8 +243,11 @@ def preview_missing_html(slug: str) -> str:
     <p>Tidak ada folder <code>sites/{shown}/</code> pada mesin yang menjalankan wizard
     <code>127.0.0.1:3010</code>. Simple Browser Cursor memakai <strong>localhost PC Anda</strong>,
     bukan mesin agen cloud yang sempat generate.</p>
-    <p>Folder <code>channel-starter/sites/</code> di-gitignore — <code>git pull</code> tidak membawa
-    hasil generate orang lain (misalnya <code>warung-uji-figma</code>).</p>
+    <p>Kalau yang tampil JSON <code>{{"detail":"Site not found"}}</code>, proses di port 3010
+    masih <strong>kode lama</strong> (belum di-restart). Hentikan Python di 3010, <code>git pull</code>,
+    lalu <code>python cli.py serve</code> atau <code>START-PREVIEW.bat</code>.</p>
+    <p>Demo yang ikut git ada di <code>sites/contoh-nexcent/</code> (wizard lama hanya baca
+    folder <code>sites/</code>, bukan <code>examples/</code>).</p>
   </div>
   <h2>Yang bisa dilakukan</h2>
   <ol>
@@ -276,7 +278,7 @@ def preview_index_html() -> str:
 <body>
   <h1>Preview di komputer ini</h1>
   <p><a href="/">Kembali ke form</a></p>
-  <h2>Hasil generate (<code>sites/</code>, tidak di-git)</h2>
+  <h2>Hasil generate (<code>sites/</code>, klien tidak di-git)</h2>
   <ul>{_manifest_links(catalog["generated"])}</ul>
   <h2>Contoh committed</h2>
   <ul>{_manifest_links(catalog["examples"])}</ul>

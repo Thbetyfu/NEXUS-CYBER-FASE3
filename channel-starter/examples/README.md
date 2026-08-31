@@ -1,9 +1,11 @@
-# Contoh Channel Starter (ikut git)
+# Demo Channel Starter
 
-Folder `sites/` di-gitignore. Hasil generate (misalnya `warung-uji-figma`) **tidak** ikut `git pull`, jadi Simple Browser di PC lain menampilkan 404.
+Wizard **lama** (yang masih JSON `Site not found`) hanya membaca `sites/{slug}/index.html`.
 
-`contoh-nexcent/` adalah demo committed: setelah `python cli.py serve`, buka:
+Demo yang ikut git: [`../sites/contoh-nexcent/`](../sites/contoh-nexcent/) — slug `contoh-nexcent`. Hasil generate klien lain tetap di-gitignore.
 
-http://127.0.0.1:3010/preview/contoh-nexcent
+Folder ini (`examples/contoh-nexcent`) cadangan untuk wizard baru. Bukan klien nyata. Bukan klaim WAF/Job.
 
-Bukan klien nyata. Bukan klaim WAF/Job. Generate klien tetap ke `sites/`.
+Setelah `git pull`: http://127.0.0.1:3010/preview/contoh-nexcent
+
+Kalau masih JSON: `START-PREVIEW.bat` (hentikan proses lama di port 3010) atau buka file `sites/contoh-nexcent/index.html` langsung di Cursor.

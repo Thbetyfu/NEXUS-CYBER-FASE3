@@ -54,7 +54,7 @@ python cli.py serve
 
 Form wizard: http://127.0.0.1:3010/
 
-Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. `sites/` tidak di-git. Setelah pull, buka [contoh Nexcent](http://127.0.0.1:3010/preview/contoh-nexcent) (`examples/contoh-nexcent`). Generate mengarah ke HTML preview, bukan JSON.
+Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. Hasil generate klien di-gitignore; demo **`sites/contoh-nexcent`** ikut git (wizard lama hanya folder itu). Jika Simple Browser masih JSON `Site not found`, proses 3010 masih kode lama — `START-PREVIEW.bat` atau buka `sites/contoh-nexcent/index.html`.
 
 ## Struktur
 
@@ -67,13 +67,15 @@ Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serv
 | `channel_starter/deploy.py` | Snippet Caddy multi-tenant lab + header tepi |
 | `channel_starter/server.py` | FastAPI form wizard + preview HTML |
 | `templates/_base.html` | Layout Nexcent (Figma Contoh-landing-page-nexus) |
-| `examples/contoh-nexcent/` | Demo committed (preview tanpa generate) |
+| `sites/contoh-nexcent/` | Demo committed (wizard lama & baru) |
+| `examples/contoh-nexcent/` | Cadangan demo (wizard baru) |
+| `START-PREVIEW.bat` | Stop port 3010 + `cli.py serve` |
 
 ## Env
 
 | Variabel | Default |
 | --- | --- |
-| `CHANNEL_STARTER_SITES_DIR` | `./sites` (gitignore — hasil generate lokal) |
+| `CHANNEL_STARTER_SITES_DIR` | `./sites` (gitignore, kecuali demo `contoh-nexcent`) |
 | `CHANNEL_STARTER_EXAMPLES_DIR` | `./examples` (ikut git) |
 | `CHANNEL_STARTER_TEMPLATES` | `./templates` |
 | `CHANNEL_STARTER_SUBDOMAIN_BASE` | `nexus-lab.test` |

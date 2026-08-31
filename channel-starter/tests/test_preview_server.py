@@ -19,18 +19,25 @@ from channel_starter.server import app, preview_missing_html
 
 class TestPreviewServer(unittest.TestCase):
     def test_committed_example_exists(self):
-        index = EXAMPLES_DIR / "contoh-nexcent" / "index.html"
-        self.assertTrue(index.is_file(), "examples/contoh-nexcent must be committed for git-pull preview")
+        from channel_starter.config import SITES_DIR
+
+        index = SITES_DIR / "contoh-nexcent" / "index.html"
+        self.assertTrue(
+            index.is_file(),
+            "sites/contoh-nexcent must be committed so old wizard /preview works after pull",
+        )
         html = index.read_text(encoding="utf-8")
         self.assertIn("Contoh Nexcent", html)
         self.assertIn("#4CAF4F", html)
+        example = EXAMPLES_DIR / "contoh-nexcent" / "index.html"
+        self.assertTrue(example.is_file())
 
     def test_missing_preview_is_html_not_json(self):
         html = preview_missing_html("warung-uji-figma")
         self.assertIn("Site tidak ada di komputer ini", html)
         self.assertIn("warung-uji-figma", html)
         self.assertIn("/preview/contoh-nexcent", html)
-        self.assertNotIn("Site not found", html)
+        self.assertNotIn('"detail": "Site not found"', html)
 
     def test_http_preview_404_and_generate_redirect(self):
         try:

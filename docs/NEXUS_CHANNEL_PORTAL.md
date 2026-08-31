@@ -28,7 +28,7 @@ Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/co
 | Hosted | Job 200rb · Loop 300rb · Custom |
 | On-prem (besar) | Edge 18jt/thn · Loop 3,5jt/bln · Custom (sama model Pemerintah) |
 
-Form data site: `/order` (form lengkap: hero, layanan, angka, galeri URL, 4 palet Figma). Proxy generate membaca `Location` `/preview/{slug}` atau `/sites/{slug}`; preview HTML di wizard `:3010`. Slug hasil generate **tidak** ikut git.  
+Form data site: `/order` (form lengkap: hero, layanan, angka, galeri URL, 4 palet Figma). Proxy generate membaca `Location` `/preview/{slug}` atau `/sites/{slug}`; preview HTML di wizard `:3010`. Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.  
 Distribusi pilot: [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md).  
 On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md).
 
