@@ -1,6 +1,6 @@
 # Agen & dokumentasi Nexus Cyber
 
-**Model produk:** Channel Starter (entry) + GaaS Edge Antibody Cowork — lihat `nexus-core/docs/PRODUCT_MODEL.md`. Keputusan bisnis: `nexus-core/docs/DECISIONS_OPEN.md` — **tanya pemilik** untuk item di bagian Belum final.
+**Model produk:** Channel Starter (entry) + GaaS Edge Antibody Cowork — lihat [`nexus-core/docs/PRODUCT_MODEL.md`](nexus-core/docs/PRODUCT_MODEL.md). Keputusan bisnis: [`nexus-core/docs/DECISIONS_OPEN.md`](nexus-core/docs/DECISIONS_OPEN.md) — **tanya pemilik** untuk item di bagian Belum final. Tata letak pohon: [`nexus-core/docs/REPO_LAYOUT.md`](nexus-core/docs/REPO_LAYOUT.md).
 
 ## Lab target — apa yang dilindungi & kenapa (wajib dibaca)
 
