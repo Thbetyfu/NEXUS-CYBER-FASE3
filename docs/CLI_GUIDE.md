@@ -49,7 +49,7 @@ python NEX-RED/nexred.py job export JOB-XXXXXXXX --format md
 python NEX-RED/nexred.py job schedule-add --title "Weekly" -u http://127.0.0.1:8080 --interval-hours 168
 ```
 
-Job Cowork disinkronkan ke PostgreSQL jika gateway `:8081` + `POSTGRES_DSN` aktif (`NEXUS_CONTROL_PLANE_URL`, default `http://127.0.0.1:8081`). File backup: `NEX-RED/jobs/data/`. Job named-host bind TCP ke `NEXUS_GATEWAY_URL` (`http://127.0.0.1:8080`) + `Host`. Browser lab: `set NEX_RED_BROWSER=1` lalu `NEX-RED/INSTALL-PLAYWRIGHT.bat` (Chromium di drive repo, sama dengan `D:\NEXUS-CYBER-FASE3` di lab ini). Gallery/vault named-host butuh `NEX_RED_LAB_SESSION_TOKEN` = `NEXUS_LAB_SESSION_TOKEN` di gateway (bukan skip PoW pengunjung). Binary hilang = skip jujur, bukan PARTIAL.
+Job Cowork disinkronkan ke PostgreSQL jika gateway `:8081` + `POSTGRES_DSN` aktif (`NEXUS_CONTROL_PLANE_URL`, default `http://127.0.0.1:8081`). File backup: `NEX-RED/jobs/data/` (**gitignore** — jangan `git add` `JOB-*.json`). Job named-host bind TCP ke `NEXUS_GATEWAY_URL` (`http://127.0.0.1:8080`) + `Host`. Browser lab: `set NEX_RED_BROWSER=1` lalu `NEX-RED/INSTALL-PLAYWRIGHT.bat` (Chromium di drive repo, sama dengan `D:\NEXUS-CYBER-FASE3` di lab ini). Gallery/vault named-host butuh `NEX_RED_LAB_SESSION_TOKEN` = `NEXUS_LAB_SESSION_TOKEN` di gateway (bukan skip PoW pengunjung). Binary hilang = skip jujur, bukan PARTIAL.
 
 Digest insiden (operator, satu workspace — bukan `domain=all`):
 

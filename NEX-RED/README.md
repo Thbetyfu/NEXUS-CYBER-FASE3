@@ -17,7 +17,7 @@ It is **not** Shannon and **not** Strix. v5 is Jalan B **Fase 0–5 plus lab Jui
 5. **Black-box posture** — benign JSON probes.
 6. **Live HTTP checks** — unauthenticated mutating route, public telemetry must not be SOC, WAF 403 = `mitigated_by_nexus`, **two accounts**, and **GET object without a session** (CWE-639).
 7. **Browser lab (optional)** — `NEX_RED_BROWSER=1` plus Playwright: benign gallery upload and five wrong vault passwords **through WAF** when a lab session exists (`NEX_RED_LAB_SESSION_TOKEN` matching gateway `NEXUS_LAB_SESSION_TOKEN` → `POST /api/verify-session` → `nexus_session`). Chromium MAP-s `PROTECTED_HOST` to the WAF IP (same bind as Job HTTP; no hosts file). Without that token, named-host PoW is recorded as `sast_only` (visitor Matrix Verification stays on). Screenshots stay under `NEX-RED/workspaces/`.
-8. **Job Cowork (GaaS)** — `nexred.py job run|approve|export`; bridge `POST /api/v1/jobs`; status `OPEN` → `CLOSED_OK`/`CLOSED_GAP`.
+8. **Job Cowork (GaaS)** — `nexred.py job run|approve|export`; bridge `POST /api/v1/jobs`; status `OPEN` → `CLOSED_OK`/`CLOSED_GAP`. JSON runtime di `jobs/data/` **gitignore** (jangan commit `JOB-*.json`); kode orkestrasi + `immune_memory.json` tetap di Git.
 9. **Scan jobs** — `POST /api/v1/scan` default `async_run=true`; poll `GET /api/v1/scan/{id}`.
 10. **Named agents** — `recon`, `injection-hygiene` (benign JSON / 500), `access` (session/IDOR/object GET), `reporter` (dedup). One agent exception → scan `PARTIAL`, others still run. Report has an **Agents** table.
 11. **Juice Shop lab** — `lab-juice` / `benchmark --live` against `http://127.0.0.1:3003`. Twelve benign checks. 401 is `rejected`. Does not flip `equal_to_shannon_strix`.

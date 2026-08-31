@@ -59,67 +59,6 @@ share/python-wheels/
 .env
 .env.local
 .env.development.local
-# Editor/OS
-.vscode/
-.idea/
-*.suo
-*.ntvs
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
-Thumbs.db
-
-# Node
-node_modules/
-npm-debug.log
-yarn-error.log
-.next/
-.pnp.*
-
-# Go
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-nexus-core-gateway/nexus-core-gateway
-nexus-core-gateway/cmd/gateway/gateway
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-!nexus-channel-portal/src/lib/
-!nexus-channel-portal/src/lib/**
-!nexus-admin-dashboard/src/lib/
-!nexus-admin-dashboard/src/lib/**
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Secrets
-.env
-.env.local
-.env.development.local
 .env.test.local
 .env.production.local
 *.pem
@@ -142,6 +81,21 @@ NEXUS-CORE-BRAIN.Modelfile
 nexus-core-gateway/data/
 NEX-RED/reports/
 NEX-RED/workspaces/
+
+# NEX-RED JobStore runtime (kode Python + immune_memory.json tetap di Git)
+NEX-RED/jobs/data/*.json
+NEX-RED/jobs/JOB-*.json
+NEX-RED/jobs/*_scan.json
+NEX-RED/jobs/schedules.json
+/JOB-*.json
+/*_scan.json
+
+# Lab / agent captures at repo root (not product assets)
+/.playwright-mcp/
+/*.png
+
+# Vercel CLI local project link — never Connect Git the Nexus monorepo to a warung
+.vercel/
 
 # NEX-AI Private Artifacts
 *.gguf
