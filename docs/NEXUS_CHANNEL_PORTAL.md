@@ -44,8 +44,9 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 
 ## Pembayaran
 
-- **v1:** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!*
-- **Belum:** Midtrans webhook (ditunda)
+- **IDR v1:** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!*
+- **Kredit lab (v0):** unit **Kredit** di `/order` — 1 Kr = Rp 1.000; Starter = **20 Kr**. Keran `POST /api/kredit/faucet`. Generate menolak jika saldo di bawah 20 Kr (HTTP 402); gagal upstream → refund. Halaman `/order` **tidak** memakai Framer Motion `opacity: 0` (agar isi tidak tampil putih). Logo: `public/brand/nexus-kredit.svg`.
+- **Bukan:** Midtrans webhook (tetap ditunda); **bukan** beli Job Cowork 200 Kr dari portal.
 
 ---
 
@@ -57,4 +58,4 @@ Portal legacy submodule **digantikan** modul monorepo **`nexus-channel-portal/`*
 
 ---
 
-*2026-08-22 — Milestone 19*
+*2026-08-31 — Kredit lab v0 + Milestone 19*

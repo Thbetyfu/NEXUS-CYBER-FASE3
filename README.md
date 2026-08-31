@@ -116,7 +116,7 @@ Lab `deploy-local/START.bat` **wajib** `nex-ai-protect` + `nex-ai-reflex` di Oll
 | **eBPF / XDP** | **Stub** — tidak membuang paket di kernel |
 | **PQC** | Modul/header inisialisasi; **bukan** enkripsi ujung-ke-ujung pengunjung |
 | **NEX-RED** | SAST + HTTP jinak + Juice Shop kelas + **defense delta** lab (WAF vs origin); **bukan** proof-by-exploitation |
-| **Channel Portal / billing otomatis** | **Portal v1 manual WA** — Midtrans **ditunda** |
+| **Channel Portal / billing** | **Portal v1** — Kredit lab (Starter 20 Kr) + WA IDR; Midtrans **ditunda** |
 
 Reflex sinkron di request path. Reasoning (`nex-ai-protect`) **asinkron** — bukan Qwen 235B wajib di setiap request. Start lab tetap fail-closed tanpa kedua nama NEX-AI lokal.
 

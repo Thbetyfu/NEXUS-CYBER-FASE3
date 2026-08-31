@@ -159,7 +159,7 @@ Detail: [`LIMITATIONS.md`](./LIMITATIONS.md)
 
 1. **Fase 17 (GaaS):** Job + L0/L1 + PG — **selesai di mesin lab**
 2. **Fase 18 (Channel Starter):** Form + template UMKM — **lab v0.1** (`channel-starter/`)
-3. **Bukan prioritas:** Channel Portal billing otomatis massal, F-10, eBPF real, Loop di Rp 20rb
+3. **Bukan prioritas:** Midtrans/Stripe massal, F-10, eBPF real, Loop di Rp 20rb. **Kredit lab** (20 Kr Starter) = uji kasir, bukan billing produksi.
 
 ---
 

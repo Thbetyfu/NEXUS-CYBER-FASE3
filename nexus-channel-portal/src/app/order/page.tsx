@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navbar, WaCta } from "@/components/Navbar";
-import { SALES, whatsappPackageUrl } from "@/lib/portal-config";
+import { KREDIT, starterPriceIdr } from "@/lib/kredit";
+import { whatsappPackageUrl } from "@/lib/portal-config";
 
 const THEMES = [
   { id: "hijau", label: "Hijau", hex: "#4CAF4F" },
@@ -12,15 +13,22 @@ const THEMES = [
   { id: "hutan", label: "Hutan", hex: "#1B5E1F" },
 ] as const;
 
+type KreditState = {
+  balance: number;
+  mode: "lab" | "live";
+};
+
 type OrderResult = {
   slug?: string | null;
   previewUrl?: string | null;
   subdomain?: string | null;
+  balance?: number;
+  orderId?: string;
 };
 
 function slugFromRedirect(redirect: string | null | undefined): string | null {
   if (!redirect) return null;
-  const match = redirect.match(/\/sites\/([^/?#]+)/);
+  const match = redirect.match(/\/(?:preview|sites)\/([^/?#]+)/);
   return match?.[1] ?? null;
 }
 
@@ -72,9 +80,52 @@ export default function OrderPage() {
   const [quoteRole, setQuoteRole] = useState("");
   const [partners, setPartners] = useState("");
   const [customDomain, setCustomDomain] = useState("");
+  const [kredit, setKredit] = useState<KreditState | null>(null);
+  const [kreditError, setKreditError] = useState("");
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [result, setResult] = useState<OrderResult | null>(null);
+
+  const loadKredit = useCallback(async () => {
+    try {
+      const res = await fetch("/api/kredit");
+      const data = (await res.json()) as KreditState & { ok?: boolean; error?: string };
+      if (!res.ok || data.ok === false) {
+        setKreditError(data.error || "Ledger Kredit tidak terbaca");
+        return;
+      }
+      setKredit({ balance: data.balance, mode: data.mode });
+      setKreditError("");
+    } catch {
+      setKreditError("Ledger Kredit tidak terbaca");
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadKredit();
+  }, [loadKredit]);
+
+  const isiKeran = async () => {
+    setBusy(true);
+    setFormError("");
+    try {
+      const res = await fetch("/api/kredit/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: KREDIT.faucetAmountKr }),
+      });
+      const data = (await res.json()) as KreditState & { error?: string };
+      if (!res.ok) {
+        setFormError(data.error || "Keran gagal");
+        return;
+      }
+      setKredit({ balance: data.balance, mode: data.mode });
+    } catch {
+      setFormError("Keran gagal");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,23 +187,36 @@ export default function OrderPage() {
     }
     try {
       const res = await fetch("/api/channel-starter/generate", { method: "POST", body: fd });
-      const data = (await res.json()) as OrderResult & { ok?: boolean; error?: string; redirect?: string | null };
+      const data = (await res.json()) as OrderResult & {
+        ok?: boolean;
+        error?: string;
+        redirect?: string | null;
+        balance?: number;
+      };
+      if (typeof data.balance === "number") {
+        setKredit((prev) => ({ balance: data.balance as number, mode: prev?.mode ?? "lab" }));
+      }
       if (!res.ok || data.ok === false) {
-        setFormError(data.error || "Pesanan belum tersimpan di Channel Starter. Lanjut konfirmasi WA.");
+        setFormError(data.error || "Pesanan ditolak. Isi keran lab atau lanjut konfirmasi WA.");
+        return;
       }
       const slug = data.slug || slugFromRedirect(data.redirect);
       setResult({
         slug,
         previewUrl: data.previewUrl || (slug ? `http://127.0.0.1:3010/preview/${slug}` : null),
         subdomain: data.subdomain || (slug ? `${slug}.nexus-lab.test` : null),
+        balance: data.balance,
+        orderId: data.orderId,
       });
     } catch {
       setFormError("Portal tidak menghubungi Channel Starter. Site bisa digenerate operator setelah WA.");
-      setResult({ slug: null, previewUrl: null, subdomain: null });
     } finally {
       setBusy(false);
     }
   };
+
+  const cukup = (kredit?.balance ?? 0) >= KREDIT.starterPriceKr;
+  const hargaIdr = starterPriceIdr().toLocaleString("id-ID");
 
   return (
     <div className="order-page">
@@ -163,20 +227,51 @@ export default function OrderPage() {
         </Link>
         <h1 className="order-title">Form pesanan Channel Starter</h1>
         <p className="order-lead">
-          Paket Rp {SALES.starterPrice.toLocaleString("id-ID")}/bulan: website template Nexcent, 4 warna, domain lab{" "}
-          <code>{`{slug}.nexus-lab.test`}</code>, berkas Vercel, dan header tepi Nexus. Job Cowork bukan paket ini.
-          Konfirmasi bayar via WhatsApp.
+          Paket Starter = <strong>{KREDIT.starterPriceKr} Kredit</strong> (setara Rp {hargaIdr}/bulan): template
+          Nexcent, 4 warna, domain lab <code>{`{slug}.nexus-lab.test`}</code>, berkas Vercel, header tepi Nexus. Lab
+          memakai Kredit (keran), bukan Midtrans. Job Cowork bukan paket ini. Konfirmasi IDR produksi tetap via
+          WhatsApp.
         </p>
+
+        <section className="kredit-panel" aria-label="Saldo Kredit">
+          <img src="/brand/nexus-kredit.svg" alt="" width={56} height={56} className="kredit-panel-mark" />
+          <div className="kredit-panel-copy">
+            <p className="kredit-panel-label">Kredit</p>
+            <p className="kredit-panel-balance">{kredit == null ? "…" : `${kredit.balance} ${KREDIT.abbr}`}</p>
+            <p className="kredit-panel-hint">
+              1 {KREDIT.abbr} = Rp {KREDIT.idrPerKredit.toLocaleString("id-ID")}
+              {kredit?.mode === "lab" ? " · keran lab" : ""}
+            </p>
+          </div>
+          {kredit?.mode !== "live" && (
+            <button type="button" className="notion-button" onClick={() => void isiKeran()} disabled={busy}>
+              Isi {KREDIT.faucetAmountKr} Kredit
+            </button>
+          )}
+        </section>
+        {kreditError && (
+          <p className="kredit-error" role="alert">
+            {kreditError}
+          </p>
+        )}
 
         {result ? (
           <div className="notion-callout notion-callout-blue">
             <div className="notion-callout-content">
-              <p style={{ fontWeight: 700, marginBottom: 12 }}>Site siap diisi — konfirmasi pembayaran</p>
+              <p style={{ fontWeight: 700, marginBottom: 12 }}>Site dibuat — 20 Kredit terdebet</p>
               <ol style={{ paddingLeft: 20, color: "var(--notion-text-muted)", fontSize: 14 }}>
-                <li>Transfer Rp 20.000, konfirmasi via WA.</li>
                 {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
-                {customDomain && <li>Domain kustom yang diisi: {customDomain} (CNAME operator, bukan auto-DNS publik)</li>}
-                <li>Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan git monorepo Nexus). *.vercel.app bukan WAF.</li>
+                <li>
+                  Saldo sekarang: {result.balance ?? kredit?.balance} {KREDIT.abbr}
+                </li>
+                {result.orderId && <li>Order {result.orderId.slice(0, 8)}…</li>}
+                {customDomain && (
+                  <li>Domain kustom yang diisi: {customDomain} (CNAME operator, bukan auto-DNS publik)</li>
+                )}
+                <li>
+                  Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan
+                  git monorepo Nexus). *.vercel.app bukan WAF.
+                </li>
                 <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell.</li>
               </ol>
               {formError && (
@@ -184,11 +279,15 @@ export default function OrderPage() {
                   {formError}
                 </p>
               )}
-              {result.previewUrl && (
+              {result.previewUrl ? (
                 <p style={{ marginTop: 16 }}>
                   <a href={result.previewUrl} className="notion-button notion-button-primary">
                     Buka preview
                   </a>
+                </p>
+              ) : (
+                <p style={{ marginTop: 12, fontSize: 14, color: "var(--notion-text-muted)" }}>
+                  Site tersimpan di Channel Starter. Nyalakan <code>python cli.py serve</code> untuk preview.
                 </p>
               )}
               <div style={{ marginTop: 20 }}>
@@ -198,14 +297,32 @@ export default function OrderPage() {
                   primary
                 />
               </div>
+              <button
+                type="button"
+                className="notion-button"
+                style={{ marginTop: 16 }}
+                onClick={() => {
+                  setResult(null);
+                  setBusinessName("");
+                  setWhatsapp("");
+                }}
+              >
+                Pesan site lain
+              </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="notion-database order-form" method="post" action="/api/channel-starter/generate">
+          <form onSubmit={handleSubmit} className="notion-database order-form">
             <fieldset>
               <legend>Usaha</legend>
               <label htmlFor="order-name">Nama usaha</label>
-              <input id="order-name" required value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Warung Bu Siti" />
+              <input
+                id="order-name"
+                required
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="Warung Bu Siti"
+              />
               <label htmlFor="order-cat">Kategori</label>
               <select id="order-cat" value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="fnb">Kuliner / F&amp;B</option>
@@ -213,15 +330,37 @@ export default function OrderPage() {
                 <option value="profil">Profil UMKM</option>
               </select>
               <label htmlFor="order-wa">WhatsApp</label>
-              <input id="order-wa" type="tel" required value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="08xxxxxxxxxx" />
+              <input
+                id="order-wa"
+                type="tel"
+                required
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="08xxxxxxxxxx"
+              />
               <label htmlFor="order-addr">Alamat</label>
-              <input id="order-addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Jl. Contoh No. 1" />
+              <input
+                id="order-addr"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Jl. Contoh No. 1"
+              />
               <label htmlFor="order-email">Email</label>
               <input id="order-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <label htmlFor="order-hours">Jam operasional</label>
-              <input id="order-hours" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="Setiap hari 09.00–21.00" />
+              <input
+                id="order-hours"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                placeholder="Setiap hari 09.00–21.00"
+              />
               <label htmlFor="order-ig">Instagram</label>
-              <input id="order-ig" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="tanpa @" />
+              <input
+                id="order-ig"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="tanpa @"
+              />
             </fieldset>
 
             <fieldset>
@@ -245,7 +384,12 @@ export default function OrderPage() {
             <fieldset>
               <legend>Teks halaman</legend>
               <label htmlFor="order-h">Judul hero</label>
-              <input id="order-h" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Kosong = teks preset kategori" />
+              <input
+                id="order-h"
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value)}
+                placeholder="Kosong = teks preset kategori"
+              />
               <label htmlFor="order-ha">Kata aksen (berwarna)</label>
               <input id="order-ha" value={headlineAccent} onChange={(e) => setHeadlineAccent(e.target.value)} />
               <label htmlFor="order-tag">Tagline</label>
@@ -261,7 +405,12 @@ export default function OrderPage() {
               <label htmlFor="order-eb">Isi blok tambahan</label>
               <textarea id="order-eb" rows={3} value={extraBody} onChange={(e) => setExtraBody(e.target.value)} />
               <label htmlFor="order-cta">Teks tombol</label>
-              <input id="order-cta" value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} placeholder="Pesan via WhatsApp" />
+              <input
+                id="order-cta"
+                value={ctaLabel}
+                onChange={(e) => setCtaLabel(e.target.value)}
+                placeholder="Pesan via WhatsApp"
+              />
             </fieldset>
 
             <fieldset>
@@ -322,7 +471,11 @@ export default function OrderPage() {
               <label>Mitra (pisah koma)</label>
               <input value={partners} onChange={(e) => setPartners(e.target.value)} />
               <label>Domain kustom (opsional)</label>
-              <input value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} placeholder="tokoanda.com — CNAME menyusul, bukan auto" />
+              <input
+                value={customDomain}
+                onChange={(e) => setCustomDomain(e.target.value)}
+                placeholder="tokoanda.com — CNAME menyusul, bukan auto"
+              />
             </fieldset>
 
             {formError && (
@@ -330,8 +483,13 @@ export default function OrderPage() {
                 {formError}
               </p>
             )}
+            {!cukup && kredit != null && (
+              <p className="kredit-warn">
+                Perlu {KREDIT.starterPriceKr} Kredit. Isi keran lab dulu, atau pesanan akan ditolak.
+              </p>
+            )}
             <button type="submit" className="notion-button notion-button-primary order-submit" disabled={busy}>
-              {busy ? "Menyimpan…" : "Simpan data & lanjut pembayaran"}
+              {busy ? "Memproses…" : `Bayar ${KREDIT.starterPriceKr} Kredit & buat site`}
             </button>
           </form>
         )}

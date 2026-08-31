@@ -14,7 +14,7 @@
 | Perlu hotspot untuk juri? | **Tidak** — pakai **Cloudflare Tunnel** |
 | Perlu VPS dulu? | **Tidak wajib** — VPS nanti jika SLA/volume menuntut |
 | Juri bisa akses dari HP / internet mana pun? | **Ya** — lewat URL `https://….trycloudflare.com` |
-| Portal jual + bikin site UMKM bisa hidup di PC yang sama? | **Ya (lab)** — portal + Channel Starter CLI; billing otomatis **belum** |
+| Portal jual + bikin site UMKM bisa hidup di PC yang sama? | **Ya (lab)** — portal + Channel Starter; **Kredit** 20 Kr di `/order`; Midtrans **belum** |
 | GPU 3080 Ti wajib? | **Tidak**. Ollama + GGUF lokal **wajib** untuk `START` lab; GPU hanya mempercepat |
 
 **Hotspot** hanya untuk latihan blue/red team di Wi‑Fi lokal (`deploy-local/blue-team/`). **Bukan** jalur utama distribusi atau juri.

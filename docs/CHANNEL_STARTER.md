@@ -84,7 +84,7 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 | Form wizard pelanggan | **Lab v0.1** — `channel-starter/channel_starter/server.py` + `cli.py serve` |
 | Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
-| Portal self-serve billing Rp 20rb | **Portal v0.1 manual WA** — Midtrans **ditunda** |
+| Portal self-serve billing Rp 20rb | **Portal v0.1** — **Kredit lab** 20 Kr di `/order` + WA untuk IDR; Midtrans **ditunda** |
 | Lab portofolio (`playground/Portofolio-Thoriq`) | Referensi UX unggah/vault — **bukan** produk Channel Starter |
 
 Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **Cowork/Tepi**, bukan Starter.
