@@ -111,7 +111,7 @@ Build origin **bukan** di monorepo. Repo: `https://github.com/Thbetyfu/Portofoli
 Modul `channel-starter/` — Milestone 18 lab v0.1:
 
 ```powershell
-cd channel-starter
+cd D:\NEXUS\nexus-core\channel-starter
 pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```

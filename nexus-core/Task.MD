@@ -63,7 +63,7 @@ Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/
 
 ## Milestone 19 — Nexus Channel Portal (v0.1)
 
-- [x] **P-1:** Modul `nexus-channel-portal/` — landing + animasi + harga B2C/B2B
+- [x] **P-1:** Modul `nexus-gaas-web/` (dulu `nexus-channel-portal/`) — landing + animasi + harga B2C/B2B
 - [x] **P-2:** Form `/order` + proxy API ke channel-starter
 - [x] **P-3:** Pembayaran: Kredit kasir + keputusan kontak WA di DECISIONS_OPEN
 - [ ] **P-4:** Top-up Kredit — QRIS/VA milik pemilik + bukti transfer + approve operator (**belum dikode**; bukan Midtrans)
