@@ -98,7 +98,9 @@ python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 0812345
 python cli.py serve
 ```
 
-Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}`
+Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 ke preview, bukan JSON `/sites/{slug}`.
+
+**Kenapa Simple Browser bisa `{"detail":"Site not found"}`:** `127.0.0.1:3010` adalah **PC yang menjalankan `serve`**, bukan mesin agen cloud. Folder `channel-starter/sites/` di-gitignore. Setelah `git pull`, buka [`/preview/contoh-nexcent`](http://127.0.0.1:3010/preview/contoh-nexcent) atau generate ulang di form. Missing slug sekarang halaman HTML (bukan JSON FastAPI).
 
 ### Deploy subdomain (lab)
 

@@ -54,7 +54,7 @@ python cli.py serve
 
 Form wizard: http://127.0.0.1:3010/
 
-Preview site: http://127.0.0.1:3010/preview/{slug}
+Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. `sites/` tidak di-git. Setelah pull, buka [contoh Nexcent](http://127.0.0.1:3010/preview/contoh-nexcent) (`examples/contoh-nexcent`). Generate mengarah ke HTML preview, bukan JSON.
 
 ## Struktur
 
@@ -65,14 +65,16 @@ Preview site: http://127.0.0.1:3010/preview/{slug}
 | `channel_starter/presets.py` | Copy preset per kategori (tanpa LLM) |
 | `channel_starter/generator.py` | Render Jinja2 → `sites/{slug}/` + `vercel.json` |
 | `channel_starter/deploy.py` | Snippet Caddy multi-tenant lab + header tepi |
-| `channel_starter/server.py` | FastAPI form wizard |
+| `channel_starter/server.py` | FastAPI form wizard + preview HTML |
 | `templates/_base.html` | Layout Nexcent (Figma Contoh-landing-page-nexus) |
+| `examples/contoh-nexcent/` | Demo committed (preview tanpa generate) |
 
 ## Env
 
 | Variabel | Default |
 | --- | --- |
-| `CHANNEL_STARTER_SITES_DIR` | `./sites` |
+| `CHANNEL_STARTER_SITES_DIR` | `./sites` (gitignore — hasil generate lokal) |
+| `CHANNEL_STARTER_EXAMPLES_DIR` | `./examples` (ikut git) |
 | `CHANNEL_STARTER_TEMPLATES` | `./templates` |
 | `CHANNEL_STARTER_SUBDOMAIN_BASE` | `nexus-lab.test` |
 | `CHANNEL_STARTER_PORT` | `3010` |

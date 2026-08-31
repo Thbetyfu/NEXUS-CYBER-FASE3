@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contoh Nexcent — Rasa lokal, pelayanan ramah — pesan hari ini via WhatsApp.</title>
+  <meta name="description" content="Menu harian, camilan favorit, dan porsi keluarga. Pesan lewat WhatsApp untuk takeaway, delivery lokal, atau tanya stok hari ini." />
+  <meta name="theme-color" content="#4CAF4F" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand: #4CAF4F;
+      --brand-dark: #237D31;
+      --brand-tint: #E8F5E9;
+      --black: #263238;
+      --dgrey: #4D4D4D;
+      --grey: #717171;
+      --silver: #F5F7FA;
+      --white: #FFFFFF;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--dgrey);
+      background: var(--white);
+      line-height: 1.5;
+    }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    .wrap {
+      width: min(1152px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 0;
+      background: var(--white);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--black);
+    }
+    .brand-mark { width: 35px; height: 24px; position: relative; flex: 0 0 35px; }
+    .brand-mark i,
+    .brand-mark b {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      background: var(--brand);
+    }
+    .brand-mark i { left: 0; top: 8px; }
+    .brand-mark b { left: 12px; top: 0; opacity: .78; }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--dgrey);
+    }
+    .nav a { text-decoration: none; }
+    .nav a:hover { color: var(--brand); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--brand);
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 24px;
+      padding: 14px 32px;
+      border-radius: 4px;
+      border: 0;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--brand-dark); }
+    .btn-sm { padding: 10px 24px; font-size: 14px; }
+    .hero {
+      background: var(--silver);
+      padding: 64px 0 72px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 72px;
+      align-items: center;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 1.19;
+      font-weight: 600;
+      color: var(--dgrey);
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--brand);
+    }
+    .hero .lead {
+      margin: 16px 0 32px;
+      color: var(--grey);
+      font-size: 16px;
+    }
+    .hero-visual {
+      min-height: 280px;
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: 0 8px 24px rgba(171, 190, 209, .35);
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-visual img { width: 100%; height: 320px; object-fit: cover; }
+    .hero-fallback {
+      height: 320px;
+      background:
+        radial-gradient(circle at 70% 40%, var(--brand-tint), transparent 46%),
+        linear-gradient(180deg, var(--white), var(--silver));
+      position: relative;
+    }
+    .hero-fallback .screen {
+      position: absolute;
+      left: 12%;
+      top: 18%;
+      width: 46%;
+      height: 54%;
+      background: var(--dgrey);
+      border-radius: 10px 10px 4px 4px;
+      box-shadow: 0 16px 0 var(--grey);
+    }
+    .hero-fallback .screen::after {
+      content: "";
+      position: absolute;
+      inset: 12% 10%;
+      background:
+        linear-gradient(var(--brand) 0 8px, transparent 8px) 0 0 / 70% 22px,
+        linear-gradient(var(--white) 0 6px, transparent 6px) 0 28px / 80% 18px,
+        linear-gradient(var(--brand-tint) 0 6px, transparent 6px) 0 52px / 60% 18px;
+      background-repeat: no-repeat;
+      opacity: .9;
+    }
+    .hero-fallback .person {
+      position: absolute;
+      right: 16%;
+      bottom: 14%;
+      width: 72px;
+      height: 120px;
+    }
+    .hero-fallback .person::before,
+    .hero-fallback .person::after { content: ""; position: absolute; }
+    .hero-fallback .person::before {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--dgrey); left: 22px; top: 0;
+    }
+    .hero-fallback .person::after {
+      width: 48px; height: 64px; border-radius: 16px 16px 8px 8px;
+      background: var(--brand); left: 12px; top: 32px;
+    }
+    .section { padding: 48px 0; }
+    .section.alt { background: var(--silver); }
+    .center { text-align: center; }
+    .kicker {
+      margin: 0 0 8px;
+      font-size: 36px;
+      line-height: 44px;
+      font-weight: 600;
+      color: var(--dgrey);
+    }
+    .kicker em { font-style: normal; color: var(--brand); }
+    .muted { color: var(--grey); margin: 0 auto; max-width: 640px; }
+    .partners {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 24px;
+      color: var(--grey);
+      font-weight: 500;
+    }
+    .partner-chip {
+      min-width: 72px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: 0 2px 8px rgba(171, 190, 209, .25);
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 32px;
+    }
+    .card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 24px 20px 28px;
+      box-shadow: 0 8px 16px rgba(171, 190, 209, .3);
+      text-align: center;
+    }
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 16px;
+      border-radius: 12px 4px 12px 4px;
+      background: var(--brand-tint);
+      position: relative;
+    }
+    .card-icon::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 4px;
+      background: var(--brand);
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      line-height: 36px;
+      color: var(--dgrey);
+    }
+    .card p { margin: 0; color: var(--grey); font-size: 14px; }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .split h2 {
+      margin: 0 0 16px;
+      font-size: 36px;
+      line-height: 44px;
+      font-weight: 600;
+    }
+    .split p { color: var(--grey); }
+    .photo, .quote-photo {
+      border-radius: 8px;
+      min-height: 240px;
+      background: var(--brand-tint);
+      overflow: hidden;
+    }
+    .photo img, .quote-photo img { width: 100%; height: 280px; object-fit: cover; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 40px;
+    }
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      line-height: 36px;
+      color: var(--dgrey);
+    }
+    .stat span { color: var(--grey); font-size: 16px; }
+    .quote { color: var(--grey); font-size: 16px; }
+    .quote-name { color: var(--brand); font-weight: 600; margin: 16px 0 0; }
+    .quote-role { color: var(--grey); font-size: 14px; margin: 0; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+      align-items: start;
+    }
+    .g-card { position: relative; }
+    .g-card .shot {
+      height: 200px;
+      border-radius: 8px;
+      background: var(--brand-tint);
+      overflow: hidden;
+    }
+    .g-card img { width: 100%; height: 200px; object-fit: cover; }
+    .g-card .panel {
+      width: calc(100% - 32px);
+      margin: -56px auto 0;
+      position: relative;
+      background: var(--white);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 8px 16px rgba(171, 190, 209, .35);
+      text-align: center;
+    }
+    .g-card h3 { margin: 0 0 8px; font-size: 20px; line-height: 28px; }
+    .g-card p { margin: 0 0 12px; color: var(--grey); font-size: 14px; }
+    .g-card a { color: var(--brand); font-weight: 600; text-decoration: none; }
+    .cta-band {
+      background: var(--silver);
+      text-align: center;
+      padding: 32px 16px 48px;
+    }
+    .cta-band h2 {
+      margin: 0 auto 32px;
+      max-width: 720px;
+      font-size: clamp(32px, 4vw, 64px);
+      line-height: 1.2;
+      font-weight: 600;
+      color: var(--black);
+    }
+    .site-footer {
+      background: var(--black);
+      color: #F5F7FA;
+      padding: 40px 0 24px;
+    }
+    .foot-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+      gap: 32px;
+    }
+    .site-footer h4 { margin: 0 0 16px; font-size: 14px; }
+    .site-footer p, .site-footer a, .site-footer li {
+      color: #F5F7FA;
+      font-size: 14px;
+      opacity: .9;
+    }
+    .site-footer ul { list-style: none; margin: 0; padding: 0; }
+    .site-footer li { margin-bottom: 8px; }
+    .site-footer a { text-decoration: none; }
+    .copy { margin-top: 32px; font-size: 12px; opacity: .7; }
+    .trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .trust span {
+      font-size: 11px;
+      padding: 4px 8px;
+      border: 1px solid rgba(245,247,250,.25);
+      border-radius: 4px;
+    }
+    .menu-toggle { display: none; }
+    .nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
+    @media (max-width: 900px) {
+      .hero-grid, .split, .cards, .gallery, .foot-grid { grid-template-columns: 1fr; }
+      .nav {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 64px;
+        right: 16px;
+        background: var(--white);
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        z-index: 5;
+      }
+      .nav-toggle:checked ~ .nav,
+      .site-header:has(.nav-toggle:checked) .nav { display: flex; }
+      .menu-toggle { display: inline-flex; }
+      .site-header { position: relative; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap site-header">
+      <a class="brand" href="#beranda">
+        
+        <span class="brand-mark" aria-hidden="true"><i></i><b></b></span>
+        
+        Contoh Nexcent
+      </a>
+      <nav class="nav" id="nav">
+        <a href="#beranda">Beranda</a>
+        <a href="#layanan">Layanan</a>
+        <a href="#tentang">Tentang</a>
+        <a href="#galeri">Galeri</a>
+        <a href="#kontak">Kontak</a>
+      </nav>
+      <a class="btn btn-sm" href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp</a>
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" />
+      <label class="btn btn-sm menu-toggle" for="nav-toggle">Menu</label>
+    </div>
+  </header>
+
+  <section class="hero" id="beranda">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Menu harian yang bikin <em>langganan pulang</em></h1>
+        <p class="lead">Rasa lokal, pelayanan ramah — pesan hari ini via WhatsApp.</p>
+        <a class="btn" href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp</a>
+      </div>
+      <div class="hero-visual">
+        
+        <div class="hero-fallback" aria-hidden="true"><div class="screen"></div><div class="person"></div></div>
+        
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="section center">
+    <div class="wrap">
+      <h2 class="kicker">Mitra &amp; pelanggan</h2>
+      <p class="muted">Kami tumbuh bersama orang-orang di sekitar usaha ini.</p>
+      <div class="partners">
+        
+        <span class="partner-chip">Pasar pagi</span>
+        
+        <span class="partner-chip">Petani lokal</span>
+        
+        <span class="partner-chip">Komunitas RT</span>
+        
+      </div>
+    </div>
+  </section>
+  
+
+  <section class="section center" id="layanan">
+    <div class="wrap">
+      <h2 class="kicker">Kelola kuliner / f&amp;b dalam satu halaman</h2>
+      <p class="muted">Menu harian, camilan favorit, dan porsi keluarga. Pesan lewat WhatsApp untuk takeaway, delivery lokal, atau tanya stok hari ini.</p>
+      <div class="cards">
+        
+        <article class="card">
+          <div class="card-icon" aria-hidden="true"></div>
+          <h3>Menu harian</h3>
+          <p>Masakan yang habis di hari yang sama. Tanya stok via chat sebelum datang.</p>
+        </article>
+        
+        <article class="card">
+          <div class="card-icon" aria-hidden="true"></div>
+          <h3>Takeaway &amp; antar</h3>
+          <p>Bungkus rapi untuk dibawa pulang, atau antar di radius sekitar lokasi.</p>
+        </article>
+        
+        <article class="card">
+          <div class="card-icon" aria-hidden="true"></div>
+          <h3>Paket acara kecil</h3>
+          <p>Nasi kotak dan camilan untuk arisan, rapat RT, atau kantor mini.</p>
+        </article>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="tentang">
+    <div class="wrap split">
+      <div class="photo">
+        
+      </div>
+      <div>
+        <h2>Dapur rumahan, standar ramah tetangga</h2>
+        <p>Kami masak setiap hari dengan bahan segar. Tidak ada keranjang online yang ribet — cukup chat, konfirmasi menu, dan ambil atau antar sesuai janji.</p>
+        <p><a class="btn" href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="wrap split">
+      <div>
+        <h2>Membantu usaha lokal tampil rapi</h2>
+        <p>Setiap hari 09.00–21.00 · Lab Channel Starter — bukan klien nyata</p>
+      </div>
+      <div class="stats-grid">
+        
+        <div class="stat"><strong>100+</strong><span>Porsi / minggu</span></div>
+        
+        <div class="stat"><strong>4.9</strong><span>Rating pelanggan</span></div>
+        
+        <div class="stat"><strong>15 mnt</strong><span>Balasan chat</span></div>
+        
+        <div class="stat"><strong>1</strong><span>Dapur, bukan waralaba</span></div>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap split">
+      <div>
+        <h2>Jam buka &amp; cara pesan</h2>
+        <p>Chat WhatsApp sebelum datang agar stok dipastikan. Bisa porsi harian, paket keluarga, atau pesanan acara kecil. Alamat dan jam operasional tercantum di footer.</p>
+        <p><a class="btn" href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp</a></p>
+      </div>
+      <div class="photo"></div>
+    </div>
+  </section>
+
+  
+  <section class="section alt">
+    <div class="wrap split">
+      <div class="quote-photo"></div>
+      <div>
+        <p class="quote">“Langganan nasi uduk di sini karena rasanya konsisten dan chat-nya cepat. Cocok buat yang tidak mau ribet buka aplikasi ojek.”</p>
+        <p class="quote-name">Pelanggan tetap</p>
+        <p class="quote-role">Langganan minggu ini</p>
+      </div>
+    </div>
+  </section>
+  
+
+  <section class="section center" id="galeri">
+    <div class="wrap">
+      <h2 class="kicker">Galeri &amp; unggulan</h2>
+      <p class="muted">Foto dari form (URL). Kosong = kartu judul saja — tetap siap dipakai.</p>
+      <div class="gallery">
+        
+        <article class="g-card">
+          <div class="shot"></div>
+          <div class="panel">
+            <h3>Menu andalan</h3>
+            <p>Foto hidangan — unggah URL foto Anda.</p>
+            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp →</a>
+          </div>
+        </article>
+        
+        <article class="g-card">
+          <div class="shot"></div>
+          <div class="panel">
+            <h3>Suasana warung</h3>
+            <p>Tempat duduk atau etalase.</p>
+            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp →</a>
+          </div>
+        </article>
+        
+        <article class="g-card">
+          <div class="shot"></div>
+          <div class="panel">
+            <h3>Paket keluarga</h3>
+            <p>Porsi untuk dinikmati bareng.</p>
+            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp →</a>
+          </div>
+        </article>
+        
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band" id="kontak">
+    <div class="wrap">
+      <h2>Siap bicara? Kami balas di WhatsApp.</h2>
+      <a class="btn" href="https://wa.me/6281234567890" target="_blank" rel="noopener">Pesan via WhatsApp</a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="wrap foot-grid">
+      <div>
+        <p class="brand" style="color:#fff;margin:0 0 12px;">
+          <span class="brand-mark" aria-hidden="true"><i></i><b></b></span>
+          Contoh Nexcent
+        </p>
+        <p>Rasa lokal, pelayanan ramah — pesan hari ini via WhatsApp.</p>
+        <p class="trust">
+          <span>Domain contoh-nexcent.nexus-lab.test</span>
+          <span>Siap Vercel</span>
+          
+          <span>Tepi header Nexus</span>
+          
+        </p>
+      </div>
+      <div>
+        <h4>Halaman</h4>
+        <ul>
+          <li><a href="#beranda">Beranda</a></li>
+          <li><a href="#layanan">Layanan</a></li>
+          <li><a href="#galeri">Galeri</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Usaha</h4>
+        <ul>
+          <li>Kuliner / F&amp;B</li>
+          <li>Channel Starter</li>
+          <li>IG @contoh.nexcent</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Kontak</h4>
+        <p>Lab Channel Starter — bukan klien nyata</p>
+        <p>Setiap hari 09.00–21.00</p>
+        
+        <p><a href="https://wa.me/6281234567890">WhatsApp</a></p>
+      </div>
+    </div>
+    <div class="wrap copy">
+      Dibuat dengan Nexus Channel Starter · Starter (~Rp 0–29rb) · contoh-nexcent.nexus-lab.test<br />
+      Keamanan wasit Nexus Cowork (Job/Loop GaaS) — paket terpisah, bukan termasuk Starter Rp ~20rb.
+    </div>
+  </footer>
+</body>
+</html>

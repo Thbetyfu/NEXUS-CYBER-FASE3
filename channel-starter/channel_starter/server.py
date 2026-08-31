@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from html import escape
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from channel_starter.config import SERVE_PORT, SITES_DIR
+from channel_starter.config import SERVE_PORT
 from channel_starter.deploy import deploy_manifest
-from channel_starter.generator import generate_from_dict, list_sites
-from channel_starter.types import PricingTier
+from channel_starter.generator import generate_from_dict, list_sites, preview_catalog, resolve_preview_index
+from channel_starter.types import PricingTier, SiteManifest
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
 
 app = FastAPI(title="Nexus Channel Starter", version="0.1.0")
@@ -32,12 +34,21 @@ _FORM_HTML = """<!DOCTYPE html>
     button { margin-top: 1.5rem; padding: .75rem 1.5rem; background: #4CAF4F; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-weight: 600; }
     .note { font-size: .85rem; color: #717171; margin-top: 1rem; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .banner { background: #E8F5E9; border: 1px solid #4CAF4F; border-radius: 8px; padding: .9rem 1rem; margin: 1rem 0; font-size: .92rem; }
     @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <h1>Channel Starter</h1>
   <p>Form lengkap → template Nexcent (Figma) → site statis siap WA. Rule-based, bukan LLM.</p>
+  <div class="banner">
+    <strong>Preview hanya di komputer yang menjalankan wizard ini.</strong>
+    Folder <code>sites/</code> tidak masuk git — clone/pull saja tidak membuat
+    <code>/preview/warung-uji-figma</code>. Setelah Generate, browser diarahkan ke HTML preview
+    (bukan JSON). Tanpa generate, buka
+    <a href="/preview/contoh-nexcent">contoh Nexcent</a>
+    atau <a href="/preview">daftar preview</a>.
+  </div>
   <form method="post" action="/generate">
     <fieldset>
       <legend>Usaha</legend>
@@ -163,7 +174,7 @@ _FORM_HTML = """<!DOCTYPE html>
     Job Cowork / Loop GaaS <strong>bukan</strong> paket Rp 20rb. Satu lab WAF = satu PROTECTED_HOST (portofolio),
     bukan klaim *.vercel.app otomatis di belakang wasit.
   </p>
-  <p><a href="/sites">Daftar site</a></p>
+  <p><a href="/preview">Daftar preview</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site</a></p>
 </body>
 </html>"""
 
@@ -184,7 +195,7 @@ async def generate_form(request: Request):
         deploy_manifest(manifest)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return RedirectResponse(url=f"/sites/{manifest.slug}", status_code=303)
+    return RedirectResponse(url=f"/preview/{manifest.slug}", status_code=303)
 
 
 @app.get("/sites")
@@ -201,12 +212,90 @@ def site_detail(slug: str):
     raise HTTPException(status_code=404, detail="Site not found")
 
 
+def _manifest_links(items: list[SiteManifest]) -> str:
+    if not items:
+        return "<li><em>Tidak ada</em></li>"
+    return "".join(
+        f'<li><a href="/preview/{escape(m.slug)}">{escape(m.business_name)}</a> '
+        f"(<code>{escape(m.slug)}</code>)</li>"
+        for m in items
+    )
+
+
+def preview_missing_html(slug: str) -> str:
+    catalog = preview_catalog()
+    shown = escape(slug)
+    return f"""<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preview tidak ada — {shown}</title>
+  <style>
+    body {{ font-family: Inter, system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #4D4D4D; }}
+    h1 {{ color: #263238; }}
+    code {{ background: #F5F7FA; padding: .1rem .35rem; border-radius: 4px; }}
+    .box {{ background: #FFF8E1; border: 1px solid #F9A825; border-radius: 8px; padding: 1rem; }}
+  </style>
+</head>
+<body>
+  <h1>Site tidak ada di komputer ini</h1>
+  <div class="box">
+    <p>Tidak ada folder <code>sites/{shown}/</code> pada mesin yang menjalankan wizard
+    <code>127.0.0.1:3010</code>. Simple Browser Cursor memakai <strong>localhost PC Anda</strong>,
+    bukan mesin agen cloud yang sempat generate.</p>
+    <p>Folder <code>channel-starter/sites/</code> di-gitignore — <code>git pull</code> tidak membawa
+    hasil generate orang lain (misalnya <code>warung-uji-figma</code>).</p>
+  </div>
+  <h2>Yang bisa dilakukan</h2>
+  <ol>
+    <li>Isi <a href="/">form Generate</a> di wizard ini, lalu Anda diarahkan ke preview HTML.</li>
+    <li>Atau buka contoh yang ikut git: <a href="/preview/contoh-nexcent">/preview/contoh-nexcent</a>.</li>
+  </ol>
+  <h2>Hasil generate di mesin ini</h2>
+  <ul>{_manifest_links(catalog["generated"])}</ul>
+  <h2>Contoh di git</h2>
+  <ul>{_manifest_links(catalog["examples"])}</ul>
+</body>
+</html>"""
+
+
+def preview_index_html() -> str:
+    catalog = preview_catalog()
+    return f"""<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preview Channel Starter</title>
+  <style>
+    body {{ font-family: Inter, system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #4D4D4D; }}
+    h1 {{ color: #263238; }}
+  </style>
+</head>
+<body>
+  <h1>Preview di komputer ini</h1>
+  <p><a href="/">Kembali ke form</a></p>
+  <h2>Hasil generate (<code>sites/</code>, tidak di-git)</h2>
+  <ul>{_manifest_links(catalog["generated"])}</ul>
+  <h2>Contoh committed</h2>
+  <ul>{_manifest_links(catalog["examples"])}</ul>
+</body>
+</html>"""
+
+
+@app.get("/preview", response_class=HTMLResponse)
+@app.get("/preview/", response_class=HTMLResponse)
+def preview_list() -> str:
+    return preview_index_html()
+
+
 @app.get("/preview/{slug}", response_class=HTMLResponse)
 def preview_site(slug: str):
-    index = SITES_DIR / slug / "index.html"
-    if not index.is_file():
-        raise HTTPException(status_code=404, detail="Site not found")
-    return index.read_text(encoding="utf-8")
+    index = resolve_preview_index(slug)
+    if index is None:
+        return HTMLResponse(preview_missing_html(slug), status_code=404)
+    return HTMLResponse(index.read_text(encoding="utf-8"))
 
 
 @app.get("/upsell/status")

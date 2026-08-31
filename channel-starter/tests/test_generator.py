@@ -133,6 +133,55 @@ class TestChannelStarterDeploy(unittest.TestCase):
             html = handle.read()
         self.assertIn("bukan termasuk Starter", html)
 
+    def test_preview_falls_back_to_examples(self):
+        from channel_starter.generator import is_safe_slug, resolve_preview_index
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {
+                "business_name": "Contoh Nexcent",
+                "category": "fnb",
+                "whatsapp": "6281234567890",
+                "slug": "contoh-nexcent",
+            },
+            sites_root=examples,
+        )
+        found = resolve_preview_index(
+            "contoh-nexcent",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIsNotNone(found)
+        self.assertIn("Contoh Nexcent", Path(found).read_text(encoding="utf-8"))
+        empty = resolve_preview_index(
+            "warung-uji-figma",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIsNone(empty)
+        self.assertFalse(is_safe_slug("../etc"))
+        self.assertFalse(is_safe_slug("a/b"))
+        self.assertTrue(is_safe_slug("contoh-nexcent"))
+
+    def test_preview_prefers_generated_sites(self):
+        from channel_starter.generator import resolve_preview_index
+
+        examples = os.path.join(self.tmp.name, "examples")
+        generate_from_dict(
+            {"business_name": "Dari Contoh", "whatsapp": "6281234567890", "slug": "sama"},
+            sites_root=examples,
+        )
+        generate_from_dict(
+            {"business_name": "Dari Sites", "whatsapp": "6281234567890", "slug": "sama"},
+            sites_root=self.sites_root,
+        )
+        found = resolve_preview_index(
+            "sama",
+            sites_root=self.sites_root,
+            examples_root=examples,
+        )
+        self.assertIn("Dari Sites", Path(found).read_text(encoding="utf-8"))
+
     def test_site_address_http_for_lab(self):
         self.assertTrue(site_address("foo.nexus-lab.test").startswith("http://"))
 

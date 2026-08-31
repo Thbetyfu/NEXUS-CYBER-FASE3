@@ -8,7 +8,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from channel_starter.config import SITES_DIR, SUBDOMAIN_BASE, TEMPLATES_DIR
+from channel_starter.config import EXAMPLES_DIR, SITES_DIR, SUBDOMAIN_BASE, TEMPLATES_DIR
 from channel_starter.form_fields import inflate_flat_fields
 from channel_starter.presets import apply_presets
 from channel_starter.themes import NEUTRAL, resolve_theme
@@ -277,3 +277,43 @@ def list_sites(sites_root: Path | str | None = None) -> list[SiteManifest]:
             except Exception:
                 continue
     return items
+
+
+def is_safe_slug(slug: str) -> bool:
+    """Reject path traversal; preview URLs must be a single directory name."""
+    if not slug or len(slug) > 64:
+        return False
+    if slug.startswith(".") or "/" in slug or "\\" in slug or ".." in slug:
+        return False
+    return Path(slug).name == slug
+
+
+def resolve_preview_index(
+    slug: str,
+    *,
+    sites_root: Path | str | None = None,
+    examples_root: Path | str | None = None,
+) -> Path | None:
+    """index.html for a slug: generated sites first, then committed examples."""
+    if not is_safe_slug(slug):
+        return None
+    roots = (
+        Path(sites_root) if sites_root else SITES_DIR,
+        Path(examples_root) if examples_root else EXAMPLES_DIR,
+    )
+    for root in roots:
+        index = root / slug / "index.html"
+        if index.is_file():
+            return index
+    return None
+
+
+def preview_catalog(
+    *,
+    sites_root: Path | str | None = None,
+    examples_root: Path | str | None = None,
+) -> dict[str, list[SiteManifest]]:
+    return {
+        "generated": list_sites(sites_root),
+        "examples": list_sites(examples_root if examples_root is not None else EXAMPLES_DIR),
+    }

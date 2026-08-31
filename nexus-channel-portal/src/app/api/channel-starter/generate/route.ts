@@ -7,7 +7,7 @@ const SUBDOMAIN_BASE = process.env.CHANNEL_STARTER_SUBDOMAIN_BASE?.trim() || "ne
 
 function slugFromLocation(location: string | null): string | null {
   if (!location) return null;
-  const match = location.match(/\/sites\/([^/?#]+)/);
+  const match = location.match(/\/(?:preview|sites)\/([^/?#]+)/);
   return match?.[1] ?? null;
 }
 

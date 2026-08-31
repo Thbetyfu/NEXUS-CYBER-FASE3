@@ -6,6 +6,8 @@ from pathlib import Path
 _PACKAGE = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = Path(os.getenv("CHANNEL_STARTER_TEMPLATES", str(_PACKAGE / "templates")))
 SITES_DIR = Path(os.getenv("CHANNEL_STARTER_SITES_DIR", str(_PACKAGE / "sites")))
+# Committed demos (not gitignored). Preview looks here after sites/.
+EXAMPLES_DIR = Path(os.getenv("CHANNEL_STARTER_EXAMPLES_DIR", str(_PACKAGE / "examples")))
 SUBDOMAIN_BASE = os.getenv("CHANNEL_STARTER_SUBDOMAIN_BASE", "nexus-lab.test")
 SERVE_PORT = int(os.getenv("CHANNEL_STARTER_PORT", "3010"))
 
