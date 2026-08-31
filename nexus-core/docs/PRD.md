@@ -158,7 +158,7 @@ Detail: [`LIMITATIONS.md`](./LIMITATIONS.md)
 ## 8. ROADMAP PRODUK (dokumen)
 
 1. **Fase 17 (GaaS):** Job + L0/L1 + PG — **selesai di mesin lab**
-2. **Fase 18 (Channel Starter):** Form + template UMKM — **lab v0.1** (`channel-starter/`)
+2. **Fase 18 (Channel Starter):** Form + template UMKM — **lab v0.1** (`nexus-core/channel-starter/`)
 3. **Bukan prioritas:** PSP pihak ketiga (Midtrans/Stripe), F-10, eBPF real, Loop di Rp 20rb, Connect Git monorepo, Job otomatis tiap warung. **Kredit** (20 Kr Starter) = kasir lab (keran), bukan settlement IDR. **Top-up disepakati:** QRIS/VA milik pemilik + bukti + approve — **belum dikode**.
 
 ---

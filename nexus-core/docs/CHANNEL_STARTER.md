@@ -85,7 +85,7 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 
 | Komponen | Status |
 | --- | --- |
-| Form wizard pelanggan | **Lab v0.1** — `channel-starter/channel_starter/server.py` + `cli.py serve` |
+| Form wizard pelanggan | **Lab v0.1** — `nexus-core/channel-starter/channel_starter/server.py` + `cli.py serve` |
 | Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
 | Portal kasir Starter | **Portal v0.1** — **Kredit** 20 Kr di `/order` (keran lab **per tamu/akun**, cookie `nexus_portal_sid`). `/masuk` `/daftar`. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (**belum dikode**). Bukan PSP pihak ketiga. WA = kontak (+ kode `ORDER-xxxx`) |
@@ -131,7 +131,7 @@ Satu `PROTECTED_HOST` aktif per lab. Site upsell lewat WAF gateway; origin stati
 
 ```powershell
 python cli.py upsell enable --slug warung-bu-siti --tier cowork
-cd ..\deploy-local
+cd D:\NEXUS\nexus-core\deploy-local
 docker compose up -d gateway channel-origin
 python ..\channel-starter\cli.py deploy apply --reload
 ```

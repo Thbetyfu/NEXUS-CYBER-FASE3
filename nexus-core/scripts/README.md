@@ -14,7 +14,7 @@ scripts/
 └── tests/        ← QA lab + test_check_nex_ai.py
 ```
 
-`check_nex_ai.py` dipanggil `deploy-local/START.ps1` **sebelum** compose. Bukan unduhan Hub. CI: `NEX_AI_REQUIRED=0`.
+`check_nex_ai.py` dipanggil `nexus-core/deploy-local/START.ps1` **sebelum** compose. Bukan unduhan Hub. CI: `NEX_AI_REQUIRED=0`.
 
 ## deploy/local/
 

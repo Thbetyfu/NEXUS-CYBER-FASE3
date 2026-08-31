@@ -106,7 +106,7 @@ Harga exact & nama paket Starter: lihat [DECISIONS_OPEN.md](./DECISIONS_OPEN.md)
 - Bukan SOC 24/7, bukan DDoS volumetric kernel (eBPF stub)
 - Bukan pentest exploit / Shannon
 - Residual wajib jujur
-- **Channel Starter lab v0.1** — generator ada di `channel-starter/`; jangan jual massal sebelum billing + deploy produksi
+- **Channel Starter lab v0.1** — generator ada di `nexus-core/channel-starter/`; jangan jual massal sebelum billing + deploy produksi
 - **Loop GaaS tidak muat** di Rp 20rb/bulan
 - Bukan klaim approve regulator
 

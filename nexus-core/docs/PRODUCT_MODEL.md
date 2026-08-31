@@ -234,7 +234,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | Gerbang L0/L1 produk | **Sudah ada** | `PENDING_APPROVAL` + approve API/CLI |
 | Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` + digest ThreatLog operator |
 | Memori imun host persisten | **Sudah ada** | PG + file; `antibody_audits.job_id` opsional |
-| Channel Starter (form→template) | **Lab v0.1** | `channel-starter/` (Milestone 18) |
+| Channel Starter (form→template) | **Lab v0.1** | `nexus-core/channel-starter/` (Milestone 18) |
 | Pagar tipis (`--tier tepi`) | **Lab MVP** | Caddy → `:8080` + Reflex judi/deface; 1 host; tanpa Job |
 | Channel Portal legacy / F-10 | **Ditunda** | F-10 back-office |
 | eBPF XDP nyata | **Stub** | `ebpf_stub.go` |
