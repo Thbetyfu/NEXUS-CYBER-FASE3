@@ -1,19 +1,12 @@
 Channel Starter — pack host (lab v0.1)
 
 Situs: Contoh Nexcent
-Folder: sites/contoh-nexcent/  (satu UMKM, HTML statis)
+Folder: sites/contoh-nexcent/  (demo git — tidak di-publish Vercel otomatis)
 
-Generate TIDAK membuat project Vercel dan TIDAK membuat repo GitHub.
-Dashboard Vercel yang hanya punya warung-bu-siti (No Production Deployment)
-berarti CLI `vercel` pernah menautkan SATU folder — site lain tetap di
-channel-starter/sites/ (gitignore), bukan hilang dari generator.
+Generate klien men-deploy folder situs ke project Vercel bernama slug
+jika VERCEL_TOKEN / vercel login ada. Demo ini dilewati.
 
-JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3
-(atau monorepo Nexus lain). Itu gateway/SOC, bukan landing warung.
-Vercel akan salah build seluruh repo.
-
-Deploy operator (akun Vercel, dari folder situs ini saja):
-  npx vercel --prod --yes --name contoh-nexcent
+JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3.
 
 Preview lab: python cli.py serve → http://127.0.0.1:3010/preview/contoh-nexcent
 Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
