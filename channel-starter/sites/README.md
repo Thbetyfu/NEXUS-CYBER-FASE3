@@ -4,14 +4,15 @@ Satu folder = **satu** situs UMKM (HTML statis). Bukan satu repo GitHub untuk se
 
 | Yang terlihat | Arti |
 | --- | --- |
-| `contoh-nexcent/` | Demo **ikut git** |
+| `contoh-nexcent/` | Demo **ikut git** (tidak di-publish Vercel) |
 | `warung-bu-siti/`, `kedai-palet-biru/`, … | Hasil generate **lokal** (gitignore) |
-| Project Vercel `warung-bu-siti` + *No Production Deployment* | CLI `vercel` pernah *link* **satu** folder; **bukan** deploy; **bukan** seluruh generator hilang |
+| Project Vercel kosong + *No Production Deployment* | Dulu CLI `vercel` *link* tanpa `--prod`. Generate/`python cli.py publish` sekarang men-deploy Production per folder |
 
-`python cli.py generate` **tidak** membuat project Vercel dan **tidak** membuat repo Git.
+`python cli.py generate` men-deploy folder situs ke Vercel **jika** `VERCEL_TOKEN` atau `vercel login` ada. **Jangan** *Connect Git Repository* ke `NEXUS-CYBER-FASE3`.
 
-**Jangan** *Connect Git Repository* project UMKM ke `NEXUS-CYBER-FASE3` (monorepo gateway/SOC).
+```powershell
+python cli.py publish --slug warung-bu-siti
+python cli.py publish --all
+```
 
-Deploy satu folder (operator, akun Vercel): lihat `PUBLISH.txt` di dalam folder situs.
-
-Preview lab: `python cli.py serve` → `/preview/{slug}`.
+Preview lab: `python cli.py serve` → `/preview/{slug}`. Hosting Vercel ≠ wasit WAF.

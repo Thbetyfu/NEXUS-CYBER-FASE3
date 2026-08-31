@@ -30,7 +30,7 @@ Channel Starter = **funnel acquisition** + integrator mandiri (tim Nexus juga bo
 ```text
 Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain kustom opsional)
   → Generator (JSON → template Nexcent)
-  → Deploy lab (subdomain `{slug}.nexus-lab.test` + artefak `vercel.json` — **bukan** auto-buat project Vercel / repo Git)
+  → Deploy lab `{slug}.nexus-lab.test` + publish folder situs ke Vercel (jika token/login; **bukan** git monorepo)
   → Site live (HTTP lab / HTTPS jika domain publik di-CNAME operator)
   → [Opsional] upsell Loop GaaS / tepi WAF gateway (satu PROTECTED_HOST per lab)
 ```
@@ -41,7 +41,7 @@ Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain
 
 | Paket | Isi | Harga ilustrasi/bulan | Job Cowork |
 | --- | --- | --- | --- |
-| **Starter** | Subdomain lab `nama.nexus-lab.test`, template Nexcent, 4 palet, `vercel.json`, header tepi Caddy | **Rp 0–29.000** | Tidak |
+| **Starter** | Subdomain lab, template Nexcent, 4 palet, publish Vercel per folder (bukan git Nexus), header tepi Caddy | **Rp 0–29.000** | Tidak |
 | **Usaha** | Domain sendiri, halaman tambahan, SEO dasar | **Rp 49.000–99.000** | Tidak |
 | **Tepi** | + gateway Alur A (Reflex, autoban) | **Rp 149.000–299.000** | Tidak |
 | **Cowork (pilot)** | + Job/Loop + artefak risiko | **Rp 200.000** (Job) / **Rp 300.000**/bln (Loop) — jalur `/institusi` | Ya |
@@ -100,9 +100,7 @@ python cli.py serve
 
 Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 ke preview, bukan JSON `/sites/{slug}`.
 
-**Vercel “hanya warung-bu-siti / No Production Deployment”:** itu project **kosong** dari `vercel` di satu folder, bukan repo Nexus. `generate` **tidak** membuat project Vercel per situs dan **tidak** meng-commit `sites/` klien. Site lain tetap di `channel-starter/sites/` (gitignore). **Jangan** *Connect Git* ke `NEXUS-CYBER-FASE3`. Lihat `sites/README.md` + `PUBLISH.txt`.
-
-**Kenapa Simple Browser masih JSON `{"detail":"Site not found"}`:** proses di `:3010` masih **kode lama**. Kode baru: browser dapat HTML (bukan JSON), `/sites/{slug}` 303 ke `/preview`, `serve` men-seed `sites/contoh-nexcent` dari `examples/` jika folder demo hilang. `git pull` + `START-PREVIEW.bat`. File langsung: `channel-starter/sites/contoh-nexcent/index.html`.
+**Vercel:** generate men-deploy **folder situs** (`sites/{slug}`) ke project Vercel bernama slug jika `vercel login` / `VERCEL_TOKEN` ada. Cangkang lama `warung-bu-siti` *No Production Deployment* = *link* tanpa `--prod`. `python cli.py publish --slug …` / `--all`. **Jangan** Connect Git ke monorepo Nexus. Hosting `*.vercel.app` **bukan** WAF. Preview lab tetap `:3010`.
 
 ### Deploy subdomain (lab)
 

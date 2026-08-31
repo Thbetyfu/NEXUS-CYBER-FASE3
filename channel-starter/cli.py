@@ -13,6 +13,7 @@ from channel_starter.deploy import apply_routing, deploy_manifest, reload_caddy
 from channel_starter.generator import generate_from_dict, generate_site, list_sites
 from channel_starter.types import SiteCategory, SiteForm, PricingTier
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
+from channel_starter.vercel_publish import publish_all, publish_slug
 
 
 def cmd_generate(args: argparse.Namespace) -> int:
@@ -39,6 +40,20 @@ def cmd_generate(args: argparse.Namespace) -> int:
     deploy = deploy_manifest(manifest, sites_root=args.sites_dir)
     print(json.dumps({"manifest": manifest.model_dump(mode="json"), "deploy": deploy}, indent=2))
     return 0
+
+
+def cmd_publish(args: argparse.Namespace) -> int:
+    if args.all:
+        result = publish_all(sites_root=args.sites_dir)
+    elif args.slug:
+        result = publish_slug(args.slug, sites_root=args.sites_dir)
+    else:
+        print(json.dumps({"ok": False, "error": "publish requires --slug or --all"}), file=sys.stderr)
+        return 1
+    print(json.dumps(result, indent=2))
+    if result.get("ok") or result.get("skipped"):
+        return 0
+    return 1
 
 
 def cmd_list(args: argparse.Namespace) -> int:
@@ -136,6 +151,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     lst = sub.add_parser("list", help="List generated sites")
     lst.set_defaults(func=cmd_list)
+
+    pub = sub.add_parser("publish", help="Deploy one site folder to Vercel (not the Nexus monorepo)")
+    pub.add_argument("--slug", default="", help="Site slug")
+    pub.add_argument("--all", action="store_true", help="Publish every generated client site")
+    pub.set_defaults(func=cmd_publish)
 
     dep = sub.add_parser("deploy", help="Apply multi-tenant Caddy routing")
     dep_sub = dep.add_subparsers(dest="deploy_command", required=True)

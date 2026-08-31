@@ -184,9 +184,9 @@ _FORM_HTML = """<!DOCTYPE html>
     <button type="submit">Generate site</button>
   </form>
   <p class="note">
-    Starter menulis <code>vercel.json</code> (siap <code>vercel deploy</code>) dan header keamanan Caddy.
-    Job Cowork / Loop GaaS <strong>bukan</strong> paket Rp 20rb. Satu lab WAF = satu PROTECTED_HOST (portofolio),
-    bukan klaim *.vercel.app otomatis di belakang wasit.
+    Starter menulis <code>vercel.json</code> dan, jika <code>vercel login</code> /
+    <code>VERCEL_TOKEN</code> ada, men-deploy <strong>folder situs itu saja</strong> ke project Vercel
+    bernama slug. Bukan git monorepo Nexus. Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
   </p>
   <p><a href="/preview">Daftar preview</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site</a></p>
 </body>

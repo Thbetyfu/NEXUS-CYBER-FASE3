@@ -129,23 +129,22 @@ def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dic
 
 
 def _publish_txt(manifest: SiteManifest) -> str:
+    vercel_line = manifest.vercel_url or f"https://{manifest.slug}.vercel.app (setelah publish)"
     return (
         "Channel Starter — pack host (lab v0.1)\n"
         "\n"
         f"Situs: {manifest.business_name}\n"
         f"Folder: sites/{manifest.slug}/  (satu UMKM, HTML statis)\n"
+        f"Vercel: {vercel_line}\n"
         "\n"
-        "Generate TIDAK membuat project Vercel dan TIDAK membuat repo GitHub.\n"
-        "Dashboard Vercel yang hanya punya warung-bu-siti (No Production Deployment)\n"
-        "berarti CLI `vercel` pernah menautkan SATU folder — site lain tetap di\n"
-        "channel-starter/sites/ (gitignore), bukan hilang dari generator.\n"
+        "Generate men-deploy folder INI ke project Vercel bernama slug, jika "
+        "VERCEL_TOKEN / `vercel login` ada. Bukan repo GitHub. Bukan monorepo Nexus.\n"
         "\n"
         "JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3\n"
         "(atau monorepo Nexus lain). Itu gateway/SOC, bukan landing warung.\n"
-        "Vercel akan salah build seluruh repo.\n"
         "\n"
-        "Deploy operator (akun Vercel, dari folder situs ini saja):\n"
-        f"  npx vercel --prod --yes --name {manifest.slug}\n"
+        "Ulangi deploy:\n"
+        f"  python cli.py publish --slug {manifest.slug}\n"
         "\n"
         f"Preview lab: python cli.py serve → http://127.0.0.1:3010/preview/{manifest.slug}\n"
         "Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.\n"
@@ -153,7 +152,7 @@ def _publish_txt(manifest: SiteManifest) -> str:
 
 
 def _write_publish_pack(out_dir: Path, manifest: SiteManifest) -> None:
-    """Artefak host: Vercel headers + catatan jujur. Bukan auto-deploy akun Vercel."""
+    """Artefak host: Vercel headers + catatan. Deploy akun = vercel_publish, bukan git monorepo."""
     payload = dict(_VERCEL_JSON)
     payload["headers"][0]["headers"][-1] = {
         "key": "X-Nexus-Channel-Starter",

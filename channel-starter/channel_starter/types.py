@@ -200,6 +200,8 @@ class SiteManifest(BaseModel):
     cowork_job_id: str = ""
     loop_schedule_id: str = ""
     upsell_at: datetime | None = None
+    vercel_url: str = ""
+    vercel_project: str = ""
 
     @property
     def gaas_active(self) -> bool:

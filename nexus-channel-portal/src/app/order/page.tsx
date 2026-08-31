@@ -176,7 +176,7 @@ export default function OrderPage() {
                 <li>Transfer Rp 20.000, konfirmasi via WA.</li>
                 {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
                 {customDomain && <li>Domain kustom yang diisi: {customDomain} (CNAME operator, bukan auto-DNS publik)</li>}
-                <li>Berkas vercel.json ikut tertulis — push Vercel adalah langkah operator, bukan klaim *.vercel.app sudah di belakang WAF.</li>
+                <li>Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan git monorepo Nexus). *.vercel.app bukan WAF.</li>
                 <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell.</li>
               </ol>
               {formError && (

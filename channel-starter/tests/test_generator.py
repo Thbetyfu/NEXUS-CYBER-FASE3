@@ -26,8 +26,14 @@ class TestChannelStarterDeploy(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.sites_root = os.path.join(self.tmp.name, "sites")
+        self._prev_vercel = os.environ.get("CHANNEL_STARTER_VERCEL_PUBLISH")
+        os.environ["CHANNEL_STARTER_VERCEL_PUBLISH"] = "0"
 
     def tearDown(self):
+        if self._prev_vercel is None:
+            os.environ.pop("CHANNEL_STARTER_VERCEL_PUBLISH", None)
+        else:
+            os.environ["CHANNEL_STARTER_VERCEL_PUBLISH"] = self._prev_vercel
         self.tmp.cleanup()
 
     def test_generate_all_three_templates(self):
@@ -113,7 +119,8 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertEqual(vercel["headers"][0]["headers"][-1]["value"], manifest.site_id)
         publish = (Path(manifest.output_dir) / "PUBLISH.txt").read_text(encoding="utf-8")
         self.assertIn("NEXUS-CYBER-FASE3", publish)
-        self.assertIn("TIDAK membuat project Vercel", publish)
+        self.assertIn("men-deploy folder", publish)
+        self.assertIn("JANGAN Connect Git", publish)
         self.assertIn("warung-palet", publish)
 
     def test_caddy_starter_sends_security_headers(self):
