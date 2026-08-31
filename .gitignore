@@ -24,8 +24,8 @@ yarn-error.log
 *.dylib
 *.test
 *.out
-nexus-core-gateway/nexus-core-gateway
-nexus-core-gateway/cmd/gateway/gateway
+nexus-core/nexus-core-gateway/nexus-core-gateway
+nexus-core/nexus-core-gateway/cmd/gateway/gateway
 
 # Python
 __pycache__/
@@ -41,10 +41,10 @@ downloads/
 eggs/
 .eggs/
 lib/
-!nexus-channel-portal/src/lib/
-!nexus-channel-portal/src/lib/**
-!nexus-admin-dashboard/src/lib/
-!nexus-admin-dashboard/src/lib/**
+!nexus-gaas-web/src/lib/
+!nexus-gaas-web/src/lib/**
+!nexus-core/nexus-admin-dashboard/src/lib/
+!nexus-core/nexus-admin-dashboard/src/lib/**
 lib64/
 parts/
 sdist/
@@ -70,7 +70,7 @@ logs/
 nexus_traffic.log
 financial.db
 vulnerable-financial-api/financial.db
-nexus-core-gateway/nexus_traffic.log
+nexus-core/nexus-core-gateway/nexus_traffic.log
 *.db
 botnet_results.json
 nexus-brain-lab/
@@ -78,15 +78,15 @@ NEXUS-CORE-BRAIN.Modelfile
 
 # Integrity snapshots (self-heal pin — may contain site file bytes)
 .nexus-integrity-*.json
-nexus-core-gateway/data/
-NEX-RED/reports/
-NEX-RED/workspaces/
+nexus-core/nexus-core-gateway/data/
+nexus-core/NEX-RED/reports/
+nexus-core/NEX-RED/workspaces/
 
 # NEX-RED JobStore runtime (kode Python + immune_memory.json tetap di Git)
-NEX-RED/jobs/data/*.json
-NEX-RED/jobs/JOB-*.json
-NEX-RED/jobs/*_scan.json
-NEX-RED/jobs/schedules.json
+nexus-core/NEX-RED/jobs/data/*.json
+nexus-core/NEX-RED/jobs/JOB-*.json
+nexus-core/NEX-RED/jobs/*_scan.json
+nexus-core/NEX-RED/jobs/schedules.json
 /JOB-*.json
 /*_scan.json
 
@@ -99,23 +99,26 @@ NEX-RED/jobs/schedules.json
 
 # Playground lab diarsip (zip), bukan kode produk
 /playground/
+nexus-core/playground/
+/nexus-core/playground/
 archives/*.zip
+*.tsbuildinfo
 
 # NEX-AI Private Artifacts
 *.gguf
-nex-ai-models/*.gguf
-NEX-AI/checkpoints/
-NEX-AI/build/
-NEX-AI/llama.cpp/
-NEX-AI/*.gguf
-NEX-AI/**/*.gguf
-NEX-AI/**/*.bin
-NEX-AI/**/*.safetensors
-NEX-AI/**/*.pt
-NEX-AI/**/*.pth
-NEX-AI/**/*.onnx
-NEX-AI/**/*.ckpt
-NEX-AI/**/adapter_config.json
-NEX-AI/**/adapter_model.safetensors
-NEX-AI/dataset/lab/
-NEX-AI/cache/
+nexus-core/nex-ai-models/*.gguf
+nexus-core/NEX-AI/checkpoints/
+nexus-core/NEX-AI/build/
+nexus-core/NEX-AI/llama.cpp/
+nexus-core/NEX-AI/*.gguf
+nexus-core/NEX-AI/**/*.gguf
+nexus-core/NEX-AI/**/*.bin
+nexus-core/NEX-AI/**/*.safetensors
+nexus-core/NEX-AI/**/*.pt
+nexus-core/NEX-AI/**/*.pth
+nexus-core/NEX-AI/**/*.onnx
+nexus-core/NEX-AI/**/*.ckpt
+nexus-core/NEX-AI/**/adapter_config.json
+nexus-core/NEX-AI/**/adapter_model.safetensors
+nexus-core/NEX-AI/dataset/lab/
+nexus-core/NEX-AI/cache/

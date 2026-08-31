@@ -13,10 +13,10 @@ else
 fi
 
 echo "[pre-push] Menjalankan tes sebelum push..."
-"$PY" -m unittest discover -s NEX-RED/tests -v || exit 1
+"$PY" -m unittest discover -s nexus-core/NEX-RED/tests -v || exit 1
 
 if command -v go >/dev/null 2>&1; then
-  (cd nexus-core-gateway && go vet ./... && go test ./...) || exit 1
+  (cd nexus-core/nexus-core-gateway && go vet ./... && go test ./...) || exit 1
 else
   echo "[pre-push] Go tidak ada di PATH; tes gateway dilewati di mesin ini (CI tetap menguji)."
 fi

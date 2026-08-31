@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache-dependency-path: nexus-core-gateway/go.sum
+          cache-dependency-path: nexus-core/nexus-core-gateway/go.sum
 
       - name: Build Binary (${{ matrix.goos }}/${{ matrix.goarch }})
         env:
@@ -41,8 +41,8 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
-          cd nexus-core-gateway
-          go build -ldflags="-s -w" -o ../bin/${{ matrix.output_name }} ./cmd/gateway
+          cd nexus-core/nexus-core-gateway
+          go build -ldflags="-s -w" -o ../../bin/${{ matrix.output_name }} ./cmd/gateway
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4

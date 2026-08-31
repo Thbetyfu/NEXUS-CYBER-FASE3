@@ -24,7 +24,7 @@ jobs:
         uses: securego/gosec@master
         with:
           args: '-no-fail -fmt=sarif -out=gosec.sarif ./...'
-          working-directory: nexus-core-gateway
+          working-directory: nexus-core/nexus-core-gateway
 
   # ---------------------------------------------------------------------------
   # 2. Govulncheck - Official Go Dependency Vulnerability Scanner
@@ -46,7 +46,7 @@ jobs:
 
       - name: Run Dependency Vulnerability Scan
         run: |
-          cd nexus-core-gateway
+          cd nexus-core/nexus-core-gateway
           govulncheck ./... || echo "Vulnerability scan completed with findings."
 
   # ---------------------------------------------------------------------------
@@ -86,5 +86,5 @@ jobs:
 
       - name: Run NPM Security Audit
         run: |
-          cd nexus-admin-dashboard
+          cd nexus-core/nexus-admin-dashboard
           npm audit --audit-level=high || echo "NPM audit completed with warnings."

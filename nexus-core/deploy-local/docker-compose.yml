@@ -1,0 +1,126 @@
+name: nexus-local
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: nexus-local-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: nexus-local-postgres
+    environment:
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus_local_dev_only}
+      POSTGRES_DB: nexus_cyber
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus_cyber"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build:
+      context: ./nexus-core-gateway
+      dockerfile: Dockerfile
+    container_name: nexus-local-gateway
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - ./nexus-core-gateway/geoip:/app/geoip
+      - integrity_data:/app/data
+    env_file:
+      - path: .env
+        required: true
+      - path: channel-starter-upsell.env
+        required: false
+    environment:
+      REDIS_URL: redis:6379
+      POSTGRES_DSN: postgres://nexus:${POSTGRES_PASSWORD:-nexus_local_dev_only}@postgres:5432/nexus_cyber?sslmode=disable
+      TARGET_BACKEND: ${TARGET_BACKEND:-https://portfolio-website-three-ruddy-65.vercel.app}
+      TARGET_BACKEND_HOST: ${TARGET_BACKEND_HOST:-portfolio-website-three-ruddy-65.vercel.app}
+      PROTECTED_HOST: ${PROTECTED_HOST:-portfolio.nexus-lab.test}
+      NEXUS_LICENSE_KEY: ${NEXUS_LICENSE_KEY:-nexus-cyber-dev}
+      NEXUS_LICENSE_DOMAIN: ${NEXUS_LICENSE_DOMAIN:-localhost}
+      NEXUS_SESSION_SECRET: ${NEXUS_SESSION_SECRET:-nexus-local-session-change-me}
+      NEXUS_LAB_SESSION_TOKEN: ${NEXUS_LAB_SESSION_TOKEN:-}
+      REWARD_PASSWORD: ${REWARD_PASSWORD:-NexusAccessSecure2026!}
+      REWARD_LINK: ${REWARD_LINK:-https://shopee.co.id/m/shopee-kaget-nexus-success}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_PROVIDER_URL: ${AI_PROVIDER_URL:-}
+      AI_PROVIDER_KEY: ${AI_PROVIDER_KEY:-}
+      NEX_AI_ENDPOINT: ${NEX_AI_ENDPOINT:-http://host.docker.internal:11434/api/chat}
+      NEX_AI_MODEL_REFLEX: ${NEX_AI_MODEL_REFLEX:-nex-ai-reflex}
+      NEX_AI_MODEL_REASONING: ${NEX_AI_MODEL_REASONING:-nex-ai-protect}
+      NEX_AI_API_KEY: ${NEX_AI_API_KEY:-dummy-key-for-local-usage}
+      NEX_AI_REQUIRED: ${NEX_AI_REQUIRED:-1}
+      SSH_TARPIT_PORT: "2222"
+      HONEYPOT_PORT: "9090"
+      ADMIN_LISTEN: ":8081"
+      NEXUS_ADMIN_TOKEN: ${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      THREAT_INTEL_PROVIDER: ${THREAT_INTEL_PROVIDER:-}
+      INTEGRITY_MONITORED_DIR: ${INTEGRITY_MONITORED_DIR:-}
+      INTEGRITY_BASELINE_PATH: ${INTEGRITY_BASELINE_PATH:-/app/data/integrity-baseline.json}
+    cap_add:
+      - NET_ADMIN
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      channel-origin:
+        condition: service_started
+    restart: unless-stopped
+
+  channel-origin:
+    image: nginx:alpine
+    container_name: nexus-channel-origin
+    volumes:
+      - ./channel-starter/sites:/usr/share/nginx/html:ro
+      - ./channel-origin.nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    expose:
+      - "8099"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: nexus-local-caddy
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./channel-starter/sites:/srv/channel-starter:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  integrity_data:

@@ -10,9 +10,9 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 
 ## 0. Lab target (selalu ingat)
 
-- **Origin yang dilindungi (lab/deploy default):** portofolio **Vercel** di belakang WAF — `PROTECTED_HOST=portfolio.nexus-lab.test`. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](../../docs/PLAYGROUND_ARCHIVE.md)).
+- **Origin yang dilindungi (lab/deploy default):** portofolio **Vercel** di belakang WAF — `PROTECTED_HOST=portfolio.nexus-lab.test`. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](../../nexus-core/docs/PLAYGROUND_ARCHIVE.md)).
 - **Kenapa:** bukti Alur A + Job Cowork pada kanal nyata; bukan klaim dari landing portal saja.
-- **Detail:** [`AGENTS.md`](../../AGENTS.md) § Lab target · [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md) §0.
+- **Detail:** [`AGENTS.md`](../../AGENTS.md) § Lab target · [`docs/PRODUCT_MODEL.md`](../../nexus-core/docs/PRODUCT_MODEL.md) §0.
 - Demo/scan lewat `PROTECTED_HOST`, jangan tembak origin Vercel langsung saat mengklaim Nexus melindungi.
 
 ## 1. 🏗️ Batasan Teknologi & Arsitektur
@@ -46,7 +46,7 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 Setiap perubahan **perilaku** (port, auth, mux, Caddy, compose, NEX-RED, Gallery, rate-limit, CSRF) WAJIB dalam pekerjaan yang sama:
 
 1. Entri [`CHANGELOG.md`](../../CHANGELOG.md) (Added / Changed / Security / Fixed).
-2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../docs/README.md) — selaraskan [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md) jika model produk/GaaS berubah (`CAPABILITIES`, `LIMITATIONS`, `PRD`, `ARCHITECTURE`, dll.).
+2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../nexus-core/docs/README.md) — selaraskan [`docs/PRODUCT_MODEL.md`](../../nexus-core/docs/PRODUCT_MODEL.md) jika model produk/GaaS berubah (`CAPABILITIES`, `LIMITATIONS`, `PRD`, `ARCHITECTURE`, dll.).
 3. Jangan menulis ulang `docs/reports/*`, `shannon/docs`, `strix/docs` seolah kondisi hari ini.
 4. Jangan mengklaim eBPF XDP, JWT enterprise, Stripe, **Channel Starter produksi/billing selesai**, **Loop GaaS di Rp 20rb**, atau pentest NEX-RED Shannon jika kode tidak melakukannya.
 5. Jangan dokumentasikan Channel Portal **PSP pihak ketiga** (Midtrans/Stripe) atau F-10 sebagai prioritas. Top-up yang disepakati = QRIS/VA milik pemilik + bukti + approve — **jangan klaim sudah ada** jika belum dikode.

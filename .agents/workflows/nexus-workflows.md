@@ -4,10 +4,10 @@ description: Alur kerja pengembangan Nexus Cyber GaaS
 
 # Nexus Cyber Development Workflow
 
-**Model produk:** [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md). Prioritas kode: Job Cowork → wasit → tepi. Billing otomatis massal **ditunda**.
+**Model produk:** [`docs/PRODUCT_MODEL.md`](../../nexus-core/docs/PRODUCT_MODEL.md). Prioritas kode: Job Cowork → wasit → tepi. Billing otomatis massal **ditunda**.
 
 ### Langkah 1: Konteks
-1. Baca `docs/PRODUCT_MODEL.md`, `docs/ARCHITECTURE.md`, `docs/LIMITATIONS.md`.
+1. Baca `nexus-core/docs/PRODUCT_MODEL.md`, `nexus-core/docs/ARCHITECTURE.md`, `nexus-core/docs/LIMITATIONS.md`.
 2. Jangan membangun F-10 / provisioner kecuali pemilik minta.
 
 ### Langkah 2: Evaluasi Risiko Keamanan & Latensi
@@ -36,14 +36,14 @@ description: Alur kerja pengembangan Nexus Cyber GaaS
 Jika sistem atau fitur baru siap disebarkan ke lingkungan produksi atau pengujian publik:
 
 #### A. Deployment PC Lokal (Opsi Gratis / Demo):
-1. **Windows**: Jalankan `.\scripts\deploy\local\deploy-local-pc.ps1`.
-2. **Linux / WSL / Mac**: Jalankan `bash scripts/deploy/local/deploy-local-pc.sh`.
+1. **Windows**: Jalankan `.\nexus-core\scripts\deploy\local\deploy-local-pc.ps1`.
+2. **Linux / WSL / Mac**: Jalankan `bash nexus-core/scripts/deploy/local/deploy-local-pc.sh`.
 3. **Publikasi Gratis via Cloudflare Tunnel** (terminal terpisah):
    ```bash
    # Linux / WSL
-   bash scripts/tunnel/nexus-tunnel.sh
+   bash nexus-core/scripts/tunnel/nexus-tunnel.sh
    # Windows
-   .\scripts\tunnel\nexus-tunnel.ps1
+   .\nexus-core\scripts\tunnel\nexus-tunnel.ps1
    ```
 
 #### B. Deployment Cloud VPS (Opsi Biznet Gio / Hetzner / DigitalOcean):

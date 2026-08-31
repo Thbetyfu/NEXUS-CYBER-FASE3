@@ -18,7 +18,7 @@ gateway-test:
   cache:
     key:
       files:
-        - nexus-core-gateway/go.sum
+        - nexus-core/nexus-core-gateway/go.sum
     paths:
       - .cache/go-build
       - .cache/go-mod
@@ -27,7 +27,7 @@ gateway-test:
     GOCACHE: $CI_PROJECT_DIR/.cache/go-build
     GOMODCACHE: $CI_PROJECT_DIR/.cache/go-mod
   script:
-    - cd nexus-core-gateway
+    - cd nexus-core/nexus-core-gateway
     - go mod download
     - go vet ./...
     - go build -o /tmp/nexus-gateway ./cmd/gateway
@@ -36,7 +36,7 @@ gateway-test:
     when: always
     expire_in: 14 days
     paths:
-      - nexus-core-gateway/coverage.out
+      - nexus-core/nexus-core-gateway/coverage.out
 
 nexred-test:
   stage: test
@@ -45,23 +45,23 @@ nexred-test:
   cache:
     key:
       files:
-        - NEX-RED/requirements.txt
+        - nexus-core/NEX-RED/requirements.txt
     paths:
       - .cache/pip
   script:
     - python -m pip install --upgrade pip
-    - pip install -r NEX-RED/requirements.txt
-    - python -m unittest discover -s NEX-RED/tests -v
+    - pip install -r nexus-core/NEX-RED/requirements.txt
+    - python -m unittest discover -s nexus-core/NEX-RED/tests -v
 
 defense-scripts:
   stage: test
   image: python:3.11-slim
   needs: []
   script:
-    - python scripts/tests/test_scaffold.py
-    - python scripts/tests/test_mtd_shuffle.py
-    - python scripts/tests/test_self_repair.py
-    - python scripts/tests/test_intelligence.py
+    - python nexus-core/scripts/tests/test_scaffold.py
+    - python nexus-core/scripts/tests/test_mtd_shuffle.py
+    - python nexus-core/scripts/tests/test_self_repair.py
+    - python nexus-core/scripts/tests/test_intelligence.py
 
 compose-validate:
   stage: test
@@ -69,4 +69,4 @@ compose-validate:
   needs: []
   script:
     - pip install pyyaml
-    - python -c "import yaml; yaml.safe_load(open('deploy-local/docker-compose.yml', encoding='utf-8')); print('compose yaml ok')"
+    - python -c "import yaml; yaml.safe_load(open('nexus-core/deploy-local/docker-compose.yml', encoding='utf-8')); print('compose yaml ok')"
