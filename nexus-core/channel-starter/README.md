@@ -14,7 +14,7 @@ python cli.py deploy apply
 python cli.py deploy reload   # jika deploy-local/Caddy sudah running
 ```
 
-Dengan **deploy-local** (`deploy-local/START.bat`):
+Dengan **deploy-local** (`nexus-core/deploy-local/START.bat`):
 
 1. Caddy mount `channel-starter/sites` → `/srv/channel-starter`
 2. Import `sites/_caddy/ChannelStarter.caddy` (subdomain statis + header tepi, **bukan** WAF gateway kecuali upsell)
@@ -59,7 +59,7 @@ python cli.py upsell disable --slug warung-bu-siti
 Menulis `deploy-local/channel-starter-upsell.env` (`PROTECTED_HOST`, `TARGET_BACKEND`, `NEX_RED_LIVE_TARGET`) dan mengalihkan subdomain ke WAF gateway. Satu host GaaS aktif per instance lab.
 
 ```powershell
-cd channel-starter
+cd D:\NEXUS\nexus-core\channel-starter
 pip install -r requirements.txt
 python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 081234567890 --theme hijau
 python cli.py list

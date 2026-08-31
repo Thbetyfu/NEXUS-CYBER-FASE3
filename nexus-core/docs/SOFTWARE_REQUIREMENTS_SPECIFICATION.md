@@ -21,7 +21,7 @@ SRS ini merinci persyaratan untuk **Nexus Cyber GaaS** — jasa terkelola berbas
 | **Job GaaS** | Siklus wasit + antibodi + verifikasi pada instance |
 | **Loop GaaS** | Instance tetap + Job berkala |
 
-Lab: `deploy-local/` — HTTP, satu hostname, bukan provisioner multi-tenant legacy.
+Lab: `nexus-core/deploy-local/` — HTTP, satu hostname, bukan provisioner multi-tenant legacy.
 
 ### 1.2 Komponen
 

@@ -5,6 +5,8 @@
 
 Perintah SOC lewat dasbor ke **`127.0.0.1:8081`** (`POST`, sesi operator). Bukan port WAF `:8080`.
 
+Perintah file (`python NEX-RED/…`, `python scripts/…`, `go test`) di bawah: jalankan dari **`nexus-core/`**, bukan dari git root.
+
 ## 1. Konsol SOC (Xterm.js)
 
 Perintah dikirim ke `/api/cli/execute` di control plane. Daftar di bawah mengikuti handler CLI gateway; jika perintah tidak dikenali, terminal menampilkan bantuan.

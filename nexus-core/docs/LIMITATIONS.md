@@ -6,7 +6,7 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 
 ## Batasan model GaaS
 
-1. **Dua lapisan produk** — Channel Starter (murah, **lab v0.1** `channel-starter/`) ≠ Loop GaaS (mahal, **sudah** mesin lab). Jangan gabung klaim.
+1. **Dua lapisan produk** — Channel Starter (murah, **lab v0.1** `nexus-core/channel-starter/`) ≠ Loop GaaS (mahal, **sudah** mesin lab). Jangan gabung klaim.
 2. **Bukan self-serve legacy** — F-10 **ditunda**; Starter v1 = **`nexus-gaas-web/`** + form + template.
 3. **Bukan SOC otonom 24/7** — Job Cowork + operator; manusia pemilik risiko L0/L1.
 4. **Rp ~20rb/bulan** — website template Nexcent (4 palet) + domain lab `{slug}.nexus-lab.test` + **header tepi** (Caddy `file_server` atau `vercel.json`: nosniff / frame DENY / Referrer-Policy / CSP) + publish Vercel **per folder** jika `VERCEL_TOKEN`/`vercel login` (bukan Connect Git monorepo Nexus); **tanpa** WAF Reflex, **tanpa** Job Cowork / Loop, **tanpa** CNAME publik otomatis, **tanpa** klaim `*.vercel.app` sudah di belakang WAF gateway. Support unlimited tidak termasuk. Preview wizard `:3010` hanya di mesin yang `python cli.py serve`. Folder `sites/` gitignore kecuali demo `contoh-nexcent`. JSON JobStore (`NEX-RED/jobs/data/`, `JOB-*.json`) dan screenshot akar repo juga gitignore — bukan sumber kebenaran Git. JSON FastAPI `Site not found` hanya jika proses wizard **lama** masih hidup di port 3010 (kode baru: HTML).

@@ -56,7 +56,7 @@ flowchart TB
 | Honeypot | `:9090` | Ya (umpan) |
 | SSH tarpit | `:2222` (root compose saja) | Opsional |
 | NEX-RED bridge | `127.0.0.1:3004` | Tidak |
-| Juice Shop (NEX-RED lab) | `127.0.0.1:3003` | Tidak |
+| Juice Shop (NEX-RED lab) | `127.0.0.1:3003` | Tidak — **bentrok** Channel Portal `:3003`; jangan hidupkan bersamaan |
 | Postgres / Redis | `127.0.0.1:5432` / `6379` | Tidak |
 
 ---

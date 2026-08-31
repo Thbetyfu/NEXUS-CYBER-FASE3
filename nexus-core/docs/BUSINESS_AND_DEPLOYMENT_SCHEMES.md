@@ -2,7 +2,7 @@
 
 **Versi:** 2.0.0 / 2026-08-22  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)  
-**Visi komersial GaaS** — bukan status multi-tenant CNAME legacy. Lab nyata: `deploy-local/` (satu stack, satu `PROTECTED_HOST`).
+**Visi komersial GaaS** — bukan status multi-tenant CNAME legacy. Lab nyata: `nexus-core/deploy-local/` (satu stack, satu `PROTECTED_HOST`).
 
 ---
 
