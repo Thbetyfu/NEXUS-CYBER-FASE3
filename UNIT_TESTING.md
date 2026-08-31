@@ -23,7 +23,7 @@ Backend Go di `nexus-core-gateway` — paket utama:
 
 - **`TestCsrfShield`:** GET set cookie; POST tanpa token → 403; POST dengan token cocok → 200; bypass rute lab (`/api/verify-session`).
 - **`TestDynamicRouterWildcardAndFallback`:** satu `PROTECTED_HOST` / wildcard lab — **bukan** multi-tenant massal legacy.
-- **ROUTER-SYNC origin:** `TestSeedUpsertsStaleLabOriginToVercel`, `TestNamedHostAndLoopbackAgreeAfterRouterSync_*` — leftover `127.0.0.1:3001` tidak menimpa Vercel; START-OFFLINE tetap `portfolio:3002`.
+- **ROUTER-SYNC origin:** leftover `127.0.0.1:3001` tidak menimpa Vercel. Tes masih mencakup origin HTTP `portfolio:3002` jika `TARGET_BACKEND` diset (bukan mode START default).
 - **Lab session vs PoW:** `TestBrowserIntegrity_NamedHostWithoutSessionIsPoW` (pengunjung tetap challenge); `TestVerifySession_LabTokenMintsSession` / fail-closed env kosong. Bukan skip PoW publik.
 - **ROUTER-SYNC origin bind:** `TestSeedUpsertsStaleLabOriginToVercel` / `ToOfflinePortfolio`; `TestNamedHostAndLoopbackAgreeAfterRouterSync_Vercel` / `_Offline`; `TestRouterSyncWithoutRebindSplitsHosts` — leftover `127.0.0.1:3001` tidak membagi named-host vs loopback; host onboard ekstra tidak diubah.
 - **Degradasi Redis → antibodi RAM:** `TestProxy_AntibodyHoldsWhenRedisDisabled`, `TestProxy_AntibodyHoldsAfterRedisNil`, `TestProxy_AntibodyHoldsWithDeadRedisClient`, `TestProxy_AntibodyHoldsOnPOSTBodyWhenRedisDown` — token lab di query/body → **403**, origin dummy tidak dipanggil. `TestProxy_NoAntibodyReachesOrigin` — tanpa match → 200 origin. `TestProxy_AddAntibody_DegradedMode` — store RAM tanpa panic.
@@ -100,12 +100,9 @@ cd nexus-admin-dashboard
 npm run build
 ```
 
-### Portofolio lab
+### Portofolio (origin, repo terpisah)
 
-```bash
-cd playground/Portofolio-Thoriq
-npm run build
-```
+Build origin **bukan** di monorepo. Repo: `https://github.com/Thbetyfu/Portofolio-Thoriq`. Deploy = Vercel di belakang WAF. Folder `playground/` diarsip.
 
 ---
 

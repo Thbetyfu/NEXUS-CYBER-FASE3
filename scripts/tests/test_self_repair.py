@@ -6,7 +6,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 
-# Sibling lab origin (playground/Portofolio-Thoriq) — skip if submodule missing
+# Optional local origin folder — skip if missing (playground diarsip)
 PORTFOLIO_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "playground", "Portofolio-Thoriq"))
 TARGET_FILE = os.path.abspath(os.path.join(PORTFOLIO_DIR, "src", "pages", "Gallery.tsx"))
 if not os.path.isfile(TARGET_FILE):

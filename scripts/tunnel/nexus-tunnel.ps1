@@ -100,7 +100,7 @@ try {
     } else {
         Write-Host "[!] Port $TargetPort belum listen." -ForegroundColor Yellow
         Write-Host "    Jalankan dulu: deploy-local\jury\START-FOR-JURY.bat" -ForegroundColor White
-        Write-Host "    atau: deploy-local\START-OFFLINE.bat" -ForegroundColor White
+        Write-Host "    atau: deploy-local\START.bat" -ForegroundColor White
         Write-Host "    Melanjutkan tunnel anyway..." -ForegroundColor Yellow
     }
 } catch {

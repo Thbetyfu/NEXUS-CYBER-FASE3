@@ -33,7 +33,7 @@ Urutan disarankan untuk PC Windows kosong. Jangan loncat ke `START-FOR-JURY` seb
 
 | # | Software | Versi min. | Wajib untuk | Link unduh |
 | --- | --- | --- | --- | --- |
-| 1 | **Git for Windows** | terbaru | Clone repo + submodule portofolio | https://git-scm.com/download/win |
+| 1 | **Git for Windows** | terbaru | Clone repo | https://git-scm.com/download/win |
 | 2 | **Docker Desktop** | terbaru (WSL2 backend) | Lab WAF, Caddy, Postgres, Redis | https://www.docker.com/products/docker-desktop/ |
 | 3 | **Node.js** | **20 LTS+** | Channel Portal `:3003` | https://nodejs.org/ |
 | 4 | **Python** | **3.10+** (centang *Add to PATH*) | Channel Starter CLI + NEX-RED opsional | https://www.python.org/downloads/ |
@@ -51,20 +51,14 @@ Urutan disarankan untuk PC Windows kosong. Jangan loncat ke `START-FOR-JURY` seb
 2. Docker Desktop → Settings → **Start Docker Desktop when you log in**  
 3. Double-click **`deploy-local/ALLOW-DEV-LAPTOP.bat`** → **Yes** di UAC (firewall port 80/8080)
 
-### 2.2 Clone repository (termasuk portofolio)
+### 2.2 Clone repository
 
 ```powershell
-git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
+git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
 cd NEXUS-CYBER-FASE3
 ```
 
-Jika folder sudah ada tanpa submodule:
-
-```powershell
-git submodule update --init --recursive
-```
-
-Submodule **`playground/Portofolio-Thoriq`** wajib untuk mode offline (`START-OFFLINE` / jury).
+Tidak ada submodule. Origin portofolio = Vercel di belakang WAF. `START-OFFLINE` ditolak — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md).
 
 ### 2.3 Prefetch — unduh image & paket sebelum nyalakan lab
 
@@ -185,7 +179,7 @@ Tanpa kedua nama di `ollama list`, `START.bat` / `START-FOR-JURY.bat` **berhenti
 
 - [ ] Git, Docker Desktop, Node 20+, Python 3.10+ terpasang  
 - [ ] Ollama + `nex-ai-protect` / `nex-ai-reflex` (GGUF + `IMPORT-OLLAMA.bat`, bukan Hub)  
-- [ ] `git submodule update --init --recursive` sukses  
+- [ ] `git clone` / `git pull origin main` (tanpa submodule)  
 - [ ] `PREP-PC-SERVER.bat` selesai tanpa error kritis  
 - [ ] `deploy-local/.env` ada; password/token **sudah diganti**  
 - [ ] `ALLOW-DEV-LAPTOP.bat` sudah dijalankan (UAC)  
@@ -253,7 +247,7 @@ Kirim **URL tunnel kedua** ke juri untuk halaman `/`, `/umkm`, `/order`, dll.
 
 ### C. Bikin website UMKM di PC yang sama
 
-Setelah lab Docker jalan (`START-OFFLINE.bat` atau lewat jury):
+Setelah lab Docker jalan (`START.bat` atau lewat jury):
 
 ```powershell
 cd d:\NEXUS-CYBER-FASE3\channel-starter

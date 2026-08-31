@@ -56,7 +56,6 @@ services:
       - "127.0.0.1:8081:8081" # SOC control plane — laptop only
     volumes:
       - ./nexus-core-gateway/geoip:/app/geoip
-      - ./playground/Portofolio-Thoriq:/origin-lab
       - integrity_data:/app/data
     environment:
       - REDIS_URL=redis:6379
@@ -64,7 +63,7 @@ services:
       - AI_PROVIDER_URL=${AI_PROVIDER_URL}
       - AI_PROVIDER_KEY=${AI_PROVIDER_KEY}
       - NEXUS_SESSION_SECRET=${NEXUS_SESSION_SECRET:-super-secret-matrix-key-2026}
-      - TARGET_BACKEND=http://portfolio:3002
+      - TARGET_BACKEND=${TARGET_BACKEND:-https://portfolio-website-three-ruddy-65.vercel.app}
       - PROTECTED_HOST=${PROTECTED_HOST:-portfolio.nexus-lab.test}
       - REWARD_PASSWORD=${REWARD_PASSWORD:-NexusAccessSecure2026!}
       - REWARD_LINK=${REWARD_LINK:-https://shopee.co.id/m/shopee-kaget-nexus-success}
@@ -72,7 +71,7 @@ services:
       - NEXUS_ADMIN_TOKEN=${NEXUS_ADMIN_TOKEN:-nexus-local-admin-token-change-me}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
-      - INTEGRITY_MONITORED_DIR=${INTEGRITY_MONITORED_DIR:-/origin-lab}
+      - INTEGRITY_MONITORED_DIR=${INTEGRITY_MONITORED_DIR:-}
       - INTEGRITY_BASELINE_PATH=${INTEGRITY_BASELINE_PATH:-/app/data/integrity-baseline.json}
     cap_add:
       - NET_ADMIN
@@ -101,30 +100,6 @@ services:
       - production.env
     depends_on:
       - gateway
-    restart: always
-
-  # [NEW: THE PROTECTED TARGET]
-  # Website Portofolio yang akan dijaga oleh Nexus
-  portfolio:
-    build:
-      context: ../Portfolio-website
-      dockerfile: Dockerfile
-    container_name: target_portfolio
-    # Kita TIDAK membuka port portfolio ke publik (Hanya internal Docker)
-    # Ini memaksa hacker harus lewat Gateway (8080)
-    environment:
-      - PORT=3002
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=nexus_portfolio_app
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=nexus_cyber
-      - DB_ADMIN_DSN=postgres://nexus:${POSTGRES_PASSWORD}@postgres:5432/nexus_cyber?sslmode=disable
-    env_file:
-      - production.env
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: always
 
   # Caddy Edge Router (Auto-HTTPS & On-Demand TLS SSL)

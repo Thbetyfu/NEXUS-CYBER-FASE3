@@ -173,7 +173,7 @@ Diagram ini menjelaskan siklus periodik monitor integritas visual web yang memul
 sequenceDiagram
     autonumber
     actor Attacker as Peretas
-    participant Disk as Disk folder terpantau (lab: Portofolio-Thoriq)
+    participant Disk as Disk folder terpantau (opsional INTEGRITY_MONITORED_DIR)
     participant Monitor as IntegrityMonitor (fsnotify + poll)
     participant Pin as Snapshot pin BLAKE3
     participant Log as Telemetry + Telegram pager

@@ -29,7 +29,7 @@ eBPF/XDP di diagram lama **bukan** jalur drop paket nyata.
 - Publik: 80/443 (Caddy), 8080 (WAF langsung, hati-hati di lab).
 - Internal SOC: `127.0.0.1:8081`.
 - Jangan mem-proxy semua `/api` dasbor ke `:8080`. Middleware `PublicDataPlane`: path SOC di `:8080` → **404**; mutasi/API asing tanpa `nexus_session` → **401**. Lab Gallery/vault/PoW tetap publik di data plane.
-- Satu nama situs: `PROTECTED_HOST` (default lab `portfolio.nexus-lab.test`). Caddy `:443` on-demand hanya jika `HasExplicitRoute`. Hotspot tetap `http://IP`. SOC `:8081`/`:3001` tidak dipublish. Origin instance = `TARGET_BACKEND` (START.bat Vercel / START-OFFLINE `portfolio:3002`); named-host dan loopback WAF harus sama.
+- Satu nama situs: `PROTECTED_HOST` (default lab `portfolio.nexus-lab.test`). Caddy `:443` on-demand hanya jika `HasExplicitRoute`. Hotspot tetap `http://IP`. SOC `:8081`/`:3001` tidak dipublish. Origin instance = `TARGET_BACKEND` (`START.bat` = Vercel); named-host dan loopback WAF harus sama.
 
 ### 2. Website Aplikasi Asli (Protected Backend Web Application)
 * **Tanggung Jawab**: Menyajikan konten visual, portal login, dan memproses data bisnis utama klien (misalnya Portal OJK Portal).

@@ -74,4 +74,4 @@ python scripts/tests/test_mtd_shuffle.py
 python scripts/tests/test_self_repair.py
 ```
 
-Live self-heal: gateway harus memantau `playground/Portofolio-Thoriq` (`INTEGRITY_MONITORED_DIR`). Offline Docker: `dist/index.html` (folder yang di-serve). Tanpa gateway, skrip me-skip. Tes unit Go: `go test ./internal/repair/` di `nexus-core-gateway`.
+Live self-heal: hanya jika `INTEGRITY_MONITORED_DIR` menunjuk folder lokal. Default deploy = kosong (origin Vercel tidak di-restore). Tanpa gateway, skrip me-skip. Tes unit Go: `go test ./internal/repair/` di `nexus-core-gateway`.

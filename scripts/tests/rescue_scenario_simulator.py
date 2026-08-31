@@ -6,7 +6,7 @@ import os
 
 # TARGET CONFIG
 GATEWAY_URL = "http://localhost:8080"
-TEMPLATE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "../playground/vulnerable-ojk-portal/templates/index.html"))
+TEMPLATE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "fixtures", "ojk-index.html"))
 
 # ANSI Colors
 RED = '\033[91m'

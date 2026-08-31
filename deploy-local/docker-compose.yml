@@ -46,7 +46,6 @@ services:
       - "127.0.0.1:8081:8081"
     volumes:
       - ../nexus-core-gateway/geoip:/app/geoip
-      - ../playground/Portofolio-Thoriq:/origin-lab
       - integrity_data:/app/data
     env_file:
       - path: .env
@@ -80,7 +79,7 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
       THREAT_INTEL_PROVIDER: ${THREAT_INTEL_PROVIDER:-}
-      INTEGRITY_MONITORED_DIR: ${INTEGRITY_MONITORED_DIR:-/origin-lab}
+      INTEGRITY_MONITORED_DIR: ${INTEGRITY_MONITORED_DIR:-}
       INTEGRITY_BASELINE_PATH: ${INTEGRITY_BASELINE_PATH:-/app/data/integrity-baseline.json}
     cap_add:
       - NET_ADMIN

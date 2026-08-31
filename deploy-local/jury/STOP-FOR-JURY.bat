@@ -17,7 +17,7 @@ if errorlevel 1 (
 )
 
 echo.
-set /p STOPLAB="Matikan juga lab Docker (START-OFFLINE)? [y/N]: "
+set /p STOPLAB="Matikan juga lab Docker (START.bat)? [y/N]: "
 if /I "%STOPLAB%"=="y" (
   echo [2/2] STOP lab...
   call "%DEPLOY%\STOP.bat"

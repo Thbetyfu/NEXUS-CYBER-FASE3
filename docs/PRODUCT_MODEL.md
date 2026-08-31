@@ -11,10 +11,10 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 
 | | |
 | --- | --- |
-| **Apa** | Website **portofolio** pemilik — submodule [`playground/Portofolio-Thoriq`](../playground/Portofolio-Thoriq) (atau mirror Vercel yang sama) |
+| **Apa** | Website **portofolio** pemilik di **Vercel** (repo terpisah [Portofolio-Thoriq](https://github.com/Thbetyfu/Portofolio-Thoriq)) di belakang WAF. Folder lab `playground/` **diarsip** — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) |
 | **Di mana di stack** | Origin di belakang gateway; **bukan** diganti menjadi produk jual |
 | **Hostname** | Satu instance GaaS: `PROTECTED_HOST` (lab default **`portfolio.nexus-lab.test`**) |
-| **Alur** | Internet/tunnel → Caddy → **WAF `:8080`** (Reflex + antibodi) → portofolio (`deploy-local` → container `:3002` atau Vercel) |
+| **Alur** | Internet/tunnel → Caddy → **WAF `:8080`** (Reflex + antibodi) → portofolio **Vercel** |
 | **Kenapa** | Bukti **Alur A** + **Job Cowork** pada kanal HTTP nyata (gallery, vault, unggah) — bukan klaim CNAME massal atau landing saja |
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) |
 | **Bukan** | Channel Starter UMKM; SOC publik; Loop penuh di harga Rp 20rb |
@@ -22,7 +22,7 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 Operasi lab: [`../deploy-local/README.md`](../deploy-local/README.md). Distribusi pilot (PC + tunnel): [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
 
 ```text
-  Pengunjung → [Caddy / tunnel] → Nexus Gateway :8080 → Portofolio (origin)
+  Pengunjung → [Caddy / tunnel] → Nexus Gateway :8080 → Portofolio Vercel (origin)
                                       ↑
                          PROTECTED_HOST = portfolio.nexus-lab.test (lab)
 ```

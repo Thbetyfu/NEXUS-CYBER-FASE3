@@ -35,7 +35,7 @@ Tidak ada kit exploit di folder ini. Payload ofensif **tidak** ditulis di sini. 
 - Jangan scan internet / IP di luar kartu lab.
 - Jangan menyimpan atau membagikan daftar payload serangan di repo.
 
-Unggah/vault error “MUX” / “Connection error” di **HTTP** hotspot: biasanya sidik jari `crypto.subtle` (sudah di-fallback di kode). Blue team harus `git pull origin main --recurse-submodules` lalu **START-OFFLINE** (rebuild), bukan hanya refresh Chrome.
+Unggah/vault error “MUX” / “Connection error” di **HTTP** hotspot: biasanya sidik jari `crypto.subtle` (sudah di-fallback di kode). Blue team harus `git pull origin main` lalu **START.bat** (rebuild), bukan hanya refresh Chrome.
 
 ## Kalau CHECK.bat gagal
 

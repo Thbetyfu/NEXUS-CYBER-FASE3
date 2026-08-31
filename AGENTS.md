@@ -4,14 +4,14 @@
 
 ## Lab target — apa yang dilindungi & kenapa (wajib dibaca)
 
-**Yang dilindungi (origin lab default):** website **portofolio** pemilik di submodule `playground/Portofolio-Thoriq` (atau origin Vercel yang sama di belakang WAF).
+**Yang dilindungi (origin lab/deploy default):** website **portofolio** pemilik di **Vercel**, di belakang WAF — `PROTECTED_HOST` default **`portfolio.nexus-lab.test`**. Folder `playground/` **diarsip** (bukan di monorepo).
 
 | Item | Nilai / lokasi |
 | --- | --- |
 | Hostname lab | `PROTECTED_HOST` default **`portfolio.nexus-lab.test`** |
-| Alur | Pengunjung → Caddy/tunnel → **Gateway WAF `:8080`** → origin portofolio (`:3002` offline / Vercel online) |
-| Start lab | `deploy-local/START-OFFLINE.bat` (origin lokal) atau `START.bat` (Vercel di belakang WAF) — lihat `deploy-local/README.md` |
-| Bukan | Portofolio ≠ produk yang dijual; ≠ Channel Starter UMKM; ≠ expose SOC `:3001`/`:8081` |
+| Alur | Pengunjung → Caddy/tunnel → **Gateway WAF `:8080`** → origin portofolio **Vercel** |
+| Start lab | `deploy-local/START.bat` — lihat `deploy-local/README.md`. `START-OFFLINE.bat` **ditolak** (playground diarsip) |
+| Bukan | Portofolio ≠ produk yang dijual; ≠ Channel Starter UMKM; ≠ expose SOC `:3001`/`:8081`; ≠ tembak `*.vercel.app` langsung saat klaim Nexus melindungi |
 
 **Kenapa portofolio:** origin HTTP **nyata** untuk membuktikan **Alur A** (tepi always-on) + **Job Cowork** (ukur → kendalikan → uji, termasuk `replay_missed` ≠ hijau palsu). Demo/pitching harus menunjuk mesin wasit pada host ini (atau `PROTECTED_HOST` setara), **bukan** hanya landing Channel Portal.
 

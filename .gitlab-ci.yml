@@ -69,4 +69,4 @@ compose-validate:
   needs: []
   script:
     - pip install pyyaml
-    - python -c "import yaml; yaml.safe_load(open('deploy-local/docker-compose.yml', encoding='utf-8')); yaml.safe_load(open('deploy-local/docker-compose.offline.yml', encoding='utf-8')); print('compose yaml ok')"
+    - python -c "import yaml; yaml.safe_load(open('deploy-local/docker-compose.yml', encoding='utf-8')); print('compose yaml ok')"

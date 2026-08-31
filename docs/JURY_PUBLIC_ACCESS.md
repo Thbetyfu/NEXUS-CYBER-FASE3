@@ -21,7 +21,7 @@ Juri (HP / laptop jaringan mana pun)
   localhost:80  (Caddy)
         │
         ▼
-  Nexus WAF :8080  →  Portofolio (origin lab)
+  Nexus WAF :8080  →  Portofolio Vercel (origin)
 ```
 
 | Publik (boleh) | Lokal saja (dilarang tunnel) |
@@ -37,7 +37,7 @@ Juri (HP / laptop jaringan mana pun)
 ## Prasyarat PC
 
 1. Docker Desktop **Running**
-2. Repo sudah clone `--recursive` (submodule portofolio)
+2. Repo sudah clone (tanpa submodule). Origin = Vercel di belakang WAF.
 3. Port **80** / **8080** tidak bentrok dengan `start-dev.bat`
 4. PC: sleep OFF (untuk sesi juri / 24/7)
 5. Internet aktif (tunnel butuh ke Cloudflare)

@@ -29,10 +29,10 @@ if errorlevel 1 (
 )
 
 echo.
-echo [Git] Submodule portofolio...
+echo [Git] Repo (tanpa submodule)...
 cd /d "%ROOT%"
-git submodule update --init --recursive
-if errorlevel 1 set "FAIL=1"
+git pull origin main
+if errorlevel 1 echo [!] git pull gagal — lanjut jika clone sudah ada.
 
 echo.
 echo [ENV] deploy-local\.env ...

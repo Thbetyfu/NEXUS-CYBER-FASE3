@@ -8,28 +8,20 @@ Mesin: WAF Go (`:8080`) + wasit NEX-RED (defense delta + antibody loop + **Job C
 
 ## Clone
 
-Ada **submodule**: portofolio `playground/Portofolio-Thoriq`. **Channel Portal** ada di monorepo (`nexus-channel-portal/`). Clone harus rekursif:
+Tidak ada submodule. Origin portofolio = **Vercel di belakang WAF**. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](./docs/PLAYGROUND_ARCHIVE.md)). Channel Portal di monorepo (`nexus-channel-portal/`).
 
 ```bash
-git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
+git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
 cd NEXUS-CYBER-FASE3
 ```
 
-Jika folder sudah di-clone tanpa submodule:
+Update:
 
 ```bash
-git submodule update --init --recursive
+git pull origin main
 ```
 
-Update nanti:
-
-```bash
-git pull origin main --recurse-submodules
-```
-
-Laptop blue team (lab Docker): setelah pull, `deploy-local\blue-team\STOP.bat` lalu `START-OFFLINE.bat` agar container portofolio memuat JS Gallery terbaru.
-
-Jangan menghapus folder `.git` di dalam submodule. Alur git: [`docs/GIT_WORKFLOW.md`](./docs/GIT_WORKFLOW.md).
+Laptop blue team: setelah pull, `deploy-local\blue-team\STOP.bat` lalu `START.bat`. `START-OFFLINE.bat` ditolak. Alur git: [`docs/GIT_WORKFLOW.md`](./docs/GIT_WORKFLOW.md).
 
 ## Setup awal
 
@@ -39,7 +31,7 @@ Pilih **satu** cara. Jangan jalankan `deploy-local/START.bat` bersamaan dengan `
 
 1. Pasang [Docker Desktop](https://www.docker.com/products/docker-desktop/) dan tunggu status **Ready**.
 2. (Windows, sekali) double-click `deploy-local\ALLOW-DEV-LAPTOP.bat` lalu **Yes** di UAC — firewall lab + pengecualian Defender.
-3. Double-click `deploy-local\START.bat` (atau `START-OFFLINE.bat` agar origin = folder portofolio, bukan Vercel).
+3. Double-click `deploy-local\START.bat` (origin = Vercel di belakang WAF). `START-OFFLINE.bat` ditolak — playground diarsip.
 4. Buka **http://127.0.0.1** (Caddy → WAF). Bukti Nexus hanya lewat IP/laptop ini, **bukan** URL Vercel langsung.
 5. File `deploy-local/.env` dibuat otomatis dari `.env.example` pada start pertama. Ubah `REWARD_PASSWORD` / origin di situ jika perlu. Pager Telegram opsional: isi `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID` (lihat `deploy-local/blue-team/README.md`); jangan commit token.
 

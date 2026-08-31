@@ -98,47 +98,50 @@ func main() {
 	var gateway *proxy.NexusProxy
 
 	// Integrity monitor: pin snapshot + fsnotify restore (origin stays up).
-	monitoredDir := os.Getenv("INTEGRITY_MONITORED_DIR")
+	// Empty INTEGRITY_MONITORED_DIR = skip. Deploy origin is remote Vercel;
+	// self-heal cannot restore files that only exist on Vercel.
+	monitoredDir := strings.TrimSpace(os.Getenv("INTEGRITY_MONITORED_DIR"))
 	if monitoredDir == "" {
-		monitoredDir = "../playground/Portofolio-Thoriq"
-	}
-	integrityMonitor, err := repair.NewIntegrityMonitorWithOptions(repair.Options{
-		MonitoredDir: monitoredDir,
-		BaselinePath: os.Getenv("INTEGRITY_BASELINE_PATH"),
-		Telemetry:    telemetry,
-		Repin:        os.Getenv("INTEGRITY_REPIN") == "1",
-		OnAlert: func(msg string) {
-			if gateway != nil {
-				gateway.PurgeGoldenGETCache()
-			}
-			host := strings.TrimSpace(os.Getenv("PROTECTED_HOST"))
-			if host == "" {
-				host = "lab"
-			}
-			sample := msg
-			if len(sample) > 240 {
-				sample = sample[:240]
-			}
-			telemetry.LogTraffic(logger.TelemetryLog{
-				Timestamp:     time.Now(),
-				SourceIP:      "self-heal",
-				Endpoint:      "/integrity",
-				Method:        "FILE",
-				Status:        "BLOCKED",
-				ThreatDetail:  "INTEGRITY_RESTORE",
-				TargetDomain:  host,
-				PayloadSample: sample,
-			})
-			if database.ActiveThreatReporter == nil {
-				return
-			}
-			_ = database.ActiveThreatReporter.ReportThreat("self-heal", []int{15}, fmt.Sprintf("[%s] %s", host, msg))
-		},
-	})
-	if err != nil {
-		log.Printf("[SELF-HEAL-WARN] Integrity monitor initialization failed: %v", err)
+		log.Printf("[SELF-HEAL] INTEGRITY_MONITORED_DIR kosong — pin folder lokal dilewati (origin = Vercel di belakang WAF)")
 	} else {
-		go integrityMonitor.Start(ctx, 2*time.Second)
+		integrityMonitor, err := repair.NewIntegrityMonitorWithOptions(repair.Options{
+			MonitoredDir: monitoredDir,
+			BaselinePath: os.Getenv("INTEGRITY_BASELINE_PATH"),
+			Telemetry:    telemetry,
+			Repin:        os.Getenv("INTEGRITY_REPIN") == "1",
+			OnAlert: func(msg string) {
+				if gateway != nil {
+					gateway.PurgeGoldenGETCache()
+				}
+				host := strings.TrimSpace(os.Getenv("PROTECTED_HOST"))
+				if host == "" {
+					host = "lab"
+				}
+				sample := msg
+				if len(sample) > 240 {
+					sample = sample[:240]
+				}
+				telemetry.LogTraffic(logger.TelemetryLog{
+					Timestamp:     time.Now(),
+					SourceIP:      "self-heal",
+					Endpoint:      "/integrity",
+					Method:        "FILE",
+					Status:        "BLOCKED",
+					ThreatDetail:  "INTEGRITY_RESTORE",
+					TargetDomain:  host,
+					PayloadSample: sample,
+				})
+				if database.ActiveThreatReporter == nil {
+					return
+				}
+				_ = database.ActiveThreatReporter.ReportThreat("self-heal", []int{15}, fmt.Sprintf("[%s] %s", host, msg))
+			},
+		})
+		if err != nil {
+			log.Printf("[SELF-HEAL-WARN] Integrity monitor initialization failed: %v", err)
+		} else {
+			go integrityMonitor.Start(ctx, 2*time.Second)
+		}
 	}
 
 	// Initialize RASP (Runtime Application Self-Protection) (Phase 9)

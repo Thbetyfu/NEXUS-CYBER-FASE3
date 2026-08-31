@@ -17,11 +17,8 @@ echo -e "${BLUE}==================================================${NC}"
 echo -e "${GREEN}[1/4] Memastikan Redis Cache (MTD Matrix) aktif...${NC}"
 docker-compose up -d redis > /dev/null 2>&1
 
-# 2. Nyalakan Portal OJK (Target)
-echo -e "${GREEN}[2/4] Meluncurkan Portal OJK (Protected Asset)...${NC}"
-cd playground/vulnerable-ojk-portal
-./venv/bin/python app.py > ../../logs/ojk.log 2>&1 &
-cd ../..
+# 2. Origin: Vercel di belakang WAF (bukan playground OJK)
+echo -e "${GREEN}[2/4] Origin deploy = Vercel di belakang gateway (playground diarsip)...${NC}"
 
 # 3. Nyalakan Nexus Core Gateway (Shield)
 echo -e "${GREEN}[3/4] Mengaktifkan Nexus AI Gateway (Shield Layer)...${NC}"

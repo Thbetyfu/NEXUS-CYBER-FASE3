@@ -8,7 +8,7 @@ Alur yang benar untuk bukti:
 
 `pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Gateway self-heal memantau `playground/Portofolio-Thoriq` (`/origin-lab` di Docker) — lihat [`../docs/SELF_HEAL_GUIDE.md`](../docs/SELF_HEAL_GUIDE.md). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus.
 
 ## Skenario lab: hotspot blue team
 
@@ -54,7 +54,7 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 | --- | --- |
 | `ALLOW-DEV-LAPTOP.bat` | Sekali: firewall lab + Defender tidak tanya terus |
 | `CHECK-NEX-AI.bat` | Cek Ollama lokal punya `nex-ai-protect` + `nex-ai-reflex` (helper yang sama dipakai START) |
-| `START-OFFLINE.bat` | Sama, origin = `playground/Portofolio-Thoriq` (tanpa Vercel) |
+| `START-OFFLINE.bat` | **Ditolak** — playground diarsip; pakai `START.bat` |
 | `STATUS.bat` | Lihat kontainer hidup/mati |
 | `STOP.bat` | Matikan stack (data Postgres tetap di volume Docker) |
 
@@ -64,11 +64,11 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 cd deploy-local
 chmod +x start.sh stop.sh status.sh
 ./start.sh
-# tanpa Vercel:
-./start.sh --offline
 ./status.sh
 ./stop.sh
 ```
+
+`./start.sh --offline` **ditolak** (playground diarsip).
 
 ## Apa yang ikut jalan
 
@@ -93,10 +93,10 @@ Jika Anda menjalankan dasbor di laptop (`npm run dev -p 3001`) sambil stack `dep
 
 ## Origin
 
-- **Default (`START.bat`)**: `https://portfolio-website-three-ruddy-65.vercel.app`
-- **Offline (`START-OFFLINE.bat`)**: container `portfolio` di port internal 3002. `dist/` host di-bind ke origin (seed dari image jika kosong) agar self-heal terlihat di situs. Setelah `git pull --recurse-submodules`, jalankan ulang START-OFFLINE agar image di-rebuild; hapus folder `playground/Portofolio-Thoriq/dist` jika ingin seed ulang dari bake baru.
+- **Default (`START.bat`)**: `https://portfolio-website-three-ruddy-65.vercel.app` di belakang WAF
+- **Offline:** dihapus. Cadangan zip playground bukan origin deploy.
 
-Host `portfolio.nexus-lab.test` **dan** `127.0.0.1` (WAF `:8080`) memakai origin compose yang sama. Baris Postgres leftover (`127.0.0.1:3001` di dalam container) tidak boleh membagi named-host vs loopback. Jangan buka URL Vercel langsung untuk klaim “Nexus melindungi”.
+Host `portfolio.nexus-lab.test` **dan** `127.0.0.1` (WAF `:8080`) memakai origin compose yang sama. Jangan buka URL Vercel langsung untuk klaim “Nexus melindungi”.
 
 Ubah origin di `deploy-local/.env` (disalin otomatis dari `.env.example` saat start pertama).
 

@@ -46,11 +46,12 @@ fi
 
 COMPOSE=(docker compose --project-name nexus-local -f docker-compose.yml)
 if [[ "$OFFLINE" -eq 1 ]]; then
-  COMPOSE+=(-f docker-compose.offline.yml)
-  echo "[MODE] Origin lokal: playground/Portofolio-Thoriq"
-else
-  echo "[MODE] Origin Vercel: https://portfolio-website-three-ruddy-65.vercel.app"
+  echo "[GAGAL] --offline dihapus. Folder playground sudah diarsip (zip), bukan origin deploy."
+  echo "        Origin = Vercel di belakang WAF. Jalankan: ./start.sh"
+  echo "        Jangan buka URL Vercel langsung saat mengklaim Nexus melindungi."
+  exit 1
 fi
+echo "[MODE] Origin Vercel di belakang WAF: https://portfolio-website-three-ruddy-65.vercel.app"
 
 echo "[2/4] Build & start..."
 "${COMPOSE[@]}" up -d --build

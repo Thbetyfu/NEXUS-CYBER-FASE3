@@ -25,10 +25,10 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [1/3] Menyalakan lab OFFLINE (portofolio di belakang WAF)...
+echo [1/3] Menyalakan lab (portofolio Vercel di belakang WAF)...
 echo       Folder: %DEPLOY%
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%DEPLOY%\START.ps1" -Offline
+powershell -NoProfile -ExecutionPolicy Bypass -File "%DEPLOY%\START.ps1"
 if errorlevel 1 (
   echo.
   echo [ERROR] Lab gagal start. Perbaiki error di atas lalu jalankan lagi.

@@ -88,11 +88,12 @@ $composeArgs = @(
     "-f", "docker-compose.yml"
 )
 if ($Offline) {
-    $composeArgs += @("-f", "docker-compose.offline.yml")
-    Write-Host "[MODE] Origin lokal: playground/Portofolio-Thoriq" -ForegroundColor Yellow
-} else {
-    Write-Host "[MODE] Origin Vercel: https://portfolio-website-three-ruddy-65.vercel.app" -ForegroundColor Yellow
+    Write-Host "[GAGAL] START-OFFLINE dihapus. Folder playground sudah diarsip (zip), bukan origin deploy." -ForegroundColor Red
+    Write-Host "        Origin = Vercel di belakang WAF. Jalankan START.bat (tanpa -Offline)." -ForegroundColor Red
+    Write-Host "        Jangan buka URL Vercel langsung saat mengklaim Nexus melindungi." -ForegroundColor Yellow
+    exit 1
 }
+Write-Host "[MODE] Origin Vercel di belakang WAF: https://portfolio-website-three-ruddy-65.vercel.app" -ForegroundColor Yellow
 
 Write-Step "[1/4] Memeriksa NEX-AI lokal (nex-ai-protect + nex-ai-reflex)..."
 Invoke-NexAIGate

@@ -97,6 +97,10 @@ NEX-RED/jobs/schedules.json
 # Vercel CLI local project link — never Connect Git the Nexus monorepo to a warung
 .vercel/
 
+# Playground lab diarsip (zip), bukan kode produk
+/playground/
+archives/*.zip
+
 # NEX-AI Private Artifacts
 *.gguf
 nex-ai-models/*.gguf

@@ -16,7 +16,7 @@ Red team **tidak** menembak URL Vercel. Mereka join Wi-Fi hotspot ini, lalu memb
 5. Biarkan hotspot dan Docker tetap nyala sampai sesi selesai.
 6. Double-click **`STOP.bat`** untuk mematikan.
 
-`START-OFFLINE.bat` sama, tetapi origin-nya folder `playground/Portofolio-Thoriq` (tanpa Vercel). Self-heal live: `dist/` di-bind ke container; deface `dist/index.html` harus kembali di situs tanpa restart origin.
+`START-OFFLINE.bat` **ditolak** (folder playground diarsip). Pakai **`START.bat`** — origin Vercel di belakang WAF. Self-heal file Vercel **tidak** ada.
 
 ## Kode + model: hard disk, bukan GitHub
 
@@ -32,12 +32,10 @@ Ollama **per laptop**. Jika model NEX-AI **sudah ada di folder lain** di laptop 
 
 ```bat
 cd D:\NEXUS-CYBER-FASE3
-git pull origin main --recurse-submodules
+git pull origin main
 ```
 
-Kalau folder submodule masih kosong/lama: `git submodule update --init --recursive`
-
-Lalu **STOP.bat** → **START-OFFLINE.bat** (wajib rebuild agar JS Gallery baru masuk container). Jangan pakai origin Vercel untuk tes Gallery/vault lab. **Channel Portal** ada di monorepo (`nexus-channel-portal/`), bukan origin hotspot.
+Lalu **STOP.bat** → **START.bat**. Klaim Nexus = lewat `PROTECTED_HOST` / IP laptop, bukan URL Vercel langsung. **Channel Portal** ada di monorepo (`nexus-channel-portal/`), bukan origin hotspot.
 
 Dataset NEX-AI dari log WAF (bukan LLM): **`COLLECT-DATASET.bat`** (butuh Python + Docker stack nyala).
 
@@ -55,7 +53,7 @@ TELEGRAM_BOT_TOKEN=isi-token-bot
 TELEGRAM_CHAT_ID=isi-chat-id
 ```
 
-5. `STOP.bat` lalu `START-OFFLINE.bat` (atau `START.bat`) supaya container gateway membaca env baru.
+5. `STOP.bat` lalu `START.bat` supaya container gateway membaca env baru.
 6. Uji: dari red team, 5× password vault salah sampai autoban. HP blue team dapat satu pesan berisi IP lab (`192.168.137.x`) yang **dilabeli privat** — bukan peta rumah.
 
 Laptop blue team perlu **internet keluar** (kabel Ethernet disarankan). Hotspot ke red team tidak harus membagikan internet.

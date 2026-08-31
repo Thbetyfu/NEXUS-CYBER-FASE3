@@ -51,7 +51,7 @@ RoE: [`docs/ROE.md`](./docs/ROE.md). Live target: `NEX_RED_LIVE_TARGET` / Job `h
 ## CLI
 
 ```bash
-python NEX-RED/nexred.py scan -r ./playground/Portofolio-Thoriq -m whitebox --no-llm
+python NEX-RED/nexred.py scan -r . -m whitebox --no-llm
 python NEX-RED/nexred.py scan -u http://127.0.0.1 -r . -m hybrid --no-llm
 python NEX-RED/nexred.py lab-juice
 python NEX-RED/nexred.py benchmark --live

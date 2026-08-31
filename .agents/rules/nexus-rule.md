@@ -10,7 +10,7 @@ Setiap kali SAYA diminta memodifikasi atau membuat kode baru di proyek Nexus Cyb
 
 ## 0. Lab target (selalu ingat)
 
-- **Origin yang dilindungi (lab default):** portofolio `playground/Portofolio-Thoriq` di belakang WAF — `PROTECTED_HOST=portfolio.nexus-lab.test`.
+- **Origin yang dilindungi (lab/deploy default):** portofolio **Vercel** di belakang WAF — `PROTECTED_HOST=portfolio.nexus-lab.test`. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](../../docs/PLAYGROUND_ARCHIVE.md)).
 - **Kenapa:** bukti Alur A + Job Cowork pada kanal nyata; bukan klaim dari landing portal saja.
 - **Detail:** [`AGENTS.md`](../../AGENTS.md) § Lab target · [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md) §0.
 - Demo/scan lewat `PROTECTED_HOST`, jangan tembak origin Vercel langsung saat mengklaim Nexus melindungi.

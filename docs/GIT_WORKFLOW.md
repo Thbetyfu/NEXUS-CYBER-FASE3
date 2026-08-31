@@ -3,34 +3,25 @@
 **Pembaruan:** 2026-08-31  
 **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) — GaaS + Channel Portal v0.1.
 
-## Submodule
+Tidak ada submodule di monorepo. Origin portofolio = repo terpisah + **Vercel di belakang WAF**. Folder `playground/` diarsip — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md).
 
-| Folder | Remote | Peran |
-| --- | --- | --- |
-| `playground/Portofolio-Thoriq` | `https://github.com/Thbetyfu/Portofolio-Thoriq.git` | Origin lab (Gallery) di `START-OFFLINE` |
-
-**Channel Portal** (`nexus-channel-portal/`, port `:3003`) ada di **monorepo** — bukan submodule. Portal legacy submodule **dihapus** (2026-08-22).
+**Channel Portal** (`nexus-channel-portal/`, port `:3003`) ada di **monorepo**.
 
 Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./BRD.md). Jangan dokumentasikan F-10 atau billing otomatis massal sebagai prioritas v1.
 
 ## Clone
 
 ```bash
-git clone --recursive https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
-git submodule update --init --recursive
+git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git
 ```
 
 ## Update
 
 ```bash
-git pull origin main --recurse-submodules
+git pull origin main
 ```
 
-Lab hotspot: setelah pull, `deploy-local\blue-team\STOP.bat` lalu `START-OFFLINE.bat`.
-
-Ubah submodule: commit + push di dalam submodule, lalu `git add playground/<nama>` di repo utama.
-
-Jangan hapus `.git` di dalam submodule.
+Lab: setelah pull, `deploy-local\blue-team\STOP.bat` lalu `START.bat` (origin Vercel di belakang WAF). `START-OFFLINE.bat` ditolak.
 
 Commit: conventional commits. Perubahan perilaku → `CHANGELOG.md` + dokumen hidup ([docs/README.md](./README.md)).
 
@@ -44,6 +35,7 @@ Source Control harus berisi **kode produk**, bukan sampah lab. Sudah di `.gitign
 | `channel-starter/sites/*` kecuali `contoh-nexcent/` + README | Hasil generate klien; publish ke Vercel per folder, bukan ke monorepo. |
 | `/*.png`, `.playwright-mcp/` | Screenshot / log agen di akar repo, bukan aset produk. |
 | `.vercel/`, `.env*` | Link CLI Vercel + rahasia. **Jangan** Connect Git monorepo Nexus ke project warung. |
+| `/playground/`, `archives/*.zip` | Lab tree diarsip di luar Git. Jangan commit unzip. |
 | `NEX-RED/reports/`, `NEX-RED/workspaces/` | Laporan scan + Chromium lab. |
 
 File **sudah ter-track** (status `M`, misalnya `package.json`) tidak hilang hanya karena gitignore — buang perubahan lokal (`git restore`) jika tidak sengaja, atau commit jika memang perbaikan produk.

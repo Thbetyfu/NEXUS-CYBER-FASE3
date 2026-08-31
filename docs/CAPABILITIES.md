@@ -35,7 +35,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Unggah | Shell berkedok gambar | AVSE + magic bytes | Nyata |
 | Vault lab | Brute-force password | autoban 5x; ban persist `intel_blacklist` + hydrate RAM saat start | Nyata |
 | Abuse / flood | Request berlebih | Token bucket | Nyata (bukan DDoS kernel) |
-| Integritas template / origin lokal | Deface folder terpantau | Pin + fsnotify; START-OFFLINE bind-mount `dist` ke origin; purge golden GET cache | Nyata di disk lab; bukan Vercel remote |
+| Integritas template / origin lokal | Deface folder terpantau | Pin + fsnotify jika `INTEGRITY_MONITORED_DIR` diisi; **bukan** default | Opsional; bukan file di Vercel |
 | SOC / Operator GaaS Console | Kanal, **onboard Origin+host** (tanpa Docker auto UI), **workspace-bound** Job L0/L1 + logs/metrics/IP/artefak/digest insiden, **Panduan Penggunaan** (ID), ban, CLI, telemetri | `:8081` + cookie · `:3001` | Nyata; internal; GaaS-only UI |
 | Pager | Setelah autoban **atau** self-heal restore/purge | Telegram env | Nyata jika dikonfigurasi |
 | NEX-RED agen | Hygiene HTTP jinak | recon / access / injection-hygiene / reporter | Nyata |
@@ -59,7 +59,7 @@ Lihat [`NEX-RED/README.md`](../NEX-RED/README.md). **Defense delta:** `waf_block
 - **Ban IP:** `intel_blacklist` + RAM; hydrate saat start gateway; tanpa PG ban hilang setelah restart
 - **Golden GET cache:** RAM di WAF untuk GET publik setelah Reflex; default HTTPS origin (Vercel); stale-if-5xx; bukan CDN / bukan autentikasi
 - **Satu hostname:** `PROTECTED_HOST` — bukan CNAME massal legacy
-- **Origin instance (compose):** `TARGET_BACKEND` adalah sumber kebenaran untuk Host lab (`PROTECTED_HOST`, `localhost`, `127.0.0.1`, `*`). START.bat = Vercel; START-OFFLINE = `portfolio:3002`. Named-host dan loopback WAF tidak boleh beda origin. Bukan provisioner multi-tenant.
+- **Origin instance (compose):** `TARGET_BACKEND` adalah sumber kebenaran untuk Host lab (`PROTECTED_HOST`, `localhost`, `127.0.0.1`, `*`). `START.bat` = Vercel. `START-OFFLINE` dihapus (playground diarsip). Named-host dan loopback WAF tidak boleh beda origin. Bukan provisioner multi-tenant.
 - **Command Center / Operator GaaS Console:** kokpit operator (kanal, **Onboard kanal** via `/api/routes`, Job L0/L1, artefak Job + digest insiden per workspace); Active Workspace mengikat semua jendela wasit ke protected host via WAF; **Panduan Penggunaan** in-app (Bahasa Indonesia) untuk alur pilot; bukan deliverable ke klien; tanpa War Room/MTD/license UI
 - **Onboard kanal (operator):** form **Origin URL** + **protected host / custom domain** (opsional, default lab) → `POST /api/routes`; Domain Switcher + Context-Aware auto-bind; DNS/CNAME/tunnel **di luar SOC** (pilot PC+tunnel); **tanpa** auto-provision Docker di UI operator; **bukan** Midtrans / CNAME massal / portal pelanggan. Channel Starter tetap entry terpisah untuk klien tanpa site.
 - **Job target:** UI mengikat `http://{activeDomain}` (via WAF). Agen NEX-RED (HTTP **dan** Chromium `NEX_RED_BROWSER=1`) menghubungkan TCP ke gateway (`NEXUS_GATEWAY_URL` / `NEX_RED_LIVE_TARGET` loopback:port) dengan `Host: {protected_host}` — Chromium memakai `--host-resolver-rules=MAP`; tidak bergantung file hosts. Chromium hilang/disk penuh → skip browser jujur, HTTP Job tetap. Twin origin tetap `NEX_RED_ORIGIN_DIRECT`. Gallery/vault browser butuh lab session (`NEX_RED_LAB_SESSION_TOKEN` = gateway `NEXUS_LAB_SESSION_TOKEN` → `POST /api/verify-session`); pengunjung named-host tetap PoW.

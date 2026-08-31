@@ -118,7 +118,7 @@ Estimasi kalender jika 1 insinyur fokus. Bisa overlap.
 **Hasil:** target resmi, aturan keterlibatan, kunci LLM.
 
 - [ ] Tulis RoE: host, path, jam, data yang boleh disentuh.
-- [ ] Deploy **hanya** `playground/Portofolio-Thoriq` + gateway di staging.
+- [ ] Deploy gateway + origin Vercel di belakang WAF (bukan folder playground).
 - [ ] Putuskan model: `nex-ai-protect` lokal vs API. Dual-Brain skill: utamakan NEX-AI, cloud hanya fallback.
 - [ ] Setujui: Jalan B tidak menyalin `shannon/` atau `strix/` ke dalam agent.
 
@@ -278,11 +278,11 @@ Boleh label **NEX-RED v5 Native Live Checks** jika semua benar:
 
 ```bash
 # v4 sekarang
-python NEX-RED/nexred.py scan -r ./playground/Portofolio-Thoriq -m whitebox --no-llm
+python NEX-RED/nexred.py scan -r . -m whitebox --no-llm
 python NEX-RED/nexred.py benchmark
 
 # v5+ (Fase 1–3) — belum diimplementasi
-python NEX-RED/nexred.py scan -u https://staging.internal -r ./playground/Portofolio-Thoriq -m hybrid
+python NEX-RED/nexred.py scan -u https://staging.internal -r . -m hybrid
 python NEX-RED/nexred.py benchmark --live
 ```
 

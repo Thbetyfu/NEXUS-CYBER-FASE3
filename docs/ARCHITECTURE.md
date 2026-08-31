@@ -92,7 +92,6 @@ nexus-cyber/
 ├── nexus-core-gateway/
 ├── nexus-admin-dashboard/
 ├── NEX-RED/
-├── playground/Portofolio-Thoriq/
 ├── nexus-channel-portal/   # Pintu jual Channel Starter
 ├── deploy-local/
 └── docs/
