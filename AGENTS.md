@@ -25,10 +25,10 @@ Jika Anda mengubah **perilaku** sistem (kode gateway, dasbor, NEX-RED, Caddy, co
 2. Jalankan pola `.agents/agents/docs-sync.md`: perbarui dokumen **hidup** di `docs/README.md` dan `CHANGELOG.md` dalam perubahan yang sama; selaraskan dengan `docs/PRODUCT_MODEL.md`.
 3. Control plane: `.agents/agents/soc-control-plane.md`. Identitas HTTP: `.agents/agents/request-identity.md`.
 
-Jangan mengklaim eBPF XDP nyata, JWT enterprise, Stripe/provisioner, pentest NEX-RED Shannon, **Channel Starter produksi/billing selesai** jika deploy HTTPS + pembayaran belum ada, atau **Loop GaaS di harga Rp 20rb/bulan**.
+Jangan mengklaim eBPF XDP nyata, JWT enterprise, Stripe/provisioner, pentest NEX-RED Shannon, **Channel Starter produksi/billing selesai** jika deploy HTTPS + top-up QRIS/VA+approve belum ada, atau **Loop GaaS di harga Rp 20rb/bulan**.
 
-Pembayaran IDR / webhook Midtrans fail-closed: **ditunda** — jangan kerjakan kecuali pemilik minta. **Kredit lab** (keran + Starter 20 Kr di Channel Portal `/order`) sudah diminta pemilik; itu ledger uji, **bukan** klaim billing produksi.
+Pembayaran: **bukan** PSP pihak ketiga (Midtrans/Stripe) — **jangan kerjakan**. Mata uang kasir = **Kredit**. Lab: keran + Starter 20 Kr di `/order` (bukan settlement IDR). **Berikutnya (disepakati, jangan kerjakan sampai pemilik minta implementasi):** QRIS milik pemilik dan/atau VA bank milik pemilik → bukti transfer → approve jika bukti aman → Kredit masuk.
 
-Channel Portal / F-10 back-office: **ditunda** — modul **`nexus-channel-portal/`** adalah pintu jual v1; F-10 **bukan** prioritas. Jangan kerjakan kecuali pemilik minta.
+Channel Portal: pintu jual v1 di **`nexus-channel-portal/`** (`:3003`). **Login/daftar/tamu pelanggan** diminta pemilik (ledger Kredit per cookie/akun, bukan satu wallet `lab` untuk semua browser). **Bukan** login operator/developer di `/umkm`. F-10 roster penuh **tetap ditunda**. **Jangan** expose SOC publik `:3001`/`:8081`. **Jangan** Connect Git monorepo ke project warung. **Jangan** Loop/Job otomatis di Starter 20 Kr. **Pagar tipis** (`--tier tepi`) boleh untuk **satu** slug lab — bukan setiap warung otomatis, bukan Loop, bukan debit 20 Kr.
 
 **NEX-AI only:** runtime reasoning/reflex hanya `nex-ai-protect` / `nex-ai-reflex` (model milik pemilik, bukan Ollama Hub). Jangan fallback Qwen/Llama/GPT. Lihat `.agents/rules/nex-ai-only.md` dan `docs/NEX_AI_RUNTIME.md`.

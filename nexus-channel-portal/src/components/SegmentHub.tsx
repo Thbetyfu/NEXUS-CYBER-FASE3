@@ -30,8 +30,10 @@ const ICONS: Record<SegmentId, typeof Store> = {
 
 const WORDS = [
   "website UMKM.",
-  "pagar anti-deface.",
-  "landing startup.",
+  "header tepi.",
+  "pagar tipis tepi.",
+  "landing + header tepi.",
+  "tepi Alur A startup.",
   "wasit corporat.",
   "Edge on-prem pemerintah.",
 ];
@@ -89,7 +91,7 @@ function HeroFlow() {
 
   const hints = [
     "Pilih UMKM, sekolah, startup, corporat, atau pemerintah — harga tidak dicampur.",
-    "Pesan lewat WhatsApp; teks sudah berisi nama paket.",
+    "WhatsApp untuk chat paket. Lab: Kredit + keran. Bayar IDR: QRIS/VA milik Nexus + bukti + approve (belum).",
     "Proses di PC operator + tunnel — tanpa VPS dulu (on-prem = DC klien).",
     "Website live, Job wasit, atau pitch on-prem — sesuai peran Anda.",
   ];

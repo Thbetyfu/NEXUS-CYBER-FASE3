@@ -107,7 +107,11 @@ func (np *NexusProxy) AIMiddleware(next http.Handler) http.Handler {
 		}
 
 		query, _ := url.QueryUnescape(r.URL.RawQuery)
-		analysisData := query + " " + string(body)
+		path, _ := url.PathUnescape(r.URL.Path)
+		if path == "" {
+			path = r.URL.Path
+		}
+		analysisData := path + " " + query + " " + string(body)
 
 		// [LAYER 1: VIRTUAL PATCH IMMUNITY CHALLENGE]
 		// Alasan Arsitektural (Why):

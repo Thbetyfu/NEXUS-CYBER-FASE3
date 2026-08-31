@@ -4,7 +4,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { KREDIT } from "./kredit.ts";
-import { creditFaucet, debitStarter, getKreditSnapshot, refundStarter, slugFromGenerateLocation } from "./kredit-ledger.ts";
+import { creditFaucet, debitStarter, getKreditSnapshot, migrateGuestLedger, refundStarter, slugFromGenerateLocation } from "./kredit-ledger.ts";
+import { assertSafeId, ledgerPathFor, orderCodeFromId } from "./identity-paths.ts";
+import { hashPassword, verifyPassword } from "./passwords.ts";
 
 const dir = mkdtempSync(path.join(tmpdir(), "nexus-kredit-"));
 const filePath = path.join(dir, "kredit-ledger.json");
@@ -47,3 +49,48 @@ test("slug generate dari Location /preview atau /sites", () => {
   assert.equal(slugFromGenerateLocation("/sites/kedai-palet-biru"), "kedai-palet-biru");
   assert.equal(slugFromGenerateLocation("http://127.0.0.1:3010/preview/contoh-nexcent"), "contoh-nexcent");
 });
+
+test("dua session id punya saldo Kredit independen", async () => {
+  const guestA = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee1";
+  const guestB = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee2";
+  const pathA = ledgerPathFor("guest", guestA, dir);
+  const pathB = ledgerPathFor("guest", guestB, dir);
+  await creditFaucet(100, pathA, `guest:${guestA}`);
+  await creditFaucet(40, pathB, `guest:${guestB}`);
+  assert.equal((await getKreditSnapshot(pathA)).balance, 100);
+  assert.equal((await getKreditSnapshot(pathB)).balance, 40);
+  await debitStarter("order-a", pathA);
+  assert.equal((await getKreditSnapshot(pathA)).balance, 80);
+  assert.equal((await getKreditSnapshot(pathB)).balance, 40);
+});
+
+test("fail-closed debit tetap per-ledger", async () => {
+  const guest = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee3";
+  const isolated = ledgerPathFor("guest", guest, dir);
+  await assert.rejects(() => debitStarter("order-x", isolated), { name: "InsufficientKreditError" });
+});
+
+test("daftar dari tamu memindahkan ledger ke akun", async () => {
+  const guestId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee4";
+  const accountId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee5";
+  await creditFaucet(80, ledgerPathFor("guest", guestId, dir), `guest:${guestId}`);
+  await migrateGuestLedger(guestId, accountId, dir);
+  assert.equal((await getKreditSnapshot(ledgerPathFor("account", accountId, dir))).balance, 80);
+  assert.equal((await getKreditSnapshot(ledgerPathFor("guest", guestId, dir))).balance, 0);
+});
+
+test("kode ORDER dari UUID dan id bukan integer berurutan", () => {
+  const id = "3f1c9a2e-7b44-4c11-9a00-abcdeffedcba";
+  assert.equal(orderCodeFromId(id), "ORDER-3F1C9A2E");
+  assert.throws(() => assertSafeId("1"));
+  assert.throws(() => assertSafeId("../etc/passwd"));
+});
+
+test("kata sandi di-hash scrypt, bukan plaintext", async () => {
+  const hash = await hashPassword("rahasia-lab-1");
+  assert.equal(hash.includes("rahasia-lab-1"), false);
+  assert.equal(hash.startsWith("scrypt$"), true);
+  assert.equal(await verifyPassword("rahasia-lab-1", hash), true);
+  assert.equal(await verifyPassword("salah", hash), false);
+});
+

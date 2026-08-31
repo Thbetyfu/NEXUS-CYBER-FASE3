@@ -34,7 +34,21 @@ Set env sebelum generate:
 
 DNS wildcard `*.sites.nexus.id` → IP VPS. **Belum:** provisioner billing otomatis.
 
-## Upsell Cowork (S-6)
+## Upsell Pagar tipis / Tepi (tanpa Job)
+
+Etalase terpisah dari Starter 20 Kr. Satu slug per lab: Caddy `reverse_proxy gateway:8080` + Reflex judi/deface. **Bukan** Job Cowork.
+
+```powershell
+python cli.py upsell enable --slug warung-bu-siti --tier tepi
+python cli.py upsell status
+python cli.py upsell disable --slug warung-bu-siti
+```
+
+Lalu restart gateway agar `PROTECTED_HOST` / `TARGET_BACKEND` terbaca. Trafik harus ke Host lab (WAF `:8080`). `*.vercel.app` langsung **tidak** dilindungi. Self-heal pin **tidak** memulihkan Vercel.
+
+`--tier cowork` tetap membuat Job jika bridge `:3004` hidup. `--no-job` memaksa tanpa Job; `--job` memaksa Job meski tier `tepi`.
+
+## Upsell Cowork (S-6, Job)
 
 ```powershell
 python cli.py upsell enable --slug warung-bu-siti --tier cowork [--loop]

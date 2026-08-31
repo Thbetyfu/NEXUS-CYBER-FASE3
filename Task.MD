@@ -65,8 +65,8 @@ Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/
 
 - [x] **P-1:** Modul `nexus-channel-portal/` — landing + animasi + harga B2C/B2B
 - [x] **P-2:** Form `/order` + proxy API ke channel-starter
-- [x] **P-3:** Pembayaran manual WA + keputusan Q2/Q4/Q7/Q8 di DECISIONS_OPEN
-- [ ] **P-4:** Midtrans webhook (ditunda)
+- [x] **P-3:** Pembayaran: Kredit kasir + keputusan kontak WA di DECISIONS_OPEN
+- [ ] **P-4:** Top-up Kredit — QRIS/VA milik pemilik + bukti transfer + approve operator (**belum dikode**; bukan Midtrans)
 
 ---
 
@@ -92,7 +92,7 @@ Setiap ubahan kode wajib: `AGENTS.md` + `CHANGELOG.md` + dokumen hidup di `docs/
 ## Ditunda (legacy subscription — jangan kerjakan kecuali pemilik minta)
 
 - [ ] **Task 6:** `scripts/provisioner.sh` multi-tenant  
-- [ ] **Task 7:** Midtrans/Stripe webhook fail-closed  
+- [ ] **Task 7:** ~~Midtrans/Stripe webhook fail-closed~~ **Dibatalkan** — top-up = QRIS/VA milik pemilik + bukti + approve (lihat P-4)  
 - [ ] **Task 8:** F-10 back-office di portal legacy  
 - [ ] Portal self-serve CNAME massal, paket Rp19k **otomatis legacy** (digantikan desain Channel Starter — lihat DECISIONS_OPEN Q8)
 

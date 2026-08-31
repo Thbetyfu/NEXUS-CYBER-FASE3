@@ -79,12 +79,18 @@ def cmd_deploy_reload(args: argparse.Namespace) -> int:
 
 
 def cmd_upsell_enable(args: argparse.Namespace) -> int:
+    if args.no_job:
+        create_job: bool | None = False
+    elif args.job:
+        create_job = True
+    else:
+        create_job = None
     try:
         result = enable_upsell(
             args.slug,
             tier=PricingTier(args.tier),
             sites_root=args.sites_dir,
-            create_job=not args.no_job,
+            create_job=create_job,
             create_loop=args.loop,
             loop_interval_hours=args.loop_hours,
             bridge_url=args.bridge_url,
@@ -169,10 +175,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     ups = sub.add_parser("upsell", help="GaaS upsell — satu PROTECTED_HOST aktif")
     ups_sub = ups.add_subparsers(dest="upsell_command", required=True)
-    ups_enable = ups_sub.add_parser("enable", help="Enable WAF + optional Job Cowork for a site")
+    ups_enable = ups_sub.add_parser(
+        "enable",
+        help="Enable WAF for one slug (tepi = pagar tipis, no Job; cowork = Job default)",
+    )
     ups_enable.add_argument("--slug", required=True)
-    ups_enable.add_argument("--tier", choices=["tepi", "cowork"], default="cowork")
-    ups_enable.add_argument("--no-job", action="store_true", help="Skip NEX-RED Job creation")
+    ups_enable.add_argument("--tier", choices=["tepi", "cowork"], default="tepi")
+    ups_enable.add_argument(
+        "--no-job",
+        action="store_true",
+        help="Skip NEX-RED Job (default for --tier tepi)",
+    )
+    ups_enable.add_argument(
+        "--job",
+        action="store_true",
+        help="Force Job creation even for --tier tepi",
+    )
     ups_enable.add_argument("--loop", action="store_true", help="Add Loop GaaS schedule (cowork tier)")
     ups_enable.add_argument("--loop-hours", type=int, default=168)
     ups_enable.add_argument("--bridge-url", default=None)

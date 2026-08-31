@@ -72,8 +72,8 @@ python NEX-RED/nexred.py job schedule-add --host portfolio.nexus-lab.test --inte
 
 Operator UI: Command Center `:3001` → widget **Job Cowork** + API `:8081`.
 
-Portal jual B2B: [`nexus-channel-portal/`](../nexus-channel-portal/) → `/institusi` (alias `/cowork`).  
-On-prem pemerintah / pitching B2G: [COWORK_B2G.md](./COWORK_B2G.md) → `/b2g`.  
+Portal jual B2B: [`nexus-channel-portal/`](../nexus-channel-portal/) → `/corporat`. Alias lama tetap redirect: `/institusi` → `/corporat` · `/cowork` → `/corporat`.  
+On-prem pemerintah / pitching B2G: [COWORK_B2G.md](./COWORK_B2G.md) → `/pemerintah` (alias `/b2g`).  
 Unit ekonomi: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md).
 
 ---
@@ -105,7 +105,7 @@ Lihat [LIMITATIONS.md](./LIMITATIONS.md), [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 
 | # | Task | Status |
 | --- | --- | --- |
-| M20-1 | Halaman `/cowork` di Channel Portal | **Selesai** (2026-08-23) |
+| M20-1 | Halaman Cowork di Channel Portal (`/corporat`; alias `/cowork`) | **Selesai** (2026-08-23) |
 | M20-2 | Playbook operator + demo script | Dokumen ini |
 | M20-3 | Satu pilot B2B (Job + artefak diserahkan) | **Belum** |
 | M20-4 | Template proposal/kontrak B2B (MD) | **Belum** |

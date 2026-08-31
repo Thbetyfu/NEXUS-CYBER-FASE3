@@ -11,10 +11,10 @@
 | Item | Keputusan |
 | --- | --- |
 | Prioritas sebelumnya | B2G **belum** prioritas |
-| Sekarang | **B2G pitching package** diterima — docs + pintu portal `/b2g` untuk investor & narasi adaptif semua segmen |
+| Sekarang | **B2G pitching package** diterima — docs + pintu portal `/pemerintah` (alias `/b2g`) untuk investor & narasi adaptif semua segmen |
 | Bukan | Pengadaan penuh (SIPLah/E-Katalog massal, sertifikasi, SLA data center pemerintah) — **belum dikerjakan** |
 
-Institusi komersial tetap di `/institusi` (B2B Job/Loop). **B2G** = pintu terpisah: **on-prem di DC klien** + lisensi Edge + **Loop wajib**.
+Institusi komersial di `/corporat` (B2B Job/Loop; alias `/institusi`, `/cowork`). **B2G** = pintu `/pemerintah` (alias `/b2g`): **on-prem di DC klien** + lisensi Edge + **Loop wajib**.
 
 ---
 
@@ -70,9 +70,9 @@ Ini selaras moat produk di [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) §8 (jalur di 
 ## 4. Narasi pitching: satu portal, tier adaptif
 
 ```text
-  UMKM → Sekolah → Startup → Institusi (B2B) → B2G (on-prem)
+  UMKM → Sekolah → Startup → Corporat (B2B) → Pemerintah (on-prem)
      │        │         │            │              │
-   site+pagar  anti-deface  tepi/Job    Job/Loop     Edge lisensi
+   site+pagar  header tepi  tepi/Job    Job/Loop     Edge lisensi
    15–35rb     15–35rb      45–300rb    200–300rb+   + Loop wajib
 ```
 
@@ -81,7 +81,7 @@ Ini selaras moat produk di [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) §8 (jalur di 
 - Investor melihat **funnel naik margin**: volume murah (UMKM) → wasit B2B → retainer on-prem B2G.  
 - Unit ekonomi detail: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md).
 
-Portal: [`nexus-channel-portal/`](../nexus-channel-portal/) → `/b2g`.
+Portal: [`nexus-channel-portal/`](../nexus-channel-portal/) → `/pemerintah`. Alias lama `/b2g` tetap redirect.
 
 ---
 
@@ -93,7 +93,7 @@ Portal: [`nexus-channel-portal/`](../nexus-channel-portal/) → `/b2g`.
 | **Loop On-Prem (wajib)** | Job terjadwal + update + artefak + dukungan operator · tanpa Loop lisensi tidak diperpanjang | **Rp 3.500.000** / bulan |
 | **Custom / multi-DC** | Multi-zona, air-gap terbatas, integrasi SIEM/log klien, pelatihan L0/L1 | **Custom** (WA) |
 
-Pembayaran v1 tetap **manual WhatsApp** — bukan Midtrans/e-procurement otomatis.
+Pembayaran pitching: **Kredit** / WhatsApp kontak — **bukan** Midtrans/e-procurement otomatis. Top-up IDR yang disepakati: QRIS atau VA bank milik pemilik + bukti + approve (**belum dikode**).
 
 ---
 
@@ -102,7 +102,7 @@ Pembayaran v1 tetap **manual WhatsApp** — bukan Midtrans/e-procurement otomati
 | Siap untuk pitching | Belum siap produksi B2G |
 | --- | --- |
 | Dokumen arsitektur & batasan IP | Packaging binary berlisensi produksi + enforcement runtime |
-| Pintu `/b2g` + harga ilustrasi | Pengadaan formal (HPS, SIPLah, E-Katalog) |
+| Pintu `/pemerintah` (alias `/b2g`) + harga ilustrasi | Pengadaan formal (HPS, SIPLah, E-Katalog) |
 | Narasi adaptif segmen di portal | Deploy on-prem teruji di DC pemerintah |
 | Unit ekonomi transparan | SLA uptime data center / sertifikasi regulator |
 | Mesin Job/Loop lab (sama fondasi B2B) | Kontrak hukum + NDA + audit source escrow (jika diminta) |
@@ -128,7 +128,7 @@ Demo investor boleh tetap dari lab/PC operator; pitch B2G menjelaskan **target s
 | # | Task | Status |
 | --- | --- | --- |
 | B2G-1 | Dokumen COWORK_B2G + unit ekonomi | **Selesai** (2026-08-23) |
-| B2G-2 | Portal `/b2g` + hub segmen | **Selesai** (kode portal) |
+| B2G-2 | Portal `/pemerintah` + hub segmen (alias `/b2g`) | **Selesai** (kode portal) |
 | B2G-3 | Packaging image Edge berlisensi (produksi) | **Belum** |
 | B2G-4 | Template proposal/HPS ilustrasi | **Belum** |
 | B2G-5 | Pilot on-prem satu instansi (lab/staging) | **Belum** |

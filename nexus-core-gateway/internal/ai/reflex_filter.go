@@ -25,10 +25,12 @@ type ReflexFilter struct {
 	traversalPatterns []*regexp.Regexp
 	rcePatterns       []*regexp.Regexp
 	headerPatterns    []*regexp.Regexp
+	// Pagar tipis: injeksi judi/deface di request kanonik. Hanya WAF :8080 / PROTECTED_HOST.
+	defacePatterns []*regexp.Regexp
 	// Regex untuk membersihkan komentar SQL sebelum matching (GAP-001)
-	sqlCommentStrip *regexp.Regexp
-	jsUnicodeEscape *regexp.Regexp
-	jsHexEscape     *regexp.Regexp
+	sqlCommentStrip  *regexp.Regexp
+	jsUnicodeEscape  *regexp.Regexp
+	jsHexEscape      *regexp.Regexp
 	benchmarkPattern *regexp.Regexp
 }
 
@@ -64,11 +66,11 @@ func NewReflexFilter() *ReflexFilter {
 	traversalRegex := []*regexp.Regexp{
 		regexp.MustCompile(`(?i)\.{2,}[/\\]`), // Mendeteksi ../ atau ..\
 		regexp.MustCompile(`(?i)%2e%2e%2f`),   // Mendeteksi URL encoded traversal
-		regexp.MustCompile(`(?i)/etc/passwd`),  // Lokasi sensitif Linux
+		regexp.MustCompile(`(?i)/etc/passwd`), // Lokasi sensitif Linux
 		regexp.MustCompile(`(?i)/etc/shadow`),
 		regexp.MustCompile(`(?i)/var/log/`),
-		regexp.MustCompile(`(?i)php://`),      // PHP Stream wrappers
-		regexp.MustCompile(`(?i)C:\\`),        // Drive utama Windows
+		regexp.MustCompile(`(?i)php://`), // PHP Stream wrappers
+		regexp.MustCompile(`(?i)C:\\`),   // Drive utama Windows
 		regexp.MustCompile(`(?i)win\.ini`),
 	}
 
@@ -80,6 +82,22 @@ func NewReflexFilter() *ReflexFilter {
 		regexp.MustCompile("(?i)`[^`]*(whoami|id|cat|wget|curl|sh|bash)[^`]*`"),
 		regexp.MustCompile(`(?i)\$\((whoami|id|cat|wget|curl|sh|bash)\)`),
 		regexp.MustCompile(`(?i)sh\s+-c\s+`),
+	}
+
+	// Pagar tipis anti-judi/deface (bukan zero-day, bukan restore origin).
+	// Hanya request yang sudah masuk gateway WAF (:8080 / Host PROTECTED_HOST).
+	// Pola sengaja multi-token agar "slot parkir" / nama usaha biasa tidak kena.
+	defaceRegex := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)slot[\s._-]*gacor`),
+		regexp.MustCompile(`(?i)judi[\s._-]*online`),
+		regexp.MustCompile(`(?i)togel[\s._-]*(online|hongkong|singapore|sidney|\bhk\b|\bsgp\b)`),
+		regexp.MustCompile(`(?i)(situs|link)[\s._-]*(judi|slot|togel)`),
+		regexp.MustCompile(`(?i)(daftar|promo)[\s._-]*(slot|judi)`),
+		regexp.MustCompile(`(?i)pragmatic[\s._-]*play`),
+		regexp.MustCompile(`(?i)pg[\s._-]*soft`),
+		regexp.MustCompile(`(?i)hacked[\s._-]*by`),
+		regexp.MustCompile(`(?i)defaced[\s._-]*by`),
+		regexp.MustCompile(`(?i)<iframe[^>]{0,200}(slot|judi|togel|casino)`),
 	}
 
 	// Pola pemindaian HTTP Header berbahaya
@@ -101,10 +119,11 @@ func NewReflexFilter() *ReflexFilter {
 		traversalPatterns: traversalRegex,
 		rcePatterns:       rceRegex,
 		headerPatterns:    headerRegex,
-		sqlCommentStrip:  regexp.MustCompile(`(?s)/\*.*?\*/`),
-		jsUnicodeEscape:  regexp.MustCompile(`\\u([0-9a-fA-F]{4})`),
-		jsHexEscape:      regexp.MustCompile(`\\x([0-9a-fA-F]{2})`),
-		benchmarkPattern: regexp.MustCompile(`(?i)BENCHMARK\s*\(`),
+		defacePatterns:    defaceRegex,
+		sqlCommentStrip:   regexp.MustCompile(`(?s)/\*.*?\*/`),
+		jsUnicodeEscape:   regexp.MustCompile(`\\u([0-9a-fA-F]{4})`),
+		jsHexEscape:       regexp.MustCompile(`\\x([0-9a-fA-F]{2})`),
+		benchmarkPattern:  regexp.MustCompile(`(?i)BENCHMARK\s*\(`),
 	}
 }
 
@@ -219,7 +238,21 @@ func (f *ReflexFilter) InspectRequest(data string) (isThreat bool, threatType st
 		}
 	}
 
+	// 5. Pagar tipis: injeksi judi / graffiti deface (hanya jika trafik sudah di WAF)
+	if kind := f.matchDefaceInject(decoded); kind != "" {
+		return true, kind
+	}
+
 	return false, ""
+}
+
+func (f *ReflexFilter) matchDefaceInject(decoded string) string {
+	for _, p := range f.defacePatterns {
+		if p.MatchString(decoded) {
+			return "GAMBLING_DEFACE_INJECT_DETECTED"
+		}
+	}
+	return ""
 }
 
 // InspectHeaders memeriksa kumpulan header HTTP untuk mendeteksi injeksi, spoofing IP,
@@ -234,6 +267,9 @@ func (f *ReflexFilter) InspectHeaders(headers map[string][]string) (isThreat boo
 				if p.MatchString(combined) {
 					return true, "MALICIOUS_HEADER_DETECTED"
 				}
+			}
+			if kind := f.matchDefaceInject(normalizedVal); kind != "" {
+				return true, kind
 			}
 		}
 	}

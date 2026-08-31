@@ -16,6 +16,9 @@ const THEMES = [
 type KreditState = {
   balance: number;
   mode: "lab" | "live";
+  kind?: "guest" | "account" | null;
+  orderCode?: string | null;
+  email?: string | null;
 };
 
 type OrderResult = {
@@ -89,12 +92,24 @@ export default function OrderPage() {
   const loadKredit = useCallback(async () => {
     try {
       const res = await fetch("/api/kredit");
-      const data = (await res.json()) as KreditState & { ok?: boolean; error?: string };
+      const data = (await res.json()) as KreditState & {
+        ok?: boolean;
+        error?: string;
+        kind?: "guest" | "account" | null;
+        orderCode?: string | null;
+        email?: string | null;
+      };
       if (!res.ok || data.ok === false) {
         setKreditError(data.error || "Ledger Kredit tidak terbaca");
         return;
       }
-      setKredit({ balance: data.balance, mode: data.mode });
+      setKredit({
+        balance: data.balance,
+        mode: data.mode,
+        kind: data.kind,
+        orderCode: data.orderCode,
+        email: data.email,
+      });
       setKreditError("");
     } catch {
       setKreditError("Ledger Kredit tidak terbaca");
@@ -119,7 +134,13 @@ export default function OrderPage() {
         setFormError(data.error || "Keran gagal");
         return;
       }
-      setKredit({ balance: data.balance, mode: data.mode });
+      setKredit({
+        balance: data.balance,
+        mode: data.mode,
+        kind: data.kind,
+        orderCode: data.orderCode,
+        email: data.email,
+      });
     } catch {
       setFormError("Keran gagal");
     } finally {
@@ -192,9 +213,18 @@ export default function OrderPage() {
         error?: string;
         redirect?: string | null;
         balance?: number;
+        kind?: "guest" | "account" | null;
+        orderCode?: string | null;
+        email?: string | null;
       };
       if (typeof data.balance === "number") {
-        setKredit((prev) => ({ balance: data.balance as number, mode: prev?.mode ?? "lab" }));
+        setKredit((prev) => ({
+          balance: data.balance as number,
+          mode: prev?.mode ?? "lab",
+          kind: data.kind ?? prev?.kind,
+          orderCode: data.orderCode ?? prev?.orderCode,
+          email: data.email ?? prev?.email,
+        }));
       }
       if (!res.ok || data.ok === false) {
         setFormError(data.error || "Pesanan ditolak. Isi keran lab atau lanjut konfirmasi WA.");
@@ -229,9 +259,45 @@ export default function OrderPage() {
         <p className="order-lead">
           Paket Starter = <strong>{KREDIT.starterPriceKr} Kredit</strong> (setara Rp {hargaIdr}/bulan): template
           Nexcent, 4 warna, domain lab <code>{`{slug}.nexus-lab.test`}</code>, berkas Vercel, header tepi Nexus. Lab
-          memakai Kredit (keran), bukan Midtrans. Job Cowork bukan paket ini. Konfirmasi IDR produksi tetap via
-          WhatsApp.
+          memakai Kredit (keran) — bukan Midtrans atau PSP lain. Job Cowork bukan paket ini. Top-up IDR produksi:
+          QRIS atau VA bank milik Nexus + bukti transfer + approve operator (belum di halaman ini). WhatsApp = chat,
+          bukan gateway bayar. Pagar Starter = header tepi (nosniff / frame / CSP), bukan WAF Reflex dan bukan Job.
+          Pagar tipis (35rb, upsell <code>--tier tepi</code>) = Reflex judi/deface di WAF 1 host lab — bukan debit 20
+          Kredit, bukan pulih Vercel, bukan <code>*.vercel.app</code> langsung.
         </p>
+
+        <section className="auth-order-strip" aria-label="Akun pelanggan">
+          <p>
+            {kredit?.kind === "account" ? (
+              <>
+                Akun <strong>{kredit.email}</strong>
+                {kredit.orderCode ? (
+                  <>
+                    {" "}
+                    · kode <code>{kredit.orderCode}</code>
+                  </>
+                ) : null}
+              </>
+            ) : kredit?.kind === "guest" ? (
+              <>
+                Sesi <strong>tamu</strong>
+                {kredit.orderCode ? (
+                  <>
+                    {" "}
+                    · kode <code>{kredit.orderCode}</code>
+                  </>
+                ) : null}{" "}
+                — cookie di browser ini. Ganti HP atau hapus cookie = saldo tamu hilang.{" "}
+                <Link href="/daftar">Daftar</Link> untuk simpan akun (Kredit tamu ikut).
+              </>
+            ) : (
+              <>
+                Boleh telusur tanpa daftar. Keran dan generate memakai sesi tamu otomatis.{" "}
+                <Link href="/masuk">Masuk</Link> · <Link href="/daftar">Daftar</Link> · uji tanpa daftar di halaman ini.
+              </>
+            )}
+          </p>
+        </section>
 
         <section className="kredit-panel" aria-label="Saldo Kredit">
           <img src="/brand/nexus-kredit.svg" alt="" width={56} height={56} className="kredit-panel-mark" />
@@ -241,6 +307,7 @@ export default function OrderPage() {
             <p className="kredit-panel-hint">
               1 {KREDIT.abbr} = Rp {KREDIT.idrPerKredit.toLocaleString("id-ID")}
               {kredit?.mode === "lab" ? " · keran lab" : ""}
+              {kredit?.orderCode ? ` · ${kredit.orderCode}` : ""}
             </p>
           </div>
           {kredit?.mode !== "live" && (
@@ -264,7 +331,8 @@ export default function OrderPage() {
                 <li>
                   Saldo sekarang: {result.balance ?? kredit?.balance} {KREDIT.abbr}
                 </li>
-                {result.orderId && <li>Order {result.orderId.slice(0, 8)}…</li>}
+                {result.orderId && <li>Job generate {result.orderId.slice(0, 8)}…</li>}
+                {kredit?.orderCode && <li>Kode TF / WA: {kredit.orderCode}</li>}
                 {customDomain && (
                   <li>Domain kustom yang diisi: {customDomain} (CNAME operator, bukan auto-DNS publik)</li>
                 )}
@@ -293,7 +361,9 @@ export default function OrderPage() {
               <div style={{ marginTop: 20 }}>
                 <WaCta
                   label="Konfirmasi via WhatsApp"
-                  href={whatsappPackageUrl(`Starter — ${businessName}`)}
+                  href={whatsappPackageUrl(
+                    `Starter — ${businessName}${kredit?.orderCode ? ` — ${kredit.orderCode}` : ""}`,
+                  )}
                   primary
                 />
               </div>

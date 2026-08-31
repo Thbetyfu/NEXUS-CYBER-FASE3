@@ -2318,3 +2318,58 @@ input[type="text"]:focus, select:focus {
   font-size: 13px;
   margin: 0 0 12px;
 }
+
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.auth-links-label {
+  color: var(--notion-text-muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-links-code {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--notion-text-muted);
+}
+
+.auth-links-btn {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.auth-order-strip {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--notion-border);
+  border-radius: var(--notion-radius-lg);
+  font-size: 14px;
+  color: #5c6570;
+}
+
+.auth-page .auth-switch {
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.auth-guest-btn {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-honest {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #5c6570;
+}

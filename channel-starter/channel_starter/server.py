@@ -369,8 +369,8 @@ def upsell_status_route():
 @app.post("/upsell/{slug}/enable")
 def upsell_enable_route(
     slug: str,
-    tier: PricingTier = PricingTier.COWORK,
-    create_job: bool = True,
+    tier: PricingTier = PricingTier.TEPI,
+    create_job: bool | None = None,
     create_loop: bool = False,
 ):
     try:

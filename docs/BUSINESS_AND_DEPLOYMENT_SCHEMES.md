@@ -130,12 +130,13 @@ Konteks POJK 30/2025 (risiko siber ITSK) dan ketahanan siber perbankan = **pembi
 
 ---
 
-## 8. Yang Ditunda (legacy subscription)
+## 8. Yang Ditunda (legacy + PSP pihak ketiga)
 
-- Billing otomatis massal (Midtrans) — portal v1 = WA manual
+- PSP pihak ketiga (Midtrans, Stripe) dan webhook fail-closed — **jangan**; top-up = QRIS/VA milik pemilik + bukti + approve (**belum dikode**)
 - F-10 super-admin roster pelanggan
-- Webhook Midtrans/Stripe fail-closed
 - Provisioner kontainer per-tenant CNAME massal
+- Connect Git monorepo ke project warung
+- Loop / Job otomatis di Starter ~Rp 20rb
 
 Lihat [CHANGELOG.md](../CHANGELOG.md) Unreleased.
 

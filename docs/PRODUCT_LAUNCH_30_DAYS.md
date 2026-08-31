@@ -54,7 +54,8 @@ Setelah 30 hari, Nexus Cyber dianggap **sudah meluncur sebagai produk tepat guna
 
 ### Apa yang **tidak** dibangun minggu ini
 
-- Midtrans / webhook fail-closed  
+- PSP pihak ketiga (Midtrans/Stripe) / webhook  
+- Alur QRIS/VA + bukti + approve (disepakati, belum dikode)  
 - Multi-tenant CNAME massal / provisioner / Docker auto-onboard di SOC  
 - Packaging binary B2G  
 - Fitur SOC baru di luar Job Cowork (SEO / Safe Browsing / Core Web Vitals FE)  
@@ -194,7 +195,7 @@ Sampai itu: **PC + tunnel = distribusi resmi tahap pilot.**
 
 | Ditunda | Alasan |
 | --- | --- |
-| Midtrans / Stripe massal | Bayar WA sudah cukup untuk ≤ beberapa klien |
+| PSP pihak ketiga (Midtrans/Stripe) | Kasir = Kredit; top-up = QRIS/VA milik pemilik + bukti + approve (belum dikode) |
 | F-10 back-office | Roster kecil di chat/spreadsheet OK |
 | Provisioner CNAME massal | Satu host per Job sudah tepat guna |
 | Packaging B2G produksi | Pitching dulu; DC instansi = fase berikutnya |
@@ -242,7 +243,7 @@ Judul: Proposal Edge Antibody Cowork — Job / Loop
 *Kami jual Job wasit kanal digital: bandingkan tepi vs origin, pasang antibodi, uji ulang, serahkan laporan MD. Residual yang masih terbuka kami tulis apa adanya (bukan laporan hijau palsu). Pilot Rp 200rb/host. Bukan pentest exploit. Tertarik scope hostname Anda?*
 
 **UMKM Starter (funnel):**  
-*Website + pelindung tingkat UMKM dari Rp 15–20rb/bulan (pilot). Job/Loop wasit = paket terpisah. Order: portal + WA 62895603358692.*
+*Website Starter dari Rp 15–20rb/bulan (pilot). Kasir lab: Kredit. Top-up IDR: QRIS/VA milik Nexus + bukti + approve (belum). WhatsApp = chat, bukan gateway. Job/Loop wasit = paket terpisah. Portal `/order` · WA 62895603358692.*
 
 ---
 

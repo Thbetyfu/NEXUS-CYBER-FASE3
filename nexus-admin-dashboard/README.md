@@ -13,7 +13,7 @@ Next.js dashboard untuk **operator Nexus** saja — **Konsol Operator GaaS** (ka
 - Logs, IP/Ban, Terminal, Metrics, Laporan/Artefak
 - Domain/Workspace switcher (Context-Aware: refresh + auto-bind setelah onboard)
 
-**Onboard kanal (operator pilot):** form hanya Origin URL + Protected host / custom domain (opsional; default lab `portfolio.nexus-lab.test`) → daftar rute WAF + workspace. DNS/CNAME atau tunnel dikonfigurasi **di luar SOC** (pilot = PC + tunnel). Bukan Midtrans, bukan self-serve CNAME massal, **bukan** auto-provision Docker. Channel Starter tetap pintu entry terpisah untuk klien tanpa site.
+**Onboard kanal (operator pilot):** form hanya Origin URL + Protected host / custom domain (opsional; default lab `portfolio.nexus-lab.test`) → daftar rute WAF + workspace. DNS/CNAME atau tunnel dikonfigurasi **di luar SOC** (pilot = PC + tunnel). Bukan PSP pihak ketiga, bukan self-serve CNAME massal, **bukan** auto-provision Docker. Channel Starter tetap pintu entry terpisah untuk klien tanpa site.
 
 ## Stack
 

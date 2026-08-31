@@ -72,15 +72,17 @@ Karena biaya infrastruktur tahap ini ≈ **Rp 0** (PC sendiri), harga **disesuai
 
 | Segmen | Route | Belum punya website | Sudah punya website |
 | --- | --- | --- | --- |
-| **UMKM** | `/umkm` | **Rp 20.000** site+pagar · **Rp 35.000** GaaS entry | **Rp 15.000** pagar · **Rp 28.000** pagar+status |
+| **UMKM** | `/umkm` | **Rp 20.000** Website Starter (header tepi) · **Rp 35.000** Pagar tipis | **Rp 15.000** pagar header · **Rp 28.000** Pagar tipis |
 | **Sekolah** | `/sekolah` | Sama struktur 20 / 35 (copy sekolah) | Sama struktur 15 / 28 |
-| **Startup** | `/startup` | Landing+pagar **Rp 45.000** · Landing+Tepi **Rp 75.000** · Job **Rp 200.000** | Tepi **Rp 75.000** · Job **Rp 200.000** · Loop **Rp 300.000** |
+| **Startup** | `/startup` | Landing+pagar **Rp 45.000** (header tepi) · Landing+Tepi **Rp 75.000** (Alur A Reflex, 1 host lab) · Job **Rp 200.000** | Tepi **Rp 75.000** (Alur A, 1 host lab) · Job **Rp 200.000** · Loop **Rp 300.000** |
 | **Corporat** | `/corporat` | **Cabang deploy:** Hosted = Job **Rp 200.000** · Loop **Rp 300.000**; On-prem (besar) = Edge **Rp 18jt**/tahun · Loop **Rp 3,5jt**/bulan |
 | **Pemerintah** | `/pemerintah` | Lisensi Edge On-Prem **Rp 18jt**/tahun · Loop On-Prem **Rp 3,5jt**/bulan · Custom — **tanpa** kuis website; target DC instansi |
 
 Homepage `/` = hub pilih segmen. Setelah pilih peran: UMKM/sekolah/startup → **sudah punya website?**; Corporat → **hosted vs on-prem**; Pemerintah → langsung paket on-prem.
 
-**Catatan unit ekonomi (pilot PC+tunnel, infra ≈ 0):** cabang “sudah punya web” lebih murah karena tanpa slot template; tetap cover ops/alert. Jangan jual Loop institusi/B2G di harga warung. Tabel jual/COGS/margin: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md). Narasi on-prem: [COWORK_B2G.md](./COWORK_B2G.md).
+**Pagar** 15rb / Starter 20rb = **header tepi** + hostname lab. **Pagar tipis 35rb / 28rb** dan **Startup Tepi 75rb** = Reflex di WAF (Alur A), 1 host lab, **bukan** Job, **bukan** pulih Vercel, **bukan** alert Telegram pelanggan. Landing startup 45rb = header tepi saja.
+
+**Catatan unit ekonomi (pilot PC+tunnel, infra ≈ 0):** cabang “sudah punya web” lebih murah karena tanpa slot template. Jangan jual Loop institusi/B2G di harga warung. Tabel jual/COGS/margin: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md). Narasi on-prem: [COWORK_B2G.md](./COWORK_B2G.md).
 
 ---
 
@@ -89,7 +91,7 @@ Homepage `/` = hub pilih segmen. Setelah pilih peran: UMKM/sekolah/startup → *
 - Uptime bergantung listrik, ISP rumah, dan tunnel.  
 - Bukan SOC 24/7 otonom.  
 - Satu titik gagal = PC operator.  
-- Midtrans / F-10 / provisioner massal tetap **ditunda**.
+- PSP pihak ketiga (Midtrans/Stripe) **jangan**. Top-up Kredit = QRIS/VA milik pemilik + bukti + approve (**belum dikode**). F-10 / provisioner massal tetap **ditunda**.
 
 ---
 

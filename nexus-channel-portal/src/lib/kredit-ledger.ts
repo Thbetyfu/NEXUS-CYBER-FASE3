@@ -8,6 +8,8 @@ import {
   type KreditEntry,
   type KreditSnapshot,
 } from "./kredit.ts";
+import { withLock } from "./mutex.ts";
+import { assertSafeId, defaultDataDir, ledgerPathFor } from "./identity-paths.ts";
 
 type StoredLedger = {
   version: 1;
@@ -18,32 +20,23 @@ type StoredLedger = {
 
 const STARTER_SKU = "channel-starter";
 
-let lock: Promise<unknown> = Promise.resolve();
-
-function withLock<T>(fn: () => T): Promise<T> {
-  const run = lock.then(fn, fn);
-  lock = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
-}
-
 export function isLabLedgerMode(mode = process.env.NEXUS_LEDGER_MODE): boolean {
   return (mode ?? "lab").trim().toLowerCase() !== "live";
 }
 
 export function defaultLedgerPath(): string {
-  return process.env.NEXUS_KREDIT_LEDGER_PATH?.trim() || path.join(process.cwd(), "data", "kredit-ledger.json");
+  return process.env.NEXUS_KREDIT_LEDGER_PATH?.trim() || path.join(defaultDataDir(), "kredit-ledger.json");
 }
 
-function emptyLedger(): StoredLedger {
-  return { version: 1, walletId: KREDIT.walletId, balance: 0, entries: [] };
+export { defaultDataDir, ledgerPathFor };
+
+export function emptyLedger(walletId: string = KREDIT.walletId): StoredLedger {
+  return { version: 1, walletId, balance: 0, entries: [] };
 }
 
-function readLedger(filePath: string): StoredLedger {
+function readLedger(filePath: string, fallbackWalletId: string = KREDIT.walletId): StoredLedger {
   if (!existsSync(filePath)) {
-    return emptyLedger();
+    return emptyLedger(fallbackWalletId);
   }
   const parsed = JSON.parse(readFileSync(filePath, "utf8")) as StoredLedger;
   if (parsed.version !== 1 || typeof parsed.balance !== "number" || !Array.isArray(parsed.entries)) {
@@ -109,6 +102,7 @@ export async function getKreditSnapshot(filePath = defaultLedgerPath()): Promise
 export async function creditFaucet(
   amount: number = KREDIT.faucetAmountKr,
   filePath = defaultLedgerPath(),
+  walletId?: string,
 ): Promise<KreditSnapshot> {
   return withLock(() => {
     if (!isLabLedgerMode()) {
@@ -118,7 +112,10 @@ export async function creditFaucet(
     if (!Number.isFinite(add) || add < 1 || add > KREDIT.faucetMaxKr) {
       throw new RangeError(`Keran 1–${KREDIT.faucetMaxKr} Kr`);
     }
-    const ledger = readLedger(filePath);
+    const ledger = readLedger(filePath, walletId ?? KREDIT.walletId);
+    if (walletId) {
+      ledger.walletId = walletId;
+    }
     pushEntry(ledger, "faucet", add, `Keran lab +${add} Kr`);
     writeLedger(filePath, ledger);
     return snapshotOf(ledger);
@@ -165,6 +162,31 @@ export async function refundStarter(orderId: string, filePath = defaultLedgerPat
     });
     writeLedger(filePath, ledger);
     return snapshotOf(ledger);
+  });
+}
+
+/** Copy guest ledger into a new account file. Caller must already hold withLock. */
+export function migrateGuestLedgerUnlocked(fromGuestId: string, toAccountId: string, dataDir: string): void {
+  const fromPath = ledgerPathFor("guest", fromGuestId, dataDir);
+  const toPath = ledgerPathFor("account", toAccountId, dataDir);
+  const walletId = `account:${assertSafeId(toAccountId)}`;
+  const source = readLedger(fromPath, `guest:${assertSafeId(fromGuestId)}`);
+  if (existsSync(toPath)) {
+    return;
+  }
+  writeLedger(toPath, { ...source, walletId });
+  if (existsSync(fromPath)) {
+    try {
+      unlinkSync(fromPath);
+    } catch {
+      /* guest file may already be gone */
+    }
+  }
+}
+
+export async function migrateGuestLedger(fromGuestId: string, toAccountId: string, dataDir: string): Promise<void> {
+  await withLock(() => {
+    migrateGuestLedgerUnlocked(fromGuestId, toAccountId, dataDir);
   });
 }
 

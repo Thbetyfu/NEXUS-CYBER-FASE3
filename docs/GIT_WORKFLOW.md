@@ -7,7 +7,7 @@ Tidak ada submodule di monorepo. Origin portofolio = repo terpisah + **Vercel di
 
 **Channel Portal** (`nexus-channel-portal/`, port `:3003`) ada di **monorepo**.
 
-Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./BRD.md). Jangan dokumentasikan F-10 atau billing otomatis massal sebagai prioritas v1.
+Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./BRD.md). Jangan dokumentasikan F-10 atau PSP pihak ketiga (Midtrans/Stripe) sebagai prioritas v1. Top-up Kredit = QRIS/VA milik pemilik + bukti + approve — jangan klaim sudah ada jika belum dikode.
 
 ## Clone
 

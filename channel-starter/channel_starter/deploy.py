@@ -183,6 +183,6 @@ def deploy_manifest(manifest: SiteManifest, *, sites_root: Path | str | None = N
             "gaas_active": manifest.gaas_active,
             "protected_host": manifest.protected_host,
             "cowork_job_id": manifest.cowork_job_id,
-            "enable_cmd": f"python cli.py upsell enable --slug {manifest.slug} --tier cowork",
+            "enable_cmd": f"python cli.py upsell enable --slug {manifest.slug} --tier tepi",
         },
     }

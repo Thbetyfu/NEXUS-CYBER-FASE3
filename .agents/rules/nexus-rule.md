@@ -49,7 +49,7 @@ Setiap perubahan **perilaku** (port, auth, mux, Caddy, compose, NEX-RED, Gallery
 2. Baris terkait di dokumen **hidup** yang diindeks [`docs/README.md`](../../docs/README.md) — selaraskan [`docs/PRODUCT_MODEL.md`](../../docs/PRODUCT_MODEL.md) jika model produk/GaaS berubah (`CAPABILITIES`, `LIMITATIONS`, `PRD`, `ARCHITECTURE`, dll.).
 3. Jangan menulis ulang `docs/reports/*`, `shannon/docs`, `strix/docs` seolah kondisi hari ini.
 4. Jangan mengklaim eBPF XDP, JWT enterprise, Stripe, **Channel Starter produksi/billing selesai**, **Loop GaaS di Rp 20rb**, atau pentest NEX-RED Shannon jika kode tidak melakukannya.
-5. Jangan dokumentasikan Channel Portal billing otomatis / F-10 sebagai prioritas produk (ditunda).
+5. Jangan dokumentasikan Channel Portal **PSP pihak ketiga** (Midtrans/Stripe) atau F-10 sebagai prioritas. Top-up yang disepakati = QRIS/VA milik pemilik + bukti + approve — **jangan klaim sudah ada** jika belum dikode.
 
 Agen: `.agents/agents/docs-sync.md`.
 

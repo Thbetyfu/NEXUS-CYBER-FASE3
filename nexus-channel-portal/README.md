@@ -22,8 +22,9 @@ Buka http://localhost:3003
 
 ## Pembayaran
 
-- **IDR v1:** Manual WhatsApp → `62895603358692`
-- **Kredit lab v0:** `/order` — isi keran → bayar **20 Kredit** → generate site. Midtrans **ditunda**. Job Cowork **tidak** dijual di sini.
+- **Kontak IDR:** Manual WhatsApp → `62895603358692`
+- **Kredit (kasir v0):** `/order` — sesi tamu (cookie) atau akun; keran lab **per identitas** → bayar **20 Kredit** → generate site. Job Cowork **tidak** dijual di sini. `/masuk` `/daftar` = pelanggan storefront, bukan operator `:3001`.
+- **Top-up berikutnya (disepakati, belum dikode):** QRIS milik pemilik dan/atau VA bank milik pemilik → bukti transfer → operator approve jika bukti aman → Kredit masuk. **Bukan** Midtrans, Stripe, atau PSP lain.
 
 ## Integrasi
 
@@ -31,7 +32,7 @@ Buka http://localhost:3003
 | --- | --- |
 | Channel Starter API | `NEXT_PUBLIC_CHANNEL_STARTER_URL=http://127.0.0.1:3010` |
 
-Form `/order` → cek **Kredit** → proxy `/api/channel-starter/generate` → channel-starter `:3010`. Saldo kurang = 402. CLI Channel Starter tetap bisa generate tanpa debit (jalur operator).
+Form `/order` → sesi tamu/akun (cookie `nexus_portal_sid`) → cek **Kredit** ledger identitas itu → proxy `/api/channel-starter/generate` → channel-starter `:3010`. Saldo kurang = 402. CLI Channel Starter tetap bisa generate tanpa debit (jalur operator).
 
 ## Dokumen
 

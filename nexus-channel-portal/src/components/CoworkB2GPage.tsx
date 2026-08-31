@@ -146,7 +146,8 @@ export function CoworkB2GPage() {
             className="text-center"
             style={{ color: "var(--notion-text-muted)", fontSize: 14, marginBottom: 20 }}
           >
-            Harga bukan HPS resmi. Pembayaran v1 tetap WhatsApp manual.
+            Harga bukan HPS resmi. Kasir: Kredit. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (belum
+            dikode). WhatsApp = kontak, bukan gateway.
           </p>
           <div className="notion-pricing-grid">
             {plans.map((plan, i) => (

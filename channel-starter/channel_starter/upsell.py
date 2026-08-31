@@ -170,7 +170,7 @@ def enable_upsell(
     *,
     tier: PricingTier,
     sites_root: Path | str | None = None,
-    create_job: bool = True,
+    create_job: bool | None = None,
     create_loop: bool = False,
     loop_interval_hours: int = 168,
     bridge_url: str | None = None,
@@ -178,6 +178,9 @@ def enable_upsell(
 ) -> dict:
     if tier not in GAAS_UPSELL_TIERS:
         raise ValueError(f"Upsell tier must be tepi or cowork, got {tier.value}")
+
+    # Pagar tipis (`tepi`): Caddy → gateway + Reflex, tanpa Job. Cowork tetap Job default.
+    start_job = create_job if create_job is not None else (tier == PricingTier.COWORK)
 
     manifest = get_manifest(slug, sites_root=sites_root)
     if not manifest:
@@ -193,7 +196,7 @@ def enable_upsell(
     manifest.loop_schedule_id = ""
 
     job_error = None
-    if create_job:
+    if start_job:
         try:
             manifest.cowork_job_id = create_cowork_job(manifest, bridge_url=bridge_url)
         except RuntimeError as exc:
@@ -234,9 +237,15 @@ def enable_upsell(
         "routing": routing,
         "job_error": job_error,
         "reload": reload_result,
+        "pagar_tipis": tier == PricingTier.TEPI and not start_job,
         "next_steps": [
-            f"Restart gateway: cd deploy-local && docker compose up -d gateway",
-            f"Scan via WAF: NEX_RED_LIVE_TARGET={_target_url(manifest.protected_host)}",
+            "Restart gateway: cd deploy-local && docker compose up -d gateway",
+            (
+                f"Pagar tipis: hit WAF :8080 Host {manifest.protected_host} — "
+                "bukan *.vercel.app langsung; bukan Job; bukan pulih Vercel"
+                if tier == PricingTier.TEPI and not start_job
+                else f"Scan via WAF: NEX_RED_LIVE_TARGET={_target_url(manifest.protected_host)}"
+            ),
         ],
     }
 

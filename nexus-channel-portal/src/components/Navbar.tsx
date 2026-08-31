@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
+import { AuthLinks } from "@/components/AuthLinks";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -32,6 +33,10 @@ export function Navbar() {
         </Link>
       </div>
       <div className="flex gap-2 notion-navbar-actions desktop-only">
+        <AuthLinks />
+        <Link href="/order" className="notion-button">
+          Pesan
+        </Link>
         <Link href="/" className="notion-button notion-button-primary">
           Pilih segmen
         </Link>
@@ -61,6 +66,15 @@ export function Navbar() {
           </Link>
           <Link href="/pemerintah" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Pemerintah
+          </Link>
+          <Link href="/masuk" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Masuk
+          </Link>
+          <Link href="/daftar" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Daftar
+          </Link>
+          <Link href="/order" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Uji tanpa daftar
           </Link>
           <Link href="/" className="notion-button notion-button-primary" onClick={() => setOpen(false)}>
             Pilih segmen

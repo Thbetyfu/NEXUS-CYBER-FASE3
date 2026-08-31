@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.2 / 2026-08-23  
+**Versi:** 1.1.3 / 2026-08-31  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../AGENTS.md`](../AGENTS.md).
 
 ---
@@ -43,7 +43,9 @@ Nexus Cyber **bukan** satu harga untuk semua segmen.
            │                                      │
            └────────── Channel Starter ──────────┘
                               │
-                    [opsional] tepi + Job Cowork
+                    [opsional] Pagar tipis (`--tier tepi`, 1 host)
+                              │
+                    [opsional] Job Cowork
                               │
                     Edge Antibody Cowork (GaaS)
 ```
@@ -69,7 +71,7 @@ Nama produk: **Edge Antibody Cowork**.
 | Pentest exploit | Wasit HTTP jinak + virtual patch di tepi |
 | Klaim “anti zero-day” | Residual eksplisit + `replay_missed` = belum selesai |
 
-Modul **`nexus-channel-portal/`** adalah pintu jual v1. **Kredit lab** (keran + debit Starter 20 Kr) ada di `/order` — **bukan** Midtrans massal. F-10 dan CNAME massal **legacy** tetap **ditunda**.
+Modul **`nexus-channel-portal/`** adalah pintu jual v1. **Kredit** (keran lab + debit Starter 20 Kr) ada di `/order`, **per identitas** (tamu cookie atau akun). Top-up IDR yang disepakati: **QRIS / VA bank milik pemilik** + bukti transfer + approve operator — **bukan** Midtrans/Stripe. Alur itu **belum dikode**. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
 
 ---
 
@@ -175,10 +177,13 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
-| **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab + publish Vercel per folder (jika token/login; bukan git Nexus) + header tepi Caddy. Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
+| **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab `{slug}.nexus-lab.test` + publish Vercel per folder (jika token/login; bukan git Nexus) + **header tepi** (bukan WAF Reflex, bukan Job). Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
+| **Pagar tipis** | Upsell `--tier tepi`: Caddy ke WAF + Reflex judi/deface. **Satu** `PROTECTED_HOST` per lab. Bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb (belum punya web) / 28rb (sudah). **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 
-**Kredit (lab):** unit kasir Channel Starter di `/order`. **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. Form tampil tanpa animasi `opacity: 0`. **Bukan** Midtrans, **bukan** e-money, **bukan** jual Job 200 Kredit dari portal. CLI `channel-starter` tetap tanpa debit.
+**Kredit (lab sekarang):** unit kasir Channel Starter di `/order`. **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. Form tampil tanpa animasi `opacity: 0`. **Bukan** e-money, **bukan** jual Job 200 Kredit dari portal. CLI `channel-starter` tetap tanpa debit.
+
+**Top-up IDR (disepakati, belum dikode):** pelanggan bayar ke **QRIS milik pemilik** atau **VA bank milik pemilik** → kirim bukti → operator **approve** jika bukti aman → Kredit masuk. **Bukan** PSP pihak ketiga (Midtrans/Stripe). WhatsApp = saluran kontak, bukan payment gateway.
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 
@@ -230,6 +235,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` + digest ThreatLog operator |
 | Memori imun host persisten | **Sudah ada** | PG + file; `antibody_audits.job_id` opsional |
 | Channel Starter (form→template) | **Lab v0.1** | `channel-starter/` (Milestone 18) |
+| Pagar tipis (`--tier tepi`) | **Lab MVP** | Caddy → `:8080` + Reflex judi/deface; 1 host; tanpa Job |
 | Channel Portal legacy / F-10 | **Ditunda** | F-10 back-office |
 | eBPF XDP nyata | **Stub** | `ebpf_stub.go` |
 

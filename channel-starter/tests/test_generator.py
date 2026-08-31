@@ -252,6 +252,36 @@ class TestChannelStarterDeploy(unittest.TestCase):
         disable_upsell(manifest.slug, sites_root=self.sites_root)
         self.assertIsNone(upsell_status(sites_root=self.sites_root)["active"])
 
+    def test_upsell_tepi_pagar_tipis_skips_job(self):
+        import channel_starter.config as cfg
+        import channel_starter.upsell as upsell_mod
+
+        deploy_dir = os.path.join(self.tmp.name, "deploy-local")
+        os.makedirs(deploy_dir, exist_ok=True)
+        cfg.DEPLOY_LOCAL_DIR = Path(deploy_dir)
+        cfg.UPSELL_ENV_FILE = Path(deploy_dir) / "channel-starter-upsell.env"
+        upsell_mod.DEPLOY_LOCAL_DIR = cfg.DEPLOY_LOCAL_DIR
+        upsell_mod.UPSELL_ENV_FILE = cfg.UPSELL_ENV_FILE
+
+        manifest = generate_from_dict(
+            {"business_name": "Warung Pagar", "category": "fnb", "whatsapp": "6281234567890"},
+            sites_root=self.sites_root,
+        )
+        from channel_starter.generator import get_manifest
+        from channel_starter.upsell import enable_upsell
+
+        result = enable_upsell(
+            manifest.slug,
+            tier=PricingTier.TEPI,
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(result["gaas_tier"], "tepi")
+        self.assertEqual(result["cowork_job_id"], "")
+        self.assertTrue(result["pagar_tipis"])
+        self.assertIsNone(result["job_error"])
+        gaas_block = render_site_caddy_block(get_manifest(manifest.slug, sites_root=self.sites_root))
+        self.assertIn("reverse_proxy gateway:8080", gaas_block)
+
 
 if __name__ == "__main__":
     unittest.main()

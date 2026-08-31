@@ -21,24 +21,24 @@ const FEATURES = [
   },
   {
     icon: Layers,
-    title: "Upsell Cowork terpisah",
-    desc: "Starter = website saja. Job Cowork / Loop GaaS = kontrak wasit tersendiri.",
+    title: "Upsell terpisah",
+    desc: "Starter 20rb = header tepi. Pagar tipis 35rb / Startup 75rb = tepi Reflex 1 host lab. Bukan alert Telegram pelanggan. Job = kontrak wasit.",
     color: "#8b5cf6",
     bg: "rgba(139, 92, 246, 0.08)",
   },
   {
     icon: Zap,
-    title: "Bayar via WhatsApp",
-    desc: "Tanpa janji billing otomatis. Konfirmasi manual — jujur untuk v1.",
+    title: "Kasir Kredit",
+    desc: "Lab: keran Kredit. Produksi: QRIS/VA milik Nexus + bukti + approve (belum). WhatsApp hanya chat, bukan gateway.",
     color: "var(--notion-yellow)",
     bg: "var(--notion-yellow-bg)",
   },
 ];
 
 const STEPS = [
-  { n: "01", title: "Pilih paket", desc: "Starter Rp 20rb/bulan atau Cowork untuk wasit." },
+  { n: "01", title: "Pilih paket", desc: "Starter 20rb, Pagar tipis 35rb, atau Cowork wasit." },
   { n: "02", title: "Isi form", desc: "Nama usaha, kategori, WhatsApp — generator siap." },
-  { n: "03", title: "Konfirmasi WA", desc: "Transfer & chat tim Nexus — deploy 1×24 jam." },
+  { n: "03", title: "Chat WA", desc: "Tanya paket via WhatsApp — bukan payment gateway. Lab: isi Kredit dulu." },
   { n: "04", title: "Site live", desc: "slug.nexus.id aktif — upsell Cowork opsional." },
 ];
 

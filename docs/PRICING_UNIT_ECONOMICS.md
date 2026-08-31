@@ -6,6 +6,8 @@
 
 Semua angka **IDR**. Margin kotor = (Jual − COGS) / Jual. Bukan laporan keuangan resmi — untuk investor & operator internal.
 
+**Pagar** 15rb / Starter 20rb = **header tepi** (nosniff / frame / CSP) **+ hostname lab**. **Pagar tipis** 35rb / 28rb = WAF Reflex judi/deface, 1 host lab (`--tier tepi`); **bukan** Job/Loop; **bukan** pulih Vercel.
+
 ---
 
 ## 1. Asumsi COGS (wajib dibaca)
@@ -16,7 +18,7 @@ Semua angka **IDR**. Margin kotor = (Jual − COGS) / Jual. Bukan laporan keuang
 | Tunnel publik | **Rp 0**/bulan | Cloudflare Tunnel free tier (pilot) |
 | Tarif operator blended | **Rp 100.000**/jam | Setup + support + Job; bukan gaji resmi |
 | Listrik + depresiasi PC (share per klien rendah) | **Rp 2.000–8.000**/bulan | Volume UMKM kecil; B2G on-prem listrik di DC klien |
-| Midtrans / billing otomatis | **Tidak** dihitung | Pembayaran v1 = WA manual |
+| PSP pihak ketiga (Midtrans/Stripe) | **Tidak** dihitung | Kasir = Kredit; top-up QRIS/VA milik pemilik + bukti + approve (belum dikode). WA = kontak |
 | NEX-AI | Model milik pemilik | Tidak dihitung lisensi Ollama Hub |
 
 **Rumus support:** `menit_support_bulan / 60 × Rp 100.000`.
@@ -29,14 +31,14 @@ Setup one-shot diamortisasi ke bulan (UMKM/sekolah: 12 bulan; Job one-shot: masu
 
 | Segmen · cabang · paket | Jual | Est. COGS | Laba kotor | Margin |
 | --- | --- | --- | --- | --- |
-| UMKM · belum · Website Aman | 20.000/bln | 8.500 | 11.500 | **58%** |
-| UMKM · belum · GaaS entry | 35.000/bln | 18.500 | 16.500 | **47%** |
+| UMKM · belum · Website Starter | 20.000/bln | 8.500 | 11.500 | **58%** |
+| UMKM · belum · Pagar tipis | 35.000/bln | 18.500 | 16.500 | **47%** |
 | UMKM · sudah · Pagar | 15.000/bln | 6.000 | 9.000 | **60%** |
-| UMKM · sudah · Pagar+status | 28.000/bln | 14.500 | 13.500 | **48%** |
-| Sekolah · belum · Website | 20.000/bln | 8.500 | 11.500 | **58%** |
-| Sekolah · belum · GaaS entry | 35.000/bln | 18.500 | 16.500 | **47%** |
+| UMKM · sudah · Pagar tipis | 28.000/bln | 14.500 | 13.500 | **48%** |
+| Sekolah · belum · Website Sekolah | 20.000/bln | 8.500 | 11.500 | **58%** |
+| Sekolah · belum · Pagar tipis | 35.000/bln | 18.500 | 16.500 | **47%** |
 | Sekolah · sudah · Pagar | 15.000/bln | 6.000 | 9.000 | **60%** |
-| Sekolah · sudah · Pagar+alert | 28.000/bln | 14.500 | 13.500 | **48%** |
+| Sekolah · sudah · Pagar tipis | 28.000/bln | 14.500 | 13.500 | **48%** |
 | Startup · belum · Landing+pagar | 45.000/bln | 16.000 | 29.000 | **64%** |
 | Startup · belum · Landing+Tepi | 75.000/bln | 28.000 | 47.000 | **63%** |
 | Startup · belum · Job Wasit | 200.000 sekali | 75.000 | 125.000 | **63%** |
@@ -61,11 +63,11 @@ Setup one-shot diamortisasi ke bulan (UMKM/sekolah: 12 bulan; Job one-shot: masu
 | Paket | Setup amortisasi | Support/bln | Listrik share | COGS |
 | --- | --- | --- | --- | --- |
 | Website 20rb (belum) | 30 mnt / 12 bln ≈ 4.200 | 5 mnt ≈ 8.300 → **dipotong** ke 2.500* | 2.000 | **≈ 8.500** |
-| GaaS entry 35rb | 4.200 | 12 mnt ≈ 20.000 → **12.300*** | 2.000 | **≈ 18.500** |
+| Pagar tipis 35rb | 4.200 | 12 mnt ≈ 20.000 → **12.300*** | 2.000 | **≈ 18.500** |
 | Pagar 15rb (sudah) | 15 mnt / 12 ≈ 2.100 | 3 mnt ≈ 2.000* | 1.900 | **≈ 6.000** |
-| Pagar+status 28rb | 2.100 | 10 mnt ≈ 10.400* | 2.000 | **≈ 14.500** |
+| Pagar tipis 28rb | 2.100 | 10 mnt ≈ 10.400* | 2.000 | **≈ 14.500** |
 
-\*Support UMKM harus **batch/otomatis ringan** (alert template, bukan hand-hold per tiket). Jika support nyata >15 mnt/klien/bulan, naikkan harga atau tolak volume.
+\*Support UMKM harus **batch/otomatis ringan** (bukan hand-hold per tiket). Angka menit di sini = asumsi COGS, **bukan** klaim mesin alert/status bulanan (belum dikode). Jika support nyata >15 mnt/klien/bulan, naikkan harga atau tolak volume.
 
 ### 3.2 Startup
 
@@ -109,7 +111,7 @@ Listrik DC = **beban klien**. Source **tidak** dijual → COGS tidak termasuk �
 
 - Pajak, PPN, biaya legal pengadaan  
 - CADangan downtime PC (risiko reputasi, bukan COGS kas)  
-- Biaya Midtrans (ditunda)  
+- Biaya PSP pihak ketiga (tidak dipakai; top-up = QRIS/VA milik + bukti + approve, belum dikode)  
 - VPS masa depan — jika pindah VPS, tambahkan COGS infra ke semua tier hosted  
 
 ---

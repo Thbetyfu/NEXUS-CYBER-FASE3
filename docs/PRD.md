@@ -70,7 +70,7 @@ Tidak ada persona “UMKM pegang SOC cluster” atau “owner F-10 roster legacy
 
 - Operator internal saja; **bukan** produk yang dijual ke pemilik risiko kanal
 - Default UI: kanal aktif, **Onboard kanal** (Origin URL + protected host/custom domain via gateway routes), antrian L0/L1, Job Cowork, unduh artefak; lab War Room/MTD/license **dihapus** dari dashboard
-- Onboard = pilot operator (PC+tunnel; DNS di luar SOC; tanpa Docker auto di UI; bukan Midtrans / self-serve CNAME massal). Channel Starter tetap entry terpisah.
+- Onboard = pilot operator (PC+tunnel; DNS di luar SOC; tanpa Docker auto di UI; bukan PSP pihak ketiga / self-serve CNAME massal). Channel Starter tetap entry terpisah.
 
 ---
 
@@ -159,7 +159,7 @@ Detail: [`LIMITATIONS.md`](./LIMITATIONS.md)
 
 1. **Fase 17 (GaaS):** Job + L0/L1 + PG — **selesai di mesin lab**
 2. **Fase 18 (Channel Starter):** Form + template UMKM — **lab v0.1** (`channel-starter/`)
-3. **Bukan prioritas:** Midtrans/Stripe massal, F-10, eBPF real, Loop di Rp 20rb. **Kredit lab** (20 Kr Starter) = uji kasir, bukan billing produksi.
+3. **Bukan prioritas:** PSP pihak ketiga (Midtrans/Stripe), F-10, eBPF real, Loop di Rp 20rb, Connect Git monorepo, Job otomatis tiap warung. **Kredit** (20 Kr Starter) = kasir lab (keran), bukan settlement IDR. **Top-up disepakati:** QRIS/VA milik pemilik + bukti + approve — **belum dikode**.
 
 ---
 
