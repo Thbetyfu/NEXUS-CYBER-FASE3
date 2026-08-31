@@ -30,7 +30,7 @@ Channel Starter = **funnel acquisition** + integrator mandiri (tim Nexus juga bo
 ```text
 Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain kustom opsional)
   → Generator (JSON → template Nexcent)
-  → Deploy (subdomain lab `{slug}.nexus-lab.test` + `vercel.json`)
+  → Deploy lab (subdomain `{slug}.nexus-lab.test` + artefak `vercel.json` — **bukan** auto-buat project Vercel / repo Git)
   → Site live (HTTP lab / HTTPS jika domain publik di-CNAME operator)
   → [Opsional] upsell Loop GaaS / tepi WAF gateway (satu PROTECTED_HOST per lab)
 ```
@@ -99,6 +99,8 @@ python cli.py serve
 ```
 
 Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 ke preview, bukan JSON `/sites/{slug}`.
+
+**Vercel “hanya warung-bu-siti / No Production Deployment”:** itu project **kosong** dari `vercel` di satu folder, bukan repo Nexus. `generate` **tidak** membuat project Vercel per situs dan **tidak** meng-commit `sites/` klien. Site lain tetap di `channel-starter/sites/` (gitignore). **Jangan** *Connect Git* ke `NEXUS-CYBER-FASE3`. Lihat `sites/README.md` + `PUBLISH.txt`.
 
 **Kenapa Simple Browser masih JSON `{"detail":"Site not found"}`:** proses di `:3010` masih **kode lama**. Kode baru: browser dapat HTML (bukan JSON), `/sites/{slug}` 303 ke `/preview`, `serve` men-seed `sites/contoh-nexcent` dari `examples/` jika folder demo hilang. `git pull` + `START-PREVIEW.bat`. File langsung: `channel-starter/sites/contoh-nexcent/index.html`.
 

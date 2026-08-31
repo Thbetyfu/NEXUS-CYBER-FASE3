@@ -111,6 +111,10 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertTrue(vercel_path.is_file())
         vercel = json.loads(vercel_path.read_text(encoding="utf-8"))
         self.assertEqual(vercel["headers"][0]["headers"][-1]["value"], manifest.site_id)
+        publish = (Path(manifest.output_dir) / "PUBLISH.txt").read_text(encoding="utf-8")
+        self.assertIn("NEXUS-CYBER-FASE3", publish)
+        self.assertIn("TIDAK membuat project Vercel", publish)
+        self.assertIn("warung-palet", publish)
 
     def test_caddy_starter_sends_security_headers(self):
         manifest = generate_from_dict(

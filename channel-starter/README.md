@@ -56,6 +56,8 @@ Form wizard: http://127.0.0.1:3010/
 
 Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. `serve` men-seed demo `sites/contoh-nexcent`. Browser mendapat HTML, bukan JSON FastAPI. Jika Simple Browser masih JSON, proses 3010 masih kode lama — `START-PREVIEW.bat`.
 
+Generate **tidak** membuat project Vercel. Cangkang Vercel `warung-bu-siti` (*No Production Deployment*) = `vercel` di satu folder. **Jangan** Connect Git ke monorepo Nexus. Lihat `sites/README.md` dan `PUBLISH.txt`.
+
 ## Struktur
 
 | Path | Peran |
@@ -67,7 +69,7 @@ Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serv
 | `channel_starter/deploy.py` | Snippet Caddy multi-tenant lab + header tepi |
 | `channel_starter/server.py` | FastAPI form wizard + preview HTML |
 | `templates/_base.html` | Layout Nexcent (Figma Contoh-landing-page-nexus) |
-| `sites/contoh-nexcent/` | Demo committed (wizard lama & baru) |
+| `sites/README.md` | Isi folder vs Vercel vs git (jujur) |
 | `examples/contoh-nexcent/` | Cadangan demo (wizard baru) |
 | `START-PREVIEW.bat` | Stop port 3010 + `cli.py serve` |
 

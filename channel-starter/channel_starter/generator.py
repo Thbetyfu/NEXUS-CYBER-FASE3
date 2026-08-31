@@ -32,7 +32,7 @@ _CATEGORY_LABELS = {
 }
 
 DEMO_SLUG = "contoh-nexcent"
-_DEMO_FILES = ("index.html", "manifest.json", "robots.txt", "vercel.json")
+_DEMO_FILES = ("index.html", "manifest.json", "robots.txt", "vercel.json", "PUBLISH.txt")
 
 _VERCEL_JSON = {
     "cleanUrls": True,
@@ -128,8 +128,32 @@ def _render_context(form: SiteForm, manifest: SiteManifest | None = None) -> dic
     }
 
 
+def _publish_txt(manifest: SiteManifest) -> str:
+    return (
+        "Channel Starter — pack host (lab v0.1)\n"
+        "\n"
+        f"Situs: {manifest.business_name}\n"
+        f"Folder: sites/{manifest.slug}/  (satu UMKM, HTML statis)\n"
+        "\n"
+        "Generate TIDAK membuat project Vercel dan TIDAK membuat repo GitHub.\n"
+        "Dashboard Vercel yang hanya punya warung-bu-siti (No Production Deployment)\n"
+        "berarti CLI `vercel` pernah menautkan SATU folder — site lain tetap di\n"
+        "channel-starter/sites/ (gitignore), bukan hilang dari generator.\n"
+        "\n"
+        "JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3\n"
+        "(atau monorepo Nexus lain). Itu gateway/SOC, bukan landing warung.\n"
+        "Vercel akan salah build seluruh repo.\n"
+        "\n"
+        "Deploy operator (akun Vercel, dari folder situs ini saja):\n"
+        f"  npx vercel --prod --yes --name {manifest.slug}\n"
+        "\n"
+        f"Preview lab: python cli.py serve → http://127.0.0.1:3010/preview/{manifest.slug}\n"
+        "Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.\n"
+    )
+
+
 def _write_publish_pack(out_dir: Path, manifest: SiteManifest) -> None:
-    """Artefak host: Vercel headers + domain lab. Bukan auto-deploy akun Vercel."""
+    """Artefak host: Vercel headers + catatan jujur. Bukan auto-deploy akun Vercel."""
     payload = dict(_VERCEL_JSON)
     payload["headers"][0]["headers"][-1] = {
         "key": "X-Nexus-Channel-Starter",
@@ -140,6 +164,7 @@ def _write_publish_pack(out_dir: Path, manifest: SiteManifest) -> None:
         "User-agent: *\nAllow: /\n",
         encoding="utf-8",
     )
+    (out_dir / "PUBLISH.txt").write_text(_publish_txt(manifest), encoding="utf-8")
 
 
 def _write_html(form: SiteForm, manifest: SiteManifest, *, sites_root: Path) -> Path:
