@@ -6,6 +6,9 @@ Dokumen hidup (`README.md`, `docs/CAPABILITIES.md`, `docs/LIMITATIONS.md`, dan i
 
 ## [Unreleased]
 
+### Docs
+- **Dua repo (bukan submodule):** situs jual Vercel = **nexus-gaas-web** (`D:\nexus-gaas-web` → [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS)); repo ini = **nexus-core**. Salinan `nexus-channel-portal/` tetap di FASE3 sampai cutover. Owner (re)connect Vercel ke repo GaaS; jangan Connect `warung-*` ke FASE3. [`docs/REPO_LAYOUT.md`](docs/REPO_LAYOUT.md).
+
 ### Added
 - **Akun pelanggan Channel Portal v0:** login / daftar / tamu di `nexus-channel-portal/` (`:3003` saja). Cookie httpOnly `nexus_portal_sid` (UUID); ledger `data/kredit-guest-{sid}.json` atau `kredit-account-{id}.json`. Keran + generate **wajib** ledger sesi, bukan wallet `lab` global. Daftar dari tamu memindahkan Kredit. Bukan Midtrans, bukan F-10, bukan SOC publik. Uji `npm test` di `nexus-channel-portal`.
 - **Pagar tipis UMKM (tepi, bukan Starter 20 Kr):** Reflex injeksi judi/deface di WAF `:8080` (`internal/ai/reflex_filter.go`). Upsell `python cli.py upsell enable --slug … --tier tepi` mem-flip Caddy ke gateway **tanpa** Job. Portal `/umkm` `/sekolah` kartu 35rb/28rb = Pagar tipis (1 host lab). `*.vercel.app` langsung tidak dilindungi; bukan pulih Vercel; bukan Loop di 20rb. Uji `go test ./internal/ai/` + `python -m unittest` channel-starter.

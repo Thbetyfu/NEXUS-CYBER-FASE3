@@ -1,4 +1,8 @@
-# Nexus Channel Portal
+# Nexus Channel Portal (salinan lab)
+
+**Deploy publik kanonik:** repo GitHub [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS) (`D:\nexus-gaas-web`) → **Vercel dari root repo itu**, bukan FASE3.
+
+Folder ini adalah **salinan in-repo** untuk lab FASE3 sampai cutover. Jangan hapus dulu. Jangan Connect project warung ke monorepo ini.
 
 Pintu jual **Channel Starter** (UMKM Rp 20.000/bulan) + upsell **Edge Antibody Cowork (GaaS)**.
 

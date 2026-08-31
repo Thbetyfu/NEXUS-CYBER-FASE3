@@ -8,7 +8,14 @@ Mesin: WAF Go (`:8080`) + wasit NEX-RED (defense delta + antibody loop + **Job C
 
 ## Clone
 
-Tidak ada submodule. Origin portofolio = **Vercel di belakang WAF**. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](./docs/PLAYGROUND_ARCHIVE.md)). Channel Portal di monorepo (`nexus-channel-portal/`).
+Tidak ada submodule. Origin portofolio = **Vercel di belakang WAF**. Folder `playground/` diarsip ([`docs/PLAYGROUND_ARCHIVE.md`](./docs/PLAYGROUND_ARCHIVE.md)).
+
+| Nama | Folder | GitHub | Peran |
+| --- | --- | --- | --- |
+| **nexus-core** | `D:\NEXUS` (workspace ini) | [NEXUS-CYBER-FASE3](https://github.com/Thbetyfu/NEXUS-CYBER-FASE3) | WAF, NEX-RED, dasbor operator, `channel-starter/`, lab |
+| **nexus-gaas-web** | `D:\nexus-gaas-web` (di luar repo ini) | [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS) | Channel Portal → **Vercel** (bukan FASE3) |
+
+Salinan lab portal masih di [`nexus-channel-portal/`](./nexus-channel-portal/). Tata letak: [`docs/REPO_LAYOUT.md`](./docs/REPO_LAYOUT.md).
 
 ```bash
 git clone https://github.com/Thbetyfu/NEXUS-CYBER-FASE3.git

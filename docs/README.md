@@ -26,7 +26,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | [BRD.md](./BRD.md) / [BUSINESS_AND_DEPLOYMENT_SCHEMES.md](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md) | Bisnis GaaS |
 | [CLI_GUIDE.md](./CLI_GUIDE.md) / [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Operasi |
 | [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) / [SELF_HEAL_GUIDE.md](./SELF_HEAL_GUIDE.md) | Skema & repair |
-| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) / [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Clone tanpa submodule & AI |
+| [GIT_WORKFLOW.md](./GIT_WORKFLOW.md) / [REPO_LAYOUT.md](./REPO_LAYOUT.md) / [NEX_AI_RUNTIME.md](./NEX_AI_RUNTIME.md) | Dua repo (core vs GaaS web), clone tanpa submodule, AI |
 | [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) | Lab tree `playground/` diarsip — origin = Vercel + WAF |
 | [../README.md](../README.md) / [../AGENTS.md](../AGENTS.md) / [../ROADMAP.md](../ROADMAP.md) / [../Task.MD](../Task.MD) / [../UNIT_TESTING.md](../UNIT_TESTING.md) | Root |
 | [../nexus-core-gateway/README.md](../nexus-core-gateway/README.md) | Gateway |

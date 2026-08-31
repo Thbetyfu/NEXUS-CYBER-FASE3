@@ -1,6 +1,9 @@
 # Nexus Channel Portal
 
-**Modul:** `nexus-channel-portal/` · port **3003**  
+**Produksi (Vercel):** repo **nexus-gaas-web** — [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS), folder `D:\nexus-gaas-web`. Deploy dari **root** repo itu. Owner (re)connect project Vercel di dashboard; agen tidak mengklik UI Vercel. **Jangan** Connect `warung-*` ke FASE3.
+
+**Lab (masih di nexus-core):** `nexus-channel-portal/` · port **3003** — salinan sampai cutover. Generate tetap `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
+
 **Peran:** Pintu jual **satu situs**, multi-segmen — UMKM · Sekolah · Startup · **Corporat** · **Pemerintah**
 
 ---
@@ -58,7 +61,7 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 
 UI Slate & Indigo (Notion-style) dari portal legacy — **semua copy & backend diganti** selaras [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
 
-Portal legacy submodule **digantikan** modul monorepo **`nexus-channel-portal/`**.
+Portal legacy submodule **digantikan** modul **`nexus-channel-portal/`** (lab di FASE3). Situs jual publik = repo GaaS terpisah, bukan submodule.
 
 ---
 
