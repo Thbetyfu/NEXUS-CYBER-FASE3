@@ -21,7 +21,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Job Cowork orkestrasi | **Sudah ada** | `NEX-RED/jobs/` + bridge `:3004` |
 | Ekspor artefak risiko | **Sudah ada** | MD/JSON per Job (file-backed) + digest insiden ThreatLog per host (operator) |
 | Memori imun host | **Sudah ada** | PG `host_immune_memories` + file backup |
-| Channel Portal / multi-tenant legacy | **Portal v0.1** / **Ditunda** | `nexus-channel-portal/` |
+| Channel Portal / multi-tenant legacy | **Portal v0.1** | `nexus-channel-portal/` — **Kredit lab** Starter 20 Kr; Midtrans ditunda |
 
 ---
 
@@ -41,7 +41,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | NEX-RED agen | Hygiene HTTP jinak | recon / access / injection-hygiene / reporter | Nyata |
 | Reasoning AI | Lab start **wajib** nama lokal | `nex-ai-protect` async setelah start | Ollama lokal; bukan Hub |
 | DDoS L3/L4 | Volume tinggi | eBPF **stub** | Tidak XDP |
-| Multi-tenant bayar | Stripe/Midtrans | **Ditunda** | Bukan GaaS v1 |
+| Multi-tenant bayar | Stripe/Midtrans | **Ditunda** | Bukan GaaS v1. Lab: **Kredit** di portal `/order` (bukan settlement IDR) |
 
 ---
 

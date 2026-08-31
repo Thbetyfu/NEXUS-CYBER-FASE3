@@ -1,6 +1,6 @@
 # Keputusan Terbuka — Nexus Cyber
 
-**Pembaruan:** 2026-08-23  
+**Pembaruan:** 2026-08-31  
 **Tujuan:** Agar tim (dan agen) **tidak hilang arah** — jika jawaban belum ada di dokumen, **tanya pemilik proyek** sebelum mengunci implementasi atau klaim jual.
 
 ---
@@ -13,7 +13,8 @@
 | UMKM Rp ~20rb/bulan | **Website + pelindung tingkat UMKM** (bukan Job/Loop institusi) — lihat `/umkm` |
 | Harga Starter exact | **Rp 20.000/bulan** |
 | Subdomain produksi | **`*.nexus.id`** |
-| Pembayaran v1 | **Manual WhatsApp** `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* |
+| Pembayaran v1 (IDR) | **Manual WhatsApp** `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* |
+| **Kredit lab (2026-08-31)** | Nama **Kredit** (**Kr**). **1 Kr = Rp 1.000**. SKU v0 = Starter **20 Kr** di `/order`. Keran lab; debit fail-closed; refund jika generate gagal. **Bukan** Job 200 Kr dari portal. **Bukan** Midtrans |
 | Portal jual | **Reuse desain** portal legacy → modul baru **`nexus-channel-portal/`** (bukan submodule lama) |
 | Nama entry | **Channel Starter** |
 | Upsell keamanan | Job Cowork / Loop = **paket terpisah** |

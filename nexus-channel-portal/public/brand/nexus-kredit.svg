@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="nkTitle nkDesc">
+  <title id="nkTitle">Kredit</title>
+  <desc id="nkDesc">Segel heksagonal Kredit: huruf K dari tulang tepi dan cabang antibodi.</desc>
+  <defs>
+    <linearGradient id="nkField" x1="24" y1="12" x2="104" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#165E57"/>
+      <stop offset="46%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#0A3F3A"/>
+    </linearGradient>
+    <linearGradient id="nkGold" x1="20" y1="18" x2="110" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F3E2A0"/>
+      <stop offset="55%" stop-color="#C9A227"/>
+      <stop offset="100%" stop-color="#8A6A12"/>
+    </linearGradient>
+    <linearGradient id="nkFace" x1="40" y1="32" x2="90" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F7F3E8"/>
+      <stop offset="100%" stop-color="#E4DCC8"/>
+    </linearGradient>
+    <linearGradient id="nkInk" x1="48" y1="34" x2="88" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#134E4A"/>
+      <stop offset="100%" stop-color="#042F2E"/>
+    </linearGradient>
+    <filter id="nkPress" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.1" flood-color="#042F2E" flood-opacity="0.35"/>
+    </filter>
+    <clipPath id="nkHexClip">
+      <polygon points="64,10 118,41 118,87 64,118 10,87 10,41"/>
+    </clipPath>
+  </defs>
+  <g fill="#C9A227" opacity="0.9">
+    <rect x="62" y="2" width="4" height="7" rx="1"/>
+    <rect x="62" y="119" width="4" height="7" rx="1"/>
+    <rect x="2" y="62" width="7" height="4" rx="1"/>
+    <rect x="119" y="62" width="7" height="4" rx="1"/>
+  </g>
+  <polygon points="64,10 118,41 118,87 64,118 10,87 10,41" fill="url(#nkGold)"/>
+  <polygon points="64,14.5 113.4,43 113.4,85 64,113.5 14.6,85 14.6,43" fill="url(#nkField)" filter="url(#nkPress)"/>
+  <g clip-path="url(#nkHexClip)">
+    <circle cx="38" cy="28" r="34" fill="#5EEAD4" opacity="0.16"/>
+    <circle cx="96" cy="102" r="40" fill="#042F2E" opacity="0.22"/>
+  </g>
+  <polygon points="64,30 96,48.5 96,79.5 64,98 32,79.5 32,48.5" fill="url(#nkFace)"/>
+  <g fill="url(#nkInk)">
+    <path d="M50.5 39.5c0-1.4 1.1-2.5 2.5-2.5h7.2c1.4 0 2.5 1.1 2.5 2.5v49c0 1.4-1.1 2.5-2.5 2.5H53c-1.4 0-2.5-1.1-2.5-2.5z"/>
+    <path d="M64.8 61.2 86.4 41.1c.95-.88 2.5-.28 2.5 1.02v8.3c0 .4-.17.78-.47 1.05L72.6 64.1l16.1 13.1c.28.23.44.57.44.93v8.4c0 1.32-1.58 1.92-2.52 1.02L64.8 66.9c-.7-.57-.7-1.63 0-2.2z"/>
+  </g>
+  <rect x="84.5" y="82.5" width="9.5" height="9.5" rx="1.4" fill="#C9A227"/>
+  <path d="M86.7 87.4h5.2M89.3 84.8v5.2" stroke="#0A3F3A" stroke-width="1.15" stroke-linecap="square"/>
+</svg>

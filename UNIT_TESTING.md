@@ -42,6 +42,7 @@ Backend Go di `nexus-core-gateway` — paket utama:
 - **Ban selamat restart:** `TestBanSurvivesRestartViaDBWhenRAMEmpty` (RAM kosong → masih match lewat DB), `TestBanSurvivesRestartViaHydrateRAM` (hydrate lalu DB nil → RAM menahan), permanen / kedaluwarsa / unban. SQLite in-memory, bukan klaim Postgres produksi terhubung di CI.
 - **`TestNormalizeTargetHost` / `TestCryptographicAuditTrail`:** host tanpa port tersimpan di ThreatLog.
 - **`TestPaymentWebhookHandler`:** ada di kode uji — **pembayaran otomatis legacy ditunda**; jangan anggap produk jual aktif.
+- **Kredit lab:** `nexus-channel-portal` `npm test` (`kredit-ledger.test.ts`) — keran, fail-closed, refund. Bukan Midtrans.
 - **`TestValidateDomainHandler`:** validasi domain untuk TLS ask — satu instance, bukan provisioner per tenant.
 
 ---

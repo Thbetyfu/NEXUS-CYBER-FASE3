@@ -69,7 +69,7 @@ Nama produk: **Edge Antibody Cowork**.
 | Pentest exploit | Wasit HTTP jinak + virtual patch di tepi |
 | Klaim “anti zero-day” | Residual eksplisit + `replay_missed` = belum selesai |
 
-Modul **`nexus-channel-portal/`**, pembayaran otomatis massal, F-10 back-office, dan CNAME massal **legacy** — **ditunda** untuk reaktivasi; Channel Starter v1 **dirancang ulang** (form + template), reuse desain portal legacy (lihat [DECISIONS_OPEN.md](./DECISIONS_OPEN.md) Q8).
+Modul **`nexus-channel-portal/`** adalah pintu jual v1. **Kredit lab** (keran + debit Starter 20 Kr) ada di `/order` — **bukan** Midtrans massal. F-10 dan CNAME massal **legacy** tetap **ditunda**.
 
 ---
 
@@ -175,8 +175,10 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
-| **Starter** | Form → template → deploy subdomain | ~Rp 0–29rb/bulan |
+| **Starter** | Form → template → deploy subdomain | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
+
+**Kredit (lab):** unit kasir Channel Starter di `/order`. **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. Form tampil tanpa animasi `opacity: 0`. **Bukan** Midtrans, **bukan** e-money, **bukan** jual Job 200 Kredit dari portal. CLI `channel-starter` tetap tanpa debit.
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 

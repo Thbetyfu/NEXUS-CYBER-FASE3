@@ -27,7 +27,7 @@ Jika Anda mengubah **perilaku** sistem (kode gateway, dasbor, NEX-RED, Caddy, co
 
 Jangan mengklaim eBPF XDP nyata, JWT enterprise, Stripe/provisioner, pentest NEX-RED Shannon, **Channel Starter produksi/billing selesai** jika deploy HTTPS + pembayaran belum ada, atau **Loop GaaS di harga Rp 20rb/bulan**.
 
-Pembayaran / webhook fail-closed: **ditunda** (lihat `CHANGELOG.md` Unreleased) — jangan kerjakan kecuali pemilik minta.
+Pembayaran IDR / webhook Midtrans fail-closed: **ditunda** — jangan kerjakan kecuali pemilik minta. **Kredit lab** (keran + Starter 20 Kr di Channel Portal `/order`) sudah diminta pemilik; itu ledger uji, **bukan** klaim billing produksi.
 
 Channel Portal / F-10 back-office: **ditunda** — modul **`nexus-channel-portal/`** adalah pintu jual v1; F-10 **bukan** prioritas. Jangan kerjakan kecuali pemilik minta.
 

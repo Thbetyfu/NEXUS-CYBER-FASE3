@@ -2150,3 +2150,115 @@ input[type="text"]:focus, select:focus {
   border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: var(--notion-radius-xl);
 }
+
+.order-page {
+  background: #f3f5f7;
+  min-height: 100vh;
+  color: #12151a;
+}
+
+.order-main {
+  max-width: 560px;
+}
+
+.order-back {
+  display: inline-block;
+  font-size: 13px;
+  color: #5c6570;
+}
+
+.order-title {
+  margin-top: 16px;
+  font-size: 2rem;
+  color: #12151a;
+}
+
+.order-lead {
+  color: #5c6570;
+  margin-bottom: 24px;
+}
+
+.order-form {
+  padding: 24px;
+}
+
+.order-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #12151a;
+}
+
+.order-form input,
+.order-form select {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--notion-border);
+  border-radius: var(--notion-radius);
+  background: #fff;
+  color: #12151a;
+}
+
+.order-submit {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.kredit-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #d5d8e0;
+  border-radius: var(--notion-radius-lg);
+  box-shadow: var(--notion-shadow);
+}
+
+.kredit-panel-mark {
+  flex-shrink: 0;
+}
+
+.kredit-panel-copy {
+  flex: 1;
+  min-width: 140px;
+}
+
+.kredit-panel-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.kredit-panel-balance {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #12151a;
+}
+
+.kredit-panel-hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #5c6570;
+}
+
+.kredit-error {
+  color: #b91c1c;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.kredit-warn {
+  color: #b45309;
+  font-size: 13px;
+  margin: 0 0 12px;
+}

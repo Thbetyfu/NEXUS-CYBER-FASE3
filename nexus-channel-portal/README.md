@@ -20,9 +20,10 @@ npm run dev
 
 Buka http://localhost:3003
 
-## Pembayaran (v1)
+## Pembayaran
 
-Manual WhatsApp → `62895603358692` · pesan: *Saya mau beli Nexus Cyber!!*
+- **IDR v1:** Manual WhatsApp → `62895603358692`
+- **Kredit lab v0:** `/order` — isi keran → bayar **20 Kredit** → generate site. Midtrans **ditunda**. Job Cowork **tidak** dijual di sini.
 
 ## Integrasi
 
@@ -30,7 +31,7 @@ Manual WhatsApp → `62895603358692` · pesan: *Saya mau beli Nexus Cyber!!*
 | --- | --- |
 | Channel Starter API | `NEXT_PUBLIC_CHANNEL_STARTER_URL=http://127.0.0.1:3010` |
 
-Form `/order` → proxy `/api/channel-starter/generate` → channel-starter `:3010` (opsional; operator tetap bisa manual).
+Form `/order` → cek **Kredit** → proxy `/api/channel-starter/generate` → channel-starter `:3010`. Saldo kurang = 402. CLI Channel Starter tetap bisa generate tanpa debit (jalur operator).
 
 ## Dokumen
 
