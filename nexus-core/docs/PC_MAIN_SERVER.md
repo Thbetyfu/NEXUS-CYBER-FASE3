@@ -14,7 +14,7 @@
 | Perlu hotspot untuk juri? | **Tidak** — pakai **Cloudflare Tunnel** |
 | Perlu VPS dulu? | **Tidak wajib** — VPS nanti jika SLA/volume menuntut |
 | Juri bisa akses dari HP / internet mana pun? | **Ya** — lewat URL `https://….trycloudflare.com` |
-| Portal jual + bikin site UMKM bisa hidup di PC yang sama? | **Ya (lab)** — portal + Channel Starter; **Kredit** 20 Kr di `/order`; top-up QRIS/VA+approve **belum** |
+| Portal jual + bikin site UMKM bisa hidup di PC yang sama? | **Ya (lab)** — portal + Channel Starter; **Kredit** 20 Kr; isi = WA + bukti + approve; QRIS/VA live **belum** |
 | GPU 3080 Ti wajib? | **Tidak**. Ollama + GGUF lokal **wajib** untuk `START` lab; GPU hanya mempercepat |
 
 **Hotspot** hanya untuk latihan blue/red team di Wi‑Fi lokal (`deploy-local/blue-team/`). **Bukan** jalur utama distribusi atau juri.
@@ -260,7 +260,7 @@ python cli.py deploy reload
 - **Lokal (Anda):** `http://warung-bu-siti.nexus-lab.test` (butuh entry `hosts` — `START.bat` menulis otomatis jika Admin)
 - **Publik eksternal:** subdomain `.nexus-lab.test` **tidak** resolve di HP juri → butuh **named tunnel + domain nyata** (mis. `*.sites.nexus.id`) — backlog B2B-3d
 
-Alur **beli (lab):** pelanggan isi form portal → cek **Kredit** → generate di PC. Kontak WA `62895603358692`. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (**belum dikode**). **Bukan** PSP pihak ketiga.
+Alur **beli (lab):** pelanggan isi form portal → cek **Kredit** → generate di PC. Kontak WA `62895603358692`. Top-up: WA + form bukti + `/operator/topup`. QRIS/VA milik pemilik **belum live**. **Bukan** PSP pihak ketiga.
 
 ---
 

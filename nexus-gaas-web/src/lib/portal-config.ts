@@ -21,6 +21,38 @@ export const PORTAL_ORDER = "/pesan/umkm-starter";
 export const PORTAL_DAFTAR = "/daftar";
 export const PORTAL_MASUK = "/masuk";
 
+/** Digits for wa.me; local 08… and +62 display. Override via env is handled server-side. */
+export function formatWhatsAppNumber(raw: string = SALES.whatsapp): {
+  digits: string;
+  local: string;
+  intl: string;
+} {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("0")) {
+    digits = `62${digits.slice(1)}`;
+  }
+  if (!digits.startsWith("62")) {
+    digits = `62${digits}`;
+  }
+  const rest = digits.slice(2);
+  const grouped =
+    rest.length > 7 ? `${rest.slice(0, 3)} ${rest.slice(3, 7)} ${rest.slice(7)}` : rest;
+  return {
+    digits,
+    local: `0${grouped}`,
+    intl: `+62 ${grouped}`,
+  };
+}
+
+export function topupWhatsAppMessage(opts: {
+  id: string;
+  amountKr: number;
+  orderCode?: string | null;
+}): string {
+  const order = opts.orderCode ? ` · ${opts.orderCode}` : "";
+  return `Isi ulang Kredit ${opts.id}: ${opts.amountKr} Kr${order}. Mohon instruksi transfer (QRIS/VA belum di portal). Saya unggah bukti di form. Bukan Midtrans.`;
+}
+
 export function isWhatsAppHref(href: string): boolean {
   return href.startsWith("https://wa.me/");
 }

@@ -45,4 +45,4 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 
 ## Aturan agen
 
-Perubahan perilaku → `CHANGELOG.md` + dokumen hidup + selaraskan `PRODUCT_MODEL.md`. Jangan jual Loop di Rp 20rb / klaim top-up QRIS/VA selesai jika kode belum / Job selesai jika kode belum.
+Perubahan perilaku → `CHANGELOG.md` + dokumen hidup + selaraskan `PRODUCT_MODEL.md`. Jangan jual Loop di Rp 20rb / klaim QRIS/VA **live** jika gambar/nomor belum di repo / Job selesai jika kode belum.

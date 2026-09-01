@@ -18,7 +18,7 @@ Semua angka **IDR**. Margin kotor = (Jual − COGS) / Jual. Bukan laporan keuang
 | Tunnel publik | **Rp 0**/bulan | Cloudflare Tunnel free tier (pilot) |
 | Tarif operator blended | **Rp 100.000**/jam | Setup + support + Job; bukan gaji resmi |
 | Listrik + depresiasi PC (share per klien rendah) | **Rp 2.000–8.000**/bulan | Volume UMKM kecil; B2G on-prem listrik di DC klien |
-| PSP pihak ketiga (Midtrans/Stripe) | **Tidak** dihitung | Kasir = Kredit; top-up QRIS/VA milik pemilik + bukti + approve (belum dikode). WA = kontak |
+| PSP pihak ketiga (Midtrans/Stripe) | **Tidak** dihitung | Kasir = Kredit; top-up pending + bukti form + approve. QRIS/VA milik pemilik belum live. WA = kontak |
 | NEX-AI | Model milik pemilik | Tidak dihitung lisensi Ollama Hub |
 
 **Rumus support:** `menit_support_bulan / 60 × Rp 100.000`.
@@ -111,7 +111,7 @@ Listrik DC = **beban klien**. Source **tidak** dijual → COGS tidak termasuk �
 
 - Pajak, PPN, biaya legal pengadaan  
 - CADangan downtime PC (risiko reputasi, bukan COGS kas)  
-- Biaya PSP pihak ketiga (tidak dipakai; top-up = QRIS/VA milik + bukti + approve, belum dikode)  
+- Biaya PSP pihak ketiga (tidak dipakai; top-up = pending + bukti form + approve; QRIS/VA milik belum live)  
 - VPS masa depan — jika pindah VPS, tambahkan COGS infra ke semua tier hosted  
 
 ---

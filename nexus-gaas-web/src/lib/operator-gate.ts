@@ -10,14 +10,17 @@ export function isOperatorRequest(request: NextRequest): boolean {
   return isLoopbackHost(request);
 }
 
-function isLoopbackHost(request: NextRequest): boolean {
-  const hostHeader = request.headers.get("host") ?? "";
+export function isLoopbackHost(request: NextRequest): boolean {
+  return isLoopbackFromParts(request.headers.get("host") ?? "", request.headers.get("x-forwarded-for"));
+}
+
+export function isLoopbackFromParts(hostHeader: string, forwardedFor: string | null): boolean {
   const hostname = hostHeader.replace(/^\[/, "").replace(/\]:\d+$/, "").replace(/:\d+$/, "").toLowerCase();
   const loopbackHost = hostname === "127.0.0.1" || hostname === "localhost" || hostname === "::1";
   if (!loopbackHost) {
     return false;
   }
-  const xff = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const xff = forwardedFor?.split(",")[0]?.trim();
   if (!xff) {
     return true;
   }

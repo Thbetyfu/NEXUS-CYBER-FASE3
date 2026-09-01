@@ -22,7 +22,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Job Cowork orkestrasi | **Sudah ada** | `NEX-RED/jobs/` + bridge `:3004` |
 | Ekspor artefak risiko | **Sudah ada** | MD/JSON per Job (file-backed) + digest insiden ThreatLog per host (operator) |
 | Memori imun host | **Sudah ada** | PG `host_immune_memories` + file backup |
-| Channel Portal / multi-tenant legacy | **Portal v0.1** | `nexus-gaas-web/` — login/daftar/tamu; **Kredit** Starter 20 Kr per identitas. Isi = pending `kredit-topups.json`; approve operator. QRIS/VA **belum live**. Keran lab sekunder. Bukan PSP; bukan F-10 |
+| Channel Portal / multi-tenant legacy | **Portal v0.1** | `nexus-gaas-web/` — login/daftar/tamu; **Kredit** Starter 20 Kr per identitas. Isi = pending + WA + form bukti; approve operator `/operator/topup`. QRIS/VA **belum live**. Keran lab sekunder. Bukan PSP; bukan F-10 |
 
 ---
 
@@ -42,7 +42,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | NEX-RED agen | Hygiene HTTP jinak | recon / access / injection-hygiene / reporter | Nyata |
 | Reasoning AI | Lab start **wajib** nama lokal | `nex-ai-protect` async setelah start | Ollama lokal; bukan Hub |
 | DDoS L3/L4 | Volume tinggi | eBPF **stub** | Tidak XDP |
-| Kasir Kredit | Top-up IDR | **Lab:** Isi = pending; Kredit setelah approve operator (loopback / `NEXUS_OPERATOR_SECRET`). Keran lab opsional, bukan CTA beli. **QRIS/VA milik pemilik belum live** | Bukan billing produksi. **Bukan** Midtrans/Stripe |
+| Kasir Kredit | Top-up IDR | **Lab:** Isi = pending; WA pemilik + form bukti; Kredit setelah approve (loopback / secret / `/operator/topup`). Keran lab opsional. **QRIS/VA belum live** | Bukan billing produksi. **Bukan** Midtrans/Stripe. Bukan auto-kredit WA |
 
 ---
 

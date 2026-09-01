@@ -20,13 +20,28 @@ export function starterPriceIdr(): number {
 
 export type KreditKind = "faucet" | "debit" | "refund" | "topup";
 
-export type TopupStatus = "pending" | "approved";
+export type TopupStatus = "pending" | "proof_submitted" | "approved";
 
 export type PendingTopup = {
   id: string;
   amountKr: number;
   createdAt: string;
   status: TopupStatus;
+  hasProof?: boolean;
+  proofUploadedAt?: string | null;
+  notes?: string | null;
+};
+
+export type OperatorTopupView = {
+  id: string;
+  amountKr: number;
+  status: TopupStatus;
+  createdAt: string;
+  walletId: string;
+  kind: "guest" | "account";
+  notes?: string;
+  hasProof: boolean;
+  proofSubmittedAt?: string;
 };
 
 export type KreditEntry = {

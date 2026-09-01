@@ -122,7 +122,7 @@ Lihat [LIMITATIONS.md](./LIMITATIONS.md).
 | **18** | Channel Starter — form, template, deploy (**lab v0.1**) |
 | **19+** | Upsell Cowork dari base UMKM; partner agensi eksternal |
 
-Channel Portal F-10, webhook PSP pihak ketiga: **jangan**. Top-up Kredit = QRIS/VA milik pemilik + bukti + approve (belum dikode; Q8 pintu jual = `nexus-gaas-web/`).
+Channel Portal F-10, webhook PSP pihak ketiga: **jangan**. Top-up Kredit = pending + form bukti portal + approve (QRIS/VA milik pemilik **belum live**; Q8 pintu jual = `nexus-gaas-web/`).
 
 ---
 

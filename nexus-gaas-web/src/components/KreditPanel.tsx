@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { KREDIT, type PendingTopup } from "@/lib/kredit";
+import { formatWhatsAppNumber, SALES, topupWhatsAppMessage } from "@/lib/portal-config";
 
 export type KreditState = {
   balance: number;
@@ -12,6 +13,7 @@ export type KreditState = {
   pendingTopups?: PendingTopup[];
   faucetEnabled?: boolean;
   proofWa?: string | null;
+  proofEmail?: string | null;
 };
 
 export function KreditPanel({
@@ -19,18 +21,20 @@ export function KreditPanel({
   kreditError,
   busy,
   onRequestTopup,
+  onSubmitProof,
   onLabFaucet,
 }: {
   kredit: KreditState | null;
   kreditError: string;
   busy: boolean;
   onRequestTopup: (amountKr: number) => void;
+  onSubmitProof?: (topupId: string, notes: string, file: File | null) => void;
   onLabFaucet?: () => void;
 }) {
   const [pack, setPack] = useState<(typeof KREDIT.topupPacksKr)[number]>(KREDIT.starterPriceKr);
-  const pending = kredit?.pendingTopups?.filter((item) => item.status === "pending") ?? [];
+  const open = kredit?.pendingTopups?.filter((item) => item.status !== "approved") ?? [];
   const showFaucet = Boolean(kredit?.faucetEnabled && onLabFaucet);
-  const proofWa = kredit?.proofWa?.replace(/\D/g, "") || "";
+  const wa = formatWhatsAppNumber(kredit?.proofWa || SALES.whatsapp);
 
   return (
     <>
@@ -71,38 +75,25 @@ export function KreditPanel({
             {busy ? "Mencatat…" : `Isi ${pack} Kredit`}
           </button>
           <p className="kredit-topup-copy">
-            Ini permintaan isi ulang, bukan pembayaran otomatis. Settlement IDR (QRIS / VA milik pemilik){" "}
-            <strong>belum live</strong> — tidak ada gambar QR atau nomor VA di repo. Saldo bertambah hanya setelah
-            operator menyetujui bukti. Bukan Midtrans/Stripe. Setara {pack.toLocaleString("id-ID")} × Rp{" "}
-            {KREDIT.idrPerKredit.toLocaleString("id-ID")} = Rp {(pack * KREDIT.idrPerKredit).toLocaleString("id-ID")}{" "}
-            jika nanti ditransfer.
+            Permintaan isi ulang, bukan pembayaran otomatis. QRIS/VA milik pemilik <strong>belum live</strong>. Kirim
+            bukti lewat form email di bawah. Saldo naik hanya setelah operator approve. Bukan Midtrans/Stripe.
           </p>
         </div>
 
-        {pending.length > 0 && (
+        {open.length > 0 && (
           <ul className="kredit-pending" aria-live="polite">
-            {pending.map((item) => {
-              const waHref =
-                proofWa.length > 7
-                  ? `https://wa.me/${proofWa}?text=${encodeURIComponent(
-                      `Bukti isi ulang Kredit ${item.id} (${item.amountKr} Kr). Bukan beli paket Starter.`,
-                    )}`
-                  : null;
-              return (
-                <li key={item.id}>
-                  <span>
-                    Pending {item.id}: {item.amountKr} {KREDIT.abbr} — belum masuk saldo
-                  </span>
-                  {waHref ? (
-                    <a className="kredit-proof-wa" href={waHref} target="_blank" rel="noreferrer">
-                      Kirim bukti (WhatsApp, bukan CTA beli paket)
-                    </a>
-                  ) : (
-                    <span className="kredit-proof-hint">Kirim bukti ke operator lab (QRIS/VA belum di-repo).</span>
-                  )}
-                </li>
-              );
-            })}
+            {open.map((item) => (
+              <li key={item.id}>
+                <TopupOpenCard
+                  item={item}
+                  wa={wa}
+                  proofEmail={kredit?.proofEmail}
+                  orderCode={kredit?.orderCode}
+                  busy={busy}
+                  onSubmitProof={onSubmitProof}
+                />
+              </li>
+            ))}
           </ul>
         )}
 
@@ -116,6 +107,86 @@ export function KreditPanel({
         <p className="kredit-error" role="alert">
           {kreditError}
         </p>
+      )}
+    </>
+  );
+}
+
+function TopupOpenCard({
+  item,
+  wa,
+  proofEmail,
+  orderCode,
+  busy,
+  onSubmitProof,
+}: {
+  item: PendingTopup;
+  wa: ReturnType<typeof formatWhatsAppNumber> | null;
+  proofEmail?: string | null;
+  orderCode?: string | null;
+  busy: boolean;
+  onSubmitProof?: (topupId: string, notes: string, file: File | null) => void;
+}) {
+  const [notes, setNotes] = useState(item.notes ?? "");
+  const [file, setFile] = useState<File | null>(null);
+  const waHref = wa
+    ? `https://wa.me/${wa.digits}?text=${encodeURIComponent(
+        topupWhatsAppMessage({ id: item.id, amountKr: item.amountKr, orderCode }),
+      )}`
+    : null;
+  const submitted = item.status === "proof_submitted";
+
+  return (
+    <>
+      <span>
+        {submitted ? "Bukti terkirim" : "Pending"} {item.id}: {item.amountKr} {KREDIT.abbr} — belum masuk saldo
+      </span>
+      {waHref && wa ? (
+        <div className="kredit-wa-block">
+          <p className="kredit-wa-number">
+            WhatsApp bayar / kirim bukti: <strong>{wa.local}</strong> · {wa.intl}
+          </p>
+          <a className="kredit-proof-wa" href={waHref} target="_blank" rel="noreferrer">
+            Buka WhatsApp (wa.me) — {item.id}
+          </a>
+        </div>
+      ) : null}
+      {onSubmitProof && (
+        <form
+          className="kredit-proof-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmitProof(item.id, notes, file);
+          }}
+        >
+          <label className="kredit-proof-label" htmlFor={`notes-${item.id}`}>
+            Catatan bukti
+          </label>
+          <textarea
+            id={`notes-${item.id}`}
+            className="kredit-proof-notes"
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Contoh: transfer sesuai instruksi WA"
+            disabled={busy}
+            required
+          />
+          <label className="kredit-proof-label" htmlFor={`file-${item.id}`}>
+            Gambar bukti (opsional)
+          </label>
+          <input
+            id={`file-${item.id}`}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            disabled={busy}
+          />
+          <button type="submit" className="notion-button kredit-proof-submit" disabled={busy}>
+            {busy ? "Mengirim…" : submitted ? "Perbarui bukti" : "Kirim bukti"}
+          </button>
+          <p className="kredit-proof-hint">Unggah bukti tidak menambah saldo. Operator konfirmasi dulu. Bukan PSP.</p>
+        </form>
       )}
     </>
   );

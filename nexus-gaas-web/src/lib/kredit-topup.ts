@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { KREDIT, type PendingTopup, type TopupStatus } from "./kredit.ts";
+import { KREDIT, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
+import { SALES } from "./portal-config.ts";
 
 export type TopupRecord = {
   id: string;
@@ -14,6 +15,12 @@ export type TopupRecord = {
   status: TopupStatus;
   createdAt: string;
   approvedAt?: string;
+  notes?: string;
+  proofRelPath?: string;
+  proofMime?: string;
+  proofSubmittedAt?: string;
+  proofEmailedAt?: string;
+  proofEmailError?: string;
 };
 
 type TopupStore = {
@@ -21,8 +28,68 @@ type TopupStore = {
   items: TopupRecord[];
 };
 
+const TU_RE = /^TU-[A-Z0-9]{8}$/;
+const PROOF_EXT: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "application/pdf": ".pdf",
+};
+const MAX_PROOF_BYTES = 5 * 1024 * 1024;
+
+function mimeFromMagic(buffer: Buffer): string | null {
+  if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47
+  ) {
+    return "image/png";
+  }
+  if (
+    buffer.length >= 12 &&
+    buffer[0] === 0x52 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45 &&
+    buffer[10] === 0x42 &&
+    buffer[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+  if (buffer.length >= 6 && buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
+    return "image/gif";
+  }
+  if (buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
+    return "application/pdf";
+  }
+  return null;
+}
+
 export function topupsPath(dataDir = defaultDataDir()): string {
   return path.join(dataDir, "kredit-topups.json");
+}
+
+export function proofDir(dataDir = defaultDataDir()): string {
+  return path.join(dataDir, "topup-proofs");
+}
+
+export const proofsDir = proofDir;
+
+export function assertTopupId(topupId: string): string {
+  const id = topupId.trim().toUpperCase();
+  if (!TU_RE.test(id)) {
+    throw new Error("id permintaan tidak valid");
+  }
+  return id;
+}
+
+function isOpenStatus(status: TopupStatus): boolean {
+  return status === "pending" || status === "proof_submitted";
 }
 
 function emptyStore(): TopupStore {
@@ -63,19 +130,44 @@ export function publicPending(record: TopupRecord): PendingTopup {
     amountKr: record.amountKr,
     createdAt: record.createdAt,
     status: record.status,
+    hasProof: Boolean(record.proofRelPath),
+    proofUploadedAt: record.proofSubmittedAt ?? null,
+    notes: record.notes ?? null,
+  };
+}
+
+function toOperatorView(record: TopupRecord): OperatorTopupView {
+  return {
+    id: record.id,
+    amountKr: record.amountKr,
+    status: record.status,
+    createdAt: record.createdAt,
+    walletId: record.walletId,
+    kind: record.kind,
+    notes: record.notes,
+    hasProof: Boolean(record.proofRelPath),
+    proofSubmittedAt: record.proofSubmittedAt,
   };
 }
 
 export function listPendingUnlocked(walletId: string, dataDir = defaultDataDir()): PendingTopup[] {
   const store = readStore(topupsPath(dataDir));
-  return store.items.filter((item) => item.walletId === walletId && item.status === "pending").map(publicPending);
+  return store.items.filter((item) => item.walletId === walletId && isOpenStatus(item.status)).map(publicPending);
 }
 
 export async function listPendingTopups(walletId: string, dataDir = defaultDataDir()): Promise<PendingTopup[]> {
   return withLock(() => listPendingUnlocked(walletId, dataDir));
 }
 
-/** Called from migrateGuestLedgerUnlocked — already under withLock. */
+export async function listOperatorQueue(dataDir = defaultDataDir()): Promise<OperatorTopupView[]> {
+  return withLock(() => {
+    return readStore(topupsPath(dataDir))
+      .items.filter((item) => isOpenStatus(item.status))
+      .map(toOperatorView)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  });
+}
+
 export function migratePendingTopupsUnlocked(fromGuestId: string, toAccountId: string, dataDir: string): void {
   const guest = assertSafeId(fromGuestId);
   const account = assertSafeId(toAccountId);
@@ -109,7 +201,7 @@ export async function createTopupRequest(
     const id = assertSafeId(identity.identityId);
     const filePath = topupsPath(dataDir);
     const store = readStore(filePath);
-    const pendingCount = store.items.filter((item) => item.walletId === identity.walletId && item.status === "pending")
+    const pendingCount = store.items.filter((item) => item.walletId === identity.walletId && isOpenStatus(item.status))
       .length;
     if (pendingCount >= KREDIT.pendingMaxPerWallet) {
       throw new RangeError(`Maksimal ${KREDIT.pendingMaxPerWallet} permintaan pending. Tunggu operator atau batalkan lewat operator.`);
@@ -132,13 +224,111 @@ export async function createTopupRequest(
   });
 }
 
-/** Already under withLock (approve path). */
+export async function submitTopupProof(
+  topupId: string,
+  walletId: string,
+  notes: string,
+  file: { buffer: Buffer; mime: string } | null,
+  dataDir = defaultDataDir(),
+): Promise<PendingTopup> {
+  return withLock(() => {
+    const id = assertTopupId(topupId);
+    const trimmed = notes.trim().slice(0, 2000);
+    if (!trimmed) {
+      throw new RangeError("Catatan bukti wajib");
+    }
+    const filePath = topupsPath(dataDir);
+    const store = readStore(filePath);
+    const record = store.items.find((item) => item.id === id);
+    if (!record || record.walletId !== walletId) {
+      throw new Error("Permintaan isi ulang tidak ditemukan");
+    }
+    if (record.status === "approved") {
+      throw new RangeError("Permintaan sudah disetujui");
+    }
+    if (file) {
+      const magic = mimeFromMagic(file.buffer);
+      const ext = magic ? PROOF_EXT[magic] : undefined;
+      if (!magic || !ext) {
+        throw new RangeError("Unggah JPG, PNG, WebP, atau GIF");
+      }
+      if (file.buffer.length < 8 || file.buffer.length > MAX_PROOF_BYTES) {
+        throw new RangeError("Berkas bukti 8 byte–5 MB");
+      }
+      mkdirSync(proofDir(dataDir), { recursive: true });
+      if (record.proofRelPath) {
+        const prev = path.resolve(dataDir, record.proofRelPath);
+        try {
+          unlinkSync(prev);
+        } catch {
+          /* previous file may be gone */
+        }
+      }
+      const rel = `topup-proofs/${id}${ext}`;
+      writeFileSync(path.join(dataDir, rel), file.buffer);
+      record.proofRelPath = rel;
+      record.proofMime = magic;
+    }
+    record.notes = trimmed;
+    record.proofSubmittedAt = new Date().toISOString();
+    record.status = "proof_submitted";
+    writeStore(filePath, store);
+    return publicPending(record);
+  });
+}
+
+export async function markProofEmailResult(
+  topupId: string,
+  walletId: string,
+  emailed: boolean,
+  emailError: string | null,
+  dataDir = defaultDataDir(),
+): Promise<void> {
+  await withLock(() => {
+    const filePath = topupsPath(dataDir);
+    const store = readStore(filePath);
+    const id = assertTopupId(topupId);
+    const record = store.items.find((item) => item.id === id);
+    if (!record || record.walletId !== walletId) {
+      return;
+    }
+    if (emailed) {
+      record.proofEmailedAt = new Date().toISOString();
+      delete record.proofEmailError;
+    } else if (emailError) {
+      record.proofEmailError = emailError.slice(0, 400);
+    }
+    writeStore(filePath, store);
+  });
+}
+
+export async function readTopupProofFile(
+  topupId: string,
+  dataDir = defaultDataDir(),
+): Promise<{ mime: string; bytes: Buffer } | null> {
+  return withLock(() => {
+    const id = assertTopupId(topupId);
+    const record = readStore(topupsPath(dataDir)).items.find((item) => item.id === id);
+    if (!record?.proofRelPath || !record.proofMime) {
+      return null;
+    }
+    const root = path.resolve(proofDir(dataDir));
+    const abs = path.resolve(dataDir, record.proofRelPath);
+    if (abs !== root && !abs.startsWith(`${root}${path.sep}`)) {
+      throw new Error("Berkas bukti tidak valid");
+    }
+    if (!existsSync(abs)) {
+      return null;
+    }
+    return { mime: record.proofMime, bytes: readFileSync(abs) };
+  });
+}
+
 export function getTopupUnlocked(topupId: string, dataDir = defaultDataDir()): TopupRecord | undefined {
   const id = topupId.trim().toUpperCase();
   return readStore(topupsPath(dataDir)).items.find((item) => item.id === id);
 }
 
-/** Already under withLock. Idempotent if already approved. */
 export function markTopupApprovedUnlocked(topupId: string, dataDir = defaultDataDir()): TopupRecord {
   const filePath = topupsPath(dataDir);
   const store = readStore(filePath);
@@ -154,7 +344,151 @@ export function markTopupApprovedUnlocked(topupId: string, dataDir = defaultData
   return record;
 }
 
-export function proofWaNumber(): string | null {
+export function proofWaNumber(): string {
   const value = process.env.NEXUS_TOPUP_PROOF_WA?.trim() || process.env.NEXT_PUBLIC_TOPUP_PROOF_WA?.trim();
+  const digits = (value || SALES.whatsapp).replace(/\D/g, "");
+  return digits || SALES.whatsapp;
+}
+
+/** Tidak ada default di repo — jangan mengarang inbox publik. */
+export function proofEmailTo(): string | null {
+  const value = process.env.NEXUS_TOPUP_PROOF_EMAIL?.trim();
   return value || null;
+}
+
+export const PROOF_MAX_BYTES = MAX_PROOF_BYTES;
+
+export class ProofValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProofValidationError";
+  }
+}
+
+export function assertProofBytes(bytes: Uint8Array): string {
+  if (bytes.byteLength === 0) {
+    throw new ProofValidationError("Unggah berkas bukti");
+  }
+  if (bytes.byteLength > MAX_PROOF_BYTES) {
+    throw new ProofValidationError("Berkas maksimal 5 MB");
+  }
+  const mime = mimeFromMagic(Buffer.from(bytes));
+  if (!mime) {
+    throw new ProofValidationError("Berkas harus gambar (JPEG/PNG/WebP/GIF) atau PDF");
+  }
+  return mime;
+}
+
+export type ProofIdentity = {
+  kind: "guest" | "account";
+  orderCode: string;
+  email?: string | null;
+};
+
+export type SendProofMail = (args: {
+  to: string;
+  from: string;
+  subject: string;
+  text: string;
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}) => Promise<void>;
+
+function readSmtpSettings(): { to: string | null; missing: string[]; smtp: { host: string; port: number; user: string; pass: string; secure: boolean; from: string; to: string } | null } {
+  const to = proofEmailTo();
+  const host = process.env.NEXUS_SMTP_HOST?.trim() || "";
+  const user = process.env.NEXUS_SMTP_USER?.trim() || "";
+  const pass = process.env.NEXUS_SMTP_PASS?.trim() || "";
+  const from = process.env.NEXUS_SMTP_FROM?.trim() || user;
+  const port = Number.parseInt(process.env.NEXUS_SMTP_PORT?.trim() || "587", 10);
+  const secure = (process.env.NEXUS_SMTP_SECURE ?? "").trim() === "1" || port === 465;
+  const missing: string[] = [];
+  if (!to) missing.push("NEXUS_TOPUP_PROOF_EMAIL");
+  if (!host) missing.push("NEXUS_SMTP_HOST");
+  if (!user) missing.push("NEXUS_SMTP_USER");
+  if (!pass) missing.push("NEXUS_SMTP_PASS");
+  if (!from) missing.push("NEXUS_SMTP_FROM");
+  if (!Number.isFinite(port) || port < 1) missing.push("NEXUS_SMTP_PORT");
+  if (missing.length > 0) {
+    return { to, missing, smtp: null };
+  }
+  return { to, missing: [], smtp: { host, port, user, pass, secure, from, to: to as string } };
+}
+
+export async function submitTopupProofMail(args: {
+  topupId: string;
+  walletId: string;
+  identity: ProofIdentity;
+  note: string;
+  originalName: string;
+  bytes: Uint8Array;
+  dataDir?: string;
+  sendMail?: SendProofMail;
+}): Promise<{ stored: true; emailed: boolean; emailError: string | null; pending: PendingTopup; amountKr: number }> {
+  const mime = assertProofBytes(args.bytes);
+  const buffer = Buffer.from(args.bytes);
+  let pending: PendingTopup;
+  try {
+    pending = await submitTopupProof(args.topupId, args.walletId, args.note, { buffer, mime }, args.dataDir);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "bukti gagal";
+    if (message.includes("tidak ditemukan") || message.includes("tidak valid") || err instanceof RangeError) {
+      throw new ProofValidationError(message.includes("tidak valid") ? "Permintaan isi ulang tidak ditemukan" : message);
+    }
+    throw err;
+  }
+  const mail = readSmtpSettings();
+  let emailed = false;
+  let emailError: string | null = null;
+  if (!mail.smtp || !mail.to) {
+    emailError = `Bukti tersimpan. Email belum terkirim — set ${mail.missing.join(", ")}. Bukan Midtrans; saldo belum naik.`;
+  } else {
+    const send =
+      args.sendMail ??
+      (async (payload) => {
+        const nodemailer = await import("nodemailer");
+        const transporter = nodemailer.default.createTransport({
+          host: mail.smtp!.host,
+          port: mail.smtp!.port,
+          secure: mail.smtp!.secure,
+          auth: { user: mail.smtp!.user, pass: mail.smtp!.pass },
+        });
+        await transporter.sendMail({
+          to: payload.to,
+          from: payload.from,
+          subject: payload.subject,
+          text: payload.text,
+          attachments: [{ filename: payload.filename, content: payload.content, contentType: payload.contentType }],
+        });
+      });
+    const ext = mime === "application/pdf" ? "pdf" : mime.split("/")[1] || "bin";
+    try {
+      await send({
+        to: mail.to,
+        from: mail.smtp.from,
+        subject: `[Nexus Kredit] Bukti ${pending.id} (${pending.amountKr} Kr)`,
+        text: [
+          "Bukti isi ulang Kredit (bukan pembayaran otomatis, bukan Midtrans/Stripe).",
+          `ID: ${pending.id}`,
+          `Jumlah: ${pending.amountKr} Kr`,
+          `Identitas: ${args.identity.kind} · ${args.identity.orderCode}`,
+          args.identity.email ? `Email akun: ${args.identity.email}` : "",
+          args.note.trim() ? `Catatan: ${args.note.trim()}` : "",
+          "Saldo belum naik. Approve: POST /api/kredit/topup/approve",
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        filename: `${pending.id}.${ext}`,
+        content: buffer,
+        contentType: mime,
+      });
+      emailed = true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "SMTP gagal";
+      emailError = `Bukti tersimpan. Email gagal: ${message}. Bukan Midtrans; saldo belum naik.`;
+    }
+  }
+  await markProofEmailResult(args.topupId, args.walletId, emailed, emailError, args.dataDir);
+  return { stored: true, emailed, emailError, pending, amountKr: pending.amountKr };
 }

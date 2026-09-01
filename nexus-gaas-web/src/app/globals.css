@@ -2386,15 +2386,137 @@ input[type="text"]:focus, select:focus {
   gap: 4px;
 }
 
-.kredit-proof-wa,
-.kredit-proof-hint {
-  font-size: 11px;
-  color: #7c2d12;
+.kredit-proof-form {
+  border-top: 1px solid #eceff3;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kredit-proof-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 650;
+  color: #3d4450;
+}
+
+.kredit-proof-field select,
+.kredit-proof-field textarea,
+.kredit-proof-field input[type="file"] {
+  font-weight: 500;
+  font-size: 13px;
+  border: 1px solid #d5d8e0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #12151a;
+}
+
+.kredit-proof-status {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: #0f766e;
 }
 
 .kredit-proof-wa {
   text-decoration: underline;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 11px;
+  color: #7c2d12;
+}
+
+.kredit-wa-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kredit-wa-number {
+  margin: 0;
+  font-size: 13px;
+  color: #12151a;
+}
+
+.kredit-proof-label {
+  font-size: 11px;
+  font-weight: 650;
+  color: #7c2d12;
+}
+
+.kredit-proof-notes {
+  width: 100%;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 8px;
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.kredit-proof-submit {
+  align-self: flex-start;
+}
+
+.kredit-proof-hint {
+  margin: 0;
+  font-size: 11px;
+  color: #7c2d12;
+}
+
+.operator-topup {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.operator-topup-kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5c6570;
+}
+
+.operator-topup h1 {
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+}
+
+.operator-topup-lead,
+.operator-topup-empty,
+.operator-topup-meta,
+.operator-topup-notes {
+  color: #5c6570;
+  font-size: 14px;
+}
+
+.operator-topup-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.operator-topup-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid #d5d8e0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fff;
+}
+
+.operator-topup-meta,
+.operator-topup-notes {
+  display: block;
+  margin-top: 4px;
 }
 
 .kredit-faucet-lab {

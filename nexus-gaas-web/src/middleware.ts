@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeInternalNext } from "@/lib/gate-next";
+import { isLoopbackHost } from "@/lib/operator-gate";
 
 const COOKIE_SID = "nexus_portal_sid";
 
@@ -18,6 +19,13 @@ export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const nextTarget = `${pathname}${search}`;
   const session = hasSessionCookie(request);
+
+  if (pathname.startsWith("/operator")) {
+    if (!isLoopbackHost(request)) {
+      return new NextResponse(null, { status: 404 });
+    }
+    return NextResponse.next();
+  }
 
   if (pathname === "/gate" && session) {
     const dest = safeInternalNext(request.nextUrl.searchParams.get("next"));

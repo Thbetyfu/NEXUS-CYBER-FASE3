@@ -1,6 +1,6 @@
 /**
  * Operator-only: credit a pending top-up. Not the customer Isi button.
- * Usage: node scripts/approve-topup.mjs TU-XXXXXXXX
+ * UI: http://127.0.0.1:3003/operator/topup (loopback Host only)
  * Optional env: NEXUS_OPERATOR_SECRET, PORTAL_URL (default http://127.0.0.1:3003)
  */
 const id = process.argv[2];

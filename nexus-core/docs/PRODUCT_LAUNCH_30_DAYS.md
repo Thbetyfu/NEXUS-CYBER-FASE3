@@ -55,7 +55,7 @@ Setelah 30 hari, Nexus Cyber dianggap **sudah meluncur sebagai produk tepat guna
 ### Apa yang **tidak** dibangun minggu ini
 
 - PSP pihak ketiga (Midtrans/Stripe) / webhook  
-- Alur QRIS/VA + bukti + approve (disepakati, belum dikode)  
+- Alur QRIS/VA settlement **live** (gambar/nomor rekening) — form bukti + approve **sudah** di portal  
 - Multi-tenant CNAME massal / provisioner / Docker auto-onboard di SOC  
 - Packaging binary B2G  
 - Fitur SOC baru di luar Job Cowork (SEO / Safe Browsing / Core Web Vitals FE)  
@@ -195,7 +195,7 @@ Sampai itu: **PC + tunnel = distribusi resmi tahap pilot.**
 
 | Ditunda | Alasan |
 | --- | --- |
-| PSP pihak ketiga (Midtrans/Stripe) | Kasir = Kredit; top-up = QRIS/VA milik pemilik + bukti + approve (belum dikode) |
+| PSP pihak ketiga (Midtrans/Stripe) | Kasir = Kredit; top-up = pending + form bukti + approve; QRIS/VA milik pemilik belum live |
 | F-10 back-office | Roster kecil di chat/spreadsheet OK |
 | Provisioner CNAME massal | Satu host per Job sudah tepat guna |
 | Packaging B2G produksi | Pitching dulu; DC instansi = fase berikutnya |

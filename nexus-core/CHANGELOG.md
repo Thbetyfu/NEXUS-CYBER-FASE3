@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Added
+- **Isi Kredit dipakai:** setelah Isi, Channel Portal menampilkan nomor WhatsApp pemilik (`62895603358692`) + `wa.me` (teks TU-… / Kr / ORDER) + form bukti (catatan + gambar opsional). Status `proof_submitted` **tidak** menambah saldo. Operator konfirmasi di `http://127.0.0.1:3003/operator/topup` (loopback) atau `POST /api/kredit/topup/approve`. Berkas `nexus-gaas-web/data/topup-proofs/` (gitignore). Bukan Midtrans. Bukan SOC publik.
+
 ### Changed
 - **Isi Kredit bukan keran gratis:** tombol Isi / navbar plus → `/kredit` mengajukan **pending** (`POST /api/kredit/topup`). Saldo tidak naik sampai operator `POST /api/kredit/topup/approve` (loopback atau `NEXUS_OPERATOR_SECRET`). Keran lab = teks sekunder “Keran lab (uji, bukan bayar)” + `NEXUS_LAB_FAUCET`. QRIS/VA milik pemilik **belum live**. Bukan Midtrans. Bukan billing produksi.
 - **Channel Portal gerbang + nama Inggris:** pengunjung tanpa cookie → `/gate` (Login / Daftar / Tamu). Navbar tanpa Masuk/Daftar dan tanpa ORDER-id; chip **Kredit** + plus → `/kredit` (beli/isi ulang). Kartu SKU: **Edge Shield (shared lab host)**, **UMKM/School Header Shield** — bukan “Pagar tipis”. Starter 20 Kr tetap fail-closed; 35/28 Kr bukan Job/Loop. WhatsApp hanya on-prem. Bukan Midtrans.

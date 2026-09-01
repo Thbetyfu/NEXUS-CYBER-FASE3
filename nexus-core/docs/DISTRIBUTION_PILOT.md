@@ -91,7 +91,7 @@ Homepage `/` = hub pilih segmen. Setelah pilih peran: UMKM/sekolah/startup → *
 - Uptime bergantung listrik, ISP rumah, dan tunnel.  
 - Bukan SOC 24/7 otonom.  
 - Satu titik gagal = PC operator.  
-- PSP pihak ketiga (Midtrans/Stripe) **jangan**. Top-up Kredit = QRIS/VA milik pemilik + bukti + approve (**belum dikode**). F-10 / provisioner massal tetap **ditunda**.
+- PSP pihak ketiga (Midtrans/Stripe) **jangan**. Top-up Kredit = pending + form bukti + approve. QRIS/VA milik pemilik **belum live**. F-10 / provisioner massal tetap **ditunda**.
 
 ---
 

@@ -159,7 +159,7 @@ Detail: [`LIMITATIONS.md`](./LIMITATIONS.md)
 
 1. **Fase 17 (GaaS):** Job + L0/L1 + PG — **selesai di mesin lab**
 2. **Fase 18 (Channel Starter):** Form + template UMKM — **lab v0.1** (`nexus-core/channel-starter/`)
-3. **Bukan prioritas:** PSP pihak ketiga (Midtrans/Stripe), F-10, eBPF real, Loop di Rp 20rb, Connect Git monorepo, Job otomatis tiap warung. **Kredit** (20 Kr Starter) = kasir. **Isi** = pending + approve operator (lab). **QRIS/VA milik pemilik belum live** — jangan klaim billing produksi.
+3. **Bukan prioritas:** PSP pihak ketiga (Midtrans/Stripe), F-10, eBPF real, Loop di Rp 20rb, Connect Git monorepo, Job otomatis tiap warung. **Kredit** (20 Kr Starter) = kasir. **Isi** = pending + WA + form bukti + approve operator (lab). **QRIS/VA milik pemilik belum live** — jangan klaim billing produksi.
 
 ---
 

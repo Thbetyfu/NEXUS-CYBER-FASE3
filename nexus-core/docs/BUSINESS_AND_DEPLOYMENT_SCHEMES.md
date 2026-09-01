@@ -132,7 +132,7 @@ Konteks POJK 30/2025 (risiko siber ITSK) dan ketahanan siber perbankan = **pembi
 
 ## 8. Yang Ditunda (legacy + PSP pihak ketiga)
 
-- PSP pihak ketiga (Midtrans, Stripe) dan webhook fail-closed — **jangan**; top-up = QRIS/VA milik pemilik + bukti + approve (**belum dikode**)
+- PSP pihak ketiga (Midtrans, Stripe) dan webhook fail-closed — **jangan**; top-up = pending + bukti (form portal) + approve. QRIS/VA milik pemilik **belum live**
 - F-10 super-admin roster pelanggan
 - Provisioner kontainer per-tenant CNAME massal
 - Connect Git monorepo ke project warung

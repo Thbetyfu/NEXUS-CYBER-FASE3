@@ -92,7 +92,7 @@ Seperti rencana asli: vault password, docker lab, Telegram/GeoIP pager (jujur: b
 | **19.0 Naming & docs** | Pintu jual in-repo **`nexus-gaas-web/`** (dulu `nexus-channel-portal/`), bersih legacy | **Selesai** 2026-08-22 |
 | **19.1 Landing + animasi** | Hero, fitur, harga, FAQ | **Selesai** |
 | **19.2 Form + WA** | `/order` + proxy ke channel-starter | **Selesai** |
-| **19.3 Top-up Kredit** | QRIS/VA milik pemilik + bukti transfer + approve operator | **Disepakati, belum dikode** — **bukan** Midtrans/Stripe |
+| **19.3 Top-up Kredit** | WA pemilik + form bukti + approve operator (QRIS/VA live belum) | **Lab dikode** — **bukan** Midtrans/Stripe |
 
 Keputusan bisnis: [docs/DECISIONS_OPEN.md](docs/DECISIONS_OPEN.md) (Q2/Q4/Q7/Q8 disepakati).
 

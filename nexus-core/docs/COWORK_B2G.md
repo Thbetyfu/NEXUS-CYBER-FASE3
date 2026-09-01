@@ -93,7 +93,7 @@ Portal: [`nexus-gaas-web/`](../../nexus-gaas-web/) → `/pemerintah`. Alias lama
 | **Loop On-Prem (wajib)** | Job terjadwal + update + artefak + dukungan operator · tanpa Loop lisensi tidak diperpanjang | **Rp 3.500.000** / bulan |
 | **Custom / multi-DC** | Multi-zona, air-gap terbatas, integrasi SIEM/log klien, pelatihan L0/L1 | **Custom** (WA) |
 
-Pembayaran pitching: **Kredit** / WhatsApp kontak — **bukan** Midtrans/e-procurement otomatis. Top-up IDR yang disepakati: QRIS atau VA bank milik pemilik + bukti + approve (**belum dikode**).
+Pembayaran pitching: **Kredit** / WhatsApp kontak — **bukan** Midtrans/e-procurement otomatis. Top-up: pending + form bukti + approve. QRIS atau VA bank milik pemilik **belum live**.
 
 ---
 

@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { useKreditSession } from "@/hooks/useKreditSession";
 
 export default function KreditPage() {
-  const { kredit, kreditError, busy, requestTopup, isiKeran } = useKreditSession();
+  const { kredit, kreditError, busy, requestTopup, isiKeran, submitProof } = useKreditSession();
 
   return (
     <div className="order-page">
@@ -18,9 +18,9 @@ export default function KreditPage() {
         <p className="hub-kicker">Kredit</p>
         <h1 className="order-title">Beli / isi ulang Kredit</h1>
         <p className="order-lead">
-          Tombol Isi mencatat permintaan (pending). Kredit masuk setelah operator approve bukti. QRIS/VA milik
-          pemilik belum live di lab ini — jangan anggap saldo terisi karena tombol. Starter tetap 20 Kr fail-closed.
-          Bukan Midtrans.
+          Tombol Isi mencatat permintaan (pending). Setelah itu nomor WhatsApp pemilik tampil untuk instruksi
+          transfer, lalu unggah bukti di form. Kredit masuk hanya setelah operator konfirmasi di localhost
+          <code> /operator/topup</code>. QRIS/VA belum live di repo. Bukan Midtrans. Starter 20 Kr tetap fail-closed.
         </p>
         <KreditPanel
           kredit={kredit}
@@ -28,6 +28,7 @@ export default function KreditPage() {
           busy={busy}
           onRequestTopup={(amount) => void requestTopup(amount)}
           onLabFaucet={() => void isiKeran()}
+          onSubmitProof={submitProof}
         />
       </main>
     </div>

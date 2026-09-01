@@ -46,13 +46,13 @@ Kontrak kejujuran produk GaaS. **Model:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)
 16. **Ban IP vs restart** — baris aktif di `intel_blacklist` di-hydrate ke RAM saat `InitPostgres`. Tanpa Postgres (degraded), ban hanya `LocalBlacklist` dan **hilang** saat proses gateway restart. Ban kedaluwarsa / `is_active=false` tidak kembali. Bukan XDP kernel.
 17. **Golden GET cache** — bukan CDN penuh; TTL default 60s; stale 1 jam hanya jika origin **5xx**/gagal. Tidak menyimpan `/api`, `/nexred`, JSON, cookie sesi, `Set-Cookie` selain `nexus_csrf`, atau `private`/`no-store`. Origin `max-age=0`/`no-cache` **boleh** di-snapshot. Tanpa cookie `nexus_session`, Host `PROTECTED_HOST` kena **PoW 403** dulu (bukan cache). Restart gateway mengosongkan cache. Bukan pengganti origin Vercel untuk self-heal file.
 18. **Browser Job Chromium** — opsional. Default **drive folder NEX-RED** (`workspaces/.playwright-browsers` + `.tmp`), bukan Temp Windows di C:. Binary hilang → skip `sast_only`; Job HTTP tetap. Install: `NEX-RED/INSTALL-PLAYWRIGHT.bat`. PoW named-host tanpa `nexus_session` tetap `sast_only` (bukan gallery/vault selesai). Sesi lab hanya jika operator mengisi token yang sama di gateway + Job; **bukan** skip PoW pengunjung. Vaccine-probe HTTP tetap jalan tanpa PoW.
-19. **Kredit** — ledger file **per tamu atau akun** (`kredit-guest-{uuid}.json` / `kredit-account-{uuid}.json`). **Isi** menulis `data/kredit-topups.json` status pending — **tidak** menambah saldo. Kredit masuk via `POST /api/kredit/topup/approve` (localhost atau `NEXUS_OPERATOR_SECRET`). QRIS/VA milik pemilik **belum live**. Keran `POST /api/kredit/faucet` hanya jika `NEXUS_LEDGER_MODE=lab` dan `NEXUS_LAB_FAUCET` bukan 0 — CTA sekunder. Tamu = cookie `nexus_portal_sid`. **Bukan** e-money, **bukan** settlement IDR, **bukan** jual Job 200 Kr otomatis. **Bukan** Midtrans/Stripe. CLI `channel-starter` generate **tanpa** debit. Kasir Starter = `/pesan/umkm-starter` (alias `/order`).
+19. **Kredit** — ledger file **per tamu atau akun**. **Isi** menulis `data/kredit-topups.json` (pending / `proof_submitted`) — **tidak** menambah saldo. Form bukti + WhatsApp pemilik; berkas `data/topup-proofs/`. Kredit masuk via `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). QRIS/VA milik pemilik **belum live**. Keran `POST /api/kredit/faucet` hanya jika `NEXUS_LEDGER_MODE=lab` dan `NEXUS_LAB_FAUCET` bukan 0 — CTA sekunder. Tamu = cookie `nexus_portal_sid`. **Bukan** e-money, **bukan** PSP, **bukan** jual Job 200 Kr otomatis. **Bukan** Midtrans/Stripe. CLI `channel-starter` generate **tanpa** debit. Kasir Starter = `/pesan/umkm-starter` (alias `/order`).
 ---
 
 ## Yang sengaja ditunda (legacy subscription)
 
 - Webhook / PSP pihak ketiga (Midtrans, Stripe)
-- Alur top-up QRIS/VA + unggah bukti + approve (disepakati, **belum dikode**)
+- Settlement QRIS/VA milik pemilik **live** (gambar/nomor rekening di produk)
 - Back-office F-10 di portal legacy
 - Provisioner per-tenant CNAME massal
 

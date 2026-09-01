@@ -29,7 +29,7 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
 }
 
 export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran } = useKreditSession();
+  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof } = useKreditSession();
   const [formError, setFormError] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("profil");
@@ -237,6 +237,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
           busy={busy}
           onRequestTopup={(amount) => void requestTopup(amount)}
           onLabFaucet={() => void isiKeran()}
+          onSubmitProof={submitProof}
         />
 
         {result ? (

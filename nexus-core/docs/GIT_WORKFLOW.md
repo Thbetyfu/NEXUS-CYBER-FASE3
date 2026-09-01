@@ -13,7 +13,7 @@ Tidak ada submodule di monorepo. Origin portofolio = repo terpisah + **Vercel di
 
 Lab: setelah pull, `nexus-core\deploy-local\blue-team\STOP.bat` lalu **`nexus-core\deploy-local\START.bat`** (bukan `START.bat` di akar repo / `D:\NEXUS\deploy-local` lama). Origin Vercel di belakang WAF. `START-OFFLINE.bat` ditolak. Portal lab = `nexus-gaas-web/` (bukan `nexus-channel-portal/` di akar).
 
-Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./BRD.md). Jangan dokumentasikan F-10 atau PSP pihak ketiga (Midtrans/Stripe) sebagai prioritas v1. Top-up Kredit = QRIS/VA milik pemilik + bukti + approve — jangan klaim sudah ada jika belum dikode.
+Produk jual dokumentasi: Channel Starter + Job / Loop GaaS — lihat [BRD.md](./BRD.md). Jangan dokumentasikan F-10 atau PSP pihak ketiga (Midtrans/Stripe) sebagai prioritas v1. Top-up Kredit = pending + form bukti + approve; jangan klaim QRIS/VA **live** jika nomor/gambar belum di produk.
 
 ## Clone
 
