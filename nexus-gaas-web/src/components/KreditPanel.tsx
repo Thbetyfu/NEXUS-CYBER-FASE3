@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { KREDIT, type PendingTopup } from "@/lib/kredit";
-import { formatWhatsAppNumber, SALES, topupWhatsAppMessage } from "@/lib/portal-config";
+import { formatWhatsAppNumber, topupWhatsAppMessage } from "@/lib/portal-config";
 
 export type KreditState = {
   balance: number;
@@ -34,7 +34,7 @@ export function KreditPanel({
   const [pack, setPack] = useState<(typeof KREDIT.topupPacksKr)[number]>(KREDIT.starterPriceKr);
   const open = kredit?.pendingTopups?.filter((item) => item.status !== "approved") ?? [];
   const showFaucet = Boolean(kredit?.faucetEnabled && onLabFaucet);
-  const wa = formatWhatsAppNumber(kredit?.proofWa || SALES.whatsapp);
+  const wa = kredit?.proofWa ? formatWhatsAppNumber(kredit.proofWa) : null;
 
   return (
     <>
@@ -142,50 +142,51 @@ function TopupOpenCard({
         {submitted ? "Bukti terkirim" : "Pending"} {item.id}: {item.amountKr} {KREDIT.abbr} — belum masuk saldo
       </span>
       {waHref && wa ? (
-        <div className="kredit-wa-block">
-          <p className="kredit-wa-number">
-            WhatsApp bayar / kirim bukti: <strong>{wa.local}</strong> · {wa.intl}
-          </p>
-          <a className="kredit-proof-wa" href={waHref} target="_blank" rel="noreferrer">
-            Buka WhatsApp (wa.me) — {item.id}
-          </a>
-        </div>
+        <a className="kredit-proof-wa" href={waHref} target="_blank" rel="noreferrer">
+          Opsional: salin id ke WhatsApp
+        </a>
       ) : null}
       {onSubmitProof && (
         <form
           className="kredit-proof-form"
           onSubmit={(e) => {
             e.preventDefault();
+            if (!file) return;
             onSubmitProof(item.id, notes, file);
           }}
         >
           <label className="kredit-proof-label" htmlFor={`notes-${item.id}`}>
-            Catatan bukti
+            Catatan (opsional)
           </label>
           <textarea
             id={`notes-${item.id}`}
             className="kredit-proof-notes"
-            rows={3}
+            rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Contoh: transfer sesuai instruksi WA"
+            placeholder="Misalnya bank / jam transfer"
             disabled={busy}
-            required
           />
           <label className="kredit-proof-label" htmlFor={`file-${item.id}`}>
-            Gambar bukti (opsional)
+            Berkas bukti (gambar atau PDF, maks 5 MB)
           </label>
           <input
             id={`file-${item.id}`}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             disabled={busy}
+            required
           />
-          <button type="submit" className="notion-button kredit-proof-submit" disabled={busy}>
-            {busy ? "Mengirim…" : submitted ? "Perbarui bukti" : "Kirim bukti"}
+          <button type="submit" className="notion-button kredit-proof-submit" disabled={busy || !file}>
+            {busy ? "Mengirim…" : "Kirim bukti ke email"}
           </button>
-          <p className="kredit-proof-hint">Unggah bukti tidak menambah saldo. Operator konfirmasi dulu. Bukan PSP.</p>
+          <p className="kredit-proof-hint">
+            {proofEmail
+              ? `Tujuan: ${proofEmail}. Email benar-benar terkirim hanya jika SMTP diset.`
+              : "Set NEXUS_TOPUP_PROOF_EMAIL. Form tetap menyimpan berkas jika SMTP belum ada."}{" "}
+            Submit tidak menambah Kredit.
+          </p>
         </form>
       )}
     </>

@@ -4,7 +4,6 @@ import path from "node:path";
 import { KREDIT, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
-import { SALES } from "./portal-config.ts";
 
 export type TopupRecord = {
   id: string;
@@ -233,9 +232,9 @@ export async function submitTopupProof(
 ): Promise<PendingTopup> {
   return withLock(() => {
     const id = assertTopupId(topupId);
-    const trimmed = notes.trim().slice(0, 2000);
-    if (!trimmed) {
-      throw new RangeError("Catatan bukti wajib");
+    const trimmed = notes.trim().slice(0, 500);
+    if (!file) {
+      throw new RangeError("Unggah berkas bukti");
     }
     const filePath = topupsPath(dataDir);
     const store = readStore(filePath);
@@ -250,7 +249,7 @@ export async function submitTopupProof(
       const magic = mimeFromMagic(file.buffer);
       const ext = magic ? PROOF_EXT[magic] : undefined;
       if (!magic || !ext) {
-        throw new RangeError("Unggah JPG, PNG, WebP, atau GIF");
+        throw new RangeError("Berkas harus gambar (JPEG/PNG/WebP/GIF) atau PDF");
       }
       if (file.buffer.length < 8 || file.buffer.length > MAX_PROOF_BYTES) {
         throw new RangeError("Berkas bukti 8 byte–5 MB");
@@ -344,10 +343,9 @@ export function markTopupApprovedUnlocked(topupId: string, dataDir = defaultData
   return record;
 }
 
-export function proofWaNumber(): string {
+export function proofWaNumber(): string | null {
   const value = process.env.NEXUS_TOPUP_PROOF_WA?.trim() || process.env.NEXT_PUBLIC_TOPUP_PROOF_WA?.trim();
-  const digits = (value || SALES.whatsapp).replace(/\D/g, "");
-  return digits || SALES.whatsapp;
+  return value || null;
 }
 
 /** Tidak ada default di repo — jangan mengarang inbox publik. */

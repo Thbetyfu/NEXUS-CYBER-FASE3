@@ -7,6 +7,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Added
+- **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`npm install nodemailer`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. WhatsApp bukti opsional (`NEXUS_TOPUP_PROOF_WA`), bukan CTA beli. Bukan Midtrans.
 - **Isi Kredit dipakai:** setelah Isi, Channel Portal menampilkan nomor WhatsApp pemilik (`62895603358692`) + `wa.me` (teks TU-… / Kr / ORDER) + form bukti (catatan + gambar opsional). Status `proof_submitted` **tidak** menambah saldo. Operator konfirmasi di `http://127.0.0.1:3003/operator/topup` (loopback) atau `POST /api/kredit/topup/approve`. Berkas `nexus-gaas-web/data/topup-proofs/` (gitignore). Bukan Midtrans. Bukan SOC publik.
 
 ### Changed

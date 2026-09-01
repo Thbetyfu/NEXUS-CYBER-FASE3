@@ -67,12 +67,16 @@ export function useKreditSession() {
   };
 
   const submitProof = async (topupId: string, notes: string, file: File | null) => {
+    if (!file) {
+      setKreditError("Unggah berkas bukti");
+      return;
+    }
     setBusy(true);
     try {
       const form = new FormData();
-      form.set("id", topupId);
-      form.set("notes", notes);
-      if (file) form.set("file", file);
+      form.set("topupId", topupId);
+      form.set("note", notes);
+      form.set("file", file);
       const res = await fetch("/api/kredit/topup/proof", { method: "POST", body: form });
       const data = (await res.json()) as KreditPayload;
       if (!res.ok) {
@@ -80,7 +84,7 @@ export function useKreditSession() {
         return;
       }
       setKredit(fromPayload(data));
-      setKreditError("");
+      setKreditError(data.emailed ? "" : data.proofMessage || "");
     } catch {
       setKreditError("Kirim bukti gagal");
     } finally {
