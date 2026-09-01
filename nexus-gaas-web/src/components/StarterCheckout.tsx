@@ -194,7 +194,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         <p className="order-lead">{pkg.summary}</p>
         <p className="order-lead">
           Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Keran lab di
-          bawah — bukan Midtrans, bukan WhatsApp. Daftar/masuk opsional.
+          bawah atau <Link href="/kredit">/kredit</Link> — bukan Midtrans, bukan WhatsApp.
         </p>
 
         <section className="auth-order-strip" aria-label="Akun pelanggan">
@@ -222,8 +222,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               </>
             ) : (
               <>
-                Tamu otomatis saat keran/generate. <Link href="/masuk">Masuk</Link> atau{" "}
-                <Link href="/daftar">daftar</Link> opsional.
+                Belum ada sesi — kembali ke <Link href="/gate">gerbang</Link> (Login / Daftar / Tamu).
               </>
             )}
           </p>

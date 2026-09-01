@@ -101,7 +101,7 @@ function SegmentLandingInner({ segment }: { segment: SegmentDef }) {
               >
                 <GlobeLock size={22} strokeWidth={1.75} />
                 <strong>Sudah punya</strong>
-                <span>Site sudah online — fokus pagar / wasit</span>
+                <span>Site sudah online — fokus header / Edge Shield</span>
               </button>
             </div>
             {website && (

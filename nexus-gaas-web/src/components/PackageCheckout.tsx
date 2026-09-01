@@ -25,7 +25,7 @@ export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
         ← Kembali ke paket
       </Link>
       <p className="hub-kicker">
-        {pkg.kind === "tepi" ? "Pagar tipis · 1 host lab" : "Tugas operator · bukan kasir Starter"}
+        {pkg.kind === "tepi" ? "Edge Shield · 1 host lab" : "Tugas operator · bukan kasir Starter"}
       </p>
       <h1 className="order-title">{pkg.title}</h1>
       <p className="order-lead">{pkg.summary}</p>
@@ -79,7 +79,7 @@ export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
             <textarea id="pkg-note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
           </fieldset>
           <button type="submit" className="notion-button notion-button-primary order-submit">
-            {pkg.kind === "tepi" ? "Kirim form Pagar tipis" : "Ajukan ke operator"}
+            {pkg.kind === "tepi" ? "Kirim form Edge Shield" : "Ajukan ke operator"}
           </button>
         </form>
       )}

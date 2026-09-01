@@ -22,7 +22,7 @@ const FEATURES = [
   {
     icon: Layers,
     title: "Upsell terpisah",
-    desc: "Starter 20rb = header tepi. Pagar tipis 35rb / Startup 75rb = tepi Reflex 1 host lab. Bukan alert Telegram pelanggan. Job = kontrak wasit.",
+    desc: "Starter 20rb = header tepi. Edge Shield 35rb / Startup 75rb = tepi Reflex 1 host lab. Bukan alert Telegram pelanggan. Job = kontrak wasit.",
     color: "#8b5cf6",
     bg: "rgba(139, 92, 246, 0.08)",
   },

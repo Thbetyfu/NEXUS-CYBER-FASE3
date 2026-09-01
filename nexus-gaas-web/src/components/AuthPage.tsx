@@ -1,18 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { continueAsGuest } from "@/components/AuthLinks";
+import { safeInternalNext } from "@/lib/gate-next";
 
 export function AuthPage({ mode }: { mode: "login" | "register" }) {
+  return (
+    <Suspense fallback={<div className="order-page" />}>
+      <AuthPageInner mode={mode} />
+    </Suspense>
+  );
+}
+
+function AuthPageInner({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeInternalNext(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const register = mode === "register";
+  const nextQ = `?next=${encodeURIComponent(next)}`;
+
+  const goNext = () => {
+    router.push(next);
+    router.refresh();
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +46,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         setError(data.error || "Gagal");
         return;
       }
-      router.push("/");
-      router.refresh();
+      goNext();
     } catch {
       setError("Portal tidak merespons");
     } finally {
@@ -43,7 +59,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     setError("");
     try {
       await continueAsGuest();
-      router.push("/");
+      goNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sesi tamu gagal");
     } finally {
@@ -55,7 +71,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     <div className="order-page">
       <Navbar />
       <main className="notion-container order-main auth-page">
-        <Link href="/" className="order-back">
+        <Link href={`/gate${nextQ}`} className="order-back">
           ← Kembali
         </Link>
         <h1 className="order-title">{register ? "Daftar akun" : "Masuk"}</h1>
@@ -97,11 +113,11 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         <p className="auth-switch">
           {register ? (
             <>
-              Sudah punya akun? <Link href="/masuk">Masuk</Link>
+              Sudah punya akun? <Link href={`/masuk${nextQ}`}>Masuk</Link>
             </>
           ) : (
             <>
-              Belum punya akun? <Link href="/daftar">Daftar</Link>
+              Belum punya akun? <Link href={`/daftar${nextQ}`}>Daftar</Link>
             </>
           )}
         </p>

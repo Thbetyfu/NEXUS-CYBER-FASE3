@@ -11,22 +11,23 @@
 ## Alur pengunjung
 
 ```text
-/  (hub: pilih segmen)
- ├─ /umkm        → sudah/belum punya web? → kartu → /pesan/{sku}
- ├─ /sekolah     → sama
- ├─ /startup     → sama
- ├─ /corporat    → hosted = /pesan/{sku} · on-prem = WhatsApp
- └─ /pemerintah  → WhatsApp (on-prem)
+/gate  (Login / Daftar / Tamu — skip jika cookie sesi ada)
+ └─ /  (hub: pilih segmen)
+     ├─ /umkm        → sudah/belum punya web? → kartu → /pesan/{sku}
+     ├─ /sekolah     → sama
+     ├─ /startup     → sama
+     ├─ /corporat    → hosted = /pesan/{sku} · on-prem = WhatsApp
+     └─ /pemerintah  → WhatsApp (on-prem)
 ```
 
-Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` · `/order` → `/pesan/umkm-starter`.
+Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` · `/order` → `/pesan/umkm-starter`. Isi Kredit lab: `/kredit` (keran, navbar chip +).
 
-**Pagar 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Pagar tipis 35rb/28rb** = Reflex judi/deface lewat WAF (`--tier tepi`), **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. Job/Loop = `/corporat` / `--tier cowork`.
+**Header Shield 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Edge Shield 35rb/28rb** (kartu portal; teknis `--tier tepi`) = Reflex judi/deface lewat WAF, **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. Job/Loop = `/corporat` / `--tier cowork`.
 
 | Status website | UMKM / Sekolah | Startup |
 | --- | --- | --- |
-| Belum | Rp 20rb Website Starter (header tepi) · Rp 35rb **Pagar tipis** (tepi shared, 1 host lab) | Rp 45rb landing+pagar (**header tepi**, bukan WAF) · Rp 75rb **Tepi Alur A** (Reflex, `--tier tepi`, 1 host lab, bukan Job, bukan alert Telegram pelanggan) · Job 200rb |
-| Sudah | Rp 15rb pagar header · Rp 28rb **Pagar tipis** (tepi shared, 1 host lab) | Rp 75rb **Tepi Alur A** (1 host lab, mesin pagar tipis) · Job 200rb · Loop 300rb |
+| Belum | Rp 20rb Website Starter UMKM (header tepi) · Rp 35rb **Edge Shield (shared lab host)** | Rp 45rb **Landing + Header Shield** · Rp 75rb **Landing + Edge Shield (Alur A)** · Job 200rb |
+| Sudah | Rp 15rb **UMKM/School Header Shield** · Rp 28rb **Edge Shield (shared lab host)** | Rp 75rb **Startup Edge Shield** · Job 200rb · Loop 300rb |
 
 | Corporat deploy | Paket |
 | --- | --- |
@@ -50,10 +51,10 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 ## Pembayaran
 
 - **IDR (kontak on-prem):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway). **Hanya** Corporat **On-prem** + **Pemerintah**. Bukan DANA webhook.
-- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan WhatsApp. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid`) atau **akun**. Keran `POST /api/kredit/faucet` (lab, **bukan** settlement IDR). Navbar: segmen + masuk/daftar; tanpa “Pesan” / “Uji tanpa daftar” sebagai produk kedua.
-- **Akun v0:** `/masuk` `/daftar` / tamu. Boleh telusur tanpa login. Bukan SSO. Daftar dari tamu memindahkan Kredit.
+- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan WhatsApp. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. Keran `POST /api/kredit/faucet` (lab, **bukan** settlement IDR). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
+- **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit.
 - **Top-up IDR (disepakati, belum dikode):** **QRIS milik pemilik** dan/atau **VA bank milik pemilik** → bukti transfer → operator **approve** jika bukti aman → Kredit masuk. **Bukan** Midtrans, Stripe, atau PSP pihak ketiga.
-- **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Pagar tipis.
+- **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield.
 
 ---
 

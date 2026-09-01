@@ -30,7 +30,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "umkm-tepi-belum": {
     sku: "umkm-tepi-belum",
     kind: "tepi",
-    title: "Pagar tipis UMKM (site baru)",
+    title: "UMKM Edge Shield (new site)",
     segmentHref: "/umkm",
     priceKr: 35,
     debitStarter: false,
@@ -40,7 +40,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "umkm-pagar": {
     sku: "umkm-pagar",
     kind: "request",
-    title: "Pagar UMKM (header tepi)",
+    title: "UMKM Header Shield",
     segmentHref: "/umkm",
     priceKr: 15,
     debitStarter: false,
@@ -49,7 +49,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "umkm-tepi-sudah": {
     sku: "umkm-tepi-sudah",
     kind: "tepi",
-    title: "Pagar tipis UMKM (host ada)",
+    title: "UMKM Edge Shield (existing host)",
     segmentHref: "/umkm",
     priceKr: 28,
     debitStarter: false,
@@ -67,7 +67,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "sekolah-tepi-belum": {
     sku: "sekolah-tepi-belum",
     kind: "tepi",
-    title: "Pagar tipis sekolah (profil baru)",
+    title: "School Edge Shield (new profile)",
     segmentHref: "/sekolah",
     priceKr: 35,
     debitStarter: false,
@@ -76,7 +76,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "sekolah-pagar": {
     sku: "sekolah-pagar",
     kind: "request",
-    title: "Pagar Sekolah (header tepi)",
+    title: "School Header Shield",
     segmentHref: "/sekolah",
     priceKr: 15,
     debitStarter: false,
@@ -85,7 +85,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "sekolah-tepi-sudah": {
     sku: "sekolah-tepi-sudah",
     kind: "tepi",
-    title: "Pagar tipis sekolah (host ada)",
+    title: "School Edge Shield (existing host)",
     segmentHref: "/sekolah",
     priceKr: 28,
     debitStarter: false,
@@ -94,7 +94,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "startup-landing": {
     sku: "startup-landing",
     kind: "starter",
-    title: "Landing + pagar",
+    title: "Landing + Header Shield",
     segmentHref: "/startup",
     priceKr: 45,
     debitStarter: true,
@@ -104,7 +104,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "startup-tepi-belum": {
     sku: "startup-tepi-belum",
     kind: "tepi",
-    title: "Landing + Tepi (Alur A)",
+    title: "Landing + Edge Shield (Alur A)",
     segmentHref: "/startup",
     priceKr: 75,
     debitStarter: false,
@@ -122,7 +122,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
   "startup-tepi-sudah": {
     sku: "startup-tepi-sudah",
     kind: "tepi",
-    title: "Tepi Startup",
+    title: "Startup Edge Shield",
     segmentHref: "/startup",
     priceKr: 75,
     debitStarter: false,
@@ -176,7 +176,7 @@ export function checkoutHref(sku: string): string {
 
 export function checkoutCtaLabel(kind: CheckoutKind, debitStarter: boolean): string {
   if (kind === "starter" || debitStarter) return "Isi form & bayar Kredit";
-  if (kind === "tepi") return "Isi form Pagar tipis";
+  if (kind === "tepi") return "Isi form Edge Shield";
   return "Ajukan ke operator";
 }
 

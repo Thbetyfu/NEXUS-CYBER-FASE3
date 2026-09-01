@@ -1376,7 +1376,8 @@ input[type="text"]:focus, select:focus {
   
   /* Hide desktop links by default on mobile (controlled by React state) */
   .notion-navbar-links,
-  .notion-navbar-actions.desktop-only {
+  .notion-navbar-actions.desktop-only,
+  .notion-navbar .desktop-only {
     display: none;
   }
 
@@ -2373,3 +2374,59 @@ input[type="text"]:focus, select:focus {
   font-size: 13px;
   color: #5c6570;
 }
+
+.kredit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border: 1px solid var(--notion-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--notion-text-main);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.kredit-chip:hover {
+  border-color: var(--hub-accent);
+  color: var(--notion-text-main);
+}
+
+.kredit-chip-plus {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--hub-accent-soft);
+  color: var(--hub-accent);
+}
+
+.gate-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 360px;
+}
+
+.gate-choice {
+  width: 100%;
+  justify-content: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

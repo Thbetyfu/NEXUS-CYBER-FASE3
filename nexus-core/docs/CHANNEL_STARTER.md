@@ -43,11 +43,11 @@ Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain
 | Paket | Isi | Harga ilustrasi/bulan | Job Cowork |
 | --- | --- | --- | --- |
 | **Starter** | Subdomain lab `{slug}.nexus-lab.test`, template Nexcent, 4 palet, Caddy `file_server` **atau** folder Vercel + **header tepi saja** (nosniff, `X-Frame-Options DENY`, Referrer-Policy, CSP `script-src 'none'`). **Bukan** WAF Reflex, **bukan** Job, **bukan** restore template | **Rp 0–29.000** | Tidak |
-| **Pagar tipis** | Site (jika belum) + Caddy ke WAF + Reflex judi/deface. Satu host per lab. **Bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung | **Rp 35.000** belum / **Rp 28.000** sudah — `/umkm` `/sekolah` | Tidak |
+| **Edge Shield** | Site (jika belum) + Caddy ke WAF + Reflex judi/deface. Satu host per lab. **Bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung | **Rp 35.000** belum / **Rp 28.000** sudah — `/umkm` `/sekolah` | Tidak |
 | **Usaha** | Domain sendiri, halaman tambahan, SEO dasar | **Rp 49.000–99.000** | Tidak |
 | **Tepi (GaaS)** | Sama mesin pagar tipis + Alur A (Reflex + ban tepi). Portal **Startup Rp 75.000** = kartu ini di lab 1 host (`--tier tepi`). **Bukan** Job, **bukan** alert Telegram ke pelanggan (pager ban = operator lab). Baris 149–299rb = ilustrasi lama, bukan kartu `/startup` | **Rp 75.000** portal `/startup` · ilustrasi lama **Rp 149.000–299.000** | Tidak |
 | **Cowork (pilot)** | + Job/Loop + artefak risiko | **Rp 200.000** (Job) / **Rp 300.000**/bln (Loop) — jalur `/corporat` (alias `/institusi`, `/cowork`) | Ya |
-| **UMKM bundel** | Website Starter 20rb = header tepi. **Pagar tipis** = kartu 35rb (bukan debit 20 Kr) | **Rp 20.000**/bln; Pagar tipis **Rp 35.000** | Tidak |
+| **UMKM bundel** | Website Starter 20rb = header tepi. **Edge Shield** = kartu 35rb (bukan debit 20 Kr) | **Rp 20.000**/bln; Edge Shield **Rp 35.000** | Tidak |
 
 **Domain** (± Rp 150–200rb/tahun) — **disarankan terpisah** dari Starter Rp 20rb.
 
@@ -88,10 +88,10 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 | Form wizard pelanggan | **Lab v0.1** — `nexus-core/channel-starter/channel_starter/server.py` + `cli.py serve` |
 | Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
-| Portal kasir Starter | **Portal v0.1** — form `/pesan/umkm-starter` (**20 Kr**, keran lab per tamu/akun). `/order` redirect. `/masuk` `/daftar`. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (**belum dikode**). Bukan PSP. WA = on-prem saja |
+| Portal kasir Starter | **Portal v0.1** — gerbang `/gate`; form `/pesan/umkm-starter` (**20 Kr**, keran lab per tamu/akun). `/order` redirect. `/kredit` keran. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (**belum dikode**). Bukan PSP. WA = on-prem saja |
 | Lab portofolio (Vercel di belakang WAF) | Referensi UX unggah/vault — **bukan** produk Channel Starter. Folder `playground/` diarsip |
 
-Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **Cowork**. **Pagar tipis** memakai Reflex WAF yang sama, **tanpa** menjalankan Job.
+Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **Cowork**. **Edge Shield** memakai Reflex WAF yang sama, **tanpa** menjalankan Job.
 
 ### Quick start (lab)
 
@@ -116,7 +116,7 @@ cd D:\NEXUS\nexus-core\deploy-local
 
 Buka: `http://{slug}.nexus-lab.test` (contoh `http://warung-bu-siti.nexus-lab.test`)
 
-### Pagar tipis — Tepi tanpa Job
+### Edge Shield — Tepi tanpa Job
 
 ```powershell
 python cli.py upsell enable --slug warung-bu-siti --tier tepi

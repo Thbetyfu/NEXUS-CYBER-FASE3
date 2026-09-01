@@ -7,7 +7,8 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Changed
-- **Channel Portal alur linear:** pilih segmen → form `/pesan/{sku}` → Kredit. Kartu UMKM Starter/Pagar tipis **bukan** WhatsApp. Navbar tanpa “Pesan” / “Uji tanpa daftar” / “Pilih segmen” yang bersaing. `/order` redirect ke `/pesan/umkm-starter`. Harga kartu dalam **Kr** (setara Rp). Job hosted = form operator, bukan 200 Kr kasir. WhatsApp hanya Corporat on-prem + Pemerintah. Lab = keran; QRIS/VA **belum**. Starter 20 Kr tetap fail-closed.
+- **Channel Portal gerbang + nama Inggris:** pengunjung tanpa cookie → `/gate` (Login / Daftar / Tamu). Navbar tanpa Masuk/Daftar dan tanpa ORDER-id; chip **Kredit** + plus → `/kredit` (keran lab). Kartu SKU: **Edge Shield (shared lab host)**, **UMKM/School Header Shield** — bukan “Pagar tipis”. Starter 20 Kr tetap fail-closed; 35/28 Kr bukan Job/Loop. WhatsApp hanya on-prem. Bukan Midtrans.
+- **Channel Portal alur linear:** pilih segmen → form `/pesan/{sku}` → Kredit. Kartu UMKM Starter/Edge Shield **bukan** WhatsApp. `/order` redirect ke `/pesan/umkm-starter`. Harga kartu dalam **Kr** (setara Rp). Job hosted = form operator, bukan 200 Kr kasir. Lab = keran; QRIS/VA **belum**.
 
 ### Docs
 - **Alur `/pesan/{sku}`:** [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md), [`DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md).

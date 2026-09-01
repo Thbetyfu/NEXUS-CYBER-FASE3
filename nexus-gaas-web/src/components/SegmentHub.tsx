@@ -31,7 +31,7 @@ const ICONS: Record<SegmentId, typeof Store> = {
 const WORDS = [
   "website UMKM.",
   "header tepi.",
-  "pagar tipis tepi.",
+  "Edge Shield.",
   "landing + header tepi.",
   "tepi Alur A startup.",
   "wasit corporat.",

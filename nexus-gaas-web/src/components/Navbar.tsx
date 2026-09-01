@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
-import { AuthLinks } from "@/components/AuthLinks";
+import { NavbarSession } from "@/components/NavbarSession";
 import { isWhatsAppHref } from "@/lib/portal-config";
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const path = usePathname() ?? "/";
   const onHub = path === "/";
+  const onGate = path === "/gate";
 
   return (
     <nav className="notion-navbar">
@@ -19,41 +20,45 @@ export function Navbar() {
         <Shield size={24} />
         <span>Nexus Cyber</span>
       </Link>
-      <div className="notion-navbar-links desktop-only">
-        <Link href="/umkm" className="notion-navbar-link">
-          UMKM
-        </Link>
-        <Link href="/sekolah" className="notion-navbar-link">
-          Sekolah
-        </Link>
-        <Link href="/startup" className="notion-navbar-link">
-          Startup
-        </Link>
-        <Link href="/corporat" className="notion-navbar-link">
-          Corporat
-        </Link>
-        <Link href="/pemerintah" className="notion-navbar-link">
-          Pemerintah
-        </Link>
-      </div>
-      <div className="flex gap-2 notion-navbar-actions desktop-only">
-        <AuthLinks />
-        {!onHub && (
-          <Link href="/" className="notion-navbar-link">
+      {!onGate && (
+        <div className="notion-navbar-links desktop-only">
+          <Link href="/umkm" className="notion-navbar-link">
+            UMKM
+          </Link>
+          <Link href="/sekolah" className="notion-navbar-link">
+            Sekolah
+          </Link>
+          <Link href="/startup" className="notion-navbar-link">
+            Startup
+          </Link>
+          <Link href="/corporat" className="notion-navbar-link">
+            Corporat
+          </Link>
+          <Link href="/pemerintah" className="notion-navbar-link">
+            Pemerintah
+          </Link>
+        </div>
+      )}
+      <div className="flex gap-2 notion-navbar-actions">
+        <NavbarSession />
+        {!onHub && !onGate && (
+          <Link href="/" className="notion-navbar-link desktop-only">
             Semua segmen
           </Link>
         )}
       </div>
-      <button
-        type="button"
-        className="mobile-menu-btn"
-        style={{ display: "none", background: "none", border: "none" }}
-        onClick={() => setOpen(!open)}
-        aria-label="Menu"
-      >
-        {open ? <X size={24} /> : <Menu size={24} />}
-      </button>
-      {open && (
+      {!onGate && (
+        <button
+          type="button"
+          className="mobile-menu-btn"
+          style={{ display: "none", background: "none", border: "none" }}
+          onClick={() => setOpen(!open)}
+          aria-label="Menu"
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      )}
+      {open && !onGate && (
         <div className="mobile-menu-drawer">
           <Link href="/umkm" className="notion-navbar-link" onClick={() => setOpen(false)}>
             UMKM
@@ -70,11 +75,8 @@ export function Navbar() {
           <Link href="/pemerintah" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Pemerintah
           </Link>
-          <Link href="/masuk" className="notion-navbar-link" onClick={() => setOpen(false)}>
-            Masuk
-          </Link>
-          <Link href="/daftar" className="notion-navbar-link" onClick={() => setOpen(false)}>
-            Daftar
+          <Link href="/kredit" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Isi Kredit
           </Link>
           <Link href="/" className="notion-button notion-button-primary" onClick={() => setOpen(false)}>
             Semua segmen

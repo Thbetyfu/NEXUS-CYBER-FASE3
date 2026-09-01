@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
 import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
 import {
-  applySidCookie,
-  ensureGuestIdentity,
   ledgerFileFor,
+  lookupIdentity,
   publicIdentity,
+  readSidFromRequest,
   type PortalIdentity,
 } from "@/lib/portal-identity";
 
@@ -35,9 +35,8 @@ function chargedResponse(
   identity: PortalIdentity,
   extra: Partial<GenerateJson>,
   status = 200,
-  issuedSid: string | null = null,
 ): NextResponse<GenerateJson> {
-  const response = NextResponse.json(
+  return NextResponse.json(
     {
       ok: extra.ok ?? true,
       chargedKr: KREDIT.starterPriceKr,
@@ -48,17 +47,16 @@ function chargedResponse(
     },
     { status },
   );
-  if (issuedSid) {
-    applySidCookie(response, issuedSid);
-  }
-  return response;
 }
 
 /** Debit 20 Kr dulu, baru proxy ke Channel Starter. Gagal generate → refund. */
 export async function POST(request: NextRequest) {
   const body = await request.formData();
   const orderId = randomUUID();
-  const { identity, issuedSid } = await ensureGuestIdentity(request);
+  const identity = await lookupIdentity(readSidFromRequest(request));
+  if (!identity) {
+    return NextResponse.json({ ok: false, error: "Sesi diperlukan" }, { status: 401 });
+  }
   const ledgerPath = ledgerFileFor(identity);
 
   let snapshot: { balance: number };
@@ -77,9 +75,6 @@ export async function POST(request: NextRequest) {
         },
         { status: 402 },
       );
-      if (issuedSid) {
-        applySidCookie(response, issuedSid);
-      }
       return response;
     }
     const message = err instanceof Error ? err.message : "debit failed";
@@ -108,7 +103,6 @@ export async function POST(request: NextRequest) {
           redirect: location,
         },
         200,
-        issuedSid,
       );
     }
 
@@ -121,14 +115,13 @@ export async function POST(request: NextRequest) {
         identity,
         { ok: false, error: detail || upstream.statusText, chargedKr: 0 },
         upstream.status,
-        issuedSid,
       );
     }
 
-    return chargedResponse(snapshot, orderId, identity, { ok: true }, 200, issuedSid);
+    return chargedResponse(snapshot, orderId, identity, { ok: true }, 200);
   } catch (err) {
     const refunded = await refundStarter(orderId, ledgerPath);
     const message = err instanceof Error ? err.message : "upstream unavailable";
-    return chargedResponse(refunded, orderId, identity, { ok: false, error: message, chargedKr: 0 }, 502, issuedSid);
+    return chargedResponse(refunded, orderId, identity, { ok: false, error: message, chargedKr: 0 }, 502);
   }
 }
