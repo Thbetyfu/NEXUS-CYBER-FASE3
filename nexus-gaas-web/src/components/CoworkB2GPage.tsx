@@ -147,7 +147,7 @@ export function CoworkB2GPage() {
             style={{ color: "var(--notion-text-muted)", fontSize: 14, marginBottom: 20 }}
           >
             Harga bukan HPS resmi. WhatsApp = kontak on-prem (bukan gateway, bukan DANA/Midtrans).
-            Self-serve UMKM–startup = form paket /pesan/… + Kredit (keran lab). Bukan dump /order sebagai produk.
+            Self-serve UMKM–startup = form paket /pesan/… + Kredit (isi ulang pending). Bukan dump /order sebagai produk.
           </p>
           <div className="notion-pricing-grid">
             {plans.map((plan, i) => (

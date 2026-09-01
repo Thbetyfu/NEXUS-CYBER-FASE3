@@ -25,7 +25,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     priceKr: 20,
     debitStarter: true,
     summary:
-      "Isi data usaha → keran Kredit lab jika saldo kurang → debit 20 Kr → generate site. Bukan WhatsApp. Bukan Job Cowork.",
+      "Isi data usaha → isi ulang Kredit (pending, bukan keran gratis) jika saldo kurang → debit 20 Kr → generate site. Bukan WhatsApp. Bukan Job Cowork.",
   },
   "umkm-tepi-belum": {
     sku: "umkm-tepi-belum",

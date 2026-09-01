@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FaucetDisabledError, KREDIT } from "@/lib/kredit";
+import { FaucetDisabledError } from "@/lib/kredit";
 import { creditFaucet } from "@/lib/kredit-ledger";
-import { ledgerFileFor, lookupIdentity, publicIdentity, readSidFromRequest } from "@/lib/portal-identity";
+import { kreditClientView } from "@/lib/kredit-public";
+import { ledgerFileFor, lookupIdentity, readSidFromRequest } from "@/lib/portal-identity";
 
 export async function POST(request: NextRequest) {
-  let amount: number = KREDIT.faucetAmountKr;
+  let amount: number | undefined;
   try {
     const body = (await request.json()) as { amount?: number };
     if (typeof body.amount === "number") {
@@ -19,13 +20,8 @@ export async function POST(request: NextRequest) {
     if (!identity) {
       return NextResponse.json({ ok: false, error: "Sesi diperlukan" }, { status: 401 });
     }
-    const snapshot = await creditFaucet(amount, ledgerFileFor(identity), identity.walletId);
-    return NextResponse.json({
-      ok: true,
-      ...snapshot,
-      walletId: identity.walletId,
-      ...publicIdentity(identity),
-    });
+    await creditFaucet(amount, ledgerFileFor(identity), identity.walletId);
+    return NextResponse.json(await kreditClientView(identity));
   } catch (err) {
     if (err instanceof FaucetDisabledError) {
       return NextResponse.json({ ok: false, error: err.message }, { status: 403 });

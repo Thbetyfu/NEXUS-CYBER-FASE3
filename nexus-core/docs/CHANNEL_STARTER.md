@@ -88,7 +88,7 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 | Form wizard pelanggan | **Lab v0.1** — `nexus-core/channel-starter/channel_starter/server.py` + `cli.py serve` |
 | Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
-| Portal kasir Starter | **Portal v0.1** — gerbang `/gate`; form `/pesan/umkm-starter` (**20 Kr**, keran lab per tamu/akun). `/order` redirect. `/kredit` keran. Top-up IDR: QRIS/VA milik pemilik + bukti + approve (**belum dikode**). Bukan PSP. WA = on-prem saja |
+| Portal kasir Starter | **Portal v0.1** — gerbang `/gate`; form `/pesan/umkm-starter` (**20 Kr**, fail-closed). `/order` redirect. `/kredit` = beli/isi ulang **pending**. Approve operator terpisah. QRIS/VA **belum live**. Keran lab sekunder. Bukan PSP. WA bukti opsional, bukan CTA paket |
 | Lab portofolio (Vercel di belakang WAF) | Referensi UX unggah/vault — **bukan** produk Channel Starter. Folder `playground/` diarsip |
 
 Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **Cowork**. **Edge Shield** memakai Reflex WAF yang sama, **tanpa** menjalankan Job.
@@ -152,4 +152,4 @@ Job Cowork otomatis jika NEX-RED bridge `:3004` hidup (`--tier cowork`). `--no-j
 
 ---
 
-*Channel Starter — lab v0.1. Jangan klaim billing produksi selesai: top-up QRIS/VA+approve belum dikode; keran lab ≠ settlement IDR.*
+*Channel Starter — lab v0.1. Jangan klaim billing produksi selesai: QRIS/VA milik pemilik belum live; Isi = pending, bukan settlement IDR; keran lab ≠ tombol beli.*

@@ -55,7 +55,7 @@ function GateInner() {
         )}
         <p className="auth-honest">
           Tamu = cookie di browser ini; hapus cookie = saldo tamu hilang. Daftar menyimpan Kredit jika Anda daftar dari
-          sesi tamu. Lab = keran Kredit, bukan Midtrans.
+          sesi tamu. Isi Kredit = permintaan pending, bukan keran gratis. Bukan Midtrans.
         </p>
       </main>
     </div>

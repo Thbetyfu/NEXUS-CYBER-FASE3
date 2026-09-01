@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { KREDIT } from "./kredit.ts";
-import { creditFaucet, debitStarter, getKreditSnapshot, migrateGuestLedger, refundStarter, slugFromGenerateLocation } from "./kredit-ledger.ts";
+import { creditFaucet, debitStarter, getKreditSnapshot, migrateGuestLedger, refundStarter, slugFromGenerateLocation, approveTopupRequest } from "./kredit-ledger.ts";
+import { createTopupRequest, listPendingTopups } from "./kredit-topup.ts";
 import { assertSafeId, ledgerPathFor, orderCodeFromId } from "./identity-paths.ts";
 import { hashPassword, verifyPassword } from "./passwords.ts";
 
@@ -92,5 +93,42 @@ test("kata sandi di-hash scrypt, bukan plaintext", async () => {
   assert.equal(hash.startsWith("scrypt$"), true);
   assert.equal(await verifyPassword("rahasia-lab-1", hash), true);
   assert.equal(await verifyPassword("salah", hash), false);
+});
+
+test("isi ulang pending tidak menambah saldo sampai approve operator", async () => {
+  const guestId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee6";
+  const walletId = `guest:${guestId}`;
+  const ledgerPath = ledgerPathFor("guest", guestId, dir);
+  const before = await getKreditSnapshot(ledgerPath);
+  assert.equal(before.balance, 0);
+  const created = await createTopupRequest(100, { kind: "guest", identityId: guestId, walletId }, dir);
+  assert.equal(created.pending.status, "pending");
+  assert.equal(created.pending.amountKr, 100);
+  assert.equal((await getKreditSnapshot(ledgerPath)).balance, 0);
+  const pending = await listPendingTopups(walletId, dir);
+  assert.equal(pending.length, 1);
+  const approved = await approveTopupRequest(created.pending.id, dir);
+  assert.equal(approved.balance, 100);
+  assert.equal(approved.status, "approved");
+  assert.equal((await getKreditSnapshot(ledgerPath)).balance, 100);
+  assert.equal((await listPendingTopups(walletId, dir)).length, 0);
+  const again = await approveTopupRequest(created.pending.id, dir);
+  assert.equal(again.balance, 100);
+});
+
+test("pending isi ulang ikut pindah saat tamu daftar", async () => {
+  const guestId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee7";
+  const accountId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee8";
+  const created = await createTopupRequest(
+    20,
+    { kind: "guest", identityId: guestId, walletId: `guest:${guestId}` },
+    dir,
+  );
+  await migrateGuestLedger(guestId, accountId, dir);
+  assert.equal((await listPendingTopups(`guest:${guestId}`, dir)).length, 0);
+  assert.equal((await listPendingTopups(`account:${accountId}`, dir)).length, 1);
+  const approved = await approveTopupRequest(created.pending.id, dir);
+  assert.equal(approved.balance, 20);
+  assert.equal((await getKreditSnapshot(ledgerPathFor("account", accountId, dir))).balance, 20);
 });
 

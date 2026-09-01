@@ -7,6 +7,9 @@ export const KREDIT = {
   starterPriceKr: 20,
   faucetAmountKr: 100,
   faucetMaxKr: 500,
+  topupPacksKr: [20, 50, 100] as const,
+  topupMaxKr: 500,
+  pendingMaxPerWallet: 8,
   walletId: "lab",
   labSubdomainBase: "nexus-lab.test",
 } as const;
@@ -15,7 +18,16 @@ export function starterPriceIdr(): number {
   return KREDIT.starterPriceKr * KREDIT.idrPerKredit;
 }
 
-export type KreditKind = "faucet" | "debit" | "refund";
+export type KreditKind = "faucet" | "debit" | "refund" | "topup";
+
+export type TopupStatus = "pending" | "approved";
+
+export type PendingTopup = {
+  id: string;
+  amountKr: number;
+  createdAt: string;
+  status: TopupStatus;
+};
 
 export type KreditEntry = {
   id: string;

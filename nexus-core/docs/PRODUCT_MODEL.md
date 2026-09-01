@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.6 / 2026-09-01  
+**Versi:** 1.1.7 / 2026-09-01  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -71,7 +71,7 @@ Nama produk: **Edge Antibody Cowork**.
 | Pentest exploit | Wasit HTTP jinak + virtual patch di tepi |
 | Klaim “anti zero-day” | Residual eksplisit + `replay_missed` = belum selesai |
 
-Modul **`nexus-gaas-web/`** adalah pintu jual v1. Alur: **gerbang** (`/gate`: Login / Daftar / Tamu) → **pilih segmen** → form paket `/pesan/{sku}` → Kredit (keran lab + debit Starter **20 Kr**, fail-closed), **per identitas**. Nama SKU kartu pelanggan berbahasa Inggris (**Edge Shield**, **Header Shield**); isi jujur tetap header-only vs Reflex 1 host. Alias `/order` mengarah ke Starter UMKM. Top-up IDR yang disepakati: **QRIS / VA bank milik pemilik** + bukti transfer + approve operator — **bukan** Midtrans/Stripe. Alur itu **belum dikode**. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
+Modul **`nexus-gaas-web/`** adalah pintu jual v1. Alur: **gerbang** (`/gate`: Login / Daftar / Tamu) → **pilih segmen** → form paket `/pesan/{sku}` → Kredit (isi ulang **pending** + debit Starter **20 Kr**, fail-closed), **per identitas**. Nama SKU kartu pelanggan berbahasa Inggris (**Edge Shield**, **Header Shield**); isi jujur tetap header-only vs Reflex 1 host. Alias `/order` mengarah ke Starter UMKM. Tombol Isi = `POST /api/kredit/topup` (pending). Kredit masuk hanya setelah `POST /api/kredit/topup/approve` (loopback atau `NEXUS_OPERATOR_SECRET`). QRIS/VA milik pemilik **belum live** (tidak ada gambar/nomor di repo). Keran lab `POST /api/kredit/faucet` sekunder (`NEXUS_LAB_FAUCET`, bukan CTA beli). **Bukan** Midtrans/Stripe. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
 
 ---
 

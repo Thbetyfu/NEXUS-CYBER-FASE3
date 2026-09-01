@@ -13,9 +13,9 @@ Deploy publik kanonik: repo [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbety
 | Nama | Channel Portal (jual) |
 | Stack | **Next.js** 16 · React 19 · Tailwind 4 · Framer Motion |
 | Port lab | **3003** (`npm run dev`) |
-| Kasir | **Kredit** per identitas — lab: keran + Starter **20 Kr** di `/pesan/umkm-starter` (`/order` alias) |
+| Kasir | **Kredit** per identitas — Isi = pending; Starter **20 Kr** di `/pesan/umkm-starter` (`/order` alias) |
 | Kontak | WhatsApp **hanya on-prem**. UMKM–startup + Corporat hosted = form `/pesan/{sku}` |
-| Pembayaran IDR | **Bukan** Midtrans/Stripe. Berikutnya (disepakati, **belum dikode**): QRIS/VA milik pemilik → bukti → approve → Kredit |
+| Pembayaran IDR | **Bukan** Midtrans/Stripe. Isi = pending + approve operator. **QRIS/VA milik pemilik belum live** |
 | WhatsApp | `62895603358692` **hanya on-prem** (Corporat On-prem + Pemerintah) |
 
 Login / daftar / tamu = **pelanggan storefront** (`/masuk`, `/daftar`). Bukan login operator Nexus.
@@ -54,14 +54,15 @@ Buka http://127.0.0.1:3003
 | Skrip | Fungsi |
 | --- | --- |
 | `npm run dev` | Next.js `:3003` |
-| `npm test` | Uji ledger Kredit |
+| `npm test` | Uji ledger Kredit + pending isi ulang |
+| `node scripts/approve-topup.mjs TU-…` | Operator: kreditkan pending (localhost `:3003`) |
 | `npm run build` / `npm start` | Build produksi / `next start -p 3003` |
 | `npm run lint` | ESLint |
 
 ## Batasan (jujur)
 
 - F-10 roster pelanggan penuh **ditunda**.
-- Top-up QRIS/VA + approve **belum** di kode.
+- Top-up: permintaan pending + approve operator **ada**. QRIS/VA **belum live**. Bukan billing produksi.
 - Tidak menjual Job Cowork / Loop dari kasir 20 Kr.
 - SOC `:3001`/`:8081` **jangan** di-tunnel sebagai “portal”.
 - Nama paket npm masih `nexus-channel-portal` — folder git = `nexus-gaas-web`.

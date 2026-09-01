@@ -16,10 +16,10 @@
 | Harga Starter exact | **Rp 20.000/bulan** |
 | Subdomain produksi | **`*.nexus.id`** |
 | Pembayaran v1 (kontak) | WhatsApp `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* (saluran manusia, **bukan** gateway PSP). **Hanya on-prem publik:** Corporat On-prem + Pemerintah |
-| **CTA portal (2026-09-01)** | UMKM / sekolah / startup + Corporat **hosted** = form `/pesan/{sku}` (Kredit). Bukan “Pesan via WhatsApp”. `/order` = alias Starter. Job 200 Kr **bukan** self-serve kasir Starter. Lab = keran, bukan settlement IDR / Midtrans |
+| **CTA portal (2026-09-01)** | UMKM / sekolah / startup + Corporat **hosted** = form `/pesan/{sku}` (Kredit). Bukan “Pesan via WhatsApp”. `/order` = alias Starter. Job 200 Kr **bukan** self-serve kasir Starter. Isi Kredit = pending, bukan keran gratis / Midtrans |
 | **Kredit (mata uang kasir)** | Nama **Kredit** (**Kr**). **1 Kr = Rp 1.000**. SKU Starter = **20 Kr** di `/pesan/umkm-starter` (alias `/order`). Debit fail-closed; refund jika generate gagal. **Bukan** Job 200 Kr dari portal. **Bukan** e-money. Ledger **per tamu/akun** (bukan satu file `lab` untuk semua browser) |
-| **Akun pelanggan portal v0 (2026-09-01)** | Channel Portal `:3003`: gerbang `/gate` (Login / Daftar / Tamu). Cookie httpOnly. **Bukan** Operator Console `:3001`. **Bukan** F-10. **Bukan** SSO. Navbar = saldo Kredit + plus (`/kredit`), bukan Masuk/Daftar. Daftar dari tamu memindahkan Kredit |
-| **Top-up Kredit (2026-08-31)** | **Bukan** PSP pihak ketiga (Midtrans, Stripe, dll.) — **jangan** dikerjakan. Jalur yang disepakati (**belum dikode**): bayar ke **QRIS milik pemilik** dan/atau **Virtual Account bank milik pemilik** → kirim **bukti transfer** → operator **approve** jika bukti aman/sah → Kredit masuk ledger. Lab sekarang: keran `POST /api/kredit/faucet` (bukan settlement IDR) |
+| **Akun pelanggan portal v0 (2026-09-01)** | Channel Portal `:3003`: gerbang `/gate` (Login / Daftar / Tamu). Cookie httpOnly. **Bukan** Operator Console `:3001`. **Bukan** F-10. **Bukan** SSO. Navbar = saldo Kredit + plus (`/kredit` beli/isi ulang), bukan Masuk/Daftar. Daftar dari tamu memindahkan Kredit |
+| **Top-up Kredit (2026-09-01)** | **Bukan** PSP pihak ketiga (Midtrans, Stripe). **Isi** = permintaan pending (`data/kredit-topups.json`). Saldo **tidak** bertambah sampai operator `POST /api/kredit/topup/approve` (localhost atau `NEXUS_OPERATOR_SECRET`). QRIS/VA milik pemilik **belum live** (tidak di-repo). Keran lab opsional, CTA sekunder. WhatsApp hanya kirim bukti opsional, bukan CTA beli paket |
 | Portal jual | **Reuse desain** portal legacy → **`nexus-gaas-web/`** (lab in-repo; dulu `nexus-channel-portal/`; bukan submodule) |
 | Nama entry | **Channel Starter** |
 | Upsell keamanan | Job Cowork / Loop = **paket terpisah** |

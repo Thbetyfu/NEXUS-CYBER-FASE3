@@ -20,7 +20,7 @@
      └─ /pemerintah  → WhatsApp (on-prem)
 ```
 
-Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` · `/order` → `/pesan/umkm-starter`. Isi Kredit lab: `/kredit` (keran, navbar chip +).
+Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` · `/order` → `/pesan/umkm-starter`. Isi Kredit: `/kredit` (beli/isi ulang pending, navbar chip +).
 
 **Header Shield 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Edge Shield 35rb/28rb** (kartu portal; teknis `--tier tepi`) = Reflex judi/deface lewat WAF, **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. Job/Loop = `/corporat` / `--tier cowork`.
 
@@ -51,9 +51,9 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 ## Pembayaran
 
 - **IDR (kontak on-prem):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway). **Hanya** Corporat **On-prem** + **Pemerintah**. Bukan DANA webhook.
-- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan WhatsApp. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. Keran `POST /api/kredit/faucet` (lab, **bukan** settlement IDR). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
-- **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit.
-- **Top-up IDR (disepakati, belum dikode):** **QRIS milik pemilik** dan/atau **VA bank milik pemilik** → bukti transfer → operator **approve** jika bukti aman → Kredit masuk. **Bukan** Midtrans, Stripe, atau PSP pihak ketiga.
+- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan WhatsApp. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (pending di `data/kredit-topups.json`); saldo **tidak** naik sampai `POST /api/kredit/topup/approve`. Keran `POST /api/kredit/faucet` lab sekunder (`NEXUS_LAB_FAUCET`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
+- **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit + pending isi ulang.
+- **Top-up IDR:** permintaan pending + approve operator **sudah** di kode lab. **QRIS/VA milik pemilik belum live** (tidak ada gambar/nomor rekening di repo). **Bukan** billing produksi. **Bukan** Midtrans, Stripe, atau PSP pihak ketiga. WhatsApp hanya opsi kirim bukti (`NEXUS_TOPUP_PROOF_WA`), bukan CTA beli paket.
 - **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield.
 
 ---

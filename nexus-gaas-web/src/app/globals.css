@@ -2264,15 +2264,22 @@ input[type="text"]:focus, select:focus {
 
 .kredit-panel {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 14px;
-  flex-wrap: wrap;
   padding: 16px 18px;
   margin-bottom: 20px;
   background: #fff;
   border: 1px solid #d5d8e0;
   border-radius: var(--notion-radius-lg);
   box-shadow: var(--notion-shadow);
+}
+
+.kredit-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .kredit-panel-mark {
@@ -2306,6 +2313,105 @@ input[type="text"]:focus, select:focus {
   margin: 2px 0 0;
   font-size: 12px;
   color: #5c6570;
+}
+
+.kredit-topup {
+  border-top: 1px solid #eceff3;
+  padding-top: 14px;
+}
+
+.kredit-topup-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5c6570;
+}
+
+.kredit-packs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.kredit-pack {
+  border: 1px solid #d5d8e0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  color: #12151a;
+}
+
+.kredit-pack.is-on {
+  border-color: var(--hub-accent);
+  background: var(--hub-accent-soft);
+  color: var(--hub-accent);
+}
+
+.kredit-topup-submit {
+  width: 100%;
+  justify-content: center;
+}
+
+.kredit-topup-copy {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5c6570;
+}
+
+.kredit-pending {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kredit-pending li {
+  font-size: 12px;
+  color: #9a3412;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kredit-proof-wa,
+.kredit-proof-hint {
+  font-size: 11px;
+  color: #7c2d12;
+}
+
+.kredit-proof-wa {
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.kredit-faucet-lab {
+  align-self: flex-start;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 11px;
+  color: #8b939c;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kredit-faucet-lab:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .kredit-error {

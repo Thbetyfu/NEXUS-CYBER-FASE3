@@ -29,7 +29,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Kasir Kredit",
-    desc: "Lab: keran Kredit di form paket /pesan/… (bukan settlement IDR). Produksi: QRIS/VA milik Nexus + bukti + approve (belum). WhatsApp hanya on-prem, bukan gateway.",
+    desc: "Isi ulang Kredit = permintaan pending (QRIS/VA milik pemilik belum live). Keran lab hanya teks sekunder. WhatsApp bukti opsional, bukan CTA beli paket. Bukan Midtrans.",
     color: "var(--notion-yellow)",
     bg: "var(--notion-yellow-bg)",
   },

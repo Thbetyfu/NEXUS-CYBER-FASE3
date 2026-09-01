@@ -58,7 +58,7 @@ export function NavbarSession() {
           {auth.email}
         </span>
       )}
-      <Link href="/kredit" className="kredit-chip" title="Isi Kredit (keran lab)">
+      <Link href="/kredit" className="kredit-chip" title="Beli / isi ulang Kredit">
         <span className="kredit-chip-amount">
           {balance == null ? "…" : `${balance} ${KREDIT.abbr}`}
         </span>

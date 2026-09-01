@@ -187,7 +187,7 @@ function HeroFlowVisual() {
 
   const hints = [
     "Jawab 3 pertanyaan singkat — kami arahkan ke paket yang cocok.",
-    "Isi form paket lalu Kredit (keran lab). WhatsApp hanya on-prem.",
+    "Isi form paket lalu Kredit (isi ulang pending). WhatsApp hanya on-prem.",
     "Tim Nexus proses — website ~1×24 jam; Job hosted = operator.",
     "Website dan keamanan = produk berbeda, harga berbeda.",
   ];

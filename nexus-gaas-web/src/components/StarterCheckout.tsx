@@ -29,7 +29,7 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
 }
 
 export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, setKredit, kreditError, busy, setBusy, isiKeran } = useKreditSession();
+  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran } = useKreditSession();
   const [formError, setFormError] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("profil");
@@ -156,6 +156,9 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
           kind: data.kind ?? prev?.kind,
           orderCode: data.orderCode ?? prev?.orderCode,
           email: data.email ?? prev?.email,
+          pendingTopups: prev?.pendingTopups,
+          faucetEnabled: prev?.faucetEnabled,
+          proofWa: prev?.proofWa,
         }));
       }
       if (!res.ok || data.ok === false) {
@@ -163,7 +166,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         setFormError(
           res.status === 502 || /fetch failed|ECONNREFUSED|upstream/i.test(raw)
             ? "Channel Starter :3010 tidak hidup. Kredit di-refund. Nyalakan python cli.py serve di nexus-core/channel-starter."
-            : raw || "Pesanan ditolak. Isi keran lab sampai saldo ≥ 20 Kr, lalu kirim lagi.",
+            : raw || "Pesanan ditolak. Isi ulang Kredit (pending → operator approve) sampai saldo ≥ 20 Kr, lalu kirim lagi.",
         );
         return;
       }
@@ -232,7 +235,8 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
           kredit={kredit}
           kreditError={kreditError}
           busy={busy}
-          onFaucet={() => void isiKeran()}
+          onRequestTopup={(amount) => void requestTopup(amount)}
+          onLabFaucet={() => void isiKeran()}
         />
 
         {result ? (
@@ -459,7 +463,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
             )}
             {!cukup && kredit != null && (
               <p className="kredit-warn">
-                Perlu {KREDIT.starterPriceKr} Kredit. Isi keran lab dulu, atau pesanan akan ditolak.
+                Perlu {KREDIT.starterPriceKr} Kredit. Ajukan isi ulang di panel (bukan keran gratis), atau pesanan akan ditolak.
               </p>
             )}
             <button type="submit" className="notion-button notion-button-primary order-submit" disabled={busy}>

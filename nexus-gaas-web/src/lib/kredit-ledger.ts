@@ -8,6 +8,7 @@ import {
   type KreditEntry,
   type KreditSnapshot,
 } from "./kredit.ts";
+import { getTopupUnlocked, markTopupApprovedUnlocked, migratePendingTopupsUnlocked, publicPending } from "./kredit-topup.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, ledgerPathFor } from "./identity-paths.ts";
 
@@ -22,6 +23,14 @@ const STARTER_SKU = "channel-starter";
 
 export function isLabLedgerMode(mode = process.env.NEXUS_LEDGER_MODE): boolean {
   return (mode ?? "lab").trim().toLowerCase() !== "live";
+}
+
+export function isLabFaucetEnabled(): boolean {
+  if (!isLabLedgerMode()) {
+    return false;
+  }
+  const flag = (process.env.NEXUS_LAB_FAUCET ?? "1").trim().toLowerCase();
+  return flag !== "0" && flag !== "off" && flag !== "false";
 }
 
 export function defaultLedgerPath(): string {
@@ -105,7 +114,7 @@ export async function creditFaucet(
   walletId?: string,
 ): Promise<KreditSnapshot> {
   return withLock(() => {
-    if (!isLabLedgerMode()) {
+    if (!isLabFaucetEnabled()) {
       throw new FaucetDisabledError();
     }
     const add = Math.floor(amount);
@@ -119,6 +128,48 @@ export async function creditFaucet(
     pushEntry(ledger, "faucet", add, `Keran lab +${add} Kr`);
     writeLedger(filePath, ledger);
     return snapshotOf(ledger);
+  });
+}
+
+export function creditApprovedTopupUnlocked(
+  amount: number,
+  filePath: string,
+  walletId: string,
+  topupId: string,
+): KreditSnapshot {
+  const add = Math.floor(amount);
+  if (!Number.isFinite(add) || add < 1) {
+    throw new RangeError("jumlah Kredit tidak valid");
+  }
+  const ledger = readLedger(filePath, walletId);
+  ledger.walletId = walletId;
+  if (ledger.entries.some((e) => e.kind === "topup" && e.orderId === topupId)) {
+    return snapshotOf(ledger);
+  }
+  pushEntry(ledger, "topup", add, `Isi ulang disetujui +${add} Kr`, { orderId: topupId });
+  writeLedger(filePath, ledger);
+  return snapshotOf(ledger);
+}
+
+export async function approveTopupRequest(
+  topupId: string,
+  dataDir = defaultDataDir(),
+): Promise<{ id: string; amountKr: number; status: "approved"; balance: number }> {
+  return withLock(() => {
+    const record = getTopupUnlocked(topupId, dataDir);
+    if (!record) {
+      throw new Error("Permintaan isi ulang tidak ditemukan");
+    }
+    const ledgerFile = ledgerPathFor(record.kind, record.identityId, dataDir);
+    const snap = creditApprovedTopupUnlocked(record.amountKr, ledgerFile, record.walletId, record.id);
+    const settled = markTopupApprovedUnlocked(record.id, dataDir);
+    return {
+      id: settled.id,
+      amountKr: settled.amountKr,
+      status: "approved" as const,
+      balance: snap.balance,
+      pending: publicPending(settled),
+    };
   });
 }
 
@@ -175,6 +226,7 @@ export function migrateGuestLedgerUnlocked(fromGuestId: string, toAccountId: str
     return;
   }
   writeLedger(toPath, { ...source, walletId });
+  migratePendingTopupsUnlocked(fromGuestId, toAccountId, dataDir);
   if (existsSync(fromPath)) {
     try {
       unlinkSync(fromPath);

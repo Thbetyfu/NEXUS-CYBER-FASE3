@@ -92,7 +92,7 @@ function HeroFlow() {
   const hints = [
     "Satu pintu: UMKM, sekolah, startup, corporat, atau pemerintah.",
     "Kartu paket membuka form paket itu — bukan dump /order, bukan WhatsApp (kecuali on-prem).",
-    "Starter: keran lab + debit 20 Kr fail-closed. Bukan Midtrans. Job 200 Kr bukan kasir otomatis.",
+    "Starter: isi ulang Kredit pending + debit 20 Kr fail-closed. Bukan Midtrans. Job 200 Kr bukan kasir otomatis.",
     "Generate site Starter, atau tugas tepi/Job ke operator. WhatsApp hanya Corporat on-prem & Pemerintah.",
   ];
 

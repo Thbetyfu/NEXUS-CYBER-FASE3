@@ -8,7 +8,7 @@ import type { CheckoutPackage } from "@/lib/checkout";
 import { priceIdrSub, priceKrLabel } from "@/lib/checkout";
 
 export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, kreditError, busy, isiKeran } = useKreditSession();
+  const { kredit, kreditError, busy, requestTopup, isiKeran } = useKreditSession();
   const [name, setName] = useState("");
   const [host, setHost] = useState("");
   const [note, setNote] = useState("");
@@ -32,10 +32,16 @@ export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
       <p className="order-lead">
         Harga daftar: <strong>{priceKrLabel(pkg.priceKr)}</strong>
         {pkg.priceKr != null ? ` (${priceIdrSub(pkg.priceKr)})` : ""}. Bukan Midtrans. Bukan WhatsApp. Bukan
-        debit otomatis 20 Kr generate. QRIS/VA top-up belum.
+        debit otomatis 20 Kr generate. QRIS/VA settlement belum live; Isi = pending.
       </p>
 
-      <KreditPanel kredit={kredit} kreditError={kreditError} busy={busy} onFaucet={() => void isiKeran()} />
+      <KreditPanel
+        kredit={kredit}
+        kreditError={kreditError}
+        busy={busy}
+        onRequestTopup={(amount) => void requestTopup(amount)}
+        onLabFaucet={() => void isiKeran()}
+      />
 
       {done ? (
         <div className="notion-callout notion-callout-blue">

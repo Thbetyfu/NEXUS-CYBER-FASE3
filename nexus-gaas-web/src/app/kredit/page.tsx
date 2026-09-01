@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { useKreditSession } from "@/hooks/useKreditSession";
 
 export default function KreditPage() {
-  const { kredit, kreditError, busy, isiKeran } = useKreditSession();
+  const { kredit, kreditError, busy, requestTopup, isiKeran } = useKreditSession();
 
   return (
     <div className="order-page">
@@ -16,12 +16,19 @@ export default function KreditPage() {
           ← Kembali ke toko
         </Link>
         <p className="hub-kicker">Kredit</p>
-        <h1 className="order-title">Isi Kredit</h1>
+        <h1 className="order-title">Beli / isi ulang Kredit</h1>
         <p className="order-lead">
-          Lab: keran di bawah menambahkan Kredit ke identitas ini (tamu atau akun). Bukan Midtrans, bukan QRIS otomatis.
-          Starter tetap 20 Kr fail-closed; bukan Loop.
+          Tombol Isi mencatat permintaan (pending). Kredit masuk setelah operator approve bukti. QRIS/VA milik
+          pemilik belum live di lab ini — jangan anggap saldo terisi karena tombol. Starter tetap 20 Kr fail-closed.
+          Bukan Midtrans.
         </p>
-        <KreditPanel kredit={kredit} kreditError={kreditError} busy={busy} onFaucet={() => void isiKeran()} />
+        <KreditPanel
+          kredit={kredit}
+          kreditError={kreditError}
+          busy={busy}
+          onRequestTopup={(amount) => void requestTopup(amount)}
+          onLabFaucet={() => void isiKeran()}
+        />
       </main>
     </div>
   );
