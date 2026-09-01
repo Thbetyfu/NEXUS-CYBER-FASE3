@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { KREDIT, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
+import { SALES } from "./portal-config.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
 
@@ -345,7 +346,8 @@ export function markTopupApprovedUnlocked(topupId: string, dataDir = defaultData
 
 export function proofWaNumber(): string | null {
   const value = process.env.NEXUS_TOPUP_PROOF_WA?.trim() || process.env.NEXT_PUBLIC_TOPUP_PROOF_WA?.trim();
-  return value || null;
+  if (value) return value;
+  return SALES.whatsapp;
 }
 
 /** Tidak ada default di repo — jangan mengarang inbox publik. */
@@ -445,20 +447,8 @@ export async function submitTopupProofMail(args: {
     const send =
       args.sendMail ??
       (async (payload) => {
-        const nodemailer = await import("nodemailer");
-        const transporter = nodemailer.default.createTransport({
-          host: mail.smtp!.host,
-          port: mail.smtp!.port,
-          secure: mail.smtp!.secure,
-          auth: { user: mail.smtp!.user, pass: mail.smtp!.pass },
-        });
-        await transporter.sendMail({
-          to: payload.to,
-          from: payload.from,
-          subject: payload.subject,
-          text: payload.text,
-          attachments: [{ filename: payload.filename, content: payload.content, contentType: payload.contentType }],
-        });
+        const { sendProofWithNodemailer } = await import("./kredit-smtp.ts");
+        await sendProofWithNodemailer(mail.smtp!, payload);
       });
     const ext = mime === "application/pdf" ? "pdf" : mime.split("/")[1] || "bin";
     try {

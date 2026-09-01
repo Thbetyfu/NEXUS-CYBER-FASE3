@@ -7,8 +7,11 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Added
-- **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`npm install nodemailer`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. WhatsApp bukti opsional (`NEXUS_TOPUP_PROOF_WA`), bukan CTA beli. Bukan Midtrans.
+- **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`nodemailer` di `nexus-gaas-web/package.json`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. WhatsApp bukti opsional (`NEXUS_TOPUP_PROOF_WA`), bukan CTA beli. Bukan Midtrans.
 - **Isi Kredit dipakai:** setelah Isi, Channel Portal menampilkan nomor WhatsApp pemilik (`62895603358692`) + `wa.me` (teks TU-… / Kr / ORDER) + form bukti (catatan + gambar opsional). Status `proof_submitted` **tidak** menambah saldo. Operator konfirmasi di `http://127.0.0.1:3003/operator/topup` (loopback) atau `POST /api/kredit/topup/approve`. Berkas `nexus-gaas-web/data/topup-proofs/` (gitignore). Bukan Midtrans. Bukan SOC publik.
+
+### Fixed
+- **Overlay Next.js Channel Portal:** `Module not found: Can't resolve 'nodemailer'` di `kredit-topup.ts` (bukti email opsional) membuat Turbopack 500 seluruh rute termasuk `/gate`. `nodemailer` sekarang di `package.json`; SMTP di-load runtime (`kredit-smtp.ts`) supaya compile kasir tidak tergantung paket itu. Bukan Midtrans.
 
 ### Changed
 - **Isi Kredit bukan keran gratis:** tombol Isi / navbar plus → `/kredit` mengajukan **pending** (`POST /api/kredit/topup`). Saldo tidak naik sampai operator `POST /api/kredit/topup/approve` (loopback atau `NEXUS_OPERATOR_SECRET`). Keran lab = teks sekunder “Keran lab (uji, bukan bayar)” + `NEXUS_LAB_FAUCET`. QRIS/VA milik pemilik **belum live**. Bukan Midtrans. Bukan billing produksi.
