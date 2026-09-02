@@ -45,19 +45,51 @@ export type OperatorTopupView = {
   identityId: string;
   kind: "guest" | "account";
   email: string | null;
+  displayName: string | null;
   orderCode: string;
   notes?: string;
   hasProof: boolean;
   proofSubmittedAt?: string;
 };
 
-/** Baris utama antrian operator (bukan UUID). Akun = email; tamu = ORDER- + Tamu. */
-export function operatorPartyLabel(item: Pick<OperatorTopupView, "kind" | "email" | "orderCode">): string {
+type OperatorIdentityFields = Pick<OperatorTopupView, "kind" | "email" | "orderCode"> & {
+  displayName?: string | null;
+};
+
+/** Label di atas identitas: Email jika hanya email; Nama jika identities punya displayName. */
+export function operatorIdentityKindLabel(item: OperatorIdentityFields): string {
+  if (item.kind === "guest") {
+    return "Tamu";
+  }
+  if (item.displayName?.trim()) {
+    return "Nama";
+  }
+  if (item.email?.trim()) {
+    return "Email";
+  }
+  return "Akun";
+}
+
+/**
+ * Isi `.operator-topup-id` — manusia, bukan wallet UUID.
+ * Akun: nama · email jika keduanya ada; else email; jangan mengarang nama.
+ * Tamu: Tamu · ORDER-xxxxxxxx.
+ */
+export function operatorTopupIdText(item: OperatorIdentityFields): string {
   if (item.kind === "account") {
-    const email = item.email?.trim();
-    return email || "Akun";
+    const name = item.displayName?.trim() || "";
+    const email = item.email?.trim() || "";
+    if (name && email) {
+      return `${name} · ${email}`;
+    }
+    return email || name || "Akun";
   }
   return item.orderCode ? `Tamu · ${item.orderCode}` : "Tamu";
+}
+
+/** Alias: baris identitas manusia (bukan UUID). */
+export function operatorPartyLabel(item: OperatorIdentityFields): string {
+  return operatorTopupIdText(item);
 }
 
 export type KreditEntry = {

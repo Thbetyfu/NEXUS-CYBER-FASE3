@@ -3,16 +3,25 @@ import { assertSafeId, defaultDataDir, identitiesPath, orderCodeFromId, type Ide
 
 export type OperatorParty = {
   email: string | null;
+  displayName: string | null;
   orderCode: string;
   identityId: string;
 };
 
 type IdentityFile = {
   version?: number;
-  accounts?: { id?: string; email?: string }[];
+  accounts?: { id?: string; email?: string; name?: string; displayName?: string }[];
 };
 
-/** Email akun dari portal-identities (tanpa hash). Tamu = ORDER dari id. Panggil di dalam withLock. */
+function optionalText(value: string | undefined): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/** Email/nama akun dari portal-identities (tanpa hash). Tamu = ORDER dari id. Panggil di dalam withLock. */
 export function lookupOperatorPartyUnlocked(
   kind: IdentityKind,
   identityId: string,
@@ -21,14 +30,20 @@ export function lookupOperatorPartyUnlocked(
   const id = assertSafeId(identityId);
   const orderCode = orderCodeFromId(id);
   if (kind !== "account") {
-    return { email: null, orderCode, identityId: id };
+    return { email: null, displayName: null, orderCode, identityId: id };
   }
   const filePath = identitiesPath(dataDir);
   if (!existsSync(filePath)) {
-    return { email: null, orderCode, identityId: id };
+    return { email: null, displayName: null, orderCode, identityId: id };
   }
   const parsed = JSON.parse(readFileSync(filePath, "utf8")) as IdentityFile;
-  const account = Array.isArray(parsed.accounts) ? parsed.accounts.find((row) => row.id === id) : undefined;
-  const email = typeof account?.email === "string" ? account.email : null;
-  return { email, orderCode, identityId: id };
+  const account = Array.isArray(parsed.accounts)
+    ? parsed.accounts.find((row) => typeof row.id === "string" && row.id.toLowerCase() === id)
+    : undefined;
+  return {
+    email: optionalText(account?.email),
+    displayName: optionalText(account?.displayName) ?? optionalText(account?.name),
+    orderCode,
+    identityId: id,
+  };
 }

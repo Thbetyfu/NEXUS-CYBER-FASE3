@@ -1,12 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isOpenTopupStatus, operatorPartyLabel, type OperatorTopupView } from "@/lib/kredit";
+import {
+  isOpenTopupStatus,
+  operatorIdentityKindLabel,
+  operatorTopupIdText,
+  type OperatorTopupView,
+} from "@/lib/kredit";
 
 type QueuePayload = { ok?: boolean; error?: string; items?: OperatorTopupView[] };
 
-export function OperatorTopupBoard() {
-  const [items, setItems] = useState<OperatorTopupView[]>([]);
+export function OperatorTopupBoard({ initialItems = [] }: { initialItems?: OperatorTopupView[] }) {
+  const [items, setItems] = useState<OperatorTopupView[]>(() =>
+    initialItems.filter((item) => isOpenTopupStatus(item.status)),
+  );
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
 
@@ -68,36 +75,42 @@ export function OperatorTopupBoard() {
         <p className="operator-topup-empty">Tidak ada permintaan pending.</p>
       ) : (
         <ul className="operator-topup-list">
-          {items.map((item) => (
-            <li key={item.id}>
-              <div>
-                <strong>{item.id}</strong> · {item.amountKr} Kr · {item.status}
-                <span className="operator-topup-party">{operatorPartyLabel(item)}</span>
-                <span className="operator-topup-meta">
-                  {new Date(item.createdAt).toLocaleString("id-ID")}
-                </span>
-                <span className="operator-topup-id">{item.walletId}</span>
-                {item.notes ? <p className="operator-topup-notes">{item.notes}</p> : null}
-                {item.hasProof ? (
-                  <p>
-                    <a href={`/api/kredit/topup/proof-file?id=${encodeURIComponent(item.id)}`} target="_blank" rel="noreferrer">
-                      Lihat berkas bukti
-                    </a>
-                  </p>
-                ) : (
-                  <p className="operator-topup-meta">Belum ada gambar bukti.</p>
-                )}
-              </div>
-              <button
-                type="button"
-                className="notion-button notion-button-primary"
-                onClick={() => void confirm(item.id)}
-                disabled={Boolean(busyId)}
-              >
-                {busyId === item.id ? "Mengkredit…" : "Konfirmasi isi"}
-              </button>
-            </li>
-          ))}
+          {items.map((item) => {
+            const identity = operatorTopupIdText(item);
+            return (
+              <li key={item.id}>
+                <div>
+                  <strong>{item.id}</strong> · {item.amountKr} Kr · {item.status}
+                  <span className="operator-topup-party">{operatorIdentityKindLabel(item)}</span>
+                  <span className="operator-topup-id">{identity}</span>
+                  <span className="operator-topup-meta">
+                    {new Date(item.createdAt).toLocaleString("id-ID")}
+                  </span>
+                  <span className="operator-topup-wallet" title={item.walletId}>
+                    {item.walletId}
+                  </span>
+                  {item.notes ? <p className="operator-topup-notes">{item.notes}</p> : null}
+                  {item.hasProof ? (
+                    <p>
+                      <a href={`/api/kredit/topup/proof-file?id=${encodeURIComponent(item.id)}`} target="_blank" rel="noreferrer">
+                        Lihat berkas bukti
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="operator-topup-meta">Belum ada gambar bukti.</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="notion-button notion-button-primary"
+                  onClick={() => void confirm(item.id)}
+                  disabled={Boolean(busyId)}
+                >
+                  {busyId === item.id ? "Mengkredit…" : "Konfirmasi isi"}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>

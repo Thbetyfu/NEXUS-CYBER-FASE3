@@ -2575,16 +2575,25 @@ input[type="text"]:focus, select:focus {
 .operator-topup-party {
   display: block;
   margin-top: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1d23;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5c6570;
 }
 
 .operator-topup-id {
   display: block;
   margin-top: 2px;
-  font-size: 11px;
-  color: #8b939c;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d23;
+  word-break: break-word;
+}
+
+.operator-topup-wallet {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #c5c9ce;
   word-break: break-all;
 }
 

@@ -152,6 +152,7 @@ function toOperatorView(record: TopupRecord, dataDir: string): OperatorTopupView
     identityId: party.identityId,
     kind: record.kind,
     email: party.email,
+    displayName: party.displayName,
     orderCode: party.orderCode,
     notes: record.notes,
     hasProof: Boolean(record.proofRelPath),

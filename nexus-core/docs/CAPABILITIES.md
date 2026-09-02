@@ -22,7 +22,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Job Cowork orkestrasi | **Sudah ada** | `NEX-RED/jobs/` + bridge `:3004` |
 | Ekspor artefak risiko | **Sudah ada** | MD/JSON per Job (file-backed) + digest insiden ThreatLog per host (operator) |
 | Memori imun host | **Sudah ada** | PG `host_immune_memories` + file backup |
-| Channel Portal / multi-tenant legacy | **Portal v0.1** | `nexus-gaas-web/` — login/daftar/tamu; **Kredit** Starter 20 Kr per identitas. Isi = pending + WA + form bukti; approve operator `/operator/topup` (localhost). QRIS/VA **belum live**. Keran lab opt-in. Bukan PSP; bukan F-10 |
+| Channel Portal / multi-tenant legacy | **Portal v0.1** | `nexus-gaas-web/` — login/daftar/tamu; **Kredit** Starter 20 Kr per identitas. Isi = pending + WA + form bukti; approve operator `/operator/topup` (localhost; kartu = email atau Tamu · ORDER, bukan UUID). QRIS/VA **belum live**. Keran lab opt-in. Bukan PSP; bukan F-10 |
 
 ---
 

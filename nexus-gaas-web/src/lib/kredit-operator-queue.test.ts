@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
 import { identitiesPath, orderCodeFromId } from "./identity-paths.ts";
-import { operatorPartyLabel } from "./kredit.ts";
+import { operatorIdentityKindLabel, operatorPartyLabel, operatorTopupIdText } from "./kredit.ts";
 import { createTopupRequest, listOperatorQueue } from "./kredit-topup.ts";
 
 const dir = mkdtempSync(path.join(tmpdir(), "nexus-op-queue-"));
@@ -15,8 +15,18 @@ after(() => {
 
 test("label operator: akun = email, tamu = Tamu + ORDER", () => {
   assert.equal(
-    operatorPartyLabel({ kind: "account", email: "warung@example.test", orderCode: "ORDER-AAAAAAAA" }),
+    operatorTopupIdText({ kind: "account", email: "warung@example.test", orderCode: "ORDER-AAAAAAAA" }),
     "warung@example.test",
+  );
+  assert.equal(operatorIdentityKindLabel({ kind: "account", email: "warung@example.test", orderCode: "ORDER-AAAAAAAA" }), "Email");
+  assert.equal(
+    operatorTopupIdText({
+      kind: "account",
+      email: "warung@example.test",
+      displayName: "Warung Sari",
+      orderCode: "ORDER-AAAAAAAA",
+    }),
+    "Warung Sari · warung@example.test",
   );
   assert.equal(operatorPartyLabel({ kind: "account", email: null, orderCode: "ORDER-AAAAAAAA" }), "Akun");
   assert.equal(
@@ -38,6 +48,7 @@ test("antrian operator memakai email akun dan ORDER tamu, tanpa hash sandi", asy
           {
             id: accountId,
             email: "kasir@example.test",
+            displayName: "Kasir Lab",
             passwordHash: "scrypt$jangan-tampilkan",
             createdAt: "2026-09-01T00:00:00.000Z",
           },
@@ -61,7 +72,11 @@ test("antrian operator memakai email akun dan ORDER tamu, tanpa hash sandi", asy
   assert.equal(guest.orderCode, orderCodeFromId(guestId));
   assert.equal(operatorPartyLabel(guest), "Tamu · ORDER-3F1C9A2E");
   assert.equal(account.email, "kasir@example.test");
-  assert.equal(operatorPartyLabel(account), "kasir@example.test");
+  assert.equal(account.displayName, "Kasir Lab");
+  assert.equal(operatorTopupIdText(account), "Kasir Lab · kasir@example.test");
+  assert.equal(operatorIdentityKindLabel(account), "Nama");
+  assert.doesNotMatch(operatorTopupIdText(account), /account:/);
+  assert.doesNotMatch(operatorTopupIdText(guest), /^guest:/);
   const dumped = JSON.stringify(items);
   assert.equal(dumped.includes("passwordHash"), false);
   assert.equal(dumped.includes("scrypt$"), false);

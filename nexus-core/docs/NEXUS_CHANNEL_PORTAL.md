@@ -76,7 +76,7 @@ Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC
 
 `/gate` → daftar → `/kredit` Isi (satu permintaan terbuka) → Nomor DANA (default WA publik, env mengalahkan) + unggah bukti + Kirim bukti → **Buka WhatsApp** (setelah submit) → di **PC** buka `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter` generate. Preview: `https://<tunnel>/starter/preview/{slug}`.
 
-Operator `/operator/topup` **bukan** lewat Host publik (trycloudflare = 404 kosong). Approve hanya `http://127.0.0.1:3003/operator/topup` atau `http://localhost:3003/operator/topup` di PC (Next.js mengirim XFF IPv4-mapped loopback). Antrian menampilkan **email akun** (dari `portal-identities`, tanpa hash sandi) atau **Tamu · ORDER-xxxxxxxx**; UUID hanya baris kecil. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
+Operator `/operator/topup` **bukan** lewat Host publik (trycloudflare = 404 kosong). Approve hanya `http://127.0.0.1:3003/operator/topup` atau `http://localhost:3003/operator/topup` di PC (Next.js mengirim XFF IPv4-mapped loopback). Antrian: `.operator-topup-id` = **email** (label Email) atau nama+email jika `displayName`/`name` tersimpan; tamu = **Tamu · ORDER-xxxxxxxx**. UUID wallet hanya `title` / span redup, bukan baris utama. HTML SSR di loopback. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
 
 ---
 
