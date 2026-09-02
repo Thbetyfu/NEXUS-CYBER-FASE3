@@ -183,7 +183,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 **Kredit (lab sekarang):** unit kasir Channel Starter di `/pesan/{sku}` (Starter = `/pesan/umkm-starter`; `/order` redirect). **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. **Bukan** e-money, **bukan** jual Job 200 Kredit otomatis dari portal. CLI `channel-starter` tetap tanpa debit.
 
-**Top-up IDR (lab, dikode):** Isi → pending → **nomor WhatsApp pemilik** + form bukti → operator **Konfirmasi isi** → Kredit masuk. QRIS/VA **belum live** di repo. **Bukan** PSP (Midtrans/Stripe). WhatsApp **bukan** auto-kredit dan **bukan** CTA kartu UMKM. Operator: `http://127.0.0.1:3003/operator/topup` (Host loopback; bukan SOC publik). UMKM–startup + Corporat hosted = form `/pesan/{sku}`.
+**Top-up IDR (lab, dikode):** Isi → pending → **nomor WhatsApp pemilik** + form bukti → operator **Konfirmasi isi** → Kredit masuk. QRIS/VA **belum live** di repo. **Bukan** PSP (Midtrans/Stripe). WhatsApp **bukan** auto-kredit dan **bukan** CTA kartu UMKM. Operator: `http://127.0.0.1:3003/operator/topup` (loopback PC, bukan URL tunnel; bukan SOC publik). UMKM–startup + Corporat hosted = form `/pesan/{sku}`.
 
 Detail komersial: [`BRD.md`](./BRD.md), [`BUSINESS_AND_DEPLOYMENT_SCHEMES.md`](./BUSINESS_AND_DEPLOYMENT_SCHEMES.md).
 

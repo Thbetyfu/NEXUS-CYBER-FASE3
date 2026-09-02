@@ -23,6 +23,18 @@ function hostnameIsLoopback(hostname: string): boolean {
   return hostname === "127.0.0.1" || hostname === "localhost" || hostname === "::1";
 }
 
+/** Next.js 16 proxy sets X-Forwarded-For to IPv4-mapped loopback (`::ffff:127.0.0.1`). */
+function ipIsLoopback(ip: string): boolean {
+  const v = ip.trim().toLowerCase();
+  return (
+    v === "127.0.0.1" ||
+    v === "::1" ||
+    v === "0:0:0:0:0:0:0:1" ||
+    v === "::ffff:127.0.0.1" ||
+    v === ":ffff:127.0.0.1"
+  );
+}
+
 export function isLoopbackHost(request: NextRequest): boolean {
   return isLoopbackFromParts(request.headers.get("host") ?? "", request.headers.get("x-forwarded-for"), {
     forwardedHost: request.headers.get("x-forwarded-host"),
@@ -43,7 +55,8 @@ export function isLoopbackFromParts(
   forwardedFor: string | null,
   hints?: LoopbackHints,
 ): boolean {
-  if (hints?.cfConnectingIp?.trim()) {
+  const cfIp = hints?.cfConnectingIp?.trim();
+  if (cfIp && !ipIsLoopback(cfIp)) {
     return false;
   }
   const forwardedHost = hints?.forwardedHost?.trim();
@@ -58,5 +71,5 @@ export function isLoopbackFromParts(
   if (!xff) {
     return true;
   }
-  return xff === "127.0.0.1" || xff === "::1" || xff === ":ffff:127.0.0.1";
+  return ipIsLoopback(xff);
 }

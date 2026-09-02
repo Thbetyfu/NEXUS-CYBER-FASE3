@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { OperatorTopupView } from "@/lib/kredit";
+import { isOpenTopupStatus, type OperatorTopupView } from "@/lib/kredit";
 
 type QueuePayload = { ok?: boolean; error?: string; items?: OperatorTopupView[] };
 
@@ -18,7 +18,8 @@ export function OperatorTopupBoard() {
         setError(data.error || "Antrian tidak terbaca");
         return;
       }
-      setItems(Array.isArray(data.items) ? data.items : []);
+      const rows = Array.isArray(data.items) ? data.items : [];
+      setItems(rows.filter((item) => isOpenTopupStatus(item.status)));
       setError("");
     } catch {
       setError("Antrian tidak terbaca");

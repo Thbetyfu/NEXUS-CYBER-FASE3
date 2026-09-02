@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { KREDIT, type PendingTopup } from "@/lib/kredit";
+import { KREDIT, isOpenTopupStatus, type PendingTopup } from "@/lib/kredit";
 import { formatWhatsAppNumber, topupWhatsAppMessage } from "@/lib/portal-config";
 
 export type KreditState = {
@@ -35,7 +35,7 @@ export function KreditPanel({
   onLabFaucet?: () => void;
 }) {
   const [pack, setPack] = useState<(typeof KREDIT.topupPacksKr)[number]>(KREDIT.starterPriceKr);
-  const open = kredit?.pendingTopups?.filter((item) => item.status === "pending" || item.status === "proof_submitted") ?? [];
+  const open = kredit?.pendingTopups?.filter((item) => isOpenTopupStatus(item.status)) ?? [];
   const hasOpen = open.length > 0;
   const showFaucet = Boolean(kredit?.faucetEnabled && onLabFaucet);
   const wa = kredit?.proofWa ? formatWhatsAppNumber(kredit.proofWa) : null;

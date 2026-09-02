@@ -74,7 +74,7 @@ Buka http://127.0.0.1:3003
 | `npm run dev` | Next.js `:3003` |
 | `npm test` | Uji ledger Kredit + bukti isi ulang (tanpa auto-kredit) + approve fail-closed |
 | `node scripts/approve-topup.mjs TU-…` | Operator: kreditkan pending (localhost `:3003`) |
-| UI operator isi | `http://127.0.0.1:3003/operator/topup` (Host loopback saja; bukan SOC `:3001`) |
+| UI operator isi | `http://127.0.0.1:3003/operator/topup` (loopback; bukan URL tunnel; bukan SOC `:3001`) |
 | `npm run build` / `npm start` | Build produksi / `next start -p 3003` |
 | `npm run lint` | ESLint |
 

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { KREDIT, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
+import { KREDIT, isOpenTopupStatus, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
 import { formatWhatsAppNumber, SALES } from "./portal-config.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
@@ -96,10 +96,6 @@ export function assertTopupId(topupId: string): string {
   return id;
 }
 
-function isOpenStatus(status: TopupStatus): boolean {
-  return status === "pending" || status === "proof_submitted";
-}
-
 function emptyStore(): TopupStore {
   return { version: 1, items: [] };
 }
@@ -160,7 +156,7 @@ function toOperatorView(record: TopupRecord): OperatorTopupView {
 
 export function listPendingUnlocked(walletId: string, dataDir = defaultDataDir()): PendingTopup[] {
   const store = readStore(topupsPath(dataDir));
-  return store.items.filter((item) => item.walletId === walletId && isOpenStatus(item.status)).map(publicPending);
+  return store.items.filter((item) => item.walletId === walletId && isOpenTopupStatus(item.status)).map(publicPending);
 }
 
 export async function listPendingTopups(walletId: string, dataDir = defaultDataDir()): Promise<PendingTopup[]> {
@@ -170,7 +166,7 @@ export async function listPendingTopups(walletId: string, dataDir = defaultDataD
 export async function listOperatorQueue(dataDir = defaultDataDir()): Promise<OperatorTopupView[]> {
   return withLock(() => {
     return readStore(topupsPath(dataDir))
-      .items.filter((item) => isOpenStatus(item.status))
+      .items.filter((item) => isOpenTopupStatus(item.status))
       .map(toOperatorView)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   });
@@ -209,7 +205,7 @@ export async function createTopupRequest(
     const id = assertSafeId(identity.identityId);
     const filePath = topupsPath(dataDir);
     const store = readStore(filePath);
-    const open = store.items.find((item) => item.walletId === identity.walletId && isOpenStatus(item.status));
+    const open = store.items.find((item) => item.walletId === identity.walletId && isOpenTopupStatus(item.status));
     if (open) {
       throw new TopupOpenConflictError();
     }

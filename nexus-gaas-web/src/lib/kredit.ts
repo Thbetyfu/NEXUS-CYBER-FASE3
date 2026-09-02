@@ -22,6 +22,10 @@ export type KreditKind = "faucet" | "debit" | "refund" | "topup";
 
 export type TopupStatus = "pending" | "proof_submitted" | "approved" | "cancelled";
 
+export function isOpenTopupStatus(status: TopupStatus): boolean {
+  return status === "pending" || status === "proof_submitted";
+}
+
 export type PendingTopup = {
   id: string;
   amountKr: number;

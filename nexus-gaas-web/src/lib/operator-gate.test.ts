@@ -7,6 +7,16 @@ test("Host loopback tanpa XFF = operator lokal", () => {
   assert.equal(isLoopbackFromParts("localhost:3003", null), true);
 });
 
+test("XFF IPv4-mapped loopback (Next.js proxy) = operator lokal", () => {
+  assert.equal(isLoopbackFromParts("127.0.0.1:3003", "::ffff:127.0.0.1"), true);
+  assert.equal(
+    isLoopbackFromParts("127.0.0.1:3003", "::ffff:127.0.0.1", {
+      forwardedHost: "127.0.0.1:3003",
+    }),
+    true,
+  );
+});
+
 test("Host publik bukan operator", () => {
   assert.equal(isLoopbackFromParts("abc.trycloudflare.com", null), false);
   assert.equal(isLoopbackFromParts("portal.nexus-lab.test", "1.2.3.4"), false);
@@ -16,7 +26,7 @@ test("Host loopback palsu + XFF klien ditolak", () => {
   assert.equal(isLoopbackFromParts("127.0.0.1:3003", "203.0.113.9"), false);
 });
 
-test("Cloudflare Connecting-IP menolak UI operator", () => {
+test("Cloudflare Connecting-IP publik menolak UI operator", () => {
   assert.equal(
     isLoopbackFromParts("127.0.0.1:3003", null, { cfConnectingIp: "203.0.113.9" }),
     false,
