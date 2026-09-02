@@ -2214,6 +2214,29 @@ input[type="text"]:focus, select:focus {
   color: #12151a;
 }
 
+.order-form details.order-later {
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.order-form details.order-later .notion-toggle-summary {
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+.order-later-hint,
+.order-later-sub {
+  font-size: 13px;
+  color: var(--notion-text-muted);
+  margin: 0 0 12px;
+}
+
+.order-later-sub {
+  font-weight: 700;
+  color: #12151a;
+  margin-top: 8px;
+}
+
 .theme-grid {
   display: flex;
   flex-wrap: wrap;

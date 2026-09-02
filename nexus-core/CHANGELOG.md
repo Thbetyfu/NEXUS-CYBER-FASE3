@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Changed
+- **Form Channel Starter pendek:** `/pesan/umkm-starter` wajib nama usaha, WhatsApp site, kategori; cerita usaha opsional diisi ke hero/tagline/about tanpa LLM. Alamat, palet, teks panjang, CTA, dll. di **Lengkapi nanti** (default palet hijau + CTA/jam kategori). Debit 20 Kr + `CHANNEL_STARTER_URL` `:3010` tidak berubah. Bukan Midtrans. Bukan CTA WhatsApp paket.
+
 ### Added
 - **Pilot storefront (PC + tunnel):** Cloudflare Tunnel **Channel Portal `:3003`** (`nexus-tunnel.ps1 -Portal`, `START-PORTAL-PILOT.bat`). Preview wizard publik = `/starter/` (Next rewrite / Caddy `portal.nexus-lab.test`) ke `:3010`. Generate tetap `CHANNEL_STARTER_URL` loopback di PC. Caddy hostname kedua untuk toko tanpa mengekspos SOC. Bukan Midtrans. Bukan 100 WAF.
 - **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`nodemailer` di `nexus-gaas-web/package.json`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. Tombol **Buka WhatsApp** hanya setelah Kirim bukti (`NEXUS_TOPUP_PROOF_WA` opsional, default `62895603358692`). Bukan CTA beli. Bukan Midtrans.

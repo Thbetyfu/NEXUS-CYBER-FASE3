@@ -6,6 +6,12 @@ import { KreditPanel } from "@/components/KreditPanel";
 import { useKreditSession } from "@/hooks/useKreditSession";
 import type { CheckoutPackage } from "@/lib/checkout";
 import { KREDIT } from "@/lib/kredit";
+import {
+  DEFAULT_STARTER_THEME,
+  EMPTY_STARTER_EXTRAS,
+  buildStarterGeneratePairs,
+  type StarterGenerateExtras,
+} from "@/lib/starter-generate-payload";
 
 const THEMES = [
   { id: "hijau", label: "Hijau", hex: "#4CAF4F" },
@@ -29,112 +35,32 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
 }
 
 export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof, cancelTopup } = useKreditSession();
+  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof, cancelTopup } =
+    useKreditSession();
   const [formError, setFormError] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("profil");
   const [whatsapp, setWhatsapp] = useState("");
-  const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
-  const [hours, setHours] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [theme, setTheme] = useState("hijau");
-  const [headline, setHeadline] = useState("");
-  const [headlineAccent, setHeadlineAccent] = useState("");
-  const [tagline, setTagline] = useState("");
-  const [description, setDescription] = useState("");
-  const [aboutTitle, setAboutTitle] = useState("");
-  const [aboutBody, setAboutBody] = useState("");
-  const [extraTitle, setExtraTitle] = useState("");
-  const [extraBody, setExtraBody] = useState("");
-  const [ctaLabel, setCtaLabel] = useState("");
-  const [offering1Title, setOffering1Title] = useState("");
-  const [offering1Body, setOffering1Body] = useState("");
-  const [offering2Title, setOffering2Title] = useState("");
-  const [offering2Body, setOffering2Body] = useState("");
-  const [offering3Title, setOffering3Title] = useState("");
-  const [offering3Body, setOffering3Body] = useState("");
-  const [stat1Number, setStat1Number] = useState("");
-  const [stat1Label, setStat1Label] = useState("");
-  const [stat2Number, setStat2Number] = useState("");
-  const [stat2Label, setStat2Label] = useState("");
-  const [stat3Number, setStat3Number] = useState("");
-  const [stat3Label, setStat3Label] = useState("");
-  const [stat4Number, setStat4Number] = useState("");
-  const [stat4Label, setStat4Label] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [heroImageUrl, setHeroImageUrl] = useState("");
-  const [gallery1Url, setGallery1Url] = useState("");
-  const [gallery1Title, setGallery1Title] = useState("");
-  const [gallery1Caption, setGallery1Caption] = useState("");
-  const [gallery2Url, setGallery2Url] = useState("");
-  const [gallery2Title, setGallery2Title] = useState("");
-  const [gallery2Caption, setGallery2Caption] = useState("");
-  const [gallery3Url, setGallery3Url] = useState("");
-  const [gallery3Title, setGallery3Title] = useState("");
-  const [gallery3Caption, setGallery3Caption] = useState("");
-  const [quote, setQuote] = useState("");
-  const [quoteName, setQuoteName] = useState("");
-  const [quoteRole, setQuoteRole] = useState("");
-  const [partners, setPartners] = useState("");
-  const [customDomain, setCustomDomain] = useState("");
+  const [story, setStory] = useState("");
+  const [later, setLater] = useState<StarterGenerateExtras>(EMPTY_STARTER_EXTRAS);
   const [result, setResult] = useState<OrderResult | null>(null);
+
+  const patchLater = (patch: Partial<StarterGenerateExtras>) => {
+    setLater((prev) => ({ ...prev, ...patch }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
     setBusy(true);
     const fd = new FormData();
-    const pairs: [string, string][] = [
-      ["business_name", businessName],
-      ["category", category],
-      ["whatsapp", whatsapp],
-      ["address", address],
-      ["email", email],
-      ["hours", hours],
-      ["instagram", instagram],
-      ["theme", theme],
-      ["headline", headline],
-      ["headline_accent", headlineAccent],
-      ["tagline", tagline],
-      ["description", description],
-      ["about_title", aboutTitle],
-      ["about_body", aboutBody],
-      ["extra_title", extraTitle],
-      ["extra_body", extraBody],
-      ["cta_label", ctaLabel],
-      ["offering_1_title", offering1Title],
-      ["offering_1_body", offering1Body],
-      ["offering_2_title", offering2Title],
-      ["offering_2_body", offering2Body],
-      ["offering_3_title", offering3Title],
-      ["offering_3_body", offering3Body],
-      ["stat_1_number", stat1Number],
-      ["stat_1_label", stat1Label],
-      ["stat_2_number", stat2Number],
-      ["stat_2_label", stat2Label],
-      ["stat_3_number", stat3Number],
-      ["stat_3_label", stat3Label],
-      ["stat_4_number", stat4Number],
-      ["stat_4_label", stat4Label],
-      ["logo_url", logoUrl],
-      ["hero_image_url", heroImageUrl],
-      ["gallery_1_url", gallery1Url],
-      ["gallery_1_title", gallery1Title],
-      ["gallery_1_caption", gallery1Caption],
-      ["gallery_2_url", gallery2Url],
-      ["gallery_2_title", gallery2Title],
-      ["gallery_2_caption", gallery2Caption],
-      ["gallery_3_url", gallery3Url],
-      ["gallery_3_title", gallery3Title],
-      ["gallery_3_caption", gallery3Caption],
-      ["quote", quote],
-      ["quote_name", quoteName],
-      ["quote_role", quoteRole],
-      ["partners", partners],
-      ["custom_domain", customDomain],
-      ["tier", "starter"],
-    ];
+    const pairs = buildStarterGeneratePairs({
+      businessName,
+      category,
+      whatsapp,
+      story,
+      extras: later,
+    });
     for (const [key, value] of pairs) {
       fd.set(key, value);
     }
@@ -189,290 +115,436 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
 
   return (
     <>
-        <Link href={pkg.segmentHref} className="order-back">
-          ← Kembali ke paket
-        </Link>
-        <p className="hub-kicker">Langkah 3–4 · form → Kredit → generate</p>
-        <h1 className="order-title">{pkg.title}</h1>
-        <p className="order-lead">{pkg.summary}</p>
-        <p className="order-lead">
-          Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Isi Kredit di{" "}
-          <Link href="/kredit">/kredit</Link> (pending + WhatsApp + bukti). Bukan WAF/Job, bukan Midtrans.
+      <Link href={pkg.segmentHref} className="order-back">
+        ← Kembali ke paket
+      </Link>
+      <p className="hub-kicker">Langkah 3–4 · form → Kredit → generate</p>
+      <h1 className="order-title">{pkg.title}</h1>
+      <p className="order-lead">{pkg.summary}</p>
+      <p className="order-lead">
+        Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Isi Kredit di{" "}
+        <Link href="/kredit">/kredit</Link> (pending + WhatsApp + bukti). Bukan WAF/Job, bukan Midtrans.
+      </p>
+
+      <section className="auth-order-strip" aria-label="Akun pelanggan">
+        <p>
+          {kredit?.kind === "account" ? (
+            <>
+              Akun <strong>{kredit.email}</strong>
+              {kredit.orderCode ? (
+                <>
+                  {" "}
+                  · kode <code>{kredit.orderCode}</code>
+                </>
+              ) : null}
+            </>
+          ) : kredit?.kind === "guest" ? (
+            <>
+              Tamu cookie
+              {kredit.orderCode ? (
+                <>
+                  {" "}
+                  · <code>{kredit.orderCode}</code>
+                </>
+              ) : null}
+              . <Link href="/daftar">Daftar</Link> opsional agar Kredit tidak hilang.
+            </>
+          ) : (
+            <>
+              Belum ada sesi — kembali ke <Link href="/gate">gerbang</Link> (Login / Daftar / Tamu).
+            </>
+          )}
         </p>
+      </section>
 
-        <section className="auth-order-strip" aria-label="Akun pelanggan">
-          <p>
-            {kredit?.kind === "account" ? (
-              <>
-                Akun <strong>{kredit.email}</strong>
-                {kredit.orderCode ? (
-                  <>
-                    {" "}
-                    · kode <code>{kredit.orderCode}</code>
-                  </>
-                ) : null}
-              </>
-            ) : kredit?.kind === "guest" ? (
-              <>
-                Tamu cookie
-                {kredit.orderCode ? (
-                  <>
-                    {" "}
-                    · <code>{kredit.orderCode}</code>
-                  </>
-                ) : null}
-                . <Link href="/daftar">Daftar</Link> opsional agar Kredit tidak hilang.
-              </>
-            ) : (
-              <>
-                Belum ada sesi — kembali ke <Link href="/gate">gerbang</Link> (Login / Daftar / Tamu).
-              </>
+      <KreditPanel
+        kredit={kredit}
+        kreditError={kreditError}
+        busy={busy}
+        onRequestTopup={(amount) => void requestTopup(amount)}
+        onLabFaucet={() => void isiKeran()}
+        onSubmitProof={submitProof}
+        onCancelTopup={(id) => void cancelTopup(id)}
+      />
+
+      {result ? (
+        <div className="notion-callout notion-callout-blue">
+          <div className="notion-callout-content">
+            <p style={{ fontWeight: 700, marginBottom: 12 }}>Site dibuat — 20 Kredit terdebet</p>
+            <ol style={{ paddingLeft: 20, color: "var(--notion-text-muted)", fontSize: 14 }}>
+              {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
+              <li>
+                Saldo sekarang: {result.balance ?? kredit?.balance} {KREDIT.abbr}
+              </li>
+              {result.orderId && <li>Job generate {result.orderId.slice(0, 8)}…</li>}
+              {kredit?.orderCode && <li>Kode sesi: {kredit.orderCode}</li>}
+              {later.custom_domain && (
+                <li>Domain kustom yang diisi: {later.custom_domain} (CNAME operator, bukan auto-DNS publik)</li>
+              )}
+              <li>
+                Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan git
+                monorepo Nexus). *.vercel.app bukan WAF.
+              </li>
+              <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell.</li>
+            </ol>
+            {formError && (
+              <p className="kredit-error" role="alert">
+                {formError}
+              </p>
             )}
-          </p>
-        </section>
-
-        <KreditPanel
-          kredit={kredit}
-          kreditError={kreditError}
-          busy={busy}
-          onRequestTopup={(amount) => void requestTopup(amount)}
-          onLabFaucet={() => void isiKeran()}
-          onSubmitProof={submitProof}
-          onCancelTopup={(id) => void cancelTopup(id)}
-        />
-
-        {result ? (
-          <div className="notion-callout notion-callout-blue">
-            <div className="notion-callout-content">
-              <p style={{ fontWeight: 700, marginBottom: 12 }}>Site dibuat — 20 Kredit terdebet</p>
-              <ol style={{ paddingLeft: 20, color: "var(--notion-text-muted)", fontSize: 14 }}>
-                {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
-                <li>
-                  Saldo sekarang: {result.balance ?? kredit?.balance} {KREDIT.abbr}
-                </li>
-                {result.orderId && <li>Job generate {result.orderId.slice(0, 8)}…</li>}
-                {kredit?.orderCode && <li>Kode sesi: {kredit.orderCode}</li>}
-                {customDomain && (
-                  <li>Domain kustom yang diisi: {customDomain} (CNAME operator, bukan auto-DNS publik)</li>
-                )}
-                <li>
-                  Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan
-                  git monorepo Nexus). *.vercel.app bukan WAF.
-                </li>
-                <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell.</li>
-              </ol>
-              {formError && (
-                <p className="kredit-error" role="alert">
-                  {formError}
-                </p>
-              )}
-              {result.previewUrl ? (
-                <p style={{ marginTop: 16 }}>
-                  <a href={result.previewUrl} className="notion-button notion-button-primary">
-                    Buka preview
-                  </a>
-                </p>
-              ) : (
-                <p style={{ marginTop: 12, fontSize: 14, color: "var(--notion-text-muted)" }}>
-                  Site tersimpan di Channel Starter. Nyalakan <code>python cli.py serve</code> untuk preview.
-                </p>
-              )}
-              <button
-                type="button"
-                className="notion-button"
-                style={{ marginTop: 16 }}
-                onClick={() => {
-                  setResult(null);
-                  setBusinessName("");
-                  setWhatsapp("");
-                }}
-              >
-                Buat site lain
-              </button>
-            </div>
+            {result.previewUrl ? (
+              <p style={{ marginTop: 16 }}>
+                <a href={result.previewUrl} className="notion-button notion-button-primary">
+                  Buka preview
+                </a>
+              </p>
+            ) : (
+              <p style={{ marginTop: 12, fontSize: 14, color: "var(--notion-text-muted)" }}>
+                Site tersimpan di Channel Starter. Nyalakan <code>python cli.py serve</code> untuk preview.
+              </p>
+            )}
+            <button
+              type="button"
+              className="notion-button"
+              style={{ marginTop: 16 }}
+              onClick={() => {
+                setResult(null);
+                setBusinessName("");
+                setWhatsapp("");
+                setStory("");
+                setLater({ ...EMPTY_STARTER_EXTRAS });
+              }}
+            >
+              Buat site lain
+            </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="notion-database order-form">
-            <fieldset>
-              <legend>Usaha</legend>
-              <label htmlFor="order-name">Nama usaha</label>
-              <input
-                id="order-name"
-                required
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="Warung Bu Siti"
-              />
-              <label htmlFor="order-cat">Kategori</label>
-              <select id="order-cat" value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="fnb">Kuliner / F&amp;B</option>
-                <option value="jasa">Jasa</option>
-                <option value="profil">Profil UMKM</option>
-              </select>
-              <label htmlFor="order-wa">WhatsApp usaha (tampil di site, bukan bayar)</label>
-              <input
-                id="order-wa"
-                type="tel"
-                required
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="08xxxxxxxxxx"
-              />
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="notion-database order-form">
+          <fieldset>
+            <legend>Usaha</legend>
+            <label htmlFor="order-name">Nama usaha</label>
+            <input
+              id="order-name"
+              required
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="Warung Bu Siti"
+            />
+            <label htmlFor="order-wa">WhatsApp usaha (tampil di site, bukan bayar)</label>
+            <input
+              id="order-wa"
+              type="tel"
+              required
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="08xxxxxxxxxx"
+            />
+            <label htmlFor="order-cat">Kategori</label>
+            <select id="order-cat" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="fnb">Kuliner / F&amp;B</option>
+              <option value="jasa">Jasa</option>
+              <option value="profil">Profil UMKM</option>
+            </select>
+            <label htmlFor="order-story">Cerita usaha (opsional, 2–5 kalimat)</label>
+            <textarea
+              id="order-story"
+              rows={4}
+              value={story}
+              onChange={(e) => setStory(e.target.value)}
+              placeholder="Kosong = teks preset kategori. Isi singkat: hero, tagline, dan tentang diisi otomatis (bukan AI)."
+            />
+          </fieldset>
+
+          <details className="notion-toggle order-later">
+            <summary className="notion-toggle-summary">Lengkapi nanti</summary>
+            <div className="notion-toggle-content">
+              <p className="order-later-hint">
+                Tidak wajib. Kosong = palet {DEFAULT_STARTER_THEME}, jam/CTA/teks dari kategori. Bukan WhatsApp paket.
+              </p>
               <label htmlFor="order-addr">Alamat</label>
               <input
                 id="order-addr"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                value={later.address}
+                onChange={(e) => patchLater({ address: e.target.value })}
                 placeholder="Jl. Contoh No. 1"
               />
               <label htmlFor="order-email">Email</label>
-              <input id="order-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                id="order-email"
+                type="email"
+                value={later.email}
+                onChange={(e) => patchLater({ email: e.target.value })}
+              />
               <label htmlFor="order-hours">Jam operasional</label>
               <input
                 id="order-hours"
-                value={hours}
-                onChange={(e) => setHours(e.target.value)}
-                placeholder="Setiap hari 09.00–21.00"
+                value={later.hours}
+                onChange={(e) => patchLater({ hours: e.target.value })}
+                placeholder="Kosong = jam preset kategori"
               />
               <label htmlFor="order-ig">Instagram</label>
               <input
                 id="order-ig"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
+                value={later.instagram}
+                onChange={(e) => patchLater({ instagram: e.target.value })}
                 placeholder="tanpa @"
               />
-            </fieldset>
 
-            <fieldset>
-              <legend>Warna (4 palet Figma)</legend>
+              <p className="order-later-sub">Warna (default Hijau)</p>
               <div className="theme-grid" role="radiogroup" aria-label="Palet warna">
                 {THEMES.map((item) => (
-                  <label key={item.id} className={`theme-chip${theme === item.id ? " is-on" : ""}`}>
+                  <label key={item.id} className={`theme-chip${later.theme === item.id ? " is-on" : ""}`}>
                     <input
                       type="radio"
                       value={item.id}
-                      checked={theme === item.id}
-                      onChange={() => setTheme(item.id)}
+                      checked={later.theme === item.id}
+                      onChange={() => patchLater({ theme: item.id })}
                     />
                     <span className="theme-swatch" style={{ background: item.hex }} />
                     {item.label}
                   </label>
                 ))}
               </div>
-            </fieldset>
 
-            <fieldset>
-              <legend>Teks halaman</legend>
               <label htmlFor="order-h">Judul hero</label>
               <input
                 id="order-h"
-                value={headline}
-                onChange={(e) => setHeadline(e.target.value)}
-                placeholder="Kosong = teks preset kategori"
+                value={later.headline}
+                onChange={(e) => patchLater({ headline: e.target.value })}
+                placeholder="Kosong = cerita atau preset kategori"
               />
               <label htmlFor="order-ha">Kata aksen (berwarna)</label>
-              <input id="order-ha" value={headlineAccent} onChange={(e) => setHeadlineAccent(e.target.value)} />
+              <input
+                id="order-ha"
+                value={later.headline_accent}
+                onChange={(e) => patchLater({ headline_accent: e.target.value })}
+              />
               <label htmlFor="order-tag">Tagline</label>
-              <input id="order-tag" value={tagline} onChange={(e) => setTagline(e.target.value)} />
+              <input id="order-tag" value={later.tagline} onChange={(e) => patchLater({ tagline: e.target.value })} />
               <label htmlFor="order-desc">Deskripsi</label>
-              <textarea id="order-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <textarea
+                id="order-desc"
+                rows={3}
+                value={later.description}
+                onChange={(e) => patchLater({ description: e.target.value })}
+              />
               <label htmlFor="order-at">Judul tentang</label>
-              <input id="order-at" value={aboutTitle} onChange={(e) => setAboutTitle(e.target.value)} />
+              <input
+                id="order-at"
+                value={later.about_title}
+                onChange={(e) => patchLater({ about_title: e.target.value })}
+              />
               <label htmlFor="order-ab">Isi tentang</label>
-              <textarea id="order-ab" rows={3} value={aboutBody} onChange={(e) => setAboutBody(e.target.value)} />
+              <textarea
+                id="order-ab"
+                rows={3}
+                value={later.about_body}
+                onChange={(e) => patchLater({ about_body: e.target.value })}
+              />
               <label htmlFor="order-et">Judul blok tambahan</label>
-              <input id="order-et" value={extraTitle} onChange={(e) => setExtraTitle(e.target.value)} />
+              <input
+                id="order-et"
+                value={later.extra_title}
+                onChange={(e) => patchLater({ extra_title: e.target.value })}
+              />
               <label htmlFor="order-eb">Isi blok tambahan</label>
-              <textarea id="order-eb" rows={3} value={extraBody} onChange={(e) => setExtraBody(e.target.value)} />
+              <textarea
+                id="order-eb"
+                rows={3}
+                value={later.extra_body}
+                onChange={(e) => patchLater({ extra_body: e.target.value })}
+              />
               <label htmlFor="order-cta">Teks tombol</label>
               <input
                 id="order-cta"
-                value={ctaLabel}
-                onChange={(e) => setCtaLabel(e.target.value)}
-                placeholder="Hubungi kami"
+                value={later.cta_label}
+                onChange={(e) => patchLater({ cta_label: e.target.value })}
+                placeholder="Kosong = CTA kategori"
               />
-            </fieldset>
 
-            <fieldset>
-              <legend>Tiga layanan</legend>
-              <label>Layanan 1</label>
-              <input value={offering1Title} onChange={(e) => setOffering1Title(e.target.value)} placeholder="Judul" />
-              <textarea rows={2} value={offering1Body} onChange={(e) => setOffering1Body(e.target.value)} placeholder="Isi" />
-              <label>Layanan 2</label>
-              <input value={offering2Title} onChange={(e) => setOffering2Title(e.target.value)} placeholder="Judul" />
-              <textarea rows={2} value={offering2Body} onChange={(e) => setOffering2Body(e.target.value)} placeholder="Isi" />
-              <label>Layanan 3</label>
-              <input value={offering3Title} onChange={(e) => setOffering3Title(e.target.value)} placeholder="Judul" />
-              <textarea rows={2} value={offering3Body} onChange={(e) => setOffering3Body(e.target.value)} placeholder="Isi" />
-            </fieldset>
-
-            <fieldset>
-              <legend>Angka usaha</legend>
-              <div className="stat-grid">
-                <input value={stat1Number} onChange={(e) => setStat1Number(e.target.value)} placeholder="100+" />
-                <input value={stat1Label} onChange={(e) => setStat1Label(e.target.value)} placeholder="Porsi / minggu" />
-                <input value={stat2Number} onChange={(e) => setStat2Number(e.target.value)} placeholder="Angka 2" />
-                <input value={stat2Label} onChange={(e) => setStat2Label(e.target.value)} placeholder="Label 2" />
-                <input value={stat3Number} onChange={(e) => setStat3Number(e.target.value)} placeholder="Angka 3" />
-                <input value={stat3Label} onChange={(e) => setStat3Label(e.target.value)} placeholder="Label 3" />
-                <input value={stat4Number} onChange={(e) => setStat4Number(e.target.value)} placeholder="Angka 4" />
-                <input value={stat4Label} onChange={(e) => setStat4Label(e.target.value)} placeholder="Label 4" />
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend>Foto (URL https)</legend>
-              <label>Logo</label>
-              <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://" />
-              <label>Foto hero</label>
-              <input value={heroImageUrl} onChange={(e) => setHeroImageUrl(e.target.value)} placeholder="https://" />
-              <label>Galeri 1</label>
-              <input value={gallery1Url} onChange={(e) => setGallery1Url(e.target.value)} placeholder="URL" />
-              <input value={gallery1Title} onChange={(e) => setGallery1Title(e.target.value)} placeholder="Judul" />
-              <input value={gallery1Caption} onChange={(e) => setGallery1Caption(e.target.value)} placeholder="Keterangan" />
-              <label>Galeri 2</label>
-              <input value={gallery2Url} onChange={(e) => setGallery2Url(e.target.value)} placeholder="URL" />
-              <input value={gallery2Title} onChange={(e) => setGallery2Title(e.target.value)} placeholder="Judul" />
-              <input value={gallery2Caption} onChange={(e) => setGallery2Caption(e.target.value)} placeholder="Keterangan" />
-              <label>Galeri 3</label>
-              <input value={gallery3Url} onChange={(e) => setGallery3Url(e.target.value)} placeholder="URL" />
-              <input value={gallery3Title} onChange={(e) => setGallery3Title(e.target.value)} placeholder="Judul" />
-              <input value={gallery3Caption} onChange={(e) => setGallery3Caption(e.target.value)} placeholder="Keterangan" />
-            </fieldset>
-
-            <fieldset>
-              <legend>Testimoni, mitra, domain</legend>
-              <label>Kutipan pelanggan</label>
-              <textarea rows={2} value={quote} onChange={(e) => setQuote(e.target.value)} />
-              <label>Nama</label>
-              <input value={quoteName} onChange={(e) => setQuoteName(e.target.value)} />
-              <label>Peran</label>
-              <input value={quoteRole} onChange={(e) => setQuoteRole(e.target.value)} />
-              <label>Mitra (pisah koma)</label>
-              <input value={partners} onChange={(e) => setPartners(e.target.value)} />
-              <label>Domain kustom (opsional)</label>
+              <p className="order-later-sub">Tiga layanan</p>
               <input
-                value={customDomain}
-                onChange={(e) => setCustomDomain(e.target.value)}
+                value={later.offering_1_title}
+                onChange={(e) => patchLater({ offering_1_title: e.target.value })}
+                placeholder="Layanan 1 — judul"
+              />
+              <textarea
+                rows={2}
+                value={later.offering_1_body}
+                onChange={(e) => patchLater({ offering_1_body: e.target.value })}
+                placeholder="Isi"
+              />
+              <input
+                value={later.offering_2_title}
+                onChange={(e) => patchLater({ offering_2_title: e.target.value })}
+                placeholder="Layanan 2 — judul"
+              />
+              <textarea
+                rows={2}
+                value={later.offering_2_body}
+                onChange={(e) => patchLater({ offering_2_body: e.target.value })}
+                placeholder="Isi"
+              />
+              <input
+                value={later.offering_3_title}
+                onChange={(e) => patchLater({ offering_3_title: e.target.value })}
+                placeholder="Layanan 3 — judul"
+              />
+              <textarea
+                rows={2}
+                value={later.offering_3_body}
+                onChange={(e) => patchLater({ offering_3_body: e.target.value })}
+                placeholder="Isi"
+              />
+
+              <p className="order-later-sub">Angka usaha</p>
+              <div className="stat-grid">
+                <input
+                  value={later.stat_1_number}
+                  onChange={(e) => patchLater({ stat_1_number: e.target.value })}
+                  placeholder="100+"
+                />
+                <input
+                  value={later.stat_1_label}
+                  onChange={(e) => patchLater({ stat_1_label: e.target.value })}
+                  placeholder="Porsi / minggu"
+                />
+                <input
+                  value={later.stat_2_number}
+                  onChange={(e) => patchLater({ stat_2_number: e.target.value })}
+                  placeholder="Angka 2"
+                />
+                <input
+                  value={later.stat_2_label}
+                  onChange={(e) => patchLater({ stat_2_label: e.target.value })}
+                  placeholder="Label 2"
+                />
+                <input
+                  value={later.stat_3_number}
+                  onChange={(e) => patchLater({ stat_3_number: e.target.value })}
+                  placeholder="Angka 3"
+                />
+                <input
+                  value={later.stat_3_label}
+                  onChange={(e) => patchLater({ stat_3_label: e.target.value })}
+                  placeholder="Label 3"
+                />
+                <input
+                  value={later.stat_4_number}
+                  onChange={(e) => patchLater({ stat_4_number: e.target.value })}
+                  placeholder="Angka 4"
+                />
+                <input
+                  value={later.stat_4_label}
+                  onChange={(e) => patchLater({ stat_4_label: e.target.value })}
+                  placeholder="Label 4"
+                />
+              </div>
+
+              <p className="order-later-sub">Foto (URL https)</p>
+              <input
+                value={later.logo_url}
+                onChange={(e) => patchLater({ logo_url: e.target.value })}
+                placeholder="Logo https://"
+              />
+              <input
+                value={later.hero_image_url}
+                onChange={(e) => patchLater({ hero_image_url: e.target.value })}
+                placeholder="Foto hero https://"
+              />
+              <input
+                value={later.gallery_1_url}
+                onChange={(e) => patchLater({ gallery_1_url: e.target.value })}
+                placeholder="Galeri 1 URL"
+              />
+              <input
+                value={later.gallery_1_title}
+                onChange={(e) => patchLater({ gallery_1_title: e.target.value })}
+                placeholder="Galeri 1 judul"
+              />
+              <input
+                value={later.gallery_1_caption}
+                onChange={(e) => patchLater({ gallery_1_caption: e.target.value })}
+                placeholder="Galeri 1 keterangan"
+              />
+              <input
+                value={later.gallery_2_url}
+                onChange={(e) => patchLater({ gallery_2_url: e.target.value })}
+                placeholder="Galeri 2 URL"
+              />
+              <input
+                value={later.gallery_2_title}
+                onChange={(e) => patchLater({ gallery_2_title: e.target.value })}
+                placeholder="Galeri 2 judul"
+              />
+              <input
+                value={later.gallery_2_caption}
+                onChange={(e) => patchLater({ gallery_2_caption: e.target.value })}
+                placeholder="Galeri 2 keterangan"
+              />
+              <input
+                value={later.gallery_3_url}
+                onChange={(e) => patchLater({ gallery_3_url: e.target.value })}
+                placeholder="Galeri 3 URL"
+              />
+              <input
+                value={later.gallery_3_title}
+                onChange={(e) => patchLater({ gallery_3_title: e.target.value })}
+                placeholder="Galeri 3 judul"
+              />
+              <input
+                value={later.gallery_3_caption}
+                onChange={(e) => patchLater({ gallery_3_caption: e.target.value })}
+                placeholder="Galeri 3 keterangan"
+              />
+
+              <p className="order-later-sub">Testimoni, mitra, domain</p>
+              <textarea
+                rows={2}
+                value={later.quote}
+                onChange={(e) => patchLater({ quote: e.target.value })}
+                placeholder="Kutipan pelanggan"
+              />
+              <input
+                value={later.quote_name}
+                onChange={(e) => patchLater({ quote_name: e.target.value })}
+                placeholder="Nama"
+              />
+              <input
+                value={later.quote_role}
+                onChange={(e) => patchLater({ quote_role: e.target.value })}
+                placeholder="Peran"
+              />
+              <input
+                value={later.partners}
+                onChange={(e) => patchLater({ partners: e.target.value })}
+                placeholder="Mitra (pisah koma)"
+              />
+              <input
+                value={later.custom_domain}
+                onChange={(e) => patchLater({ custom_domain: e.target.value })}
                 placeholder="tokoanda.com — CNAME menyusul, bukan auto"
               />
-            </fieldset>
+            </div>
+          </details>
 
-            {formError && (
-              <p className="kredit-error" role="alert">
-                {formError}
-              </p>
-            )}
-            {!cukup && kredit != null && (
-              <p className="kredit-warn">
-                Perlu {KREDIT.starterPriceKr} Kredit. Ajukan isi ulang di panel (bukan keran gratis), atau pesanan akan ditolak.
-              </p>
-            )}
-            <button type="submit" className="notion-button notion-button-primary order-submit" disabled={busy}>
-              {busy ? "Memproses…" : `Bayar ${KREDIT.starterPriceKr} Kredit & buat site`}
-            </button>
-          </form>
-        )}
+          {formError && (
+            <p className="kredit-error" role="alert">
+              {formError}
+            </p>
+          )}
+          {!cukup && kredit != null && (
+            <p className="kredit-warn">
+              Perlu {KREDIT.starterPriceKr} Kredit. Ajukan isi ulang di panel (bukan keran gratis), atau pesanan akan
+              ditolak.
+            </p>
+          )}
+          <button type="submit" className="notion-button notion-button-primary order-submit" disabled={busy}>
+            {busy ? "Memproses…" : `Bayar ${KREDIT.starterPriceKr} Kredit & buat site`}
+          </button>
+        </form>
+      )}
     </>
   );
 }
