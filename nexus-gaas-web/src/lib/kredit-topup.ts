@@ -350,6 +350,14 @@ export function proofWaNumber(): string | null {
   return SALES.whatsapp;
 }
 
+/** Nomor e-wallet DANA pemilik. Tidak ada default di git. */
+export function danaPayInfo(): { number: string | null; label: string | null } {
+  return {
+    number: process.env.NEXUS_DANA_NUMBER?.trim() || null,
+    label: process.env.NEXUS_DANA_LABEL?.trim() || null,
+  };
+}
+
 /** Tidak ada default di repo — jangan mengarang inbox publik. */
 export function proofEmailTo(): string | null {
   const value = process.env.NEXUS_TOPUP_PROOF_EMAIL?.trim();

@@ -2375,15 +2375,60 @@ input[type="text"]:focus, select:focus {
 }
 
 .kredit-pending li {
-  font-size: 12px;
+  font-size: 13px;
   color: #9a3412;
   background: #fff7ed;
   border: 1px solid #fed7aa;
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 12px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+}
+
+.kredit-pending-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #9a3412;
+}
+
+.kredit-dana {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kredit-dana-kicker {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7c2d12;
+}
+
+.kredit-dana-number {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #12151a;
+  user-select: all;
+}
+
+.kredit-dana-missing {
+  margin: 0;
+  font-size: 12px;
+  color: #7c2d12;
+}
+
+.kredit-proof-wa-after {
+  margin: 0;
+}
+
+.kredit-wa-open {
+  display: inline-flex;
 }
 
 .kredit-proof-form {

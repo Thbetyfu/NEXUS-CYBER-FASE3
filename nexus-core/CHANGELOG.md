@@ -8,13 +8,14 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ### Added
 - **Pilot storefront (PC + tunnel):** Cloudflare Tunnel **Channel Portal `:3003`** (`nexus-tunnel.ps1 -Portal`, `START-PORTAL-PILOT.bat`). Preview wizard publik = `/starter/` (Next rewrite / Caddy `portal.nexus-lab.test`) ke `:3010`. Generate tetap `CHANNEL_STARTER_URL` loopback di PC. Caddy hostname kedua untuk toko tanpa mengekspos SOC. Bukan Midtrans. Bukan 100 WAF.
-- **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`nodemailer` di `nexus-gaas-web/package.json`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. WhatsApp bukti opsional (`NEXUS_TOPUP_PROOF_WA`), bukan CTA beli. Bukan Midtrans.
-- **Isi Kredit dipakai:** setelah Isi, Channel Portal menampilkan nomor WhatsApp pemilik (`62895603358692`) + `wa.me` (teks TU-… / Kr / ORDER) + form bukti (catatan + gambar opsional). Status `proof_submitted` **tidak** menambah saldo. Operator konfirmasi di `http://127.0.0.1:3003/operator/topup` (loopback) atau `POST /api/kredit/topup/approve`. Berkas `nexus-gaas-web/data/topup-proofs/` (gitignore). Bukan Midtrans. Bukan SOC publik.
+- **Form bukti isi ulang Kredit:** `/kredit` unggah gambar/PDF (`POST /api/kredit/topup/proof`) ke `data/topup-proofs/`. Email ke `NEXUS_TOPUP_PROOF_EMAIL` via SMTP (`nodemailer` di `nexus-gaas-web/package.json`); tanpa SMTP bukti tetap tersimpan, **Kredit tidak naik**. Tombol **Buka WhatsApp** hanya setelah Kirim bukti (`NEXUS_TOPUP_PROOF_WA` opsional, default `62895603358692`). Bukan CTA beli. Bukan Midtrans.
+- **Isi Kredit dipakai:** setelah Isi, kartu pending menampilkan **Nomor DANA** (`NEXUS_DANA_NUMBER`, tanpa default di git) → unggah bukti → catatan opsional → **Kirim bukti**. Status `proof_submitted` **tidak** menambah saldo. Operator konfirmasi di `http://127.0.0.1:3003/operator/topup` (loopback) atau `POST /api/kredit/topup/approve`. Berkas `nexus-gaas-web/data/topup-proofs/` (gitignore). Bukan Midtrans. Bukan SOC publik.
 
 ### Fixed
 - **Overlay Next.js Channel Portal:** `Module not found: Can't resolve 'nodemailer'` di `kredit-topup.ts` (bukti email opsional) membuat Turbopack 500 seluruh rute termasuk `/gate`. `nodemailer` sekarang di `package.json`; SMTP di-load runtime (`kredit-smtp.ts`) supaya compile kasir tidak tergantung paket itu. Bukan Midtrans.
 
 ### Changed
+- **Kartu pending Kredit (awam):** judul pendek “Menunggu pembayaran N Kr”; Nomor DANA di atas; form bukti lalu **Kirim bukti**; **Buka WhatsApp** hanya setelah submit (pesan `TU-… N Kr`, URL wa.me tidak ditampilkan). `NEXUS_DANA_NUMBER` / `NEXUS_DANA_LABEL` di `.env.local.example` tanpa rekening palsu. Operator board tidak berubah. Bukan auto-kredit. Bukan Midtrans.
 - **Keran lab opt-in:** `NEXUS_LAB_FAUCET` default **mati**. Nyala hanya `NEXUS_LEDGER_MODE=lab` **dan** `NEXUS_LAB_FAUCET=1`. Pilot publik: `NEXUS_LEDGER_MODE=live` + `NEXUS_LAB_FAUCET=0`.
 - **Operator `/operator/topup`:** tolak jika `cf-connecting-ip` atau `X-Forwarded-Host` publik (spoof Host loopback lewat tunnel).
 - **Isi Kredit bukan keran gratis:** tombol Isi / navbar plus → `/kredit` mengajukan **pending** (`POST /api/kredit/topup`). Saldo tidak naik sampai operator `POST /api/kredit/topup/approve` (loopback atau `NEXUS_OPERATOR_SECRET`). Keran lab = teks sekunder “Keran lab (uji, bukan bayar)” + `NEXUS_LAB_FAUCET`. QRIS/VA milik pemilik **belum live**. Bukan Midtrans. Bukan billing produksi.
@@ -22,6 +23,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 - **Channel Portal alur linear:** pilih segmen → form `/pesan/{sku}` → Kredit. Kartu UMKM Starter/Edge Shield **bukan** WhatsApp. `/order` redirect ke `/pesan/umkm-starter`. Harga kartu dalam **Kr** (setara Rp). Job hosted = form operator, bukan 200 Kr kasir. Isi = pending; QRIS/VA **belum live**.
 
 ### Docs
+- **Kartu pending Kredit DANA-first:** [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md).
 - **Pilot storefront HTTPS:** [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`DISTRIBUTION_PILOT.md`](docs/DISTRIBUTION_PILOT.md), [`deploy-local/README.md`](deploy-local/README.md).
 - **Alur `/pesan/{sku}`:** [`NEXUS_CHANNEL_PORTAL.md`](docs/NEXUS_CHANNEL_PORTAL.md), [`PRODUCT_MODEL.md`](docs/PRODUCT_MODEL.md), [`DECISIONS_OPEN.md`](docs/DECISIONS_OPEN.md).
 - **Path CURRENT:** indeks docs = dua folder in-repo (bukan “dua repo”); Channel Starter / `START.ps1` memakai prefix `nexus-core/`.

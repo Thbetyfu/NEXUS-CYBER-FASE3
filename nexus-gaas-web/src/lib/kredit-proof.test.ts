@@ -5,9 +5,11 @@ import path from "node:path";
 import { after, test } from "node:test";
 import { ledgerPathFor } from "./identity-paths.ts";
 import { approveTopupRequest, getKreditSnapshot } from "./kredit-ledger.ts";
+import { topupWhatsAppMessage } from "./portal-config.ts";
 import {
   assertProofBytes,
   createTopupRequest,
+  danaPayInfo,
   proofDir,
   proofWaNumber,
   ProofValidationError,
@@ -30,10 +32,26 @@ function proofCount(dataDir: string): number {
   return existsSync(folder) ? readdirSync(folder).length : 0;
 }
 
-test("WhatsApp bukti tidak default ke nomor SALES", () => {
+test("WhatsApp bukti default ke nomor SALES", () => {
   delete process.env.NEXUS_TOPUP_PROOF_WA;
   delete process.env.NEXT_PUBLIC_TOPUP_PROOF_WA;
-  assert.equal(proofWaNumber(), null);
+  assert.equal(proofWaNumber(), "62895603358692");
+});
+
+test("pesan WhatsApp setelah Kirim bukti pendek (id + jumlah)", () => {
+  assert.equal(topupWhatsAppMessage({ id: "TU-A22E43F0", amountKr: 50 }), "TU-A22E43F0 50 Kr");
+  assert.doesNotMatch(topupWhatsAppMessage({ id: "TU-A22E43F0", amountKr: 50 }), /wa\.me|Midtrans|instruksi/i);
+});
+
+test("Nomor DANA tidak punya default di git", () => {
+  delete process.env.NEXUS_DANA_NUMBER;
+  delete process.env.NEXUS_DANA_LABEL;
+  assert.deepEqual(danaPayInfo(), { number: null, label: null });
+  process.env.NEXUS_DANA_NUMBER = "081234567890";
+  process.env.NEXUS_DANA_LABEL = "DANA lab";
+  assert.deepEqual(danaPayInfo(), { number: "081234567890", label: "DANA lab" });
+  delete process.env.NEXUS_DANA_NUMBER;
+  delete process.env.NEXUS_DANA_LABEL;
 });
 
 test("menolak tipe berkas dan ukuran", () => {

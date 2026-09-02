@@ -14,6 +14,8 @@ export type KreditState = {
   faucetEnabled?: boolean;
   proofWa?: string | null;
   proofEmail?: string | null;
+  danaNumber?: string | null;
+  danaLabel?: string | null;
 };
 
 export function KreditPanel({
@@ -75,8 +77,8 @@ export function KreditPanel({
             {busy ? "Mencatat…" : `Isi ${pack} Kredit`}
           </button>
           <p className="kredit-topup-copy">
-            Permintaan isi ulang, bukan pembayaran otomatis. QRIS/VA milik pemilik <strong>belum live</strong>. Kirim
-            bukti lewat form email di bawah. Saldo naik hanya setelah operator approve. Bukan Midtrans/Stripe.
+            Setelah Isi: bayar ke Nomor DANA, unggah bukti, lalu Kirim bukti. WhatsApp muncul setelah bukti terkirim.
+            Saldo naik hanya setelah konfirmasi operator. Bukan Midtrans/Stripe.
           </p>
         </div>
 
@@ -88,7 +90,8 @@ export function KreditPanel({
                   item={item}
                   wa={wa}
                   proofEmail={kredit?.proofEmail}
-                  orderCode={kredit?.orderCode}
+                  danaNumber={kredit?.danaNumber}
+                  danaLabel={kredit?.danaLabel}
                   busy={busy}
                   onSubmitProof={onSubmitProof}
                 />
@@ -116,37 +119,45 @@ function TopupOpenCard({
   item,
   wa,
   proofEmail,
-  orderCode,
+  danaNumber,
+  danaLabel,
   busy,
   onSubmitProof,
 }: {
   item: PendingTopup;
   wa: ReturnType<typeof formatWhatsAppNumber> | null;
   proofEmail?: string | null;
-  orderCode?: string | null;
+  danaNumber?: string | null;
+  danaLabel?: string | null;
   busy: boolean;
   onSubmitProof?: (topupId: string, notes: string, file: File | null) => void;
 }) {
   const [notes, setNotes] = useState(item.notes ?? "");
   const [file, setFile] = useState<File | null>(null);
-  const waHref = wa
-    ? `https://wa.me/${wa.digits}?text=${encodeURIComponent(
-        topupWhatsAppMessage({ id: item.id, amountKr: item.amountKr, orderCode }),
-      )}`
-    : null;
   const submitted = item.status === "proof_submitted";
+  const waHref =
+    submitted && wa
+      ? `https://wa.me/${wa.digits}?text=${encodeURIComponent(
+          topupWhatsAppMessage({ id: item.id, amountKr: item.amountKr }),
+        )}`
+      : null;
 
   return (
     <>
-      <span>
-        {submitted ? "Bukti terkirim" : "Pending"} {item.id}: {item.amountKr} {KREDIT.abbr} — belum masuk saldo
-      </span>
-      {waHref && wa ? (
-        <a className="kredit-proof-wa" href={waHref} target="_blank" rel="noreferrer">
-          Opsional: salin id ke WhatsApp
-        </a>
-      ) : null}
-      {onSubmitProof && (
+      <p className="kredit-pending-title">
+        {submitted
+          ? `Bukti terkirim — ${item.amountKr} ${KREDIT.abbr}`
+          : `Menunggu pembayaran ${item.amountKr} ${KREDIT.abbr}`}
+      </p>
+      <div className="kredit-dana">
+        <p className="kredit-dana-kicker">{danaLabel?.trim() || "Nomor DANA"}</p>
+        {danaNumber?.trim() ? (
+          <p className="kredit-dana-number">{danaNumber.trim()}</p>
+        ) : (
+          <p className="kredit-dana-missing">Set NEXUS_DANA_NUMBER di .env.local</p>
+        )}
+      </div>
+      {onSubmitProof && !submitted && (
         <form
           className="kredit-proof-form"
           onSubmit={(e) => {
@@ -155,20 +166,8 @@ function TopupOpenCard({
             onSubmitProof(item.id, notes, file);
           }}
         >
-          <label className="kredit-proof-label" htmlFor={`notes-${item.id}`}>
-            Catatan (opsional)
-          </label>
-          <textarea
-            id={`notes-${item.id}`}
-            className="kredit-proof-notes"
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Misalnya bank / jam transfer"
-            disabled={busy}
-          />
           <label className="kredit-proof-label" htmlFor={`file-${item.id}`}>
-            Berkas bukti (gambar atau PDF, maks 5 MB)
+            Input gambar (bukti transfer)
           </label>
           <input
             id={`file-${item.id}`}
@@ -178,8 +177,20 @@ function TopupOpenCard({
             disabled={busy}
             required
           />
+          <label className="kredit-proof-label" htmlFor={`notes-${item.id}`}>
+            Catatan (opsional)
+          </label>
+          <textarea
+            id={`notes-${item.id}`}
+            className="kredit-proof-notes"
+            rows={2}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Misalnya jam transfer"
+            disabled={busy}
+          />
           <button type="submit" className="notion-button kredit-proof-submit" disabled={busy || !file}>
-            {busy ? "Mengirim…" : "Kirim bukti ke email"}
+            {busy ? "Mengirim…" : "Kirim bukti"}
           </button>
           <p className="kredit-proof-hint">
             {proofEmail
@@ -189,6 +200,13 @@ function TopupOpenCard({
           </p>
         </form>
       )}
+      {waHref ? (
+        <p className="kredit-proof-wa-after">
+          <a className="notion-button kredit-wa-open" href={waHref} target="_blank" rel="noreferrer">
+            Buka WhatsApp
+          </a>
+        </p>
+      ) : null}
     </>
   );
 }

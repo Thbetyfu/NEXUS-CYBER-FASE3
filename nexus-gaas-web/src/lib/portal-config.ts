@@ -49,8 +49,7 @@ export function topupWhatsAppMessage(opts: {
   amountKr: number;
   orderCode?: string | null;
 }): string {
-  const order = opts.orderCode ? ` · ${opts.orderCode}` : "";
-  return `Isi ulang Kredit ${opts.id}: ${opts.amountKr} Kr${order}. Mohon instruksi transfer (QRIS/VA belum di portal). Saya unggah bukti di form. Bukan Midtrans.`;
+  return `${opts.id} ${opts.amountKr} Kr`;
 }
 
 export function isWhatsAppHref(href: string): boolean {

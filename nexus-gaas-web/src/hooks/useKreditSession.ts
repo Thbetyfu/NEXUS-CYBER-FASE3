@@ -17,6 +17,8 @@ function fromPayload(data: KreditPayload): KreditState {
     faucetEnabled: Boolean(data.faucetEnabled),
     proofWa: data.proofWa ?? null,
     proofEmail: data.proofEmail ?? null,
+    danaNumber: data.danaNumber ?? null,
+    danaLabel: data.danaLabel ?? null,
   };
 }
 

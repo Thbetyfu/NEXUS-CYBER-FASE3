@@ -61,6 +61,7 @@ Bukan produksi GaaS, bukan 100 host WAF. PC 24/7 + Cloudflare Tunnel ke **Channe
 | `NEXUS_LEDGER_MODE` | `lab` | `live` |
 | `NEXUS_LAB_FAUCET` | `1` jika uji keran | `0` |
 | `NEXUS_PORTAL_PUBLIC_HOST` | — | hostname trycloudflare (opsional, Next `allowedDevOrigins`) |
+| `NEXUS_DANA_NUMBER` | nomor e-wallet pemilik (tanpa default di git) | sama; label opsional `NEXUS_DANA_LABEL` |
 
 Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC (tunnel `:3010`). Rewrite `/starter` ke loopback **tidak** jalan di Vercel.
 
@@ -73,7 +74,7 @@ Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC
 
 ### Uji HP (data seluler)
 
-`/gate` → daftar → `/kredit` Isi → WhatsApp + bukti → di **PC** buka `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter` generate. Preview: `https://<tunnel>/starter/preview/{slug}`.
+`/gate` → daftar → `/kredit` Isi → Nomor DANA (`NEXUS_DANA_NUMBER`) + unggah bukti + Kirim bukti → **Buka WhatsApp** (setelah submit) → di **PC** buka `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter` generate. Preview: `https://<tunnel>/starter/preview/{slug}`.
 
 Operator `/operator/topup` **bukan** lewat Host publik. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
 
@@ -83,9 +84,9 @@ Operator `/operator/topup` **bukan** lewat Host publik. Sleep Windows OFF. `clou
 ## Pembayaran
 
 - **IDR (kontak on-prem):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway). **Hanya** Corporat **On-prem** + **Pemerintah**. Bukan DANA webhook.
-- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan “Pesan via WhatsApp” di kartu. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (pending); nomor WA + `wa.me` + form bukti; saldo **tidak** naik sampai `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). Keran `POST /api/kredit/faucet` hanya lab opt-in (`NEXUS_LEDGER_MODE=lab` + `NEXUS_LAB_FAUCET=1`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
+- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan “Pesan via WhatsApp” di kartu. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (pending); kartu awam = Nomor DANA (`NEXUS_DANA_NUMBER`) → bukti gambar/PDF → Kirim bukti → tombol **Buka WhatsApp** (pesan pendek, bukan URL wa.me); saldo **tidak** naik sampai `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). Keran `POST /api/kredit/faucet` hanya lab opt-in (`NEXUS_LEDGER_MODE=lab` + `NEXUS_LAB_FAUCET=1`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
 - **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit + pending isi ulang.
-- **Top-up IDR:** pending + WhatsApp `62895603358692` + form bukti (`data/topup-proofs/`) + approve operator **sudah** di kode lab. Email bukti opsional (`nodemailer` di `package.json`, SMTP env). **QRIS/VA milik pemilik belum live**. **Bukan** billing produksi. **Bukan** Midtrans/Stripe. WhatsApp isi ulang **bukan** CTA beli paket UMKM. Operator localhost `/operator/topup` — bukan SOC `:3001`.
+- **Top-up IDR:** pending + Nomor DANA env + form bukti (`data/topup-proofs/`) + WhatsApp `62895603358692` **setelah** Kirim bukti + approve operator **sudah** di kode lab. Email bukti opsional (`nodemailer` di `package.json`, SMTP env). **QRIS/VA milik pemilik belum live**. **Bukan** billing produksi. **Bukan** Midtrans/Stripe. WhatsApp isi ulang **bukan** CTA beli paket UMKM. Operator localhost `/operator/topup` — bukan SOC `:3001`.
 - **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield.
 
 ---
@@ -98,4 +99,4 @@ Portal legacy submodule **digantikan** folder **`nexus-gaas-web/`** (lab di FASE
 
 ---
 
-*2026-09-02 — tunnel storefront :3003 + /starter; keran opt-in*
+*2026-09-02 — kartu pending Kredit: Nomor DANA (`NEXUS_DANA_NUMBER`) → bukti → Kirim bukti → Buka WhatsApp; tunnel storefront :3003 + /starter; keran opt-in*

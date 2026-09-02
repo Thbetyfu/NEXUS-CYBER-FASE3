@@ -18,8 +18,8 @@ export default function KreditPage() {
         <p className="hub-kicker">Kredit</p>
         <h1 className="order-title">Beli / isi ulang Kredit</h1>
         <p className="order-lead">
-          Tombol Isi mencatat permintaan (pending). Setelah itu nomor WhatsApp pemilik tampil untuk instruksi
-          transfer, lalu unggah bukti di form. Kredit masuk hanya setelah operator konfirmasi di localhost
+          Tombol Isi mencatat permintaan. Bayar ke Nomor DANA, unggah bukti, lalu Kirim bukti. WhatsApp muncul
+          setelah bukti terkirim. Kredit masuk hanya setelah operator konfirmasi di localhost
           <code> /operator/topup</code>. QRIS/VA belum live di repo. Bukan Midtrans. Starter 20 Kr tetap fail-closed.
         </p>
         <KreditPanel
