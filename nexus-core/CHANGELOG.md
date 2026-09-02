@@ -7,10 +7,13 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Added
-- **Runtime model tulis PC (langkah 2):** Ollama loopback `127.0.0.1:11434` (`deploy-local/START-LOCAL-LLM.bat`, `OLLAMA_HOST`). Portal `GET /api/local-llm/health` fetch server-side saja. Env `NEXUS_LOCAL_LLM_URL` di `.env.local` (bukan git). `nexus-tunnel.ps1` menolak tunnel `:11434`. Bukan fill cerita→JSON. Bukan NEX-AI WAF. Tidak `ollama pull` 70B.
+- **Fill cerita Channel Starter (langkah 3):** `POST /api/local-llm/fill-starter` (server → Ollama loopback `gemma3:1b`). Timeout/down → preset kategori, generate tetap. URL bukan loopback fail-closed. Bukan NEX-AI WAF. Bukan preview LLM. Tidak tunnel `:11434`.
+
+- **Runtime model tulis PC (langkah 2):** Ollama loopback `127.0.0.1:11434` (`deploy-local/START-LOCAL-LLM.bat`, `OLLAMA_HOST`). Portal `GET /api/local-llm/health` fetch server-side saja. Env `NEXUS_LOCAL_LLM_URL` di `.env.local` (bukan git). `nexus-tunnel.ps1` menolak tunnel `:11434`. Bukan NEX-AI WAF. Tidak `ollama pull` 70B.
 
 ### Changed
-- **Form Channel Starter pendek:** `/pesan/umkm-starter` wajib nama usaha, WhatsApp site, kategori; cerita usaha opsional diisi ke hero/tagline/about tanpa LLM. Alamat, palet, teks panjang, CTA, dll. di **Lengkapi nanti** (default palet hijau + CTA/jam kategori). Debit 20 Kr + `CHANNEL_STARTER_URL` `:3010` tidak berubah. Bukan Midtrans. Bukan CTA WhatsApp paket.
+- **Cerita Starter sebelum generate:** cerita non-kosong → `POST /api/local-llm/fill-starter` (bukan `:11434` dari HP). Sukses mengisi slot teks; fallback/preset tetap generate. Bukan halaman preview LLM.
+- **Form Channel Starter pendek:** `/pesan/umkm-starter` wajib nama usaha, WhatsApp site, kategori; cerita usaha opsional. Alamat, palet, teks panjang, CTA, dll. di **Lengkapi nanti** (default palet hijau + CTA/jam kategori). Debit 20 Kr + `CHANNEL_STARTER_URL` `:3010` tidak berubah. Bukan Midtrans. Bukan CTA WhatsApp paket.
 
 ### Added
 - **Pilot storefront (PC + tunnel):** Cloudflare Tunnel **Channel Portal `:3003`** (`nexus-tunnel.ps1 -Portal`, `START-PORTAL-PILOT.bat`). Preview wizard publik = `/starter/` (Next rewrite / Caddy `portal.nexus-lab.test`) ke `:3010`. Generate tetap `CHANNEL_STARTER_URL` loopback di PC. Caddy hostname kedua untuk toko tanpa mengekspos SOC. Bukan Midtrans. Bukan 100 WAF.

@@ -34,6 +34,37 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
   return match?.[1] ?? null;
 }
 
+type LocalFillSlots = {
+  tagline?: string;
+  hero?: string;
+  about_body?: string;
+  cta_label?: string;
+  hours?: string;
+  description?: string;
+};
+
+function mergeLocalFill(later: StarterGenerateExtras, fill: LocalFillSlots): StarterGenerateExtras {
+  const hero = (fill.hero ?? "").trim();
+  const words = hero.replace(/[.!?…]+$/g, "").split(/\s+/).filter(Boolean);
+  let headline = hero;
+  let headlineAccent = "";
+  if (words.length >= 4) {
+    const at = Math.ceil(words.length / 2);
+    headline = words.slice(0, at).join(" ");
+    headlineAccent = words.slice(at).join(" ");
+  }
+  return {
+    ...later,
+    tagline: later.tagline.trim() || (fill.tagline ?? "").trim(),
+    headline: later.headline.trim() || headline,
+    headline_accent: later.headline_accent.trim() || headlineAccent,
+    about_body: later.about_body.trim() || (fill.about_body ?? "").trim(),
+    cta_label: later.cta_label.trim() || (fill.cta_label ?? "").trim(),
+    description: later.description.trim() || (fill.description ?? "").trim(),
+    hours: later.hours.trim() || (fill.hours ?? "").trim(),
+  };
+}
+
 export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
   const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof, cancelTopup } =
     useKreditSession();
@@ -43,6 +74,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
   const [whatsapp, setWhatsapp] = useState("");
   const [story, setStory] = useState("");
   const [later, setLater] = useState<StarterGenerateExtras>(EMPTY_STARTER_EXTRAS);
+  const [copyHint, setCopyHint] = useState("");
   const [result, setResult] = useState<OrderResult | null>(null);
 
   const patchLater = (patch: Partial<StarterGenerateExtras>) => {
@@ -52,14 +84,46 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
+    setCopyHint("");
     setBusy(true);
+    let extras = later;
+    if (story.trim()) {
+      try {
+        const fillRes = await fetch("/api/local-llm/fill-starter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: businessName,
+            category,
+            whatsapp,
+            story,
+          }),
+        });
+        const fill = (await fillRes.json()) as {
+          usedFallback?: boolean;
+          tagline?: string;
+          hero?: string;
+          about_body?: string;
+          cta_label?: string;
+          hours?: string;
+          description?: string;
+        };
+        if (fillRes.ok && fill.usedFallback === false) {
+          extras = mergeLocalFill(later, fill);
+          setLater(extras);
+          setCopyHint("Teks diisi model lokal");
+        }
+      } catch {
+        /* generate tetap jalan: preset / pecahan cerita */
+      }
+    }
     const fd = new FormData();
     const pairs = buildStarterGeneratePairs({
       businessName,
       category,
       whatsapp,
       story,
-      extras: later,
+      extras,
     });
     for (const [key, value] of pairs) {
       fd.set(key, value);
@@ -171,6 +235,11 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         <div className="notion-callout notion-callout-blue">
           <div className="notion-callout-content">
             <p style={{ fontWeight: 700, marginBottom: 12 }}>Site dibuat — 20 Kredit terdebet</p>
+            {copyHint ? (
+              <p className="order-later-hint" role="status">
+                {copyHint}
+              </p>
+            ) : null}
             <ol style={{ paddingLeft: 20, color: "var(--notion-text-muted)", fontSize: 14 }}>
               {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
               <li>
@@ -212,6 +281,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                 setBusinessName("");
                 setWhatsapp("");
                 setStory("");
+                setCopyHint("");
                 setLater({ ...EMPTY_STARTER_EXTRAS });
               }}
             >
@@ -252,7 +322,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               rows={4}
               value={story}
               onChange={(e) => setStory(e.target.value)}
-              placeholder="Kosong = teks preset kategori. Isi singkat: hero, tagline, dan tentang diisi otomatis (bukan AI)."
+              placeholder="Kosong = teks preset kategori. Isi singkat: model lokal di PC mengisi hero/tagline/tentang (bukan NEX-AI WAF)."
             />
           </fieldset>
 
@@ -529,6 +599,11 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
             </div>
           </details>
 
+          {copyHint && (
+            <p className="order-later-hint" role="status">
+              {copyHint}
+            </p>
+          )}
           {formError && (
             <p className="kredit-error" role="alert">
               {formError}

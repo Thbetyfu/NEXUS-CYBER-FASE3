@@ -19,6 +19,6 @@ Perintah uji (dari `nexus-core/`): `python NEX-RED/nexred.py llm-eval` — **han
 
 Saat pemilik menyerahkan berkas model: daftarkan **dengan nama itu** di runtime lokal (contoh `ollama create nex-ai-protect -f Modelfile`). Jangan `ollama pull qwen` / `llama3` sebagai pengganti.
 
-Channel Portal boleh memakai **Ollama yang sama di loopback** untuk runtime tulis nanti (`NEXUS_LOCAL_LLM_URL`, `GET /api/local-llm/health`). Itu **bukan** substitusi `nex-ai-protect` / `nex-ai-reflex` di request path WAF. Jangan tunnel `:11434`.
+Channel Portal memakai **Ollama yang sama di loopback** untuk tulis copy Starter (`NEXUS_LOCAL_LLM_URL`, `NEXUS_LOCAL_LLM_MODEL=gemma3:1b`, `POST /api/local-llm/fill-starter`). Itu **bukan** substitusi `nex-ai-protect` / `nex-ai-reflex` di request path WAF. Jangan tunnel `:11434`.
 
 Aturan agen Cursor (laptop saja, **gitignore**): `.agents/rules/nex-ai-only.md`. Ringkas yang di git: [`../../AGENTS.md`](../../AGENTS.md). Kontrak ini: [`NEX_AI_RUNTIME.md`](./NEX_AI_RUNTIME.md).

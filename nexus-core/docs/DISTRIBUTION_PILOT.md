@@ -30,7 +30,7 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 | Command Center / SOC (`:3001`, `:8081`) | **Tidak** | Hanya localhost / VPN |
 | Postgres, Redis, bridge internal | **Tidak** | Loopback saja |
 | NEX-RED API mentah | **Tidak** | Lewat operator saja |
-| Ollama / model tulis (`:11434`) | **Tidak** | Hanya `127.0.0.1`. Portal cek `GET /api/local-llm/health` (Node di PC). `nexus-tunnel.ps1` menolak port ini. |
+| Ollama / model tulis (`:11434`) | **Tidak** | Hanya `127.0.0.1`. Portal `GET /api/local-llm/health` + `POST /api/local-llm/fill-starter` (Node di PC). `nexus-tunnel.ps1` menolak port ini. |
 
 Aturan emas: **jangan tunnel-kan control plane** ke internet.
 
@@ -71,14 +71,14 @@ Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
 
 ### Runtime model tulis (PC, bukan tunnel)
 
-Ollama di operator PC untuk **copy situs belakangan** (bukan NEX-AI `nex-ai-protect` / `nex-ai-reflex` di WAF). Bind **`127.0.0.1:11434`**.
+Ollama di operator PC untuk **copy situs Channel Starter** (bukan NEX-AI `nex-ai-protect` / `nex-ai-reflex` di WAF). Bind **`127.0.0.1:11434`**.
 
-1. `nexus-core\deploy-local\START-LOCAL-LLM.bat` (`OLLAMA_HOST=127.0.0.1:11434`).  
-2. Portal `.env.local`: `NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434` (jangan commit).  
-3. Cek dari PC: `http://127.0.0.1:3003/api/local-llm/health` — fetch Ollama **hanya di server**. HP lewat tunnel boleh hit rute itu; **jangan** buka `:11434` dari HP.  
+1. `nexus-core\deploy-local\START-LOCAL-LLM.bat` (`OLLAMA_HOST=127.0.0.1:11434`, writer `gemma3:1b`).  
+2. Portal `.env.local`: `NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434` dan `NEXUS_LOCAL_LLM_MODEL=gemma3:1b` (jangan commit).  
+3. Cek dari PC: `http://127.0.0.1:3003/api/local-llm/health`. Fill: `POST /api/local-llm/fill-starter` — fetch Ollama **hanya di server**. HP lewat tunnel boleh hit rute portal; **jangan** buka `:11434` dari HP.  
 4. **Jangan** masukkan `:11434` ke `START-PORTAL-PILOT.bat` / cloudflared.
 
-PC ini sudah punya Ollama + `nex-ai-protect` / `nex-ai-reflex`. Langkah ini **tidak** `ollama pull` model Hub (jangan 70B). Model tulis kecil opsional nanti: `ollama pull gemma3:1b` (pemilik). Fill cerita→JSON **belum**.
+Jangan `ollama pull` 70B. Jangan pakai `nex-ai-protect` / `nex-ai-reflex` untuk copy. Timeout fill → preset kategori, generate tetap.
 
 Demo B2B Job: mesin WAF tetap `START.bat`; klien tidak masuk SOC.
 

@@ -5,13 +5,16 @@ cd /d "%~dp0"
 echo ============================================================
 echo   NEXUS — runtime model tulis lokal
 echo   Bind: 127.0.0.1:11434  (bukan 0.0.0.0)
-echo   Portal: GET /api/local-llm/health  (server-side saja)
+echo   Writer: gemma3:1b  (NEXUS_LOCAL_LLM_MODEL)
+echo   Portal health: GET  /api/local-llm/health
+echo   Portal fill:   POST /api/local-llm/fill-starter
 echo   JANGAN: cloudflared / START-PORTAL-PILOT ke :11434
-echo   Bukan NEX-AI protect/reflex (itu WAF). Fill cerita = langkah belakangan.
+echo   Bukan NEX-AI protect/reflex (itu WAF, bukan copy situs).
 echo ============================================================
 echo.
 
 set "OLLAMA_HOST=127.0.0.1:11434"
+set "NEXUS_WRITER_MODEL=gemma3:1b"
 
 where ollama >nul 2>&1
 if errorlevel 1 (
@@ -25,11 +28,10 @@ if errorlevel 1 (
   echo Setelah terpasang, env portal:
   echo   nexus-gaas-web\.env.local
   echo   NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434
+  echo   NEXUS_LOCAL_LLM_MODEL=gemma3:1b
   echo.
-  echo Model tulis kecil ^(opsional, unduh sendiri, jangan 70B^):
-  echo   ollama pull gemma3:1b
-  echo Nexus tidak menarik model Hub di langkah ini.
-  echo nex-ai-protect / nex-ai-reflex tetap untuk WAF, bukan copy situs.
+  echo Model tulis kecil: ollama pull gemma3:1b
+  echo Jangan pull 70B. Jangan pakai nex-ai-protect / nex-ai-reflex untuk copy.
   pause
   exit /b 1
 )
@@ -38,14 +40,31 @@ echo [OK] ollama di PATH.
 ollama --version
 echo.
 
+echo [PULL] Model tulis %NEXUS_WRITER_MODEL% jika belum ada ^(kecil, bukan 70B^)...
+ollama list | findstr /I /C:"gemma3:1b" >nul 2>&1
+if errorlevel 1 (
+  ollama pull gemma3:1b
+  if errorlevel 1 (
+    echo [GAGAL] ollama pull gemma3:1b. Coba model kecil lain: llama3.2:1b
+    echo Jangan pull 70B. Jangan nex-ai-protect / nex-ai-reflex.
+    pause
+    exit /b 1
+  )
+) else (
+  echo [OK] %NEXUS_WRITER_MODEL% sudah terpasang.
+)
+echo.
+
 netstat -ano | findstr /R /C:"127.0.0.1:11434.*LISTENING" >nul 2>&1
 if not errorlevel 1 (
   echo [OK] Sudah listen di 127.0.0.1:11434
-  echo Cek portal ^(setelah npm run dev^): http://127.0.0.1:3003/api/local-llm/health
+  echo Cek: http://127.0.0.1:3003/api/local-llm/health
+  echo Fill: POST http://127.0.0.1:3003/api/local-llm/fill-starter
+  echo HP lewat tunnel portal saja — jangan buka :11434 dari HP.
   echo Daftar model terpasang:
   ollama list
   echo.
-  echo Tidak menarik model baru. Copy-fill belum. Jangan tunnel :11434.
+  echo Jangan tunnel :11434.
   pause
   exit /b 0
 )

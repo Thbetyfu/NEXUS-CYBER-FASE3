@@ -88,7 +88,7 @@ Kontrak pisah: **dev/site** vs **Loop keamanan** — deliverable Job tetap wajib
 | Form wizard pelanggan | **Lab v0.1** — `nexus-core/channel-starter/channel_starter/server.py` + `cli.py serve` |
 | Template engine (layout Nexcent) | **Lab v0.1** — satu layout Figma (`templates/_base.html`) + preset `fnb` / `jasa` / `profil`; 4 palet `hijau` `biru` `navy` `hutan` |
 | Deploy otomatis multi-tenant | **Lab siap** — Caddy import + `hosts-registry.json` + `deploy-local` mount; VPS wildcard **belum** |
-| Portal kasir Starter | **Portal v0.1** — gerbang `/gate`; form pendek `/pesan/umkm-starter` (**20 Kr**, fail-closed; cerita → template tanpa LLM). `/order` redirect. `/kredit` = pending + WA + form bukti. Approve `/operator/topup` (localhost). QRIS/VA **belum live**. Keran lab opt-in. Bukan PSP. Bukan CTA WA di kartu paket |
+| Portal kasir Starter | **Portal v0.1** — gerbang `/gate`; form pendek `/pesan/umkm-starter` (**20 Kr**, fail-closed; cerita → `POST /api/local-llm/fill-starter` `gemma3:1b` loopback, fallback preset). `/order` redirect. `/kredit` = pending + WA + form bukti. Approve `/operator/topup` (localhost). QRIS/VA **belum live**. Keran lab opt-in. Bukan PSP. Bukan CTA WA di kartu paket |
 | Lab portofolio (Vercel di belakang WAF) | Referensi UX unggah/vault — **bukan** produk Channel Starter. Folder `playground/` diarsip |
 
 Mesin GaaS (gateway, NEX-RED, Job Cowork) **sudah ada** — dipakai di paket **Cowork**. **Edge Shield** memakai Reflex WAF yang sama, **tanpa** menjalankan Job.
