@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 3003",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/kredit-ledger.test.ts src/lib/checkout.test.ts src/lib/kredit-proof.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/kredit-ledger.test.ts src/lib/checkout.test.ts src/lib/kredit-proof.test.ts src/lib/channel-starter-urls.test.ts src/lib/operator-gate.test.ts"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",

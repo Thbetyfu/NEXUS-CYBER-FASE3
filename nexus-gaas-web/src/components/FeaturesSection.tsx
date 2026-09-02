@@ -29,7 +29,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: "Kasir Kredit",
-    desc: "Isi ulang Kredit = permintaan pending (QRIS/VA milik pemilik belum live). Keran lab hanya teks sekunder. WhatsApp bukti opsional, bukan CTA beli paket. Bukan Midtrans.",
+    desc: "Isi ulang Kredit = permintaan pending (QRIS/VA milik pemilik belum live). WhatsApp bukti + approve operator. Bukan keran gratis. Bukan Midtrans.",
     color: "var(--notion-yellow)",
     bg: "var(--notion-yellow-bg)",
   },
@@ -38,7 +38,7 @@ const FEATURES = [
 const STEPS = [
   { n: "01", title: "Pilih segmen", desc: "UMKM / sekolah / startup / corporat / pemerintah." },
   { n: "02", title: "Isi form paket", desc: "Bukan dump kasir. Starter = 20 Kr fail-closed." },
-  { n: "03", title: "Bayar Kredit", desc: "Keran lab. Bukan Midtrans. Job 200 Kr bukan self-serve." },
+  { n: "03", title: "Bayar Kredit", desc: "Isi pending + bukti WA. Bukan Midtrans. Job 200 Kr bukan self-serve." },
   { n: "04", title: "Selesai", desc: "Site generate atau tugas operator. WhatsApp hanya on-prem." },
 ];
 

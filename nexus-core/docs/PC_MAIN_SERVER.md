@@ -150,16 +150,17 @@ $env:CHANNEL_STARTER_HTTP_ONLY = "false"
 
 (DNS wildcard + named tunnel harus sudah siap — lihat §5.)
 
-#### C. Channel Portal — `.env.local` (opsional)
-
-Buat `nexus-gaas-web/.env.local` hanya jika Channel Starter API tidak di default:
+#### C. Channel Portal — `.env.local`
 
 ```env
-NEXT_PUBLIC_CHANNEL_STARTER_URL=http://127.0.0.1:3010
 CHANNEL_STARTER_URL=http://127.0.0.1:3010
+CHANNEL_STARTER_PUBLIC_URL=/starter
+NEXUS_LEDGER_MODE=live
+NEXUS_LAB_FAUCET=0
 ```
 
-Pembayaran v1 **tidak** butuh ENV — manual WhatsApp `62895603358692` (hardcoded di UI).
+Lab uji keran: `NEXUS_LEDGER_MODE=lab` dan `NEXUS_LAB_FAUCET=1`. Tunnel toko: `deploy-local\START-PORTAL-PILOT.bat`. Pembayaran **bukan** PSP — pending + WA + approve localhost.
+
 
 #### D. NEX-AI lokal (wajib untuk START / START-FOR-JURY)
 
@@ -198,9 +199,10 @@ Internet (juri / pelanggan)
         ▼
 Cloudflare Tunnel (cloudflared di Windows)
         │
-        ├── trycloudflare #1 → localhost:80  (Caddy → WAF → portofolio lab)
-        ├── trycloudflare #2 → localhost:3003 (Channel Portal — opsional, jendela terpisah)
-        └── (nanti) named tunnel + domain → portal + *.sites.nexus.id
+        ├── trycloudflare storefront → localhost:3003 (Channel Portal; /starter → :3010)
+        ├── trycloudflare juri → localhost:80  (Caddy → WAF → portofolio lab)
+        └── (nanti) named tunnel + domain → portal. / starter. / portfolio.
+
         │
         ▼
 PC Windows 24/7 (Docker Desktop)

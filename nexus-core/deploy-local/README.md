@@ -10,7 +10,7 @@ Alur yang benar untuk bukti:
 
 `pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. **Channel Portal (jual)** bukan folder ini — dari git root: `cd nexus-gaas-web && npm run dev` (`:3003`); generate tetap butuh Channel Starter `:3010`.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). Hostname toko lab: **`portal.nexus-lab.test`** → `:3003`, **`starter.nexus-lab.test`** atau path **`/starter/`** → `:3010`. **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. **Channel Portal (jual):** `cd nexus-gaas-web && npm run dev` (`:3003`). Generate Node = `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. Tunnel pembeli: **`START-PORTAL-PILOT.bat`** (`:3003` saja). Tunnel juri/WAF: `jury\START-FOR-JURY.bat` (`:80`). Jangan tunnel SOC.
 
 ## Skenario lab: hotspot blue team
 
@@ -56,6 +56,7 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 | --- | --- |
 | `ALLOW-DEV-LAPTOP.bat` | Sekali: firewall lab + Defender tidak tanya terus |
 | `CHECK-NEX-AI.bat` | Cek Ollama lokal punya `nex-ai-protect` + `nex-ai-reflex` (helper yang sama dipakai START) |
+| `START-PORTAL-PILOT.bat` | Cloudflare Tunnel ke Channel Portal `:3003` (bukan SOC, bukan WAF) |
 | `START-OFFLINE.bat` | **Ditolak** — playground diarsip; pakai `START.bat` |
 | `STATUS.bat` | Lihat kontainer hidup/mati |
 | `STOP.bat` | Matikan stack (data Postgres tetap di volume Docker) |
@@ -99,6 +100,20 @@ Jika Anda menjalankan dasbor di laptop (`npm run dev -p 3001`) sambil stack `dep
 - **Offline:** dihapus. Cadangan zip playground bukan origin deploy.
 
 Host `portfolio.nexus-lab.test` **dan** `127.0.0.1` (WAF `:8080`) memakai origin compose yang sama. Jangan buka URL Vercel langsung untuk klaim “Nexus melindungi”.
+
+Hosts lab toko (opsional, named tunnel / Caddy): `127.0.0.1 portal.nexus-lab.test starter.nexus-lab.test`
+
+## Pilot storefront (bukan WAF)
+
+Stack Docker di folder ini = tepi portofolio. Toko + wizard **bukan** kontainer:
+
+1. `nexus-core\channel-starter` → `python cli.py serve` (`:3010`)
+2. `nexus-gaas-web` → `.env.local` dari `.env.local.example` (pilot: `NEXUS_LEDGER_MODE=live`, `NEXUS_LAB_FAUCET=0`) → `npm run dev` (`:3003`)
+3. Double-click **`START-PORTAL-PILOT.bat`** — tunnel Cloudflare ke `:3003` saja
+4. HP: `/gate` → daftar → `/kredit` Isi → WA + bukti → approve `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`
+5. Preview: `https://<trycloudflare>/starter/preview/{slug}`
+
+Pemilik: sleep Windows OFF; `cloudflared tunnel login` + hostname tetap (Zero Trust) sendiri. Jangan tunnel `:3001`/`:8081`.
 
 Ubah origin di `deploy-local/.env` (disalin otomatis dari `.env.example` saat start pertama).
 

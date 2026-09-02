@@ -24,9 +24,9 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 
 | Layanan | Publik? | Catatan |
 | --- | --- | --- |
-| Channel Portal (`nexus-gaas-web`, `:3003`) | **Ya** | Pintu jual — `npm run dev`; generate butuh `:3010` |
-| Site UMKM / origin Channel Starter | **Ya** | Subdomain lewat Caddy/WAF |
-| WAF data plane (HTTP/HTTPS) | **Ya** | Satu atau beberapa `PROTECTED_HOST` |
+| Channel Portal (`nexus-gaas-web`, `:3003`) | **Ya** | Pintu jual — `npm run dev`; generate Node → `:3010` loopback; preview `/starter/` |
+| Site UMKM / origin Channel Starter | **Ya** | Subdomain lewat Caddy, atau `/starter` di portal |
+| WAF data plane (HTTP/HTTPS) | **Ya (demo juri)** | Tunnel **terpisah** ke Caddy `:80` — bukan digabung sebagai “toko” |
 | Command Center / SOC (`:3001`, `:8081`) | **Tidak** | Hanya localhost / VPN |
 | Postgres, Redis, bridge internal | **Tidak** | Loopback saja |
 | NEX-RED API mentah | **Tidak** | Lewat operator saja |
@@ -52,17 +52,23 @@ Aturan emas: **jangan tunnel-kan control plane** ke internet.
 ## 4. Alur demo “semua orang bisa akses”
 
 ```text
-Internet → Tunnel → Caddy/WAF (publik)
-                      ├── portal.nexus… (Channel Portal)
-                      ├── {slug}.nexus… (site Starter)
-                      └── (opsional) host demo Cowork
-                 ↘ localhost saja: SOC, DB, NEX-RED bridge
+Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
+                └── path /starter/*  → rewrite Next → localhost:3010
+         → Tunnel B (juri, opsional) → localhost:80  Caddy → WAF → portofolio
+                 Caddy Host portal.nexus-lab.test → :3003
+                 Caddy Host starter.nexus-lab.test → :3010
+         ↘ localhost saja: SOC :3001/:8081, DB, NEX-RED, /operator/topup
 ```
 
-1. Nyalakan stack lab/produksi lokal di PC.  
-2. Pasang tunnel → map hostname ke port portal / Caddy.  
-3. Uji dari HP (jaringan lain): portal + satu site + WA CTA.  
-4. Demo B2B: jalankan Job di PC → kirim artefak; klien tidak perlu masuk SOC.
+### Cara jalanin storefront (HP luar)
+
+1. Channel Starter: `python cli.py serve` di `nexus-core/channel-starter` (`:3010`).  
+2. Portal: `nexus-gaas-web/.env.local` — `NEXUS_LEDGER_MODE=live`, `NEXUS_LAB_FAUCET=0`, `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. `npm run dev`.  
+3. `nexus-core\deploy-local\START-PORTAL-PILOT.bat` (cloudflared → `:3003`).  
+4. HP: `/gate` → daftar → `/kredit` Isi → WA + bukti → approve di `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`.  
+5. Sleep/hibernate OFF. Named tunnel + `cloudflared tunnel login` = pemilik. Bukan Midtrans. Bukan SOC publik.
+
+Demo B2B Job: mesin WAF tetap `START.bat`; klien tidak masuk SOC.
 
 ---
 

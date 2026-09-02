@@ -173,7 +173,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
       const slug = data.slug || slugFromRedirect(data.redirect);
       setResult({
         slug,
-        previewUrl: data.previewUrl || (slug ? `http://127.0.0.1:3010/preview/${slug}` : null),
+        previewUrl: data.previewUrl || (slug ? `/starter/preview/${slug}` : null),
         subdomain: data.subdomain || (slug ? `${slug}.nexus-lab.test` : null),
         balance: data.balance,
         orderId: data.orderId,
@@ -196,8 +196,8 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         <h1 className="order-title">{pkg.title}</h1>
         <p className="order-lead">{pkg.summary}</p>
         <p className="order-lead">
-          Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Keran lab di
-          bawah atau <Link href="/kredit">/kredit</Link> — bukan Midtrans, bukan WhatsApp.
+          Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Isi Kredit di{" "}
+          <Link href="/kredit">/kredit</Link> (pending + WhatsApp + bukti). Bukan WAF/Job, bukan Midtrans.
         </p>
 
         <section className="auth-order-strip" aria-label="Akun pelanggan">

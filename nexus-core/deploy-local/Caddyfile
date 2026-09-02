@@ -5,6 +5,25 @@
 # Channel Starter static sites (multi-tenant subdomains)
 import /srv/channel-starter/_caddy/ChannelStarter.caddy
 
+# Storefront (Channel Portal :3003) + wizard preview (:3010).
+# Lab hosts: tambah di file hosts → 127.0.0.1  portal.nexus-lab.test starter.nexus-lab.test
+# Tunnel named: map hostname publik ke Caddy :80 (Host dikirim CF).
+# Quick tunnel juri (WAF): tetap cloudflared → :80 tanpa Host ini = catch-all gateway.
+# JANGAN menambah site untuk :3001 / :8081 / Postgres / Redis / NEX-RED.
+
+http://portal.nexus-lab.test {
+	handle_path /starter/* {
+		reverse_proxy host.docker.internal:3010
+	}
+	handle {
+		reverse_proxy host.docker.internal:3003
+	}
+}
+
+http://starter.nexus-lab.test {
+	reverse_proxy host.docker.internal:3010
+}
+
 # Default lab catch-all → WAF gateway (portfolio / PROTECTED_HOST)
 :80 {
 	reverse_proxy gateway:8080

@@ -1,26 +1,33 @@
 # ==============================================================================
-# NEXUS CYBER — Cloudflare Tunnel (Windows) — AKSES PUBLIK / JURI
+# NEXUS CYBER — Cloudflare Tunnel (Windows)
 # ==============================================================================
-# Default: port 80 (Caddy → WAF → portofolio). SELARAS docs/DISTRIBUTION_PILOT.md
+# Dua mode:
+#   Juri / WAF portofolio:  default atau -Port 80  → Caddy :80 → gateway :8080
+#   Pilot storefront:       -Portal                 → Channel Portal :3003 saja
 #
 # Usage:
-#   .\scripts\tunnel\nexus-tunnel.ps1              # port 80 (disarankan untuk juri)
-#   .\scripts\tunnel\nexus-tunnel.ps1 -Port 80     # sama
-#   .\scripts\tunnel\nexus-tunnel.ps1 -WafDirect   # port 8080 (bypass Caddy)
-#   .\scripts\tunnel\nexus-tunnel.ps1 -Port 3003   # Channel Portal (opsional)
+#   .\scripts\tunnel\nexus-tunnel.ps1                 # Caddy :80 (juri / Alur A)
+#   .\scripts\tunnel\nexus-tunnel.ps1 -Portal         # Channel Portal :3003 (pembeli)
+#   .\scripts\tunnel\nexus-tunnel.ps1 -Starter        # wizard :3010 saja (jarang; lebih baik /starter di portal)
+#   .\scripts\tunnel\nexus-tunnel.ps1 -WafDirect      # :8080 bypass Caddy
 #
-# DILARANG untuk demo juri: -Dashboard / port 3001 / 8081 (SOC / control plane)
-# One-click: deploy-local\jury\START-FOR-JURY.bat
+# DILARANG: -Dashboard / :3001 / :8081 / :5432 / :6379 / :3004 (SOC, DB, NEX-RED)
+# One-click juri: deploy-local\jury\START-FOR-JURY.bat
+# One-click storefront: deploy-local\START-PORTAL-PILOT.bat
 # ==============================================================================
 
 param(
     [switch]$Dashboard,
     [switch]$WafDirect,
+    [switch]$Portal,
+    [switch]$Starter,
     [switch]$AllowExposeSoc,
     [int]$Port = 0
 )
 
 $ErrorActionPreference = "Continue"
+
+$BlockedPorts = @(3001, 8081, 5432, 6379, 3004)
 
 $TargetPort = 80
 $TargetLabel = "Caddy :80 (WAF + portofolio) — mode juri"
@@ -34,13 +41,19 @@ if ($Dashboard) {
     }
     $TargetPort = 3001
     $TargetLabel = "SOC Dashboard :3001 (EXPOSE — hanya lab internal)"
+} elseif ($Portal) {
+    $TargetPort = 3003
+    $TargetLabel = "Channel Portal :3003 (storefront). Operator /operator/topup tetap localhost."
+} elseif ($Starter) {
+    $TargetPort = 3010
+    $TargetLabel = "Channel Starter :3010 (preview). Lebih aman: tunnel -Portal dan pakai /starter/"
 } elseif ($WafDirect) {
     $TargetPort = 8080
     $TargetLabel = "WAF Gateway :8080 (langsung, tanpa Caddy)"
 } elseif ($Port -gt 0) {
-    if ($Port -eq 3001 -or $Port -eq 8081) {
+    if ($BlockedPorts -contains $Port) {
         if (-not $AllowExposeSoc) {
-            Write-Host "[BLOCKED] Port $Port adalah control plane / SOC. Jangan untuk juri." -ForegroundColor Red
+            Write-Host "[BLOCKED] Port $Port adalah control plane / DB / NEX-RED. Jangan untuk publik." -ForegroundColor Red
             Write-Host "          Override sadar: -AllowExposeSoc" -ForegroundColor Yellow
             exit 1
         }
@@ -50,9 +63,14 @@ if ($Dashboard) {
 }
 
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "   NEXUS CYBER — Cloudflare Tunnel (juri / publik)" -ForegroundColor Cyan
+Write-Host "   NEXUS CYBER — Cloudflare Tunnel" -ForegroundColor Cyan
 Write-Host "   Target: $TargetLabel" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
+
+if ($TargetPort -eq 3003) {
+    Write-Host "Hostname publik = URL trycloudflare di bawah. Preview generate = https://…/starter/preview/{slug}" -ForegroundColor White
+    Write-Host "Approve Kredit: HANYA http://127.0.0.1:3003/operator/topup di PC ini." -ForegroundColor Yellow
+}
 
 # ── Step 1: cloudflared ───────────────────────────────────────────────────────
 Write-Host "`n[1/3] Checking cloudflared..." -ForegroundColor Yellow
@@ -99,8 +117,13 @@ try {
         Write-Host "[OK] Port $TargetPort listening." -ForegroundColor Green
     } else {
         Write-Host "[!] Port $TargetPort belum listen." -ForegroundColor Yellow
-        Write-Host "    Jalankan dulu: deploy-local\jury\START-FOR-JURY.bat" -ForegroundColor White
-        Write-Host "    atau: deploy-local\START.bat" -ForegroundColor White
+        if ($TargetPort -eq 3003) {
+            Write-Host "    Jalankan: cd nexus-gaas-web && npm run dev" -ForegroundColor White
+        } elseif ($TargetPort -eq 3010) {
+            Write-Host "    Jalankan: python cli.py serve di nexus-core/channel-starter" -ForegroundColor White
+        } else {
+            Write-Host "    Jalankan dulu: deploy-local\jury\START-FOR-JURY.bat atau START.bat" -ForegroundColor White
+        }
         Write-Host "    Melanjutkan tunnel anyway..." -ForegroundColor Yellow
     }
 } catch {
@@ -110,9 +133,9 @@ try {
 # ── Step 3: tunnel ────────────────────────────────────────────────────────────
 Write-Host "`n[3/3] Launching quick tunnel..." -ForegroundColor Yellow
 Write-Host "    Salin URL https://....trycloudflare.com di bawah." -ForegroundColor Cyan
-Write-Host "    Kirim ke juri / uji dari HP (bukan Wi-Fi rumah)." -ForegroundColor Cyan
-Write-Host "    Ctrl+C = stop tunnel. Lab Docker tetap jalan." -ForegroundColor White
-Write-Host "    JANGAN tunnel SOC. Docs: docs\JURY_PUBLIC_ACCESS.md" -ForegroundColor DarkYellow
+Write-Host "    Uji dari HP (data seluler), bukan Wi-Fi rumah." -ForegroundColor Cyan
+Write-Host "    Ctrl+C = stop tunnel. Lab/portal di PC tetap jalan." -ForegroundColor White
+Write-Host "    JANGAN tunnel SOC. Login Cloudflare: cloudflared tunnel login (named hostname)." -ForegroundColor DarkYellow
 Write-Host ""
 
 & cloudflared tunnel --url "http://127.0.0.1:$TargetPort"

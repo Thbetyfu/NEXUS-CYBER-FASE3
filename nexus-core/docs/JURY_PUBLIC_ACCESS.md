@@ -27,10 +27,11 @@ Juri (HP / laptop jaringan mana pun)
 | Publik (boleh) | Lokal saja (dilarang tunnel) |
 | --- | --- |
 | Caddy `:80` → WAF → portofolio | Command Center `:3001` |
-| Channel Portal `:3003` (opsional, skrip terpisah) | Control plane `:8081` |
-| | Postgres / Redis / NEX-RED bridge |
+| Channel Portal `:3003` (**skrip terpisah** `-Portal`) | Control plane `:8081` |
+| Preview Starter via `/starter` di portal | Postgres / Redis / NEX-RED |
 
-**Bukan hotspot.** Juri tidak perlu join Wi‑Fi Anda.
+**Bukan hotspot.** Juri tidak perlu join Wi‑Fi Anda. **Juri WAF** ≠ **pilot toko:** toko = `START-PORTAL-PILOT.bat` (`:3003`); juri = skrip ini (`:80`).
+
 
 ---
 

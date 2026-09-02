@@ -22,9 +22,27 @@ Login / daftar / tamu = **pelanggan storefront** (`/masuk`, `/daftar`). Bukan lo
 
 ## Relasi ke nexus-core
 
-Generate situs **membutuhkan** Channel Starter di mesin core:
+Generate situs **membutuhkan** Channel Starter di mesin core. **Node di PC** memanggil `CHANNEL_STARTER_URL` (default `http://127.0.0.1:3010`). **Browser** memakai `/starter/` (rewrite ke wizard) atau `CHANNEL_STARTER_PUBLIC_URL` — bukan `127.0.0.1` di HP pengunjung.
 
-`NEXT_PUBLIC_CHANNEL_STARTER_URL` / proxy → **`http://127.0.0.1:3010`**
+## Pilot HP (satu README)
+
+```powershell
+# jendela 1
+cd nexus-core\channel-starter
+python cli.py serve
+
+# jendela 2
+cd nexus-gaas-web
+copy .env.local.example .env.local   # live + faucet 0 untuk publik
+npm install
+npm run dev
+
+# jendela 3
+cd nexus-core\deploy-local
+START-PORTAL-PILOT.bat
+```
+
+Uji data seluler: `/gate` → daftar → `/kredit` Isi → WhatsApp + bukti → di PC `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`. Sleep OFF. Login Cloudflare named tunnel = pemilik.
 
 Form `/pesan/umkm-starter` → sesi (`nexus_portal_sid`) → ledger Kredit identitas itu → `POST` generate. Saldo kurang = **402**. CLI `channel-starter` di core tetap bisa generate tanpa debit (jalur operator). `/order` redirect ke form Starter.
 

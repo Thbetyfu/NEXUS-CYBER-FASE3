@@ -10,14 +10,48 @@ export function isOperatorRequest(request: NextRequest): boolean {
   return isLoopbackHost(request);
 }
 
-export function isLoopbackHost(request: NextRequest): boolean {
-  return isLoopbackFromParts(request.headers.get("host") ?? "", request.headers.get("x-forwarded-for"));
+export type LoopbackHints = {
+  forwardedHost?: string | null;
+  cfConnectingIp?: string | null;
+};
+
+function hostnameFromHostHeader(hostHeader: string): string {
+  return hostHeader.replace(/^\[/, "").replace(/\]:\d+$/, "").replace(/:\d+$/, "").toLowerCase();
 }
 
-export function isLoopbackFromParts(hostHeader: string, forwardedFor: string | null): boolean {
-  const hostname = hostHeader.replace(/^\[/, "").replace(/\]:\d+$/, "").replace(/:\d+$/, "").toLowerCase();
-  const loopbackHost = hostname === "127.0.0.1" || hostname === "localhost" || hostname === "::1";
-  if (!loopbackHost) {
+function hostnameIsLoopback(hostname: string): boolean {
+  return hostname === "127.0.0.1" || hostname === "localhost" || hostname === "::1";
+}
+
+export function isLoopbackHost(request: NextRequest): boolean {
+  return isLoopbackFromParts(request.headers.get("host") ?? "", request.headers.get("x-forwarded-for"), {
+    forwardedHost: request.headers.get("x-forwarded-host"),
+    cfConnectingIp: request.headers.get("cf-connecting-ip"),
+  });
+}
+
+/** Same check for Server Components (`headers()`). */
+export function isLoopbackFromHeaders(h: { get(name: string): string | null }): boolean {
+  return isLoopbackFromParts(h.get("host") ?? "", h.get("x-forwarded-for"), {
+    forwardedHost: h.get("x-forwarded-host"),
+    cfConnectingIp: h.get("cf-connecting-ip"),
+  });
+}
+
+export function isLoopbackFromParts(
+  hostHeader: string,
+  forwardedFor: string | null,
+  hints?: LoopbackHints,
+): boolean {
+  if (hints?.cfConnectingIp?.trim()) {
+    return false;
+  }
+  const forwardedHost = hints?.forwardedHost?.trim();
+  if (forwardedHost && !hostnameIsLoopback(hostnameFromHostHeader(forwardedHost))) {
+    return false;
+  }
+  const hostname = hostnameFromHostHeader(hostHeader);
+  if (!hostnameIsLoopback(hostname)) {
     return false;
   }
   const xff = forwardedFor?.split(",")[0]?.trim();

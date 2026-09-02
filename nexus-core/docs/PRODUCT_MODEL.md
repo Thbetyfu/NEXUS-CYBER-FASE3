@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.7 / 2026-09-01  
+**Versi:** 1.1.8 / 2026-09-02  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -19,7 +19,7 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) |
 | **Bukan** | Channel Starter UMKM; SOC publik; Loop penuh di harga Rp 20rb |
 
-Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/README.md`](../deploy-local/README.md). Portal lab: `cd nexus-gaas-web && npm run dev` (`:3003`; generate masih butuh channel-starter `:3010`). Distribusi pilot (PC + tunnel): [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
+Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/README.md`](../deploy-local/README.md). Portal lab: `cd nexus-gaas-web && npm run dev` (`:3003`; generate server-side ke `CHANNEL_STARTER_URL=http://127.0.0.1:3010`; preview browser `/starter/` atau `CHANNEL_STARTER_PUBLIC_URL`). Pilot luar rumah: tunnel **hanya** Channel Portal (`START-PORTAL-PILOT.bat` / `nexus-tunnel.ps1 -Portal`) — **bukan** SOC. Keran lab **opt-in** (`NEXUS_LAB_FAUCET=1` + mode lab). Distribusi: [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
 
 ```text
   Pengunjung → [Caddy / tunnel] → Nexus Gateway :8080 → Portofolio Vercel (origin)
@@ -71,7 +71,7 @@ Nama produk: **Edge Antibody Cowork**.
 | Pentest exploit | Wasit HTTP jinak + virtual patch di tepi |
 | Klaim “anti zero-day” | Residual eksplisit + `replay_missed` = belum selesai |
 
-Modul **`nexus-gaas-web/`** adalah pintu jual v1. Alur: **gerbang** (`/gate`: Login / Daftar / Tamu) → **pilih segmen** → form paket `/pesan/{sku}` → Kredit (isi ulang **pending** + debit Starter **20 Kr**, fail-closed), **per identitas**. Nama SKU kartu pelanggan berbahasa Inggris (**Edge Shield**, **Header Shield**); isi jujur tetap header-only vs Reflex 1 host. Alias `/order` mengarah ke Starter UMKM. Tombol Isi = `POST /api/kredit/topup` (pending). Setelah Isi: nomor WhatsApp pemilik (`62895603358692`) + `wa.me` + form bukti (`POST /api/kredit/topup/proof` → `proof_submitted`, berkas `data/topup-proofs/`). Kredit masuk hanya setelah `POST /api/kredit/topup/approve` (loopback, `NEXUS_OPERATOR_SECRET`, atau UI `/operator/topup`). QRIS/VA milik pemilik **belum live** (instruksi transfer lewat WhatsApp). Keran lab `POST /api/kredit/faucet` sekunder (`NEXUS_LAB_FAUCET`, bukan CTA beli). **Bukan** Midtrans/Stripe. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
+Modul **`nexus-gaas-web/`** adalah pintu jual v1. Alur: **gerbang** (`/gate`: Login / Daftar / Tamu) → **pilih segmen** → form paket `/pesan/{sku}` → Kredit (isi ulang **pending** + debit Starter **20 Kr**, fail-closed), **per identitas**. Nama SKU kartu pelanggan berbahasa Inggris (**Edge Shield**, **Header Shield**); isi jujur tetap header-only vs Reflex 1 host. Alias `/order` mengarah ke Starter UMKM. Tombol Isi = `POST /api/kredit/topup` (pending). Setelah Isi: nomor WhatsApp pemilik (`62895603358692`) + `wa.me` + form bukti (`POST /api/kredit/topup/proof` → `proof_submitted`, berkas `data/topup-proofs/`). Kredit masuk hanya setelah `POST /api/kredit/topup/approve` (loopback, `NEXUS_OPERATOR_SECRET`, atau UI `/operator/topup` **localhost**). QRIS/VA milik pemilik **belum live**. Keran lab `POST /api/kredit/faucet` **hanya** jika `NEXUS_LEDGER_MODE=lab` **dan** `NEXUS_LAB_FAUCET=1` (bukan CTA beli; default mati). **Bukan** Midtrans/Stripe. F-10 roster penuh dan CNAME massal **legacy** tetap **ditunda**.
 
 ---
 

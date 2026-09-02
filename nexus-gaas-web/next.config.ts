@@ -1,10 +1,30 @@
 import type { NextConfig } from "next";
+import { channelStarterInternalUrl, isLoopbackHttpOrigin } from "./src/lib/channel-starter-urls";
+
+const publicHost = process.env.NEXUS_PORTAL_PUBLIC_HOST?.trim().replace(/^https?:\/\//, "");
+const starterInternal = channelStarterInternalUrl();
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins: [
+    "127.0.0.1",
+    "localhost",
+    "*.trycloudflare.com",
+    ...(publicHost ? [publicHost] : []),
+  ],
   serverExternalPackages: ["nodemailer"],
   experimental: {
     proxyClientMaxBodySize: "6mb",
+  },
+  async rewrites() {
+    if (!isLoopbackHttpOrigin(starterInternal)) {
+      return [];
+    }
+    return [
+      {
+        source: "/starter/:path*",
+        destination: `${starterInternal}/:path*`,
+      },
+    ];
   },
 };
 

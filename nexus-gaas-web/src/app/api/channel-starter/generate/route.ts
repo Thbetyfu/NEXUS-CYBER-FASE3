@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
 import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
+import { channelStarterInternalUrl, channelStarterPreviewUrl } from "@/lib/channel-starter-urls";
 import {
   ledgerFileFor,
   lookupIdentity,
@@ -10,8 +11,7 @@ import {
   type PortalIdentity,
 } from "@/lib/portal-identity";
 
-const CHANNEL_STARTER =
-  process.env.CHANNEL_STARTER_URL ?? process.env.NEXT_PUBLIC_CHANNEL_STARTER_URL ?? "http://127.0.0.1:3010";
+const CHANNEL_STARTER = channelStarterInternalUrl();
 
 const SUBDOMAIN_BASE = process.env.CHANNEL_STARTER_SUBDOMAIN_BASE?.trim() || KREDIT.labSubdomainBase;
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         {
           ok: true,
           slug,
-          previewUrl: slug ? `${CHANNEL_STARTER}/preview/${slug}` : null,
+          previewUrl: slug ? channelStarterPreviewUrl(slug) : null,
           subdomain: slug ? `${slug}.${SUBDOMAIN_BASE}` : null,
           redirect: location,
         },

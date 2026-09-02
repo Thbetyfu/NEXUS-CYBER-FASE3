@@ -1,6 +1,6 @@
 # Keputusan Terbuka — Nexus Cyber
 
-**Pembaruan:** 2026-09-01  
+**Pembaruan:** 2026-09-02  
 **Tujuan:** Agar tim (dan agen) **tidak hilang arah** — jika jawaban belum ada di dokumen, **tanya pemilik proyek** sebelum mengunci implementasi atau klaim jual.
 
 ---
@@ -25,6 +25,7 @@
 | Upsell keamanan | Job Cowork / Loop = **paket terpisah** |
 | **Harga Cowork tahap pilot** | **Job Rp 200.000** (sekali) · **Loop Rp 300.000**/bulan (maks daftar v1) — lihat [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md) |
 | **Distribusi tahap awal** | **PC operator 24/7 + tunnel publik** — **tanpa VPS** dulu; SOC/DB tidak di-tunnel |
+| **Pilot luar rumah (2026-09-02)** | Fondasi minggu ini: tunnel **Channel Portal `:3003`** (+ preview `/starter` → `:3010`). WAF/juri tetap tunnel Caddy `:80` **terpisah**. Keran **mati** di instance publik (`NEXUS_LEDGER_MODE=live`, `NEXUS_LAB_FAUCET=0`). Bukan 100 warung WAF, bukan billing produksi, bukan Loop di 20rb |
 | **Portal segmen (satu situs)** | Hub `/` → `/umkm` · `/sekolah` · `/startup` · `/corporat` · `/pemerintah` (bukan website terpisah). Alias lama tetap redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` |
 | **Harga UMKM / sekolah** | Harga tetap. **20rb/15rb** = **header tepi + hostname lab**, bukan WAF. **35rb/28rb Edge Shield** = Reflex di tepi, 1 `PROTECTED_HOST` per lab (`gaas_active` + `--tier tepi`), **bukan** Job/Loop, **bukan** setiap warung otomatis |
 | **Harga startup** | **Belum:** Landing+pagar Rp 45.000 (**header tepi**, bukan WAF) · Landing+Tepi Rp 75.000 (**Alur A Reflex**, `--tier tepi`, 1 host lab — mesin pagar tipis, **bukan** Job, **bukan** alert Telegram pelanggan) · Job 200rb. **Sudah:** Tepi Rp 75.000 (mesin sama) · Job 200rb · Loop 300rb |

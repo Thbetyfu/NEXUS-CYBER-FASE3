@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { KREDIT } from "./kredit.ts";
-import { creditFaucet, debitStarter, getKreditSnapshot, migrateGuestLedger, refundStarter, slugFromGenerateLocation, approveTopupRequest } from "./kredit-ledger.ts";
+import { creditFaucet, debitStarter, getKreditSnapshot, isLabFaucetEnabled, migrateGuestLedger, refundStarter, slugFromGenerateLocation, approveTopupRequest } from "./kredit-ledger.ts";
 import { createTopupRequest, listPendingTopups } from "./kredit-topup.ts";
 import { assertSafeId, ledgerPathFor, orderCodeFromId } from "./identity-paths.ts";
 import { hashPassword, verifyPassword } from "./passwords.ts";
@@ -14,6 +14,7 @@ const filePath = path.join(dir, "kredit-ledger.json");
 
 before(() => {
   process.env.NEXUS_LEDGER_MODE = "lab";
+  process.env.NEXUS_LAB_FAUCET = "1";
 });
 
 after(() => {
@@ -130,5 +131,22 @@ test("pending isi ulang ikut pindah saat tamu daftar", async () => {
   const approved = await approveTopupRequest(created.pending.id, dir);
   assert.equal(approved.balance, 20);
   assert.equal((await getKreditSnapshot(ledgerPathFor("account", accountId, dir))).balance, 20);
+});
+
+test("keran mati kecuali NEXUS_LAB_FAUCET opt-in di mode lab", async () => {
+  const prevMode = process.env.NEXUS_LEDGER_MODE;
+  const prevFaucet = process.env.NEXUS_LAB_FAUCET;
+  process.env.NEXUS_LEDGER_MODE = "live";
+  process.env.NEXUS_LAB_FAUCET = "1";
+  assert.equal(isLabFaucetEnabled(), false);
+  process.env.NEXUS_LEDGER_MODE = "lab";
+  delete process.env.NEXUS_LAB_FAUCET;
+  assert.equal(isLabFaucetEnabled(), false);
+  const denyPath = path.join(dir, "no-faucet.json");
+  await assert.rejects(() => creditFaucet(20, denyPath), { name: "FaucetDisabledError" });
+  process.env.NEXUS_LAB_FAUCET = "1";
+  assert.equal(isLabFaucetEnabled(), true);
+  process.env.NEXUS_LEDGER_MODE = prevMode;
+  process.env.NEXUS_LAB_FAUCET = prevFaucet ?? "1";
 });
 

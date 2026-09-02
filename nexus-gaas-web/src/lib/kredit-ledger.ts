@@ -29,8 +29,8 @@ export function isLabFaucetEnabled(): boolean {
   if (!isLabLedgerMode()) {
     return false;
   }
-  const flag = (process.env.NEXUS_LAB_FAUCET ?? "1").trim().toLowerCase();
-  return flag !== "0" && flag !== "off" && flag !== "false";
+  const flag = (process.env.NEXUS_LAB_FAUCET ?? "0").trim().toLowerCase();
+  return flag === "1" || flag === "on" || flag === "true" || flag === "yes";
 }
 
 export function defaultLedgerPath(): string {

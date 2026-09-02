@@ -2,7 +2,7 @@
 
 **Produksi (Vercel):** repo **nexus-gaas-web** — [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS), folder kerja opsional `D:\nexus-gaas-web`. Deploy dari **root** repo itu. Alternatif (discouraged): Connect FASE3 dengan Vercel **Root Directory `nexus-gaas-web`**. Owner (re)connect di dashboard; agen tidak mengklik UI Vercel. **Jangan** Connect `warung-*` ke FASE3.
 
-**Lab (in-repo):** `cd nexus-gaas-web && npm run dev` · port **3003**. Generate tetap butuh Channel Starter **`:3010`** (`CHANNEL_STARTER_URL=http://127.0.0.1:3010`). Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
+**Lab (in-repo):** `cd nexus-gaas-web && npm run dev` · port **3003**. Generate (Node di PC) memakai **`CHANNEL_STARTER_URL=http://127.0.0.1:3010`**. Link preview browser = **`/starter/...`** (rewrite/Caddy ke wizard) atau `CHANNEL_STARTER_PUBLIC_URL`. Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
 
 **Peran:** Pintu jual **satu situs**, multi-segmen — UMKM · Sekolah · Startup · **Corporat** · **Pemerintah**
 
@@ -48,10 +48,42 @@ On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_
 
 ---
 
+## Pilot luar rumah (storefront HTTPS)
+
+Bukan produksi GaaS, bukan 100 host WAF. PC 24/7 + Cloudflare Tunnel ke **Channel Portal saja**.
+
+### Env (`nexus-gaas-web/.env.local`)
+
+| Variabel | Lab satu PC | Pilot publik (HP) |
+| --- | --- | --- |
+| `CHANNEL_STARTER_URL` | `http://127.0.0.1:3010` | sama (Node di PC) |
+| `CHANNEL_STARTER_PUBLIC_URL` | kosong → `/starter` atau `http://127.0.0.1:3010` | `/starter` (satu tunnel `:3003`) |
+| `NEXUS_LEDGER_MODE` | `lab` | `live` |
+| `NEXUS_LAB_FAUCET` | `1` jika uji keran | `0` |
+| `NEXUS_PORTAL_PUBLIC_HOST` | — | hostname trycloudflare (opsional, Next `allowedDevOrigins`) |
+
+Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC (tunnel `:3010`). Rewrite `/starter` ke loopback **tidak** jalan di Vercel.
+
+### Start
+
+1. `cd nexus-core/channel-starter` → `python cli.py serve` (`:3010`)
+2. `cd nexus-gaas-web` → salin `.env.local.example` → `npm run dev` (`:3003`)
+3. Tunnel storefront: `nexus-core\deploy-local\START-PORTAL-PILOT.bat` atau `nexus-tunnel.ps1 -Portal`
+4. **Juri / WAF portofolio** (terpisah): `START.bat` + `nexus-tunnel.ps1` (default `:80`). Hostname Caddy `portal.nexus-lab.test` / `starter.nexus-lab.test` jika named tunnel ke Caddy.
+
+### Uji HP (data seluler)
+
+`/gate` → daftar → `/kredit` Isi → WhatsApp + bukti → di **PC** buka `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter` generate. Preview: `https://<tunnel>/starter/preview/{slug}`.
+
+Operator `/operator/topup` **bukan** lewat Host publik. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
+
+---
+
+
 ## Pembayaran
 
 - **IDR (kontak on-prem):** WhatsApp `62895603358692` — *Saya mau beli Nexus Cyber!!* (**chat**, bukan payment gateway). **Hanya** Corporat **On-prem** + **Pemerintah**. Bukan DANA webhook.
-- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan “Pesan via WhatsApp” di kartu. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (pending); nomor WA + `wa.me` + form bukti; saldo **tidak** naik sampai `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). Keran `POST /api/kredit/faucet` lab sekunder (`NEXUS_LAB_FAUCET`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
+- **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan “Pesan via WhatsApp” di kartu. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (pending); nomor WA + `wa.me` + form bukti; saldo **tidak** naik sampai `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). Keran `POST /api/kredit/faucet` hanya lab opt-in (`NEXUS_LEDGER_MODE=lab` + `NEXUS_LAB_FAUCET=1`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
 - **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit + pending isi ulang.
 - **Top-up IDR:** pending + WhatsApp `62895603358692` + form bukti (`data/topup-proofs/`) + approve operator **sudah** di kode lab. Email bukti opsional (`nodemailer` di `package.json`, SMTP env). **QRIS/VA milik pemilik belum live**. **Bukan** billing produksi. **Bukan** Midtrans/Stripe. WhatsApp isi ulang **bukan** CTA beli paket UMKM. Operator localhost `/operator/topup` — bukan SOC `:3001`.
 - **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield.
@@ -66,4 +98,4 @@ Portal legacy submodule **digantikan** folder **`nexus-gaas-web/`** (lab di FASE
 
 ---
 
-*2026-09-01 — alur linear `/pesan/{sku}`; WhatsApp hanya on-prem; `/order` alias*
+*2026-09-02 — tunnel storefront :3003 + /starter; keran opt-in*
