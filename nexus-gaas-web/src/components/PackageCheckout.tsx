@@ -8,7 +8,7 @@ import type { CheckoutPackage } from "@/lib/checkout";
 import { priceIdrSub, priceKrLabel } from "@/lib/checkout";
 
 export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, kreditError, busy, requestTopup, isiKeran, submitProof } = useKreditSession();
+  const { kredit, kreditError, busy, requestTopup, isiKeran, submitProof, cancelTopup } = useKreditSession();
   const [name, setName] = useState("");
   const [host, setHost] = useState("");
   const [note, setNote] = useState("");
@@ -42,6 +42,7 @@ export function PackageCheckout({ pkg }: { pkg: CheckoutPackage }) {
         onRequestTopup={(amount) => void requestTopup(amount)}
         onLabFaucet={() => void isiKeran()}
         onSubmitProof={submitProof}
+        onCancelTopup={(id) => void cancelTopup(id)}
       />
 
       {done ? (

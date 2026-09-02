@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { useKreditSession } from "@/hooks/useKreditSession";
 
 export default function KreditPage() {
-  const { kredit, kreditError, busy, requestTopup, isiKeran, submitProof } = useKreditSession();
+  const { kredit, kreditError, busy, requestTopup, isiKeran, submitProof, cancelTopup } = useKreditSession();
 
   return (
     <div className="order-page">
@@ -29,6 +29,7 @@ export default function KreditPage() {
           onRequestTopup={(amount) => void requestTopup(amount)}
           onLabFaucet={() => void isiKeran()}
           onSubmitProof={submitProof}
+          onCancelTopup={(id) => void cancelTopup(id)}
         />
       </main>
     </div>

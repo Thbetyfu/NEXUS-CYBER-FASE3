@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { KREDIT, type OperatorTopupView, type PendingTopup, type TopupStatus } from "./kredit.ts";
-import { SALES } from "./portal-config.ts";
+import { formatWhatsAppNumber, SALES } from "./portal-config.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
 
@@ -21,7 +21,15 @@ export type TopupRecord = {
   proofSubmittedAt?: string;
   proofEmailedAt?: string;
   proofEmailError?: string;
+  cancelledAt?: string;
 };
+
+export class TopupOpenConflictError extends Error {
+  constructor(message = "Sudah ada permintaan isi ulang yang belum selesai. Batalkan dulu untuk ganti paket.") {
+    super(message);
+    this.name = "TopupOpenConflictError";
+  }
+}
 
 type TopupStore = {
   version: 1;
@@ -201,10 +209,9 @@ export async function createTopupRequest(
     const id = assertSafeId(identity.identityId);
     const filePath = topupsPath(dataDir);
     const store = readStore(filePath);
-    const pendingCount = store.items.filter((item) => item.walletId === identity.walletId && isOpenStatus(item.status))
-      .length;
-    if (pendingCount >= KREDIT.pendingMaxPerWallet) {
-      throw new RangeError(`Maksimal ${KREDIT.pendingMaxPerWallet} permintaan pending. Tunggu operator atau batalkan lewat operator.`);
+    const open = store.items.find((item) => item.walletId === identity.walletId && isOpenStatus(item.status));
+    if (open) {
+      throw new TopupOpenConflictError();
     }
     const record: TopupRecord = {
       id: `TU-${randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`,
@@ -246,6 +253,9 @@ export async function submitTopupProof(
     if (record.status === "approved") {
       throw new RangeError("Permintaan sudah disetujui");
     }
+    if (record.status === "cancelled") {
+      throw new RangeError("Permintaan sudah dibatalkan");
+    }
     if (file) {
       const magic = mimeFromMagic(file.buffer);
       const ext = magic ? PROOF_EXT[magic] : undefined;
@@ -274,6 +284,31 @@ export async function submitTopupProof(
     record.status = "proof_submitted";
     writeStore(filePath, store);
     return publicPending(record);
+  });
+}
+
+export async function cancelTopupRequest(
+  topupId: string,
+  walletId: string,
+  dataDir = defaultDataDir(),
+): Promise<PendingTopup[]> {
+  return withLock(() => {
+    const id = assertTopupId(topupId);
+    const filePath = topupsPath(dataDir);
+    const store = readStore(filePath);
+    const record = store.items.find((item) => item.id === id);
+    if (!record || record.walletId !== walletId) {
+      throw new Error("Permintaan isi ulang tidak ditemukan");
+    }
+    if (record.status === "approved") {
+      throw new RangeError("Permintaan sudah disetujui");
+    }
+    if (record.status !== "cancelled") {
+      record.status = "cancelled";
+      record.cancelledAt = new Date().toISOString();
+      writeStore(filePath, store);
+    }
+    return listPendingUnlocked(walletId, dataDir);
   });
 }
 
@@ -336,6 +371,9 @@ export function markTopupApprovedUnlocked(topupId: string, dataDir = defaultData
   if (!record) {
     throw new Error("Permintaan isi ulang tidak ditemukan");
   }
+  if (record.status === "cancelled") {
+    throw new Error("Permintaan sudah dibatalkan");
+  }
   if (record.status !== "approved") {
     record.status = "approved";
     record.approvedAt = new Date().toISOString();
@@ -350,10 +388,19 @@ export function proofWaNumber(): string | null {
   return SALES.whatsapp;
 }
 
-/** Nomor e-wallet DANA pemilik. Tidak ada default di git. */
-export function danaPayInfo(): { number: string | null; label: string | null } {
+function danaDisplayNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length >= 10) {
+    return formatWhatsAppNumber(raw).local;
+  }
+  return raw;
+}
+
+/** Nomor DANA tampilan: env jika diisi, else nomor WA publik pemilik (`SALES.whatsapp`). */
+export function danaPayInfo(): { number: string; label: string | null } {
+  const fromEnv = process.env.NEXUS_DANA_NUMBER?.trim();
   return {
-    number: process.env.NEXUS_DANA_NUMBER?.trim() || null,
+    number: danaDisplayNumber(fromEnv || SALES.whatsapp),
     label: process.env.NEXUS_DANA_LABEL?.trim() || null,
   };
 }

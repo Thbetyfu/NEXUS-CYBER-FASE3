@@ -16,7 +16,6 @@ function fromPayload(data: KreditPayload): KreditState {
     pendingTopups: Array.isArray(data.pendingTopups) ? (data.pendingTopups as PendingTopup[]) : [],
     faucetEnabled: Boolean(data.faucetEnabled),
     proofWa: data.proofWa ?? null,
-    proofEmail: data.proofEmail ?? null,
     danaNumber: data.danaNumber ?? null,
     danaLabel: data.danaLabel ?? null,
   };
@@ -86,9 +85,31 @@ export function useKreditSession() {
         return;
       }
       setKredit(fromPayload(data));
-      setKreditError(data.emailed ? "" : data.proofMessage || "");
+      setKreditError("");
     } catch {
       setKreditError("Kirim bukti gagal");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cancelTopup = async (topupId: string) => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/kredit/topup/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: topupId }),
+      });
+      const data = (await res.json()) as KreditPayload;
+      if (!res.ok) {
+        setKreditError(data.error || "Batal isi ulang gagal");
+        return;
+      }
+      setKredit(fromPayload(data));
+      setKreditError("");
+    } catch {
+      setKreditError("Batal isi ulang gagal");
     } finally {
       setBusy(false);
     }
@@ -112,5 +133,5 @@ export function useKreditSession() {
     }
   };
 
-  return { kredit, setKredit, kreditError, setKreditError, busy, setBusy, requestTopup, isiKeran, submitProof };
+  return { kredit, setKredit, kreditError, setKreditError, busy, setBusy, requestTopup, isiKeran, submitProof, cancelTopup };
 }

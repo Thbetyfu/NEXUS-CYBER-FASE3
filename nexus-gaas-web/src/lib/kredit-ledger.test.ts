@@ -5,7 +5,7 @@ import path from "node:path";
 import { after, before, test } from "node:test";
 import { KREDIT } from "./kredit.ts";
 import { creditFaucet, debitStarter, getKreditSnapshot, isLabFaucetEnabled, migrateGuestLedger, refundStarter, slugFromGenerateLocation, approveTopupRequest } from "./kredit-ledger.ts";
-import { createTopupRequest, listPendingTopups } from "./kredit-topup.ts";
+import { createTopupRequest, cancelTopupRequest, listPendingTopups } from "./kredit-topup.ts";
 import { assertSafeId, ledgerPathFor, orderCodeFromId } from "./identity-paths.ts";
 import { hashPassword, verifyPassword } from "./passwords.ts";
 
@@ -115,6 +115,19 @@ test("isi ulang pending tidak menambah saldo sampai approve operator", async () 
   assert.equal((await listPendingTopups(walletId, dir)).length, 0);
   const again = await approveTopupRequest(created.pending.id, dir);
   assert.equal(again.balance, 100);
+});
+
+test("permintaan dibatalkan tidak dikredit dan tidak menghalangi Isi berikutnya", async () => {
+  const guestId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeee9";
+  const walletId = `guest:${guestId}`;
+  const ledgerPath = ledgerPathFor("guest", guestId, dir);
+  const created = await createTopupRequest(50, { kind: "guest", identityId: guestId, walletId }, dir);
+  await cancelTopupRequest(created.pending.id, walletId, dir);
+  assert.equal((await listPendingTopups(walletId, dir)).length, 0);
+  await assert.rejects(() => approveTopupRequest(created.pending.id, dir), /dibatalkan/);
+  assert.equal((await getKreditSnapshot(ledgerPath)).balance, 0);
+  const next = await createTopupRequest(20, { kind: "guest", identityId: guestId, walletId }, dir);
+  assert.equal(next.pending.amountKr, 20);
 });
 
 test("pending isi ulang ikut pindah saat tamu daftar", async () => {

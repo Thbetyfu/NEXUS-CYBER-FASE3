@@ -29,7 +29,7 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
 }
 
 export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
-  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof } = useKreditSession();
+  const { kredit, setKredit, kreditError, busy, setBusy, requestTopup, isiKeran, submitProof, cancelTopup } = useKreditSession();
   const [formError, setFormError] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("profil");
@@ -238,6 +238,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
           onRequestTopup={(amount) => void requestTopup(amount)}
           onLabFaucet={() => void isiKeran()}
           onSubmitProof={submitProof}
+          onCancelTopup={(id) => void cancelTopup(id)}
         />
 
         {result ? (

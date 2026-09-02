@@ -5,17 +5,20 @@ import path from "node:path";
 import { after, test } from "node:test";
 import { ledgerPathFor } from "./identity-paths.ts";
 import { approveTopupRequest, getKreditSnapshot } from "./kredit-ledger.ts";
-import { topupWhatsAppMessage } from "./portal-config.ts";
+import { topupWhatsAppMessage, formatWhatsAppNumber, SALES } from "./portal-config.ts";
 import {
   assertProofBytes,
+  cancelTopupRequest,
   createTopupRequest,
   danaPayInfo,
+  listPendingTopups,
   proofDir,
   proofWaNumber,
   ProofValidationError,
   PROOF_MAX_BYTES,
   submitTopupProof,
   submitTopupProofMail,
+  TopupOpenConflictError,
 } from "./kredit-topup.ts";
 
 const dir = mkdtempSync(path.join(tmpdir(), "nexus-kredit-proof-"));
@@ -43,15 +46,46 @@ test("pesan WhatsApp setelah Kirim bukti pendek (id + jumlah)", () => {
   assert.doesNotMatch(topupWhatsAppMessage({ id: "TU-A22E43F0", amountKr: 50 }), /wa\.me|Midtrans|instruksi/i);
 });
 
-test("Nomor DANA tidak punya default di git", () => {
+test("Nomor DANA default ke WA publik; env mengalahkan", () => {
   delete process.env.NEXUS_DANA_NUMBER;
   delete process.env.NEXUS_DANA_LABEL;
-  assert.deepEqual(danaPayInfo(), { number: null, label: null });
+  assert.deepEqual(danaPayInfo(), { number: formatWhatsAppNumber(SALES.whatsapp).local, label: null });
+  assert.equal(danaPayInfo().number, "0895 6033 58692");
   process.env.NEXUS_DANA_NUMBER = "081234567890";
   process.env.NEXUS_DANA_LABEL = "DANA lab";
-  assert.deepEqual(danaPayInfo(), { number: "081234567890", label: "DANA lab" });
+  assert.deepEqual(danaPayInfo(), { number: "0812 3456 7890", label: "DANA lab" });
   delete process.env.NEXUS_DANA_NUMBER;
   delete process.env.NEXUS_DANA_LABEL;
+});
+
+test("satu permintaan terbuka per identitas; yang kedua ditolak", async () => {
+  const isolated = mkdtempSync(path.join(tmpdir(), "nexus-kredit-one-"));
+  try {
+    const guestId = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeea0";
+    const walletId = `guest:${guestId}`;
+    const first = await createTopupRequest(50, { kind: "guest", identityId: guestId, walletId }, isolated);
+    await assert.rejects(
+      () => createTopupRequest(20, { kind: "guest", identityId: guestId, walletId }, isolated),
+      (err: unknown) => {
+        assert.equal(err instanceof TopupOpenConflictError, true);
+        assert.match((err as Error).message, /Sudah ada permintaan isi ulang/);
+        assert.doesNotMatch((err as Error).message, /NEXUS_|env\.local|SMTP/i);
+        return true;
+      },
+    );
+    assert.equal((await listPendingTopups(walletId, isolated)).length, 1);
+    await cancelTopupRequest(first.pending.id, walletId, isolated);
+    const second = await createTopupRequest(20, { kind: "guest", identityId: guestId, walletId }, isolated);
+    assert.equal(second.pending.amountKr, 20);
+    assert.equal((await listPendingTopups(walletId, isolated)).length, 1);
+    await submitTopupProof(second.pending.id, walletId, "", { buffer: Buffer.from(PNG), mime: "image/png" }, isolated);
+    await assert.rejects(
+      () => createTopupRequest(100, { kind: "guest", identityId: guestId, walletId }, isolated),
+      (err: unknown) => err instanceof TopupOpenConflictError,
+    );
+  } finally {
+    rmSync(isolated, { recursive: true, force: true });
+  }
 });
 
 test("menolak tipe berkas dan ukuran", () => {

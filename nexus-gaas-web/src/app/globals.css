@@ -2386,11 +2386,37 @@ input[type="text"]:focus, select:focus {
   gap: 10px;
 }
 
+.kredit-pending-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .kredit-pending-title {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
   color: #9a3412;
+}
+
+.kredit-cancel {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  color: #7c2d12;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.kredit-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .kredit-dana {
@@ -2415,12 +2441,6 @@ input[type="text"]:focus, select:focus {
   letter-spacing: 0.02em;
   color: #12151a;
   user-select: all;
-}
-
-.kredit-dana-missing {
-  margin: 0;
-  font-size: 12px;
-  color: #7c2d12;
 }
 
 .kredit-proof-wa-after {
@@ -2504,12 +2524,6 @@ input[type="text"]:focus, select:focus {
 
 .kredit-proof-submit {
   align-self: flex-start;
-}
-
-.kredit-proof-hint {
-  margin: 0;
-  font-size: 11px;
-  color: #7c2d12;
 }
 
 .operator-topup {

@@ -1,5 +1,5 @@
 import { isLabFaucetEnabled, getKreditSnapshot } from "./kredit-ledger.ts";
-import { danaPayInfo, listPendingTopups, proofEmailTo, proofWaNumber } from "./kredit-topup.ts";
+import { danaPayInfo, listPendingTopups, proofWaNumber } from "./kredit-topup.ts";
 import { ledgerFileFor, publicIdentity, type PortalIdentity } from "./portal-identity.ts";
 
 export async function kreditClientView(identity: PortalIdentity) {
@@ -14,7 +14,6 @@ export async function kreditClientView(identity: PortalIdentity) {
     pendingTopups,
     faucetEnabled: isLabFaucetEnabled(),
     proofWa: proofWaNumber(),
-    proofEmail: proofEmailTo(),
     danaNumber: dana.number,
     danaLabel: dana.label,
   };

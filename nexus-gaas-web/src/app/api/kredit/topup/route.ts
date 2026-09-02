@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createTopupRequest } from "@/lib/kredit-topup";
+import { createTopupRequest, TopupOpenConflictError } from "@/lib/kredit-topup";
 import { kreditClientView } from "@/lib/kredit-public";
 import { lookupIdentity, readSidFromRequest } from "@/lib/portal-identity";
 
@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
       credited: false,
     });
   } catch (err) {
+    if (err instanceof TopupOpenConflictError) {
+      return NextResponse.json({ ok: false, error: err.message }, { status: 409 });
+    }
     if (err instanceof RangeError) {
       return NextResponse.json({ ok: false, error: err.message }, { status: 400 });
     }

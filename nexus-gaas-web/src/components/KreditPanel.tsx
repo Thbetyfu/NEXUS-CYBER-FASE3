@@ -13,7 +13,6 @@ export type KreditState = {
   pendingTopups?: PendingTopup[];
   faucetEnabled?: boolean;
   proofWa?: string | null;
-  proofEmail?: string | null;
   danaNumber?: string | null;
   danaLabel?: string | null;
 };
@@ -24,6 +23,7 @@ export function KreditPanel({
   busy,
   onRequestTopup,
   onSubmitProof,
+  onCancelTopup,
   onLabFaucet,
 }: {
   kredit: KreditState | null;
@@ -31,12 +31,15 @@ export function KreditPanel({
   busy: boolean;
   onRequestTopup: (amountKr: number) => void;
   onSubmitProof?: (topupId: string, notes: string, file: File | null) => void;
+  onCancelTopup?: (topupId: string) => void;
   onLabFaucet?: () => void;
 }) {
   const [pack, setPack] = useState<(typeof KREDIT.topupPacksKr)[number]>(KREDIT.starterPriceKr);
-  const open = kredit?.pendingTopups?.filter((item) => item.status !== "approved") ?? [];
+  const open = kredit?.pendingTopups?.filter((item) => item.status === "pending" || item.status === "proof_submitted") ?? [];
+  const hasOpen = open.length > 0;
   const showFaucet = Boolean(kredit?.faucetEnabled && onLabFaucet);
   const wa = kredit?.proofWa ? formatWhatsAppNumber(kredit.proofWa) : null;
+  const danaNumber = kredit?.danaNumber?.trim() || formatWhatsAppNumber().local;
 
   return (
     <>
@@ -62,7 +65,7 @@ export function KreditPanel({
                 type="button"
                 className={amount === pack ? "kredit-pack is-on" : "kredit-pack"}
                 onClick={() => setPack(amount)}
-                disabled={busy}
+                disabled={busy || hasOpen}
               >
                 {amount} {KREDIT.abbr}
               </button>
@@ -72,13 +75,14 @@ export function KreditPanel({
             type="button"
             className="notion-button notion-button-primary kredit-topup-submit"
             onClick={() => onRequestTopup(pack)}
-            disabled={busy || kredit == null}
+            disabled={busy || kredit == null || hasOpen}
           >
             {busy ? "Mencatat…" : `Isi ${pack} Kredit`}
           </button>
           <p className="kredit-topup-copy">
-            Setelah Isi: bayar ke Nomor DANA, unggah bukti, lalu Kirim bukti. WhatsApp muncul setelah bukti terkirim.
-            Saldo naik hanya setelah konfirmasi operator. Bukan Midtrans/Stripe.
+            {hasOpen
+              ? "Satu permintaan terbuka. Selesaikan bukti atau Batalkan untuk ganti paket."
+              : "Setelah Isi: bayar ke Nomor DANA, unggah bukti, lalu Kirim bukti. WhatsApp muncul setelah bukti terkirim. Saldo naik hanya setelah konfirmasi operator. Bukan Midtrans/Stripe."}
           </p>
         </div>
 
@@ -89,11 +93,11 @@ export function KreditPanel({
                 <TopupOpenCard
                   item={item}
                   wa={wa}
-                  proofEmail={kredit?.proofEmail}
-                  danaNumber={kredit?.danaNumber}
+                  danaNumber={danaNumber}
                   danaLabel={kredit?.danaLabel}
                   busy={busy}
                   onSubmitProof={onSubmitProof}
+                  onCancelTopup={onCancelTopup}
                 />
               </li>
             ))}
@@ -118,19 +122,19 @@ export function KreditPanel({
 function TopupOpenCard({
   item,
   wa,
-  proofEmail,
   danaNumber,
   danaLabel,
   busy,
   onSubmitProof,
+  onCancelTopup,
 }: {
   item: PendingTopup;
   wa: ReturnType<typeof formatWhatsAppNumber> | null;
-  proofEmail?: string | null;
-  danaNumber?: string | null;
+  danaNumber: string;
   danaLabel?: string | null;
   busy: boolean;
   onSubmitProof?: (topupId: string, notes: string, file: File | null) => void;
+  onCancelTopup?: (topupId: string) => void;
 }) {
   const [notes, setNotes] = useState(item.notes ?? "");
   const [file, setFile] = useState<File | null>(null);
@@ -144,18 +148,26 @@ function TopupOpenCard({
 
   return (
     <>
-      <p className="kredit-pending-title">
-        {submitted
-          ? `Bukti terkirim — ${item.amountKr} ${KREDIT.abbr}`
-          : `Menunggu pembayaran ${item.amountKr} ${KREDIT.abbr}`}
-      </p>
+      <div className="kredit-pending-head">
+        <p className="kredit-pending-title">
+          {submitted
+            ? `Bukti terkirim — ${item.amountKr} ${KREDIT.abbr}`
+            : `Menunggu pembayaran ${item.amountKr} ${KREDIT.abbr}`}
+        </p>
+        {onCancelTopup ? (
+          <button
+            type="button"
+            className="kredit-cancel"
+            onClick={() => onCancelTopup(item.id)}
+            disabled={busy}
+          >
+            Batalkan
+          </button>
+        ) : null}
+      </div>
       <div className="kredit-dana">
         <p className="kredit-dana-kicker">{danaLabel?.trim() || "Nomor DANA"}</p>
-        {danaNumber?.trim() ? (
-          <p className="kredit-dana-number">{danaNumber.trim()}</p>
-        ) : (
-          <p className="kredit-dana-missing">Set NEXUS_DANA_NUMBER di .env.local</p>
-        )}
+        <p className="kredit-dana-number">{danaNumber}</p>
       </div>
       {onSubmitProof && !submitted && (
         <form
@@ -192,12 +204,6 @@ function TopupOpenCard({
           <button type="submit" className="notion-button kredit-proof-submit" disabled={busy || !file}>
             {busy ? "Mengirim…" : "Kirim bukti"}
           </button>
-          <p className="kredit-proof-hint">
-            {proofEmail
-              ? `Tujuan: ${proofEmail}. Email benar-benar terkirim hanya jika SMTP diset.`
-              : "Set NEXUS_TOPUP_PROOF_EMAIL. Form tetap menyimpan berkas jika SMTP belum ada."}{" "}
-            Submit tidak menambah Kredit.
-          </p>
         </form>
       )}
       {waHref ? (

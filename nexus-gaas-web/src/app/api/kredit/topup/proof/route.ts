@@ -32,9 +32,7 @@ export async function POST(request: NextRequest) {
       stored: true,
       emailed: result.emailed,
       credited: false,
-      proofMessage: result.emailed
-        ? "Bukti terkirim ke email operator. Kredit belum masuk sampai approve."
-        : result.emailError,
+      proofMessage: "Bukti tersimpan. Saldo belum naik sampai konfirmasi operator.",
     });
   } catch (err) {
     if (err instanceof ProofValidationError || err instanceof RangeError) {

@@ -160,6 +160,9 @@ export async function approveTopupRequest(
     if (!record) {
       throw new Error("Permintaan isi ulang tidak ditemukan");
     }
+    if (record.status === "cancelled") {
+      throw new RangeError("Permintaan sudah dibatalkan");
+    }
     const ledgerFile = ledgerPathFor(record.kind, record.identityId, dataDir);
     const snap = creditApprovedTopupUnlocked(record.amountKr, ledgerFile, record.walletId, record.id);
     const settled = markTopupApprovedUnlocked(record.id, dataDir);
