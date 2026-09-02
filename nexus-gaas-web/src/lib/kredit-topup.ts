@@ -5,6 +5,7 @@ import { KREDIT, isOpenTopupStatus, type OperatorTopupView, type PendingTopup, t
 import { formatWhatsAppNumber, SALES } from "./portal-config.ts";
 import { withLock } from "./mutex.ts";
 import { assertSafeId, defaultDataDir, type IdentityKind } from "./identity-paths.ts";
+import { lookupOperatorPartyUnlocked } from "./operator-party.ts";
 
 export type TopupRecord = {
   id: string;
@@ -140,14 +141,18 @@ export function publicPending(record: TopupRecord): PendingTopup {
   };
 }
 
-function toOperatorView(record: TopupRecord): OperatorTopupView {
+function toOperatorView(record: TopupRecord, dataDir: string): OperatorTopupView {
+  const party = lookupOperatorPartyUnlocked(record.kind, record.identityId, dataDir);
   return {
     id: record.id,
     amountKr: record.amountKr,
     status: record.status,
     createdAt: record.createdAt,
     walletId: record.walletId,
+    identityId: party.identityId,
     kind: record.kind,
+    email: party.email,
+    orderCode: party.orderCode,
     notes: record.notes,
     hasProof: Boolean(record.proofRelPath),
     proofSubmittedAt: record.proofSubmittedAt,
@@ -167,7 +172,7 @@ export async function listOperatorQueue(dataDir = defaultDataDir()): Promise<Ope
   return withLock(() => {
     return readStore(topupsPath(dataDir))
       .items.filter((item) => isOpenTopupStatus(item.status))
-      .map(toOperatorView)
+      .map((item) => toOperatorView(item, dataDir))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   });
 }

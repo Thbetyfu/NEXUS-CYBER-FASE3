@@ -2572,6 +2572,22 @@ input[type="text"]:focus, select:focus {
   background: #fff;
 }
 
+.operator-topup-party {
+  display: block;
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d23;
+}
+
+.operator-topup-id {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #8b939c;
+  word-break: break-all;
+}
+
 .operator-topup-meta,
 .operator-topup-notes {
   display: block;

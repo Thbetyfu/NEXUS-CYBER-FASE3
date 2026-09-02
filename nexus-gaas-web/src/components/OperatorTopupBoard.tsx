@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { isOpenTopupStatus, type OperatorTopupView } from "@/lib/kredit";
+import { isOpenTopupStatus, operatorPartyLabel, type OperatorTopupView } from "@/lib/kredit";
 
 type QueuePayload = { ok?: boolean; error?: string; items?: OperatorTopupView[] };
 
@@ -72,9 +72,11 @@ export function OperatorTopupBoard() {
             <li key={item.id}>
               <div>
                 <strong>{item.id}</strong> · {item.amountKr} Kr · {item.status}
+                <span className="operator-topup-party">{operatorPartyLabel(item)}</span>
                 <span className="operator-topup-meta">
-                  {item.walletId} · {new Date(item.createdAt).toLocaleString("id-ID")}
+                  {new Date(item.createdAt).toLocaleString("id-ID")}
                 </span>
+                <span className="operator-topup-id">{item.walletId}</span>
                 {item.notes ? <p className="operator-topup-notes">{item.notes}</p> : null}
                 {item.hasProof ? (
                   <p>

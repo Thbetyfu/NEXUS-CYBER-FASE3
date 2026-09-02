@@ -16,6 +16,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 - **Overlay Next.js Channel Portal:** `Module not found: Can't resolve 'nodemailer'` di `kredit-topup.ts` (bukti email opsional) membuat Turbopack 500 seluruh rute termasuk `/gate`. `nodemailer` sekarang di `package.json`; SMTP di-load runtime (`kredit-smtp.ts`) supaya compile kasir tidak tergantung paket itu. Bukan Midtrans.
 
 ### Changed
+- **Operator `/operator/topup` label manusia:** akun = **email** (`portal-identities`); tamu = **Tamu · ORDER-xxxxxxxx**; UUID `guest:`/`account:` hanya baris kecil. Bukan SOC publik. Bukan Midtrans.
 - **Isi Kredit satu permintaan terbuka:** `POST /api/kredit/topup` **409** jika masih ada pending/`proof_submitted` per identitas. Nomor DANA default = WA publik `0895 6033 58692` (`NEXUS_DANA_NUMBER` mengalahkan). Kartu pelanggan tanpa nama env/SMTP. Batalkan (status `cancelled`, tanpa kredit) untuk ganti paket. Bukan Midtrans.
 - **Keran lab opt-in:** `NEXUS_LAB_FAUCET` default **mati**. Nyala hanya `NEXUS_LEDGER_MODE=lab` **dan** `NEXUS_LAB_FAUCET=1`. Pilot publik: `NEXUS_LEDGER_MODE=live` + `NEXUS_LAB_FAUCET=0`.
 - **Operator `/operator/topup`:** tolak jika `cf-connecting-ip` atau `X-Forwarded-Host` publik (spoof Host loopback lewat tunnel).

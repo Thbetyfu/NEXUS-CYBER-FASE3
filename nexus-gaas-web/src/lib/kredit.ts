@@ -42,11 +42,23 @@ export type OperatorTopupView = {
   status: TopupStatus;
   createdAt: string;
   walletId: string;
+  identityId: string;
   kind: "guest" | "account";
+  email: string | null;
+  orderCode: string;
   notes?: string;
   hasProof: boolean;
   proofSubmittedAt?: string;
 };
+
+/** Baris utama antrian operator (bukan UUID). Akun = email; tamu = ORDER- + Tamu. */
+export function operatorPartyLabel(item: Pick<OperatorTopupView, "kind" | "email" | "orderCode">): string {
+  if (item.kind === "account") {
+    const email = item.email?.trim();
+    return email || "Akun";
+  }
+  return item.orderCode ? `Tamu · ${item.orderCode}` : "Tamu";
+}
 
 export type KreditEntry = {
   id: string;
