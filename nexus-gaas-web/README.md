@@ -37,7 +37,11 @@ copy .env.local.example .env.local   # live + faucet 0 untuk publik
 npm install
 npm run dev
 
-# jendela 3
+# jendela 3 (opsional — model tulis loopback, BUKAN tunnel)
+cd nexus-core\deploy-local
+START-LOCAL-LLM.bat
+
+# jendela 4
 cd nexus-core\deploy-local
 START-PORTAL-PILOT.bat
 ```
@@ -84,6 +88,7 @@ Buka http://127.0.0.1:3003
 - Top-up: permintaan pending + WhatsApp pemilik + form bukti (`data/topup-proofs/`) + approve operator **ada**. QRIS/VA **belum live**. Bukan billing produksi. Bukan auto-kredit dari WA.
 - Tidak menjual Job Cowork / Loop dari kasir 20 Kr.
 - SOC `:3001`/`:8081` **jangan** di-tunnel sebagai “portal”.
+- Ollama `:11434` **jangan** di-tunnel. Health: `GET /api/local-llm/health` (server fetch `NEXUS_LOCAL_LLM_URL`, default `http://127.0.0.1:11434`). Fill cerita **belum**. Start: `nexus-core\deploy-local\START-LOCAL-LLM.bat`.
 - Nama paket npm masih `nexus-channel-portal` — folder git = `nexus-gaas-web`.
 
 Dokumen: [`../nexus-core/docs/NEXUS_CHANNEL_PORTAL.md`](../nexus-core/docs/NEXUS_CHANNEL_PORTAL.md), [`../nexus-core/docs/CHANNEL_STARTER.md`](../nexus-core/docs/CHANNEL_STARTER.md), [`../nexus-core/docs/LIMITATIONS.md`](../nexus-core/docs/LIMITATIONS.md).

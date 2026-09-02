@@ -62,6 +62,7 @@ Bukan produksi GaaS, bukan 100 host WAF. PC 24/7 + Cloudflare Tunnel ke **Channe
 | `NEXUS_LAB_FAUCET` | `1` jika uji keran | `0` |
 | `NEXUS_PORTAL_PUBLIC_HOST` | — | hostname trycloudflare (opsional, Next `allowedDevOrigins`) |
 | `NEXUS_DANA_NUMBER` | opsional; kosong = nomor WA publik `0895 6033 58692` | sama; label opsional `NEXUS_DANA_LABEL` |
+| `NEXUS_LOCAL_LLM_URL` | `http://127.0.0.1:11434` | sama — **jangan** URL publik; Node fetch health saja |
 
 Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC (tunnel `:3010`). Rewrite `/starter` ke loopback **tidak** jalan di Vercel.
 
@@ -77,6 +78,18 @@ Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC
 `/gate` → daftar → `/kredit` Isi (satu permintaan terbuka) → Nomor DANA (default WA publik, env mengalahkan) + unggah bukti + Kirim bukti → **Buka WhatsApp** (setelah submit) → di **PC** buka `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter` generate. Preview: `https://<tunnel>/starter/preview/{slug}`.
 
 Operator `/operator/topup` **bukan** lewat Host publik (trycloudflare = 404 kosong). Approve hanya `http://127.0.0.1:3003/operator/topup` atau `http://localhost:3003/operator/topup` di PC (Next.js mengirim XFF IPv4-mapped loopback). Antrian: `.operator-topup-id` = **email** (label Email) atau nama+email jika `displayName`/`name` tersimpan; tamu = **Tamu · ORDER-xxxxxxxx**. UUID wallet hanya `title` / span redup, bukan baris utama. HTML SSR di loopback. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
+
+### Runtime model tulis (langkah 2 — bukan fill form)
+
+Ollama di PC operator, bind **`127.0.0.1:11434`**. Bukan pengganti NEX-AI WAF (`nex-ai-protect` / `nex-ai-reflex`). Cerita→JSON **belum**.
+
+| | |
+| --- | --- |
+| Start | `nexus-core\deploy-local\START-LOCAL-LLM.bat` |
+| URL | `NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434` di `nexus-gaas-web/.env.local` (gitignore) |
+| Health | Server: `GET /api/local-llm/health` → fetch `GET {url}/api/tags`. Klien/HP **tidak** menembak `:11434` |
+| Tunnel | **Jangan.** `START-PORTAL-PILOT.bat` tidak membuka `:11434`. `nexus-tunnel.ps1` menolak port itu. |
+| Model Hub | Langkah ini **tidak** `ollama pull`. Model tulis kecil opsional pemilik: `ollama pull gemma3:1b` (bukan 70B) |
 
 ---
 

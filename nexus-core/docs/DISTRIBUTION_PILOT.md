@@ -30,6 +30,7 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 | Command Center / SOC (`:3001`, `:8081`) | **Tidak** | Hanya localhost / VPN |
 | Postgres, Redis, bridge internal | **Tidak** | Loopback saja |
 | NEX-RED API mentah | **Tidak** | Lewat operator saja |
+| Ollama / model tulis (`:11434`) | **Tidak** | Hanya `127.0.0.1`. Portal cek `GET /api/local-llm/health` (Node di PC). `nexus-tunnel.ps1` menolak port ini. |
 
 Aturan emas: **jangan tunnel-kan control plane** ke internet.
 
@@ -57,7 +58,7 @@ Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
          → Tunnel B (juri, opsional) → localhost:80  Caddy → WAF → portofolio
                  Caddy Host portal.nexus-lab.test → :3003
                  Caddy Host starter.nexus-lab.test → :3010
-         ↘ localhost saja: SOC :3001/:8081, DB, NEX-RED, /operator/topup
+         ↘ localhost saja: SOC :3001/:8081, DB, NEX-RED, /operator/topup, Ollama :11434
 ```
 
 ### Cara jalanin storefront (HP luar)
@@ -67,6 +68,17 @@ Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
 3. `nexus-core\deploy-local\START-PORTAL-PILOT.bat` (cloudflared → `:3003`).  
 4. HP: `/gate` → daftar → `/kredit` Isi → WA + bukti → approve di `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`.  
 5. Sleep/hibernate OFF. Named tunnel + `cloudflared tunnel login` = pemilik. Bukan Midtrans. Bukan SOC publik.
+
+### Runtime model tulis (PC, bukan tunnel)
+
+Ollama di operator PC untuk **copy situs belakangan** (bukan NEX-AI `nex-ai-protect` / `nex-ai-reflex` di WAF). Bind **`127.0.0.1:11434`**.
+
+1. `nexus-core\deploy-local\START-LOCAL-LLM.bat` (`OLLAMA_HOST=127.0.0.1:11434`).  
+2. Portal `.env.local`: `NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434` (jangan commit).  
+3. Cek dari PC: `http://127.0.0.1:3003/api/local-llm/health` — fetch Ollama **hanya di server**. HP lewat tunnel boleh hit rute itu; **jangan** buka `:11434` dari HP.  
+4. **Jangan** masukkan `:11434` ke `START-PORTAL-PILOT.bat` / cloudflared.
+
+PC ini sudah punya Ollama + `nex-ai-protect` / `nex-ai-reflex`. Langkah ini **tidak** `ollama pull` model Hub (jangan 70B). Model tulis kecil opsional nanti: `ollama pull gemma3:1b` (pemilik). Fill cerita→JSON **belum**.
 
 Demo B2B Job: mesin WAF tetap `START.bat`; klien tidak masuk SOC.
 

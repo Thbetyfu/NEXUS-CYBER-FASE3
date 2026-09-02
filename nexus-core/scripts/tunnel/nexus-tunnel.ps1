@@ -12,6 +12,7 @@
 #   .\scripts\tunnel\nexus-tunnel.ps1 -WafDirect      # :8080 bypass Caddy
 #
 # DILARANG: -Dashboard / :3001 / :8081 / :5432 / :6379 / :3004 (SOC, DB, NEX-RED)
+# DILARANG KERAS: :11434 (Ollama / model tulis) — tidak ada override.
 # One-click juri: deploy-local\jury\START-FOR-JURY.bat
 # One-click storefront: deploy-local\START-PORTAL-PILOT.bat
 # ==============================================================================
@@ -28,6 +29,7 @@ param(
 $ErrorActionPreference = "Continue"
 
 $BlockedPorts = @(3001, 8081, 5432, 6379, 3004)
+$NeverTunnelPorts = @(11434)
 
 $TargetPort = 80
 $TargetLabel = "Caddy :80 (WAF + portofolio) — mode juri"
@@ -60,6 +62,12 @@ if ($Dashboard) {
     }
     $TargetPort = $Port
     $TargetLabel = "Custom Port $Port"
+}
+
+if ($NeverTunnelPorts -contains $TargetPort) {
+    Write-Host "[BLOCKED] Port $TargetPort adalah Ollama / model tulis lokal (127.0.0.1)." -ForegroundColor Red
+    Write-Host "          Jangan Cloudflare-tunnel. Portal memanggil via GET /api/local-llm/health." -ForegroundColor Red
+    exit 1
 }
 
 Write-Host "============================================================" -ForegroundColor Cyan
@@ -135,7 +143,7 @@ Write-Host "`n[3/3] Launching quick tunnel..." -ForegroundColor Yellow
 Write-Host "    Salin URL https://....trycloudflare.com di bawah." -ForegroundColor Cyan
 Write-Host "    Uji dari HP (data seluler), bukan Wi-Fi rumah." -ForegroundColor Cyan
 Write-Host "    Ctrl+C = stop tunnel. Lab/portal di PC tetap jalan." -ForegroundColor White
-Write-Host "    JANGAN tunnel SOC. Login Cloudflare: cloudflared tunnel login (named hostname)." -ForegroundColor DarkYellow
+Write-Host "    JANGAN tunnel SOC. JANGAN tunnel :11434 (Ollama). Login Cloudflare: cloudflared tunnel login (named hostname)." -ForegroundColor DarkYellow
 Write-Host ""
 
 & cloudflared tunnel --url "http://127.0.0.1:$TargetPort"
