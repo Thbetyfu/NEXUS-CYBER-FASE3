@@ -36,7 +36,12 @@ export function lookupOperatorPartyUnlocked(
   if (!existsSync(filePath)) {
     return { email: null, displayName: null, orderCode, identityId: id };
   }
-  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as IdentityFile;
+  let parsed: IdentityFile;
+  try {
+    parsed = JSON.parse(readFileSync(filePath, "utf8")) as IdentityFile;
+  } catch {
+    return { email: null, displayName: null, orderCode, identityId: id };
+  }
   const account = Array.isArray(parsed.accounts)
     ? parsed.accounts.find((row) => typeof row.id === "string" && row.id.toLowerCase() === id)
     : undefined;

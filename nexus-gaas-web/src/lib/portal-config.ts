@@ -83,9 +83,3 @@ export function whatsappPemerintahUrl(message?: string): string {
 export function whatsappB2GUrl(message?: string): string {
   return whatsappPemerintahUrl(message);
 }
-
-/** Browser-facing Channel Starter base. Default `/starter` (proxied to :3010 on the PC). */
-export const CHANNEL_STARTER_API =
-  process.env.NEXT_PUBLIC_CHANNEL_STARTER_URL?.trim() ||
-  process.env.CHANNEL_STARTER_PUBLIC_URL?.trim() ||
-  "/starter";

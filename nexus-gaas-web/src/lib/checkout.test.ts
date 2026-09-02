@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { isWhatsAppHref } from "./portal-config.ts";
 import { CHECKOUT_PACKAGES, checkoutHref, getCheckout } from "./checkout.ts";
@@ -68,4 +69,10 @@ test("gerbang next hanya path internal", () => {
   assert.equal(safeInternalNext("/umkm?situs=belum"), "/umkm?situs=belum");
   assert.equal(safeInternalNext("https://evil.example/"), "/");
   assert.equal(safeInternalNext("/gate"), "/");
+});
+
+test("portal-config klien tanpa process.env (hindari overlay Next pada Navbar/Kredit)", () => {
+  const src = readFileSync(new URL("./portal-config.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /process\.env/);
+  assert.doesNotMatch(src, /CHANNEL_STARTER_PUBLIC_URL/);
 });
