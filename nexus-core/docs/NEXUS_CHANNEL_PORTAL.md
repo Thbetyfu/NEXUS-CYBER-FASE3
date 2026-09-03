@@ -90,12 +90,12 @@ Ollama di PC operator, bind **`127.0.0.1:11434`**. Bukan pengganti NEX-AI WAF (`
 
 | | |
 | --- | --- |
-| Start | `nexus-core\deploy-local\START-LOCAL-LLM.bat` (`OLLAMA_HOST=127.0.0.1:11434`, pull `gemma3:1b` jika belum) |
+| Start | `nexus-core\deploy-local\START-LOCAL-LLM.bat` (`OLLAMA_HOST=127.0.0.1:11434`, pull `gemma3:1b` jika belum; warmup `keep_alive` jika sudah listen) |
 | URL | `NEXUS_LOCAL_LLM_URL=http://127.0.0.1:11434` di `nexus-gaas-web/.env.local` (gitignore) |
 | Model | `NEXUS_LOCAL_LLM_MODEL=gemma3:1b` (default). **Dilarang** tag `nex-ai-protect` / `nex-ai-reflex` / 70B |
 | Health | Server: `GET /api/local-llm/health` → fetch `GET {url}/api/tags` |
-| Fill | Server: `POST /api/local-llm/fill-starter` `{ name, category, whatsapp, story }` → JSON slots (tagline, hero, about_body, cta_label, hours, description). **Sesi portal wajib** (cookie `nexus_portal_sid`; 401 `Sesi diperlukan` jika tidak). Rate limit. Bukan HTML. Timeout ~25s → `{ usedFallback: true, …preset kategori }`. URL bukan loopback → 503, tidak fetch. **Tidak** debit 20 Kr. Bukan NEX-AI WAF. |
-| Klien | **Lihat teks** → portal `/api/local-llm/fill-starter` (bukan `:11434`). Tamu/akun setelah `/gate` sudah punya cookie. Tampilkan tagline/hero/tentang + `usedFallback`. **Bayar 20 Kredit & buat site** = generate+debit. Fill gagal tetap template. |
+| Fill | Server: `POST /api/local-llm/fill-starter` `{ name, category, whatsapp, story }` → JSON slots (tagline, hero, about_body, cta_label, hours, description). **Sesi portal wajib** (cookie `nexus_portal_sid`; 401 `Sesi diperlukan` jika tidak). Rate limit. Bukan HTML. Timeout **~35s/percobaan**, **satu retry** jika abort (~70s batas) → `{ usedFallback: true, error, …preset kategori }`. `keep_alive=30m`, `num_ctx=1024`, `num_predict=220`. URL bukan loopback → 503, tidak fetch. **Tidak** debit 20 Kr. Bukan NEX-AI WAF. |
+| Klien | **Lihat teks** → portal `/api/local-llm/fill-starter` (bukan `:11434`). Tamu/akun setelah `/gate` sudah punya cookie. Tampilkan tagline/hero/tentang + `usedFallback` / pesan timeout jujur (jangan klaim model jika fallback). **Bayar 20 Kredit & buat site** = generate+debit. Fill gagal tetap template. |
 | Tunnel | **Jangan.** `START-PORTAL-PILOT.bat` tidak membuka `:11434`. `nexus-tunnel.ps1` menolak port itu. |
 
 ---

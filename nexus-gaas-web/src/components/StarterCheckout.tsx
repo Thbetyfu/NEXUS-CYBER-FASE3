@@ -80,11 +80,13 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
     setLater((prev) => ({ ...prev, ...patch }));
   };
 
-  const applyPreview = (fill: StarterFillSlots, usedFallback: boolean) => {
+  const applyPreview = (fill: StarterFillSlots, usedFallback: boolean, error?: string) => {
     const slots = slotsFromFillBody(fill, category);
     setLater((prev) => applyFillSlotsToExtras(prev, slots));
     setHeroDraft((slots.hero ?? "").trim());
-    setCopyHint(fillCopySourceLabel(usedFallback));
+    setCopyHint(
+      usedFallback ? error?.trim() || fillCopySourceLabel(true) : fillCopySourceLabel(false),
+    );
     setPreviewed(true);
   };
 
@@ -107,8 +109,11 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         window.location.assign(`/gate?next=${encodeURIComponent(next)}`);
         return;
       }
-      const fill = (await fillRes.json()) as StarterFillSlots & { usedFallback?: boolean };
-      applyPreview(fill, fill.usedFallback !== false);
+      const fill = (await fillRes.json()) as StarterFillSlots & {
+        usedFallback?: boolean;
+        error?: string;
+      };
+      applyPreview(fill, fill.usedFallback !== false, fill.error);
     } catch {
       applyPreview(categoryPresetSlots(category), true);
     } finally {

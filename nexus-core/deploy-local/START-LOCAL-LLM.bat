@@ -58,6 +58,8 @@ echo.
 netstat -ano | findstr /R /C:"127.0.0.1:11434.*LISTENING" >nul 2>&1
 if not errorlevel 1 (
   echo [OK] Sudah listen di 127.0.0.1:11434
+  echo [WARM] Memuat %NEXUS_WRITER_MODEL% ke RAM ^(keep_alive^) agar klik Lihat teks tidak dingin...
+  powershell -NoProfile -Command "$env:NEXUS_WRITER_MODEL='%NEXUS_WRITER_MODEL%'; try { Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/generate' -Method Post -ContentType 'application/json' -TimeoutSec 90 -Body ((@{model=$env:NEXUS_WRITER_MODEL; prompt='ok'; stream=$false; keep_alive='30m'; options=@{num_predict=8; num_ctx=512; temperature=0}}) | ConvertTo-Json -Compress -Depth 4) | Out-Null; Write-Host '[OK] Model tulis siap di RAM.' } catch { Write-Host '[LEWAT] Warmup gagal; Lihat teks tetap mencoba saat klik.' }"
   echo Cek: http://127.0.0.1:3003/api/local-llm/health
   echo Fill: POST http://127.0.0.1:3003/api/local-llm/fill-starter
   echo HP lewat tunnel portal saja — jangan buka :11434 dari HP.

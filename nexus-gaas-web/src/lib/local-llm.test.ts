@@ -3,6 +3,12 @@ import { test } from "node:test";
 import {
   DEFAULT_LOCAL_LLM_MODEL,
   DEFAULT_LOCAL_LLM_URL,
+  FILL_STARTER_KEEP_ALIVE,
+  FILL_STARTER_NUM_CTX,
+  FILL_STARTER_NUM_PREDICT,
+  FILL_STARTER_STORY_MAX_CHARS,
+  FILL_STARTER_TIMEOUT_MS,
+  FILL_STARTER_TIMEOUT_RETRIES,
   healthFromTagsBody,
   isBlockedWriterModel,
   isLocalLlmLoopbackUrl,
@@ -15,7 +21,12 @@ import {
 } from "./local-llm.ts";
 import { CATEGORY_COPY } from "./starter-generate-payload.ts";
 import {
+  MSG_FILL_DOWN,
+  MSG_FILL_TIMEOUT,
+  buildFillPrompt,
+  buildOllamaFillBody,
   categoryPresetSlots,
+  clipFillStory,
   fillStarterCopy,
   handleFillStarterHttp,
   parseFillStarterInput,
@@ -139,11 +150,21 @@ test("fill memakai mock Ollama; model body bukan protect/reflex", async () => {
   let postedModel = "";
   const { status, body } = await fillStarterCopy(input, {}, async (url, init) => {
     assert.match(String(url), /127\.0\.0\.1:11434\/api\/generate/);
-    const payload = JSON.parse(String(init?.body)) as { model: string; prompt: string };
+    const payload = JSON.parse(String(init?.body)) as {
+      model: string;
+      prompt: string;
+      keep_alive: string;
+      format: string;
+      options: { num_ctx: number; num_predict: number; temperature: number };
+    };
     postedModel = payload.model;
     assert.equal(payload.model, DEFAULT_LOCAL_LLM_MODEL);
     assert.doesNotMatch(payload.model, /nex-ai-protect|nex-ai-reflex/i);
     assert.match(payload.prompt, /Nasi uduk/);
+    assert.equal(payload.format, "json");
+    assert.equal(payload.keep_alive, FILL_STARTER_KEEP_ALIVE);
+    assert.equal(payload.options.num_ctx, FILL_STARTER_NUM_CTX);
+    assert.equal(payload.options.num_predict, FILL_STARTER_NUM_PREDICT);
     return new Response(
       JSON.stringify({
         response: JSON.stringify({
@@ -165,6 +186,22 @@ test("fill memakai mock Ollama; model body bukan protect/reflex", async () => {
   assert.equal(postedModel, "gemma3:1b");
 });
 
+test("prompt pendek; cerita dipotong; body Ollama kecil-model", () => {
+  assert.equal(FILL_STARTER_TIMEOUT_MS, 35_000);
+  assert.equal(FILL_STARTER_TIMEOUT_RETRIES, 1);
+  const long = "x".repeat(FILL_STARTER_STORY_MAX_CHARS + 80);
+  assert.ok(clipFillStory(long).length <= FILL_STARTER_STORY_MAX_CHARS + 1);
+  const prompt = buildFillPrompt(
+    { name: "Warung", category: "fnb", whatsapp: "08", story: long },
+    "fnb",
+  );
+  assert.ok(prompt.length < 1200);
+  assert.match(prompt, /JSON saja/);
+  const body = buildOllamaFillBody("gemma3:1b", prompt);
+  assert.equal(body.keep_alive, "30m");
+  assert.equal((body.options as { num_ctx: number }).num_ctx, 1024);
+});
+
 test("cerita kosong → preset tanpa fetch Ollama", async () => {
   let fetched = false;
   const { status, body } = await fillStarterCopy(
@@ -181,12 +218,14 @@ test("cerita kosong → preset tanpa fetch Ollama", async () => {
   assert.equal(body.tagline, CATEGORY_COPY.fnb.tagline);
 });
 
-test("timeout Ollama → usedFallback preset kategori", async () => {
+test("timeout Ollama → retry sekali lalu usedFallback preset", async () => {
   const input = { name: "Toko", category: "jasa", whatsapp: "08", story: "Servis AC rumah." };
+  let abortCalls = 0;
   const timedOut = await fillStarterCopy(
     input,
     {},
     async (_url, init) => {
+      abortCalls += 1;
       await new Promise<Response>((_resolve, reject) => {
         init?.signal?.addEventListener("abort", () => {
           reject(new DOMException("aborted", "AbortError"));
@@ -196,19 +235,61 @@ test("timeout Ollama → usedFallback preset kategori", async () => {
     },
     15,
   );
+  assert.equal(abortCalls, 1 + FILL_STARTER_TIMEOUT_RETRIES);
   assert.equal(timedOut.body.usedFallback, true);
+  assert.equal(timedOut.body.error, MSG_FILL_TIMEOUT);
   assert.equal(timedOut.body.cta_label, CATEGORY_COPY.jasa.cta_label);
-  assert.deepEqual(
-    { ...timedOut.body, usedFallback: true },
-    { ...categoryPresetSlots("jasa"), usedFallback: true },
-  );
+  const { error: _e, ...slots } = timedOut.body;
+  assert.deepEqual(slots, { ...categoryPresetSlots("jasa"), usedFallback: true });
 
+  let downCalls = 0;
   const down = await fillStarterCopy(input, {}, async () => {
+    downCalls += 1;
     throw new Error("ECONNREFUSED");
   });
+  assert.equal(downCalls, 1);
   assert.equal(down.status, 200);
   assert.equal(down.body.usedFallback, true);
+  assert.equal(down.body.error, MSG_FILL_DOWN);
   assert.equal(down.body.tagline, CATEGORY_COPY.jasa.tagline);
+});
+
+test("timeout lalu retry sukses → usedFallback false", async () => {
+  const input = { name: "Toko", category: "jasa", whatsapp: "08", story: "Servis AC rumah." };
+  let calls = 0;
+  const { status, body } = await fillStarterCopy(
+    input,
+    {},
+    async (_url, init) => {
+      calls += 1;
+      if (calls === 1) {
+        await new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            reject(new DOMException("aborted", "AbortError"));
+          });
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          response: JSON.stringify({
+            tagline: "Servis AC",
+            hero: "Servis AC rumah",
+            about_body: "Perbaikan AC rumah.",
+            cta_label: "Chat WA",
+            hours: "",
+            description: "Servis AC rumah.",
+          }),
+        }),
+        { status: 200 },
+      );
+    },
+    20,
+  );
+  assert.equal(calls, 2);
+  assert.equal(status, 200);
+  assert.equal(body.usedFallback, false);
+  assert.equal(body.tagline, "Servis AC");
+  assert.equal(body.error, undefined);
 });
 
 test("URL bukan loopback fail-closed: tidak fetch, fallback preset", async () => {

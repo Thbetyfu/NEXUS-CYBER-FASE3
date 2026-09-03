@@ -1,7 +1,13 @@
 /** Cerita → JSON copy slots. Server-side Ollama loopback only. Not NEX-AI WAF. */
 
 import {
+  FILL_STARTER_KEEP_ALIVE,
+  FILL_STARTER_NUM_CTX,
+  FILL_STARTER_NUM_PREDICT,
+  FILL_STARTER_STORY_MAX_CHARS,
+  FILL_STARTER_TEMPERATURE,
   FILL_STARTER_TIMEOUT_MS,
+  FILL_STARTER_TIMEOUT_RETRIES,
   isOperatorLocalLlmRuntime,
   localLlmBaseUrl,
   localLlmGenerateUrl,
@@ -34,7 +40,40 @@ export type FillStarterSlots = {
 export type FillStarterResult = FillStarterSlots & {
   usedFallback: boolean;
   model?: string;
+  error?: string;
 };
+
+export const MSG_FILL_TIMEOUT =
+  "Model tulis lokal timeout. Teks dari template kategori (bukan model lokal, bukan NEX-AI WAF).";
+export const MSG_FILL_DOWN =
+  "Model tulis lokal tidak merespons. Teks dari template kategori (bukan model lokal, bukan NEX-AI WAF).";
+
+export function clipFillStory(story: string): string {
+  const trimmed = story.trim();
+  if (trimmed.length <= FILL_STARTER_STORY_MAX_CHARS) return trimmed;
+  return `${trimmed.slice(0, FILL_STARTER_STORY_MAX_CHARS).trim()}…`;
+}
+
+export function isAbortError(err: unknown): boolean {
+  if (typeof err !== "object" || err === null) return false;
+  const name = "name" in err ? String((err as { name: unknown }).name) : "";
+  return name === "AbortError" || name === "TimeoutError";
+}
+
+export function buildOllamaFillBody(model: string, prompt: string): Record<string, unknown> {
+  return {
+    model,
+    prompt,
+    stream: false,
+    format: "json",
+    keep_alive: FILL_STARTER_KEEP_ALIVE,
+    options: {
+      temperature: FILL_STARTER_TEMPERATURE,
+      num_ctx: FILL_STARTER_NUM_CTX,
+      num_predict: FILL_STARTER_NUM_PREDICT,
+    },
+  };
+}
 
 export function parseFillStarterInput(raw: unknown): FillStarterInput | null {
   if (!raw || typeof raw !== "object") return null;
@@ -75,15 +114,13 @@ export function parseModelSlots(text: string): FillStarterSlots | null {
 
 export function buildFillPrompt(input: FillStarterInput, category: StarterCategory): string {
   return [
-    "Tulis teks situs UMKM bahasa Indonesia. Keluaran HANYA JSON, tanpa HTML, tanpa markdown.",
-    'Kunci: {"tagline","hero","about_body","cta_label","hours","description"}',
-    "Pakai HANYA fakta di cerita. Jangan mengarang alamat, harga, atau klaim yang tidak tertulis.",
-    "Jika jam operasional tidak disebut di cerita, hours harus string kosong.",
-    "cta_label singkat (tombol WhatsApp). hero = judul hero satu kalimat. description 1–2 kalimat.",
-    `Nama usaha: ${input.name}`,
-    `Kategori: ${category}`,
-    `WhatsApp: ${input.whatsapp || "(tidak diisi)"}`,
-    `Cerita: ${input.story}`,
+    "JSON saja (tanpa markdown). Kunci: tagline,hero,about_body,cta_label,hours,description.",
+    "Bahasa Indonesia, nada warung. Hanya fakta cerita. Jangan mengarang alamat, harga, atau klaim.",
+    "hours kosong jika jam tidak disebut. cta_label = tombol WA singkat. hero 1 kalimat. description 1–2 kalimat.",
+    `Nama:${input.name}`,
+    `Kategori:${category}`,
+    `WA:${input.whatsapp || "-"}`,
+    `Cerita:${clipFillStory(input.story)}`,
   ].join("\n");
 }
 
@@ -97,9 +134,12 @@ export async function fillStarterCopy(
 ): Promise<{ status: number; body: FillStarterResult }> {
   const category = normalizeStarterCategory(input.category);
   const presets = categoryPresetSlots(category);
-  const fallback = (status: number): { status: number; body: FillStarterResult } => ({
+  const fallback = (
+    status: number,
+    error?: string,
+  ): { status: number; body: FillStarterResult } => ({
     status,
-    body: { ...presets, usedFallback: true },
+    body: { ...presets, usedFallback: true, ...(error ? { error } : {}) },
   });
 
   if (!input.story.trim()) {
@@ -116,47 +156,54 @@ export async function fillStarterCopy(
   }
 
   const model = resolveWriterModel(env);
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetcher(localLlmGenerateUrl(base.url), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: ctrl.signal,
-      cache: "no-store",
-      body: JSON.stringify({
-        model,
-        prompt: buildFillPrompt(input, category),
-        stream: false,
-        format: "json",
-      }),
-    });
-    if (!res.ok) {
-      return fallback(200);
-    }
-    const text = await res.text();
-    let responseText = text;
+  const prompt = buildFillPrompt(input, category);
+  const url = localLlmGenerateUrl(base.url);
+  const attempts = 1 + FILL_STARTER_TIMEOUT_RETRIES;
+  let lastAbort = false;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const json = JSON.parse(text) as GenerateJson;
-      if (typeof json.response === "string") {
-        responseText = json.response;
+      const res = await fetcher(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: ctrl.signal,
+        cache: "no-store",
+        body: JSON.stringify(buildOllamaFillBody(model, prompt)),
+      });
+      if (!res.ok) {
+        return fallback(200, MSG_FILL_DOWN);
       }
-    } catch {
-      /* raw body may already be slots JSON */
+      const text = await res.text();
+      let responseText = text;
+      try {
+        const json = JSON.parse(text) as GenerateJson;
+        if (typeof json.response === "string") {
+          responseText = json.response;
+        }
+      } catch {
+        /* raw body may already be slots JSON */
+      }
+      const slots = parseModelSlots(responseText);
+      if (!slots) {
+        return fallback(200, MSG_FILL_DOWN);
+      }
+      return {
+        status: 200,
+        body: { ...slots, usedFallback: false, model },
+      };
+    } catch (err) {
+      lastAbort = isAbortError(err);
+      if (!lastAbort) {
+        return fallback(200, MSG_FILL_DOWN);
+      }
+    } finally {
+      clearTimeout(timer);
     }
-    const slots = parseModelSlots(responseText);
-    if (!slots) {
-      return fallback(200);
-    }
-    return {
-      status: 200,
-      body: { ...slots, usedFallback: false, model },
-    };
-  } catch {
-    return fallback(200);
-  } finally {
-    clearTimeout(timer);
   }
+
+  return fallback(200, lastAbort ? MSG_FILL_TIMEOUT : MSG_FILL_DOWN);
 }
 
 export type FillStarterJsonBody = FillStarterSlots & {
@@ -237,6 +284,7 @@ export async function handleFillStarterHttp(opts: {
       cta_label: body.cta_label,
       hours: body.hours,
       description: body.description,
+      ...(body.error ? { error: body.error } : {}),
     },
   };
 }

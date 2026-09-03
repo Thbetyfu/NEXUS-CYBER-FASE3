@@ -5,7 +5,14 @@ import { isVercelRuntime } from "./runtime-host.ts";
 export const DEFAULT_LOCAL_LLM_URL = "http://127.0.0.1:11434";
 /** Small instruct model for Channel Starter copy. Never WAF protect/reflex. Never 70B. */
 export const DEFAULT_LOCAL_LLM_MODEL = "gemma3:1b";
-export const FILL_STARTER_TIMEOUT_MS = 25_000;
+/** Per Ollama generate attempt. One retry on abort → ~70s bound, not unbounded. */
+export const FILL_STARTER_TIMEOUT_MS = 35_000;
+export const FILL_STARTER_TIMEOUT_RETRIES = 1;
+export const FILL_STARTER_KEEP_ALIVE = "30m";
+export const FILL_STARTER_NUM_CTX = 1024;
+export const FILL_STARTER_NUM_PREDICT = 220;
+export const FILL_STARTER_TEMPERATURE = 0.3;
+export const FILL_STARTER_STORY_MAX_CHARS = 700;
 
 const WAF_WRITER_BASES = new Set(["nex-ai-protect", "nex-ai-reflex"]);
 
