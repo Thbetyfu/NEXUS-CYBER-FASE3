@@ -7,6 +7,8 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Added
+- **Pilot stack harian (langkah 5 ops):** deploy-local/PILOT-STACK.bat menyalakan Ollama :11434 + Channel Starter :3010 + Portal :3003 jika belum listen; **bukan** START.bat SOC/WAF. Tunnel tetap START-PORTAL-PILOT.bat (:3003 saja). Urutan nyala di deploy-local/README.md. Vercel GaaS tidak memakai path LLM PC. Sleep/hibernate: powercfg tanpa Admin tidak mematikan hibernate.
+
 - **Fill cerita Channel Starter (langkah 3):** `POST /api/local-llm/fill-starter` (server → Ollama loopback `gemma3:1b`). Timeout/down → preset kategori, generate tetap. URL bukan loopback fail-closed. Bukan NEX-AI WAF. Bukan preview LLM. Tidak tunnel `:11434`.
 
 - **Runtime model tulis PC (langkah 2):** Ollama loopback `127.0.0.1:11434` (`deploy-local/START-LOCAL-LLM.bat`, `OLLAMA_HOST`). Portal `GET /api/local-llm/health` fetch server-side saja. Env `NEXUS_LOCAL_LLM_URL` di `.env.local` (bukan git). `nexus-tunnel.ps1` menolak tunnel `:11434`. Bukan NEX-AI WAF. Tidak `ollama pull` 70B.

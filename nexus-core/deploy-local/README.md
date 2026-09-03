@@ -56,6 +56,7 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 | --- | --- |
 | `ALLOW-DEV-LAPTOP.bat` | Sekali: firewall lab + Defender tidak tanya terus |
 | `CHECK-NEX-AI.bat` | Cek Ollama lokal punya `nex-ai-protect` + `nex-ai-reflex` (helper yang sama dipakai START) |
+| `PILOT-STACK.bat` | Satu klik harian: Ollama `:11434` + Channel Starter `:3010` + Portal `:3003` jika belum listen. **Bukan** `START.bat` (SOC/WAF/Docker). Tunnel tetap `START-PORTAL-PILOT.bat` |
 | `START-PORTAL-PILOT.bat` | Cloudflare Tunnel ke Channel Portal `:3003` (bukan SOC, bukan WAF, **bukan** `:11434`) |
 | `START-LOCAL-LLM.bat` | Ollama `127.0.0.1:11434` + writer `gemma3:1b`; portal `/api/local-llm/health` dan `POST /api/local-llm/fill-starter` |
 | `START-OFFLINE.bat` | **Ditolak** — playground diarsip; pakai `START.bat` |
@@ -113,6 +114,8 @@ Stack Docker di folder ini = tepi portofolio. Toko + wizard **bukan** kontainer:
 3. Double-click **`START-PORTAL-PILOT.bat`** — tunnel Cloudflare ke `:3003` saja
 4. HP: `/gate` → daftar → `/kredit` Isi → WA + bukti → approve `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`
 5. Preview: `https://<trycloudflare>/starter/preview/{slug}`
+
+Urutan nyala harian (PC Windows, **bukan** Vercel): (1) `PILOT-STACK.bat` atau tiga jendela — `START-LOCAL-LLM.bat` (`127.0.0.1:11434`), `python cli.py serve` di `channel-starter` (`:3010`), `npm run dev` di `nexus-gaas-web` (`:3003`); (2) `START-PORTAL-PILOT.bat` / `nexus-tunnel.ps1 -Portal` — tunnel **hanya** `:3003`; (3) approve Kredit di `http://127.0.0.1:3003/operator/topup` (loopback). Jangan tunnel `:11434`, `:3001`, `:8081`. Deploy Channel Portal di **Vercel tidak memakai** Ollama/`START-LOCAL-LLM` di laptop ini. Sleep: jika `powercfg /hibernate off` ditolak (bukan Admin), buka **Settings → System → Power & battery → Screen and sleep** — *On battery power, put my device to sleep* = **Never**, *When plugged in, put my device to sleep* = **Never**; hibernate: **Control Panel → Power Options → Change plan settings → Change advanced power settings → Sleep → Hibernate after** = **Never** (UAC/Admin).
 
 Pemilik: sleep Windows OFF; `cloudflared tunnel login` + hostname tetap (Zero Trust) sendiri. Jangan tunnel `:3001`/`:8081`.
 
