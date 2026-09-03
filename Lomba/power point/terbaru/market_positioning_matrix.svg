@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%">
+  <defs>
+    <!-- Card Shadow -->
+    <filter id="softShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+
+    <!-- Nexus Glow Shadow -->
+    <filter id="nexusGlow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#10B981" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- Background Grid Pattern -->
+    <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E2E8F0" stroke-width="0.8" opacity="0.6"/>
+    </pattern>
+
+    <!-- Background Glow Gradient -->
+    <radialGradient id="bgGlow" cx="80%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#D1FAE5" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#EFF6FF" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#F8FAFC" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Nexus Hero Card Gradient -->
+    <linearGradient id="heroCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0FDF4"/>
+    </linearGradient>
+
+    <!-- Axis Arrow Marker -->
+    <marker id="arrowStart" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto-start-reverse">
+      <path d="M 8 2 L 2 5 L 8 8 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowEnd" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <path d="M 2 2 L 8 5 L 2 8 Z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <style>
+    .font-base { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, sans-serif; }
+    .badge-title { font-size: 15px; font-weight: 700; fill: #1E3A8A; }
+    .axis-label { font-size: 13.5px; font-weight: 700; fill: #0F172A; text-anchor: middle; }
+    .card-title { font-size: 16px; font-weight: 800; }
+    .card-sub { font-size: 11.5px; font-weight: 500; fill: #64748B; }
+    .card-tag { font-size: 11px; font-weight: 700; }
+  </style>
+
+  <!-- Slide Background with Grid -->
+  <rect width="1200" height="675" fill="#F8FAFC"/>
+  <rect width="1200" height="675" fill="url(#gridPattern)"/>
+  <rect width="1200" height="675" fill="url(#bgGlow)"/>
+
+  <!-- Top Header Badge: Competitor and Positioning -->
+  <g transform="translate(45, 30)">
+    <rect x="0" y="0" width="260" height="42" rx="21" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+    <text class="font-base badge-title" x="130" y="26" text-anchor="middle">Competitor and Positioning</text>
+  </g>
+
+  <!-- Top Right Affiliation Badges -->
+  <g transform="translate(850, 32)">
+    <rect x="0" y="0" width="305" height="38" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#softShadow)"/>
+    <text class="font-base" x="15" y="24" font-size="11.5" font-weight="700" fill="#0F172A">NEXUS CYBER</text>
+    <text class="font-base" x="100" y="24" font-size="11" fill="#64748B">|</text>
+    <text class="font-base" x="115" y="24" font-size="11" font-weight="600" fill="#059669">PIDI Hackathon 2026</text>
+    <circle cx="285" cy="19" r="6" fill="#10B981"/>
+  </g>
+
+  <!-- ================= 2x2 QUADRANT AXES ================= -->
+  <!-- Horizontal Axis (X-Axis) -->
+  <line x1="80" y1="355" x2="1120" y2="355" stroke="#2563EB" stroke-width="2.5" marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+
+  <!-- Vertical Axis (Y-Axis) -->
+  <line x1="600" y1="100" x2="600" y2="615" stroke="#2563EB" stroke-width="2.5" marker-start="url(#arrowStart)" marker-end="url(#arrowEnd)"/>
+
+  <!-- Axis Labels Pill Badges -->
+  <!-- Top Label: Y-Axis Positive -->
+  <g transform="translate(400, 80)">
+    <rect x="0" y="0" width="400" height="36" rx="18" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="font-base axis-label" x="200" y="23">Autonomous Closed-Loop (Proteksi &amp; Wasit Otonom)</text>
+  </g>
+
+  <!-- Bottom Label: Y-Axis Negative -->
+  <g transform="translate(415, 600)">
+    <rect x="0" y="0" width="370" height="36" rx="18" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="font-base axis-label" x="185" y="23">Passive Reporting (Laporan Statis &amp; Advisory)</text>
+  </g>
+
+  <!-- Left Label: X-Axis Negative -->
+  <g transform="translate(30, 337)">
+    <rect x="0" y="0" width="225" height="36" rx="18" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="font-base axis-label" x="112.5" y="23">High Cost &amp; Complex Setup</text>
+  </g>
+
+  <!-- Right Label: X-Axis Positive -->
+  <g transform="translate(945, 337)">
+    <rect x="0" y="0" width="225" height="36" rx="18" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="font-base axis-label" x="112.5" y="23">Cost-Efficient Plug &amp; Play</text>
+  </g>
+
+  <!-- ================= QUADRANT CARDS ================= -->
+
+  <!-- [1] TOP-RIGHT QUADRANT: WINNING POSITION (NEXUS CYBER) -->
+  <g transform="translate(640, 135)" filter="url(#nexusGlow)">
+    <!-- Main Card Body -->
+    <rect x="0" y="0" width="480" height="190" rx="16" fill="url(#heroCardGrad)" stroke="#10B981" stroke-width="2.5"/>
+    
+    <!-- Top Pill Tag -->
+    <rect x="25" y="-12" width="170" height="26" rx="13" fill="#059669"/>
+    <text class="font-base" x="110" y="5" font-size="11" font-weight="800" fill="#FFFFFF" text-anchor="middle">★ MARKET LEADER (GaaS)</text>
+
+    <!-- Brand Icon + Title -->
+    <rect x="25" y="25" width="48" height="48" rx="10" fill="#0F172A"/>
+    <path d="M 39 49 L 49 37 L 59 49 L 49 61 Z" fill="#10B981"/>
+    <circle cx="49" cy="49" r="4" fill="#FFFFFF"/>
+
+    <text class="font-base card-title" x="85" y="47" fill="#0F172A">NEXUS CYBER</text>
+    <text class="font-base card-tag" x="85" y="65" fill="#059669">Guardrail-as-a-Service (GaaS) · Dual-Brain AI</text>
+
+    <!-- Bullet Points -->
+    <circle cx="35" cy="95" r="4" fill="#10B981"/>
+    <text class="font-base" x="48" y="99" font-size="12.5" font-weight="600" fill="#1E293B">Proteksi Tepi Instan (&lt;1.2ms) + Wasit Uji Ulang (Replay Proof)</text>
+
+    <circle cx="35" cy="125" r="4" fill="#10B981"/>
+    <text class="font-base" x="48" y="129" font-size="12.5" font-weight="600" fill="#1E293B">Sangat Terjangkau: UMKM (Rp 20rb) &amp; BPR/Fintech (Rp 300rb)</text>
+
+    <circle cx="35" cy="155" r="4" fill="#10B981"/>
+    <text class="font-base" x="48" y="159" font-size="12.5" font-weight="600" fill="#1E293B">Zero-Code Onboarding: Selesai Terpasang dalam 5 Menit</text>
+  </g>
+
+  <!-- [2] TOP-LEFT QUADRANT: ENTERPRISE CLOUD WAF -->
+  <g transform="translate(140, 145)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="400" height="170" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    
+    <!-- Competitor Badges -->
+    <rect x="20" y="20" width="170" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="105" y="42" font-size="13" font-weight="800" fill="#F97316" text-anchor="middle">cloudflare</text>
+
+    <rect x="205" y="20" width="175" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="292.5" y="42" font-size="13" font-weight="800" fill="#FF9900" text-anchor="middle">AWS WAF / Akamai</text>
+
+    <text class="font-base" x="20" y="78" font-size="12" font-weight="700" fill="#475569">Enterprise Cloud WAF</text>
+
+    <circle cx="28" cy="105" r="3.5" fill="#94A3B8"/>
+    <text class="font-base card-sub" x="40" y="109">Mitigasi DDoS Tbps Global &amp; Anycast CDN kuat</text>
+
+    <circle cx="28" cy="130" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="134" fill="#E11D48">Biaya Sangat Mahal (Ratusan Juta/Thn) untuk BPR daerah</text>
+
+    <circle cx="28" cy="155" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="159" fill="#E11D48">Rule manual kaku, tidak ada wasit uji ulang origin otomatis</text>
+  </g>
+
+  <!-- [3] BOTTOM-LEFT QUADRANT: VULNERABILITY SCANNERS & MANUAL PENTEST -->
+  <g transform="translate(140, 400)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="400" height="175" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    
+    <!-- Competitor Badges -->
+    <rect x="20" y="20" width="170" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="105" y="42" font-size="13" font-weight="800" fill="#005CB9" text-anchor="middle">tenable nessus</text>
+
+    <rect x="205" y="20" width="175" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="292.5" y="42" font-size="12" font-weight="800" fill="#334155" text-anchor="middle">Konsultan Pentest</text>
+
+    <text class="font-base" x="20" y="78" font-size="12" font-weight="700" fill="#475569">Audit Kerentanan &amp; Jasa Manual</text>
+
+    <circle cx="28" cy="105" r="3.5" fill="#94A3B8"/>
+    <text class="font-base card-sub" x="40" y="109">Pemindaian ribuan database CVE mendalam</text>
+
+    <circle cx="28" cy="130" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="134" fill="#E11D48">Hanya menghasilkan laporan PDF tebal tanpa proteksi runtime</text>
+
+    <circle cx="28" cy="155" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="159" fill="#E11D48">Audit berkala lambat (tahunan/semesteran), biaya jasa tinggi</text>
+  </g>
+
+  <!-- [4] BOTTOM-RIGHT QUADRANT: PASSIVE / BASIC TOOLS -->
+  <g transform="translate(680, 400)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="440" height="175" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    
+    <!-- Competitor Badges -->
+    <rect x="20" y="20" width="190" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="115" y="42" font-size="12.5" font-weight="800" fill="#0284C7" text-anchor="middle">Microsoft Copilot</text>
+
+    <rect x="225" y="20" width="195" height="34" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text class="font-base" x="322.5" y="42" font-size="12.5" font-weight="800" fill="#2563EB" text-anchor="middle">Plugin WAF Dasar / Web</text>
+
+    <text class="font-base" x="20" y="78" font-size="12" font-weight="700" fill="#475569">Asisten AI Chat &amp; Filter Host Lokal</text>
+
+    <circle cx="28" cy="105" r="3.5" fill="#94A3B8"/>
+    <text class="font-base card-sub" x="40" y="109">Mudah diakses dan memberi rekomendasi teks</text>
+
+    <circle cx="28" cy="130" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="134" fill="#E11D48">Hanya saran kode / chat tanpa kemampuan menahan trafik tepi</text>
+
+    <circle cx="28" cy="155" r="3.5" fill="#E11D48"/>
+    <text class="font-base card-sub" x="40" y="159" fill="#E11D48">Sering false-positive &amp; memperberat beban CPU server</text>
+  </g>
+
+</svg>

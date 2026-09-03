@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 580" width="100%" height="100%">
+  <defs>
+    <!-- Filter Shadow -->
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+
+    <!-- Nexus Highlight Gradient -->
+    <linearGradient id="nexusColGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECFDF5"/>
+      <stop offset="100%" stop-color="#D1FAE5"/>
+    </linearGradient>
+
+    <!-- Header Gradient -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+
+    <!-- Checkmark Icon (Green) -->
+    <g id="icon-check">
+      <circle cx="0" cy="0" r="16" fill="#D1FAE5"/>
+      <path d="M-6 0 L-2 4 L6 -4" stroke="#059669" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+
+    <!-- Cross Icon (Red) -->
+    <g id="icon-cross">
+      <circle cx="0" cy="0" r="16" fill="#FFE4E6"/>
+      <path d="M-5 -5 L5 5 M5 -5 L-5 5" stroke="#E11D48" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Tilde Icon (Amber) -->
+    <g id="icon-tilde">
+      <circle cx="0" cy="0" r="16" fill="#FEF3C7"/>
+      <path d="M-6 0 Q-3 -5 0 0 Q3 5 6 0" stroke="#D97706" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </g>
+  </defs>
+
+  <style>
+    .font-base { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, sans-serif; }
+    .th-title { font-size: 15px; font-weight: 700; fill: #FFFFFF; letter-spacing: 0.3px; }
+    .th-highlight { font-size: 16px; font-weight: 800; fill: #34D399; letter-spacing: 0.5px; }
+    .row-param { font-size: 14.5px; font-weight: 600; fill: #0F172A; }
+    .border-line { stroke: #E2E8F0; stroke-width: 1; }
+    .nexus-border { stroke: #10B981; stroke-width: 1.5; }
+  </style>
+
+  <!-- Container Box with Shadow -->
+  <rect x="15" y="15" width="1170" height="550" rx="12" fill="#FFFFFF" filter="url(#cardShadow)"/>
+  <rect x="15" y="15" width="1170" height="550" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Alternating Row Backgrounds -->
+  <rect x="15" y="145" width="1170" height="70" fill="#F8FAFC"/>
+  <rect x="15" y="285" width="1170" height="70" fill="#F8FAFC"/>
+  <rect x="15" y="425" width="1170" height="70" fill="#F8FAFC"/>
+
+  <!-- NEXUS CYBER Highlight Column (Full Height) -->
+  <rect x="390" y="15" width="205" height="550" fill="url(#nexusColGrad)"/>
+  <line x1="390" y1="15" x2="390" y2="565" stroke="#10B981" stroke-width="1.5"/>
+  <line x1="595" y1="15" x2="595" y2="565" stroke="#10B981" stroke-width="1.5"/>
+
+  <!-- Table Header Background -->
+  <path d="M 15 27 C 15 20.37 20.37 15 27 15 L 1173 15 C 1179.63 15 1185 20.37 1185 27 L 1185 75 L 15 75 Z" fill="url(#headerGrad)"/>
+
+  <!-- Header Nexus Top Highlight Accent -->
+  <rect x="390" y="15" width="205" height="60" fill="#064E3B"/>
+  <line x1="390" y1="15" x2="595" y2="15" stroke="#34D399" stroke-width="4"/>
+
+  <!-- Header Separators -->
+  <line x1="390" y1="15" x2="390" y2="75" stroke="#334155" stroke-width="1"/>
+  <line x1="595" y1="15" x2="595" y2="75" stroke="#334155" stroke-width="1"/>
+  <line x1="790" y1="15" x2="790" y2="75" stroke="#334155" stroke-width="1"/>
+  <line x1="985" y1="15" x2="985" y2="75" stroke="#334155" stroke-width="1"/>
+
+  <!-- Header Titles -->
+  <text class="font-base th-title" x="40" y="50" text-anchor="start">Parameter &amp; Kapabilitas Kunci</text>
+  <text class="font-base th-highlight" x="492.5" y="50" text-anchor="middle">★ NEXUS CYBER</text>
+  <text class="font-base th-title" x="692.5" y="50" text-anchor="middle">Cloudflare / AWS WAF</text>
+  <text class="font-base th-title" x="887.5" y="50" text-anchor="middle">Tenable Nessus</text>
+  <text class="font-base th-title" x="1085" y="50" text-anchor="middle">Microsoft Copilot</text>
+
+  <!-- Horizontal Grid Lines -->
+  <line x1="15" y1="75" x2="1185" y2="75" class="border-line"/>
+  <line x1="15" y1="145" x2="1185" y2="145" class="border-line"/>
+  <line x1="15" y1="215" x2="1185" y2="215" class="border-line"/>
+  <line x1="15" y1="285" x2="1185" y2="285" class="border-line"/>
+  <line x1="15" y1="355" x2="1185" y2="355" class="border-line"/>
+  <line x1="15" y1="425" x2="1185" y2="425" class="border-line"/>
+  <line x1="15" y1="495" x2="1185" y2="495" class="border-line"/>
+
+  <!-- Vertical Grid Lines for Other Columns -->
+  <line x1="790" y1="75" x2="790" y2="565" class="border-line"/>
+  <line x1="985" y1="75" x2="985" y2="565" class="border-line"/>
+
+  <!-- ================= ROW 1 ================= -->
+  <!-- Mitigasi Celah Tepi Instan (<2 Menit) -->
+  <text class="font-base row-param" x="40" y="115">Mitigasi Celah Tepi Instan (&lt;2 Menit)</text>
+  <use href="#icon-check" x="492.5" y="110"/>
+  <use href="#icon-tilde" x="692.5" y="110"/>
+  <use href="#icon-cross" x="887.5" y="110"/>
+  <use href="#icon-tilde" x="1085" y="110"/>
+
+  <!-- ================= ROW 2 ================= -->
+  <!-- Wasit Uji Ulang Tembakan (Replay Proof) -->
+  <text class="font-base row-param" x="40" y="185">Wasit Uji Ulang Tembakan (Replay Proof)</text>
+  <use href="#icon-check" x="492.5" y="180"/>
+  <use href="#icon-cross" x="692.5" y="180"/>
+  <use href="#icon-cross" x="887.5" y="180"/>
+  <use href="#icon-cross" x="1085" y="180"/>
+
+  <!-- ================= ROW 3 ================= -->
+  <!-- Proteksi DDoS Skala Global (Terabits) -->
+  <text class="font-base row-param" x="40" y="255">Proteksi DDoS Skala Global (Terabits)</text>
+  <use href="#icon-tilde" x="492.5" y="250"/>
+  <use href="#icon-check" x="692.5" y="250"/>
+  <use href="#icon-cross" x="887.5" y="250"/>
+  <use href="#icon-cross" x="1085" y="250"/>
+
+  <!-- ================= ROW 4 ================= -->
+  <!-- Pemindaian Mendalam Ribuan Database CVE -->
+  <text class="font-base row-param" x="40" y="325">Pemindaian Mendalam Ribuan Database CVE</text>
+  <use href="#icon-tilde" x="492.5" y="320"/>
+  <use href="#icon-cross" x="692.5" y="320"/>
+  <use href="#icon-check" x="887.5" y="320"/>
+  <use href="#icon-tilde" x="1085" y="320"/>
+
+  <!-- ================= ROW 5 ================= -->
+  <!-- Analisis & Ringkasan Insiden AI (GenAI) -->
+  <text class="font-base row-param" x="40" y="395">Analisis &amp; Ringkasan Insiden AI (GenAI)</text>
+  <use href="#icon-check" x="492.5" y="390"/>
+  <use href="#icon-tilde" x="692.5" y="390"/>
+  <use href="#icon-cross" x="887.5" y="390"/>
+  <use href="#icon-check" x="1085" y="390"/>
+
+  <!-- ================= ROW 6 ================= -->
+  <!-- Keterjangkauan Biaya BPR & Fintech Daerah -->
+  <text class="font-base row-param" x="40" y="465">Keterjangkauan Biaya BPR &amp; Fintech Daerah</text>
+  <use href="#icon-check" x="492.5" y="460"/>
+  <use href="#icon-cross" x="692.5" y="460"/>
+  <use href="#icon-tilde" x="887.5" y="460"/>
+  <use href="#icon-tilde" x="1085" y="460"/>
+
+  <!-- ================= ROW 7 ================= -->
+  <!-- Kepatuhan Terintegrasi POJK No. 30/2025 -->
+  <text class="font-base row-param" x="40" y="535">Kepatuhan Terintegrasi POJK No. 30/2025</text>
+  <use href="#icon-check" x="492.5" y="530"/>
+  <use href="#icon-tilde" x="692.5" y="530"/>
+  <use href="#icon-tilde" x="887.5" y="530"/>
+  <use href="#icon-cross" x="1085" y="530"/>
+
+</svg>
