@@ -6,6 +6,7 @@ import {
   healthFromTagsBody,
   isBlockedWriterModel,
   isLocalLlmLoopbackUrl,
+  isOperatorLocalLlmRuntime,
   localLlmBaseUrl,
   localLlmGenerateUrl,
   localLlmTagsUrl,
@@ -36,6 +37,47 @@ test("default dan env loopback diterima; 0.0.0.0 dan publik ditolak", () => {
 
   const bad = localLlmBaseUrl({ NEXUS_LOCAL_LLM_URL: "http://0.0.0.0:11434" });
   assert.equal(bad.ok, false);
+  assert.equal(isOperatorLocalLlmRuntime({}), true);
+  assert.equal(isOperatorLocalLlmRuntime({ VERCEL: "1" }), false);
+});
+
+test("ping URL bukan loopback: 503 tanpa fetch :11434", async () => {
+  let fetched = "";
+  const { status, body } = await pingLocalLlm(
+    { NEXUS_LOCAL_LLM_URL: "https://evil.example:11434" },
+    async (url) => {
+      fetched = String(url);
+      return new Response("should not run", { status: 200 });
+    },
+  );
+  assert.equal(fetched, "");
+  assert.equal(status, 503);
+  assert.equal(body.ok, false);
+  assert.doesNotMatch(fetched, /11434/);
+});
+
+test("Vercel storefront: tidak fetch Ollama 11434 (health + fill)", async () => {
+  let healthUrl = "";
+  const health = await pingLocalLlm({ VERCEL: "1", NEXUS_LOCAL_LLM_URL: "http://127.0.0.1:11434" }, async (url) => {
+    healthUrl = String(url);
+    return new Response("should not run", { status: 200 });
+  });
+  assert.equal(healthUrl, "");
+  assert.equal(health.status, 503);
+  assert.match(health.body.message, /etalase|Vercel/i);
+
+  let fillUrl = "";
+  const fill = await fillStarterCopy(
+    { name: "A", category: "fnb", whatsapp: "08", story: "Kopi tubruk setiap pagi." },
+    { VERCEL: "1", NEXUS_LOCAL_LLM_URL: "http://127.0.0.1:11434" },
+    async (url) => {
+      fillUrl = String(url);
+      return new Response("should not run", { status: 200 });
+    },
+  );
+  assert.equal(fillUrl, "");
+  assert.equal(fill.status, 503);
+  assert.equal(fill.body.usedFallback, true);
 });
 
 test("tags dan generate URL tidak memakai path klien", () => {
@@ -182,6 +224,21 @@ test("URL bukan loopback fail-closed: tidak fetch, fallback preset", async () =>
   assert.equal(status, 503);
   assert.equal(body.usedFallback, true);
   assert.equal(body.description, CATEGORY_COPY.profil.description);
+});
+
+test("fill URL publik :11434: 503, tidak fetch host itu", async () => {
+  let fetched = "";
+  const { status, body } = await fillStarterCopy(
+    { name: "A", category: "profil", whatsapp: "08", story: "Usaha lokal." },
+    { NEXUS_LOCAL_LLM_URL: "https://ollama.trycloudflare.com:11434" },
+    async (url) => {
+      fetched = String(url);
+      return new Response("should not run", { status: 200 });
+    },
+  );
+  assert.equal(fetched, "");
+  assert.equal(status, 503);
+  assert.equal(body.usedFallback, true);
 });
 
 test("env protect tidak pernah dikirim ke Ollama", async () => {

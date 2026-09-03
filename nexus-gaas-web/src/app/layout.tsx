@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Nexus Cyber — Channel Starter & GaaS Cowork",
   description:
-    "Website UMKM dari form + template (Rp 20.000/bulan). Upsell keamanan wasit Job/Loop GaaS — paket terpisah.",
+    "Channel Starter (20 Kr, header tepi) ≠ Edge Shield (--tier tepi, 1 host lab) ≠ Job/Loop Cowork. Bukan 100 UMKM di belakang WAF.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

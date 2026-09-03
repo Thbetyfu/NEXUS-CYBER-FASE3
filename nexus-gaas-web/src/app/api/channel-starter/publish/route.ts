@@ -3,7 +3,6 @@ import { channelStarterInternalUrl } from "@/lib/channel-starter-urls";
 import { lookupIdentity, publicIdentity, readSidFromRequest } from "@/lib/portal-identity";
 import { summarizeVercelPublish } from "@/lib/starter-publish";
 
-const CHANNEL_STARTER = channelStarterInternalUrl();
 const SLUG = /^[a-z0-9-]{1,48}$/;
 
 /** Invoke `POST /publish/{slug}` on the wizard PC (same as `python cli.py publish --slug`). Session required. */
@@ -22,6 +21,20 @@ export async function POST(request: NextRequest) {
   }
   if (!SLUG.test(slug)) {
     return NextResponse.json({ ok: false, error: "slug tidak valid" }, { status: 400 });
+  }
+
+  const CHANNEL_STARTER = channelStarterInternalUrl();
+  if (!CHANNEL_STARTER) {
+    return NextResponse.json(
+      {
+        ok: false,
+        publishOk: false,
+        publishSkipped: true,
+        vercelUrl: null,
+        publishError: "Publish hanya di PC wizard. Portal Vercel adalah etalase.",
+      },
+      { status: 503 },
+    );
   }
 
   try {

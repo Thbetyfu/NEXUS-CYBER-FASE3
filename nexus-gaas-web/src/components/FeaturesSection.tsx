@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Globe, Layers, Sparkles, Zap } from "lucide-react";
+import { HONEST_SKU_DISCLAIMER } from "@/lib/honest-copy";
 
 const FEATURES = [
   {
@@ -22,7 +23,7 @@ const FEATURES = [
   {
     icon: Layers,
     title: "Upsell terpisah",
-    desc: "Starter 20rb = header tepi. Edge Shield 35rb / Startup 75rb = tepi Reflex 1 host lab. Bukan alert Telegram pelanggan. Job = kontrak wasit.",
+    desc: "Starter 20rb = header tepi, bukan WAF. Edge Shield = SKU terpisah (--tier tepi, 1 host lab). Job/Loop = Cowork. Starter ≠ tepi ≠ Loop. Jangan klaim 100 UMKM di belakang WAF.",
     color: "#8b5cf6",
     bg: "rgba(139, 92, 246, 0.08)",
   },
@@ -142,15 +143,16 @@ export function ProductLayersSection() {
         viewport={{ once: true }}
       >
         <div>
-          <h2 style={{ marginTop: 0 }}>Dua lapisan produk</h2>
+          <h2 style={{ marginTop: 0 }}>Tiga SKU, bukan satu harga</h2>
           <p>
-            <strong>Channel Starter</strong> = website murah untuk UMKM.{" "}
-            <strong>Edge Antibody Cowork</strong> = wasit keamanan Job/Loop untuk yang butuh bukti risiko.
+            <strong>Channel Starter</strong> = website + header tepi (20 Kr).{" "}
+            <strong>Edge Shield</strong> = --tier tepi, satu PROTECTED_HOST per lab — bukan setiap warung.{" "}
+            <strong>Edge Antibody Cowork</strong> = Job/Loop wasit. {HONEST_SKU_DISCLAIMER}
           </p>
           <ul className="notion-pricing-features-list">
-            <li>Generator rule-based — bukan LLM berat</li>
-            <li>Deploy multi-tenant *.nexus.id</li>
-            <li>Upsell Cowork satu PROTECTED_HOST per instance</li>
+            <li>Generator rule-based — bukan LLM berat di Vercel</li>
+            <li>Deploy folder Vercel = origin telanjang, bukan WAF</li>
+            <li>Edge Shield = satu PROTECTED_HOST; bukan 100 UMKM di belakang WAF</li>
           </ul>
         </div>
         <motion.div

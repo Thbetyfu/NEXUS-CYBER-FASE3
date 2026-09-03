@@ -24,6 +24,15 @@ test("tanpa env: internal loopback, publik path /starter", () => {
   assert.equal(isLoopbackHttpOrigin("https://abc.trycloudflare.com"), false);
 });
 
+test("Vercel storefront: jangan CHANNEL_STARTER ke laptop / loopback", () => {
+  assert.equal(channelStarterInternalUrl({ VERCEL: "1" }), "");
+  assert.equal(channelStarterInternalUrl({ VERCEL: "1", CHANNEL_STARTER_URL: "http://127.0.0.1:3010" }), "");
+  assert.equal(
+    channelStarterInternalUrl({ VERCEL: "true", CHANNEL_STARTER_URL: "https://wizard.example" }),
+    "https://wizard.example",
+  );
+});
+
 test("CHANNEL_STARTER_PUBLIC_URL mengalahkan NEXT_PUBLIC", () => {
   const env = {
     CHANNEL_STARTER_PUBLIC_URL: "https://portal.example/starter",

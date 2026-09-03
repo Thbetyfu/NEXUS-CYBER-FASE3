@@ -161,8 +161,8 @@ export function SegmentHub() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            Satu alur. Pilih segmen → form paket → Kredit Nexus. WhatsApp hanya on-prem (Corporat besar /
-            Pemerintah).
+            Satu alur. Pilih segmen → form paket → Kredit Nexus. Starter ≠ Edge Shield (--tier tepi) ≠ Loop.
+            Jangan klaim 100 UMKM di belakang WAF. WhatsApp hanya on-prem (Corporat besar / Pemerintah).
           </motion.p>
 
           <motion.a
@@ -230,7 +230,7 @@ export function SegmentHub() {
             <span style={{ fontSize: 15 }}>Nexus Cyber</span>
           </div>
           <p style={{ fontSize: 12, color: "var(--notion-text-muted)", margin: 0, maxWidth: 400 }}>
-            Channel Portal — website & wasit kanal, harga per peran dan status website.
+            Channel Portal — Starter ≠ tepi ≠ Loop. Bukan 100 UMKM di belakang WAF.
           </p>
           <p style={{ fontSize: 12, color: "var(--notion-text-muted)", margin: "12px 0 0" }}>
             © {new Date().getFullYear()} Nexus Cyber

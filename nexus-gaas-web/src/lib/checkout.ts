@@ -89,7 +89,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/sekolah",
     priceKr: 28,
     debitStarter: false,
-    summary: "Reflex 1 host lab. Bukan Job.",
+    summary: "Reflex 1 host lab. Bukan debit 20 Kr, bukan Job.",
   },
   "startup-landing": {
     sku: "startup-landing",
@@ -126,7 +126,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/startup",
     priceKr: 75,
     debitStarter: false,
-    summary: "Alur A Reflex, 1 host lab. Bukan Job.",
+    summary: "Alur A Reflex, 1 host lab. Bukan debit 20 Kr, bukan Job.",
   },
   "startup-loop": {
     sku: "startup-loop",

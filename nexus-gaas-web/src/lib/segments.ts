@@ -7,6 +7,7 @@ import {
   priceKrLabel,
 } from "./checkout.ts";
 import { whatsappPackageUrl, whatsappUrl } from "./portal-config.ts";
+import { FAQ_NO_MASS_WAF } from "./honest-copy.ts";
 
 export type SegmentId = "umkm" | "startup" | "sekolah" | "corporat" | "pemerintah";
 
@@ -155,6 +156,7 @@ export const SEGMENTS: SegmentDef[] = [
         q: "Rp 20rb sudah termasuk keamanan?",
         a: "Header Shield saja: header tepi + hostname lab. Bukan WAF Reflex, bukan pulih template, bukan filter judi. Edge Shield = kartu 35rb (shared lab host). Bukan Job.",
       },
+      FAQ_NO_MASS_WAF,
     ],
   },
   {
@@ -251,6 +253,7 @@ export const SEGMENTS: SegmentDef[] = [
         q: "Rp 20rb sudah termasuk WAF atau anti-deface?",
         a: "Tidak. Header Shield = header tepi + hostname lab. Edge Shield (kartu 35rb) = Reflex judi/deface lewat tepi, 1 host lab, bukan Job, bukan pulih Vercel.",
       },
+      FAQ_NO_MASS_WAF,
     ],
   },
   {
@@ -372,6 +375,7 @@ export const SEGMENTS: SegmentDef[] = [
         q: "Bedanya dengan UMKM Rp 20rb?",
         a: "45rb = landing + header tepi (bukan WAF). 75rb = Edge Shield Alur A Reflex, 1 host lab (--tier tepi) — lebih dari header saja, bukan Job, bukan alert Telegram pelanggan. Job 200rb terpisah.",
       },
+      FAQ_NO_MASS_WAF,
     ],
   },
   {

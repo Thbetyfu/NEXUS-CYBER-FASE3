@@ -9,8 +9,9 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 | Kemampuan | Status | Catatan |
 | --- | --- | --- |
 | **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent, 4 palet, Caddy header tepi; wizard `:3010`; seed demo `sites/contoh-nexcent`; portal `/starter` + `/starter/preview/{slug}` **publik** (setiap slug); generate+`POST /publish/{slug}` ke Vercel **per folder** jika token di PC wizard (bukan git FASE3; `*.vercel.app` bukan WAF) |
-| **Pagar tipis** (tepi shared) | **Lab MVP** | Upsell `--tier tepi` → Caddy ke WAF `:8080` + Reflex judi/deface; **satu** slug/`PROTECTED_HOST` per lab; **tanpa** Job. Instance ini: **`bu-grace`**. Bukan Starter 20 Kr; bukan pulih Vercel |
+| **Pagar tipis** (tepi shared) | **Lab MVP** | Upsell `--tier tepi` → Caddy ke WAF `:8080` + Reflex judi/deface; **satu** slug/`PROTECTED_HOST` per lab (default tanpa upsell: `portfolio.nexus-lab.test`); **tanpa** Job. Instance ini: **`bu-grace`**. Bukan Starter 20 Kr; bukan setiap warung; bukan pulih Vercel |
 | Edge Antibody Cowork (Job/Loop) | **Sudah ada** | NEX-RED + gateway |
+| Channel Portal di Vercel | **Etalase** | Copy + gerbang/Kredit. Generate, Ollama `:11434`, operator Acc **di PC**. `VERCEL=1` tidak fetch `:11434`. Bukan WAF |
 
 ## Produk GaaS (mesin)
 

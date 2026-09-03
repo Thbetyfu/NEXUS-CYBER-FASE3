@@ -2,6 +2,7 @@
 
 import {
   FILL_STARTER_TIMEOUT_MS,
+  isOperatorLocalLlmRuntime,
   localLlmBaseUrl,
   localLlmGenerateUrl,
   resolveWriterModel,
@@ -103,6 +104,10 @@ export async function fillStarterCopy(
 
   if (!input.story.trim()) {
     return fallback(200);
+  }
+
+  if (!isOperatorLocalLlmRuntime(env)) {
+    return fallback(503);
   }
 
   const base = localLlmBaseUrl(env);

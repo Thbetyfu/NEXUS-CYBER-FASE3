@@ -279,8 +279,23 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertEqual(result["cowork_job_id"], "")
         self.assertTrue(result["pagar_tipis"])
         self.assertIsNone(result["job_error"])
+        self.assertNotEqual(PricingTier.TEPI, PricingTier.STARTER)
+        self.assertNotEqual(PricingTier.TEPI, PricingTier.COWORK)
         gaas_block = render_site_caddy_block(get_manifest(manifest.slug, sites_root=self.sites_root))
         self.assertIn("reverse_proxy gateway:8080", gaas_block)
+
+    def test_starter_generate_is_not_tepi_waf(self):
+        manifest = generate_from_dict(
+            {"business_name": "Warung Starter", "category": "fnb", "whatsapp": "6281234567890"},
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(manifest.tier, PricingTier.STARTER)
+        self.assertFalse(manifest.gaas_active)
+        self.assertIsNone(manifest.gaas_tier)
+        self.assertNotEqual(manifest.tier, PricingTier.TEPI)
+        block = render_site_caddy_block(manifest)
+        self.assertIn("file_server", block)
+        self.assertNotIn("reverse_proxy gateway:8080", block)
 
 
 if __name__ == "__main__":

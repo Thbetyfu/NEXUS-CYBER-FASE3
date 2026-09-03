@@ -5,6 +5,7 @@ import { ArrowRight, Building2, CheckCircle2, Globe, CreditCard, Package, Rotate
 import { useEffect, useMemo, useState } from "react";
 import { PlanCta } from "./Navbar";
 import { PORTAL_DAFTAR, PORTAL_ORDER } from "@/lib/portal-config";
+import { HONEST_SKU_DISCLAIMER } from "@/lib/honest-copy";
 
 export type Audience = "umkm" | "bisnis";
 
@@ -416,7 +417,7 @@ export function PricingSection() {
       <div className="text-center" style={{ marginBottom: "1.25rem" }}>
         <h2 style={{ fontSize: "1.75rem", marginTop: 0, borderBottom: "none" }}>Temukan paket yang cocok</h2>
         <p style={{ color: "var(--notion-text-muted)", fontSize: 15, maxWidth: 520, margin: "0.5rem auto 0" }}>
-          Mulai dari quiz singkat, atau pilih langsung jika sudah yakin.
+          {HONEST_SKU_DISCLAIMER} Job/Loop bukan kasir Starter 20 Kr. WhatsApp hanya on-prem.
         </p>
       </div>
 

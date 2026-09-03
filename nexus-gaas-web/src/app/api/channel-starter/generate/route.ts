@@ -12,8 +12,6 @@ import {
   type PortalIdentity,
 } from "@/lib/portal-identity";
 
-const CHANNEL_STARTER = channelStarterInternalUrl();
-
 const SUBDOMAIN_BASE = process.env.CHANNEL_STARTER_SUBDOMAIN_BASE?.trim() || KREDIT.labSubdomainBase;
 
 type GenerateJson = {
@@ -84,6 +82,23 @@ export async function POST(request: NextRequest) {
     }
     const message = err instanceof Error ? err.message : "debit failed";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+
+  const CHANNEL_STARTER = channelStarterInternalUrl();
+  if (!CHANNEL_STARTER) {
+    const refunded = await refundStarter(orderId, ledgerPath);
+    return chargedResponse(
+      refunded,
+      orderId,
+      identity,
+      {
+        ok: false,
+        error:
+          "Generate Channel Starter hanya di PC operator. Portal Vercel adalah etalase — jangan CHANNEL_STARTER_URL loopback.",
+        chargedKr: 0,
+      },
+      503,
+    );
   }
 
   try {

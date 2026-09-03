@@ -1,5 +1,7 @@
 /** Channel Starter wizard :3010 — internal (Node on the PC) vs public (browser). */
 
+import { isVercelRuntime } from "./runtime-host.ts";
+
 const DEFAULT_INTERNAL = "http://127.0.0.1:3010";
 const DEFAULT_PUBLIC_PATH = "/starter";
 
@@ -22,6 +24,12 @@ export function channelStarterInternalUrl(
   env: NodeJS.Dict<string | undefined> = process.env,
 ): string {
   const raw = env.CHANNEL_STARTER_URL?.trim();
+  if (isVercelRuntime(env)) {
+    if (raw && !isLoopbackHttpOrigin(raw)) {
+      return stripTrailingSlash(raw);
+    }
+    return "";
+  }
   return stripTrailingSlash(raw || DEFAULT_INTERNAL);
 }
 

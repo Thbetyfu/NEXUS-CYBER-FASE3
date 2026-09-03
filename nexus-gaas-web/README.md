@@ -61,7 +61,7 @@ Paket ~Rp 20rb / 20 Kredit = **website Starter**, bukan full WAF, bukan Loop/Job
 | **Kanonik** | root repo **NEXUS-CYBER-WEBISTE-GaaS** | Produksi situs jual |
 | Connect Git **FASE3** (monorepo ini) | folder **`nexus-gaas-web`** | **Discouraged.** Owner reconnect di dashboard; agen tidak mengklik Vercel. |
 
-Generate di produksi tetap butuh API Starter yang reachable — lab = `:3010` di PC operator, bukan “Vercel menjalankan WAF”.
+Generate di **Vercel** tidak memakai wizard laptop. Etalase copy saja; `CHANNEL_STARTER_URL` loopback diabaikan (`VERCEL=1`). Fill LLM tidak fetch `:11434`. Operator Acc + generate = PC 24/7. Named hostname butuh zona Cloudflare pemilik (belum). Bukan “Vercel menjalankan WAF”.
 
 ## Skrip
 

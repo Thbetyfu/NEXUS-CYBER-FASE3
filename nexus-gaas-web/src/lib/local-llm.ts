@@ -1,5 +1,7 @@
 /** Local writing-model runtime on the operator PC. Server-side only. Not NEX-AI WAF. */
 
+import { isVercelRuntime } from "./runtime-host.ts";
+
 export const DEFAULT_LOCAL_LLM_URL = "http://127.0.0.1:11434";
 /** Small instruct model for Channel Starter copy. Never WAF protect/reflex. Never 70B. */
 export const DEFAULT_LOCAL_LLM_MODEL = "gemma3:1b";
@@ -13,6 +15,15 @@ const MSG_DOWN =
   "Runtime model tulis tidak merespons di PC ini. Jalankan nexus-core\\deploy-local\\START-LOCAL-LLM.bat. Jangan tunnel port model.";
 const MSG_INSTALL =
   "Ollama belum terpasang atau belum nyala. Pasang dari https://ollama.com/download lalu START-LOCAL-LLM.bat. Bind hanya 127.0.0.1.";
+const MSG_VERCEL_STOREFRONT =
+  "Portal di Vercel adalah etalase. Generate, model tulis, dan akun operator tetap di PC 24/7 — bukan 127.0.0.1:11434 di serverless.";
+
+/** Vercel serverless is not the operator PC. Skip Ollama even if URL is loopback. */
+export function isOperatorLocalLlmRuntime(
+  env: NodeJS.Dict<string | undefined> = process.env,
+): boolean {
+  return !isVercelRuntime(env);
+}
 
 export type LocalLlmBase =
   | { ok: true; url: string }
@@ -106,6 +117,10 @@ export async function pingLocalLlm(
   env: NodeJS.Dict<string | undefined> = process.env,
   fetcher: typeof fetch = fetch,
 ): Promise<{ status: number; body: LocalLlmHealth }> {
+  if (!isOperatorLocalLlmRuntime(env)) {
+    return { status: 503, body: { ok: false, ready: false, message: MSG_VERCEL_STOREFRONT } };
+  }
+
   const base = localLlmBaseUrl(env);
   if (!base.ok) {
     return { status: 503, body: { ok: false, ready: false, message: base.error } };

@@ -69,7 +69,7 @@ Bukan produksi GaaS, bukan 100 host WAF. PC 24/7 + Cloudflare Tunnel ke **Channe
 | `NEXUS_LOCAL_LLM_URL` | `http://127.0.0.1:11434` | sama — **jangan** URL publik; Node fetch health + fill saja |
 | `NEXUS_LOCAL_LLM_MODEL` | `gemma3:1b` | tag tulis kecil; **bukan** `nex-ai-protect` / `nex-ai-reflex` |
 
-Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC (tunnel `:3010`). Rewrite `/starter` ke loopback **tidak** jalan di Vercel.
+Portal di **Vercel** = **etalase copy**. Generate, fill LLM (`:11434`), dan `/operator` **tetap di PC 24/7**. Jangan `CHANNEL_STARTER_URL` ke laptop. Runtime Vercel tidak fetch Ollama (termasuk loopback). Hostname publik named butuh **zona Cloudflare milik pemilik** (belum ada) — jangan mengarang domain. Rewrite `/starter` ke loopback **tidak** jalan di Vercel.
 
 ### Start
 
@@ -107,7 +107,7 @@ Ollama di PC operator, bind **`127.0.0.1:11434`**. Bukan pengganti NEX-AI WAF (`
 - **Kredit (kasir v0, jalur beli utama):** UMKM / sekolah / startup dan Corporat **hosted** = **form paket** `/pesan/{sku}` — bukan dump `/order`, bukan “Pesan via WhatsApp” di kartu. Harga kartu = **Kr** (setara Rp, 1 Kr = Rp 1.000). Starter = **20 Kr** generate fail-closed. Sesi **tamu** (cookie httpOnly `nexus_portal_sid` setelah `/gate`) atau **akun**. **Isi** = `POST /api/kredit/topup` (satu pending/`proof_submitted` per identitas; **409** jika sudah ada). Kartu awam = Nomor DANA (default nomor WA publik) → bukti gambar/PDF → Kirim bukti → tombol **Buka WhatsApp** (pesan pendek, bukan URL wa.me); tanpa nama env ke pelanggan. Saldo **tidak** naik sampai `POST /api/kredit/topup/approve` atau UI `/operator/topup` (loopback). Keran `POST /api/kredit/faucet` hanya lab opt-in (`NEXUS_LEDGER_MODE=lab` + `NEXUS_LAB_FAUCET=1`). Navbar: segmen + **saldo Kredit** + plus → `/kredit`; tanpa Masuk/Daftar di nav; tanpa ORDER-id di nav.
 - **Akun v0:** gerbang `/gate` (Login → `/masuk`, Daftar → `/daftar`, Tamu). Cookie sesi = lewati gerbang. Bukan SSO. Bukan operator `:3001`. Daftar dari tamu memindahkan Kredit + pending isi ulang.
 - **Top-up IDR:** pending + Nomor DANA env + form bukti (`data/topup-proofs/`) + WhatsApp `62895603358692` **setelah** Kirim bukti + approve operator **sudah** di kode lab. Email bukti opsional (`nodemailer` di `package.json`, SMTP env). **QRIS/VA milik pemilik belum live**. **Bukan** billing produksi. **Bukan** Midtrans/Stripe. WhatsApp isi ulang **bukan** CTA beli paket UMKM. Operator localhost `/operator/topup` — bukan SOC `:3001`.
-- **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield.
+- **Bukan:** beli Job Cowork **200 Kr self-serve** dari kasir Starter. Job hosted = form `/pesan/corporat-job` + operator. **Bukan** F-10 roster. **Bukan** Loop/Job otomatis di Starter 20 Kr. **Bukan** debit 20 Kr untuk Edge Shield. **Jangan klaim 100 UMKM di belakang WAF.**
 
 ---
 
