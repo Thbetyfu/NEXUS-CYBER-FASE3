@@ -100,6 +100,9 @@ nexus-core/NEX-RED/jobs/schedules.json
 # Vercel CLI local project link — never Connect Git the Nexus monorepo to a warung
 .vercel/
 
+# Contest/pitch materials (not product code; large pptx)
+/Lomba/
+
 # Playground lab diarsip (zip), bukan kode produk
 /playground/
 nexus-core/playground/
