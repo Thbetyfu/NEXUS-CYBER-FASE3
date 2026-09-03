@@ -41,6 +41,30 @@ class TestVercelPublish(unittest.TestCase):
             result = publish_site(manifest)
         self.assertTrue(result.get("skipped"))
         self.assertFalse(result.get("ok"))
+        self.assertEqual(
+            result.get("user_message"),
+            "publish gagal: CHANNEL_STARTER_VERCEL_PUBLISH dimatikan di mesin wizard",
+        )
+
+    def test_no_token_honest_skip(self):
+        manifest = SiteManifest(
+            site_id="CS-TEST",
+            slug="kedai-palet-biru",
+            business_name="Kedai",
+            category=SiteCategory.FNB,
+            tier=PricingTier.STARTER,
+            subdomain="kedai-palet-biru.nexus-lab.test",
+            output_dir="/tmp/no-such-site",
+            index_path="/tmp/no-such-site/index.html",
+        )
+        with patch.dict(os.environ, {"CHANNEL_STARTER_VERCEL_PUBLISH": "auto"}, clear=False), patch(
+            "channel_starter.vercel_publish.vercel_token",
+            return_value="",
+        ):
+            result = publish_site(manifest)
+        self.assertFalse(result.get("ok"))
+        self.assertTrue(result.get("skipped"))
+        self.assertEqual(result.get("user_message"), "publish gagal: set token di mesin wizard")
 
     def test_demo_slug_not_published(self):
         manifest = SiteManifest(

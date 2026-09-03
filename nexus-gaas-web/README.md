@@ -22,7 +22,7 @@ Login / daftar / tamu = **pelanggan storefront** (`/masuk`, `/daftar`). Bukan lo
 
 ## Relasi ke nexus-core
 
-Generate situs **membutuhkan** Channel Starter di mesin core. **Node di PC** memanggil `CHANNEL_STARTER_URL` (default `http://127.0.0.1:3010`). **Browser** memakai `/starter/` (rewrite ke wizard) atau `CHANNEL_STARTER_PUBLIC_URL` — bukan `127.0.0.1` di HP pengunjung.
+Generate situs **membutuhkan** Channel Starter di mesin core. **Node di PC** memanggil `CHANNEL_STARTER_URL` (default `http://127.0.0.1:3010`). **Browser:** `/starter` dan `/starter/preview/{slug}` **publik** (tanpa cookie; slug mana pun). Hub/segmen/`/pesan`/`/kredit` tetap `/gate`. `/operator` dan approve topup **bukan** publik. Jangan Connect Git FASE3 ke project warung. Token Vercel hanya di PC wizard.
 
 ## Pilot HP (satu README)
 

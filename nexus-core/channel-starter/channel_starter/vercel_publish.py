@@ -20,15 +20,19 @@ _URL_RE = re.compile(r"https://[a-z0-9.-]+\.vercel\.app/?", re.I)
 _AUTH_JSON = Path.home() / ".local/share/com.vercel.cli/auth.json"
 _CONFIG_JSON = Path.home() / ".local/share/com.vercel.cli/config.json"
 _SKIP_SLUGS = {DEMO_SLUG, "cek-redirect"}
+_OFF = {"0", "false", "no", "off"}
+MSG_NO_TOKEN = "publish gagal: set token di mesin wizard"
+MSG_DISABLED = "publish gagal: CHANNEL_STARTER_VERCEL_PUBLISH dimatikan di mesin wizard"
+MSG_NO_CLI = "publish gagal: vercel CLI tidak ada di mesin wizard"
+
+
+def _publish_flag() -> str:
+    return (os.getenv("CHANNEL_STARTER_VERCEL_PUBLISH") or "auto").strip().lower()
 
 
 def vercel_publish_enabled() -> bool:
-    flag = (os.getenv("CHANNEL_STARTER_VERCEL_PUBLISH") or "auto").strip().lower()
-    if flag in {"0", "false", "no", "off"}:
-        return False
-    if flag in {"1", "true", "yes", "on"}:
-        return True
-    return bool(vercel_token())
+    """False only when explicitly off. Auto still attempts; missing token is an honest skip."""
+    return _publish_flag() not in _OFF
 
 
 def vercel_token() -> str:
@@ -94,7 +98,12 @@ def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
     """Deploy sites/{slug} as its own Vercel project. Fail-soft without token/CLI."""
     slug = manifest.slug
     if not vercel_publish_enabled():
-        return {"ok": False, "skipped": True, "reason": "CHANNEL_STARTER_VERCEL_PUBLISH disabled"}
+        return {
+            "ok": False,
+            "skipped": True,
+            "reason": "CHANNEL_STARTER_VERCEL_PUBLISH disabled",
+            "user_message": MSG_DISABLED,
+        }
     if slug in _SKIP_SLUGS:
         return {"ok": False, "skipped": True, "reason": f"slug {slug} is demo/lab, not a client publish"}
     token = vercel_token()
@@ -103,6 +112,7 @@ def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
             "ok": False,
             "skipped": True,
             "reason": "no VERCEL_TOKEN / vercel login",
+            "user_message": MSG_NO_TOKEN,
         }
     site_dir = Path(manifest.output_dir)
     if not _is_safe_site_dir(site_dir):
@@ -110,7 +120,12 @@ def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
 
     binary = _find_vercel_bin()
     if not binary:
-        return {"ok": False, "skipped": True, "reason": "vercel CLI / npx not found"}
+        return {
+            "ok": False,
+            "skipped": True,
+            "reason": "vercel CLI / npx not found",
+            "user_message": MSG_NO_CLI,
+        }
 
     cmd = [
         *binary,
@@ -138,7 +153,12 @@ def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
             cwd=str(site_dir),
         )
     except FileNotFoundError:
-        return {"ok": False, "skipped": True, "reason": "vercel CLI not found"}
+        return {
+            "ok": False,
+            "skipped": True,
+            "reason": "vercel CLI not found",
+            "user_message": MSG_NO_CLI,
+        }
     except subprocess.TimeoutExpired:
         return {"ok": False, "skipped": False, "error": "vercel deploy timed out"}
 

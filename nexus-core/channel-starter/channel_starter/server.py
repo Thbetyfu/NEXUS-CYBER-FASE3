@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from channel_starter.config import SERVE_PORT
 from channel_starter.deploy import deploy_manifest
+from channel_starter.vercel_publish import publish_slug
 from channel_starter.generator import (
     ensure_demo_site,
     generate_from_dict,
@@ -206,10 +207,34 @@ async def generate_form(request: Request):
         raise HTTPException(status_code=400, detail="business_name and whatsapp are required")
     try:
         manifest = generate_from_dict(payload)
-        deploy_manifest(manifest)
+        deploy = deploy_manifest(manifest)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    vercel = deploy.get("vercel") if isinstance(deploy, dict) else {}
+    if wants_json(request):
+        return JSONResponse(
+            {
+                "ok": True,
+                "slug": manifest.slug,
+                "preview": f"/preview/{manifest.slug}",
+                "deploy": deploy,
+                "vercel": vercel or {},
+            }
+        )
     return RedirectResponse(url=f"/preview/{manifest.slug}", status_code=303)
+
+
+@app.post("/publish/{slug}")
+def publish_site_route(slug: str):
+    """Same as `python cli.py publish --slug`. Token/login must live on this wizard PC."""
+    result = publish_slug(slug)
+    return JSONResponse(result)
+
+
+def wants_json(request: Request) -> bool:
+    """Portal/Node send Accept: application/json. Browser form posts keep the 303 HTML redirect."""
+    accept = (request.headers.get("accept") or "").lower()
+    return "application/json" in accept and "text/html" not in accept
 
 
 def wants_html(request: Request) -> bool:
@@ -244,7 +269,7 @@ def wizard_error_html(title: str, message: str) -> str:
 @app.exception_handler(StarletteHTTPException)
 async def browser_http_exception(request: Request, exc: StarletteHTTPException):
     """Avoid FastAPI JSON detail payloads in Simple Browser; they look like a crash."""
-    if request.url.path.startswith("/upsell") or not wants_html(request):
+    if request.url.path.startswith("/upsell") or request.url.path.startswith("/publish") or not wants_html(request):
         return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
     detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
     if exc.status_code == 404:

@@ -11,7 +11,8 @@
 ## Alur pengunjung
 
 ```text
-/gate  (Login / Daftar / Tamu — skip jika cookie sesi ada)
+/starter[/preview/{slug}]  (publik — tanpa cookie; rewrite ke wizard :3010)
+/gate  (Login / Daftar / Tamu — skip jika cookie sesi ada; **wajib** untuk etalase)
  └─ /  (hub: pilih segmen)
      ├─ /umkm        → sudah/belum punya web? → kartu → /pesan/{sku}
      ├─ /sekolah     → sama
@@ -22,7 +23,11 @@
 
 Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` · `/order` → `/pesan/umkm-starter`. Isi Kredit: `/kredit` (beli/isi ulang pending, navbar chip +).
 
-**Header Shield 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Edge Shield 35rb/28rb** (kartu portal; teknis `--tier tepi`) = Reflex judi/deface lewat WAF, **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. Job/Loop = `/corporat` / `--tier cowork`.
+**Header Shield 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Edge Shield 35rb/28rb** (kartu portal; teknis `--tier tepi`) = Reflex judi/deface lewat WAF, **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. **Lab instance ini:** host itu = **`bu-grace.nexus-lab.test`** (bukan setiap warung, bukan Starter 20 Kr). Job/Loop = `/corporat` / `--tier cowork`.
+
+Preview HTML shareable untuk **setiap slug** (bukan hanya `bu-grace`): `GET /starter` dan `GET /starter/preview/{slug}` di `:3003` **tanpa** login. `/gate` tetap wajib untuk hub/segmen/`/pesan`/`/kredit`. `/operator` dan approve Kredit **bukan** publik. `/starter/generate` dan `/starter/upsell` **bukan** path publik.
+
+Form Starter: `/pesan/umkm-starter` (wajib: nama, WA usaha, kategori; cerita opsional). Tombol **Lihat teks** → `POST /api/local-llm/fill-starter` (tanpa debit) menampilkan tagline/hero/tentang + sumber jujur (template kategori vs model lokal). Baru **Bayar 20 Kredit & buat site**. Gagal/timeout fill = template tetap tampil. Alamat, palet, dll. di **Lengkapi nanti**. Alias `/order`. Proxy generate (`Accept: application/json`) ke `CHANNEL_STARTER_URL` loopback; preview HTML `/starter/preview/{slug}`. Generate memanggil `deploy_manifest` → `publish_site` (sama `python cli.py publish --slug`). UI sukses menampilkan URL Vercel atau **`publish gagal: set token di mesin wizard`**. Retry: `POST /api/channel-starter/publish` `{ slug }` (sesi pelanggan, bukan publik). Token/`vercel login` **hanya di PC wizard**. **Jangan** Connect Git **NEXUS-CYBER-FASE3** ke project Vercel warung. `*.vercel.app` **bukan** WAF. Starter 20 Kr **bukan** Edge Shield; jangan upsell `--tier tepi` massal tiap slug. Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.
 
 | Status website | UMKM / Sekolah | Startup |
 | --- | --- | --- |
@@ -34,7 +39,6 @@ Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/co
 | Hosted | Job 200rb · Loop 300rb · Custom |
 | On-prem (besar) | Edge 18jt/thn · Loop 3,5jt/bln · Custom (sama model Pemerintah) |
 
-Form Starter: `/pesan/umkm-starter` (wajib: nama, WA usaha, kategori; cerita opsional). Tombol **Lihat teks** → `POST /api/local-llm/fill-starter` (tanpa debit) menampilkan tagline/hero/tentang + sumber jujur (template kategori vs model lokal). Baru **Bayar 20 Kredit & buat site**. Gagal/timeout fill = template tetap tampil. Alamat, palet, dll. di **Lengkapi nanti**. Alias `/order`. Proxy generate membaca `Location` `/preview/{slug}` atau `/sites/{slug}`; preview HTML di wizard `:3010`. Generate men-deploy folder situs ke Vercel jika token/login di mesin wizard (bukan git monorepo). Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.  
 Distribusi pilot: [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md).  
 On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md).
 
@@ -115,4 +119,4 @@ Portal legacy submodule **digantikan** folder **`nexus-gaas-web/`** (lab di FASE
 
 ---
 
-*2026-09-03 — langkah 4: **Lihat teks** (fill, tanpa debit) lalu **Bayar 20 Kredit & buat site**; `usedFallback` jujur*
+*2026-09-03 — funnel `/starter` + preview semua slug publik; Starter ≠ Edge Shield; jangan Connect FASE3 ke warung*

@@ -102,9 +102,9 @@ python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 0812345
 python cli.py serve
 ```
 
-Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Generate 303 ke preview, bukan JSON `/sites/{slug}`.
+Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Browser form POST = 303 ke preview. Portal (`Accept: application/json`) = JSON + hasil `publish_site`. `POST /publish/{slug}` = `python cli.py publish --slug`.
 
-**Vercel:** generate men-deploy **folder situs** (`sites/{slug}`) ke project Vercel bernama slug jika `vercel login` / `VERCEL_TOKEN` ada. Cangkang lama `warung-bu-siti` *No Production Deployment* = *link* tanpa `--prod`. `python cli.py publish --slug …` / `--all`. **Jangan** Connect Git ke monorepo Nexus. Hosting `*.vercel.app` **bukan** WAF. Preview lab tetap `:3010`.
+**Vercel:** generate men-deploy **folder situs** (`sites/{slug}`) ke project Vercel bernama slug jika `vercel login` / `VERCEL_TOKEN` ada di **mesin wizard**. Tanpa token: skip jujur (`publish gagal: set token di mesin wizard`). Cangkang lama `warung-bu-siti` *No Production Deployment* = *link* tanpa `--prod`. `python cli.py publish --slug …` / `--all`. **Jangan** Connect Git **NEXUS-CYBER-FASE3** (atau monorepo Nexus) ke project warung. Hosting `*.vercel.app` **bukan** WAF / Edge Shield. Preview lab: portal `/starter/preview/{slug}` (publik, setiap slug).
 
 ### Deploy subdomain (lab)
 

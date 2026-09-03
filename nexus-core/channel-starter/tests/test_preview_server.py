@@ -42,7 +42,7 @@ class TestPreviewServer(unittest.TestCase):
     def test_http_preview_404_and_generate_redirect(self):
         try:
             from fastapi.testclient import TestClient
-        except ImportError:
+        except (ImportError, RuntimeError):
             self.skipTest("fastapi TestClient unavailable")
 
         client = TestClient(app)
@@ -65,7 +65,7 @@ class TestPreviewServer(unittest.TestCase):
         try:
             with (
                 patch("channel_starter.server.generate_from_dict") as gen,
-                patch("channel_starter.server.deploy_manifest", return_value={}),
+                patch("channel_starter.server.deploy_manifest", return_value={"vercel": {}}),
             ):
                 from channel_starter.types import SiteCategory, SiteManifest, PricingTier
 
@@ -84,15 +84,38 @@ class TestPreviewServer(unittest.TestCase):
                     data={"business_name": "Uji Redirect", "whatsapp": "081234567890"},
                     follow_redirects=False,
                 )
-            self.assertEqual(res.status_code, 303)
-            self.assertEqual(res.headers.get("location"), "/preview/uji-redirect")
+                self.assertEqual(res.status_code, 303)
+                self.assertEqual(res.headers.get("location"), "/preview/uji-redirect")
+
+                json_res = client.post(
+                    "/generate",
+                    data={"business_name": "Uji Redirect", "whatsapp": "081234567890"},
+                    headers={"Accept": "application/json"},
+                    follow_redirects=False,
+                )
+                self.assertEqual(json_res.status_code, 200)
+                body = json_res.json()
+                self.assertEqual(body["slug"], "uji-redirect")
+                self.assertIn("vercel", body)
+
+            with patch(
+                "channel_starter.server.publish_slug",
+                return_value={
+                    "ok": False,
+                    "skipped": True,
+                    "user_message": "publish gagal: set token di mesin wizard",
+                },
+            ):
+                pub = client.post("/publish/uji-redirect", headers={"Accept": "application/json"})
+            self.assertEqual(pub.status_code, 200)
+            self.assertEqual(pub.json()["user_message"], "publish gagal: set token di mesin wizard")
         finally:
             tmp.cleanup()
 
     def test_browser_never_gets_json_site_not_found(self):
         try:
             from fastapi.testclient import TestClient
-        except ImportError:
+        except (ImportError, RuntimeError):
             self.skipTest("fastapi TestClient unavailable")
 
         client = TestClient(app)

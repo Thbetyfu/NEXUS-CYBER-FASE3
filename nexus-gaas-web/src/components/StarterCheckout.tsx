@@ -31,6 +31,10 @@ type OrderResult = {
   subdomain?: string | null;
   balance?: number;
   orderId?: string;
+  publishOk?: boolean;
+  publishSkipped?: boolean;
+  vercelUrl?: string | null;
+  publishError?: string | null;
 };
 
 function slugFromRedirect(redirect: string | null | undefined): string | null {
@@ -135,6 +139,10 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         kind?: "guest" | "account" | null;
         orderCode?: string | null;
         email?: string | null;
+        publishOk?: boolean;
+        publishSkipped?: boolean;
+        vercelUrl?: string | null;
+        publishError?: string | null;
       };
       if (typeof data.balance === "number") {
         setKredit((prev) => ({
@@ -164,6 +172,10 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         subdomain: data.subdomain || (slug ? `${slug}.nexus-lab.test` : null),
         balance: data.balance,
         orderId: data.orderId,
+        publishOk: data.publishOk,
+        publishSkipped: data.publishSkipped,
+        vercelUrl: data.vercelUrl ?? null,
+        publishError: data.publishError ?? null,
       });
     } catch {
       setFormError("Portal tidak menghubungi Channel Starter (:3010). Kredit tidak hang — generate gagal di-refund.");
@@ -258,10 +270,74 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                 <li>Domain kustom yang diisi: {later.custom_domain} (CNAME operator, bukan auto-DNS publik)</li>
               )}
               <li>
-                Jika wizard punya sesi Vercel, generate men-deploy folder situs ke project Vercel bernama slug (bukan git
-                monorepo Nexus). *.vercel.app bukan WAF.
+                Publish Vercel = folder situs saja di mesin wizard (
+                <code>python cli.py publish --slug …</code>
+                ). Token/login Vercel hanya di PC itu. Jangan Connect Git NEXUS-CYBER-FASE3 ke project warung. *.vercel.app
+                bukan WAF / Edge Shield.
               </li>
-              <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell.</li>
+              <li>
+                {result.publishOk && result.vercelUrl ? (
+                  <>
+                    Vercel:{" "}
+                    <a href={result.vercelUrl} rel="noreferrer" target="_blank">
+                      {result.vercelUrl}
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    {result.publishError || "publish gagal: set token di mesin wizard"}
+                    {result.slug ? (
+                      <>
+                        {" "}
+                        <button
+                          type="button"
+                          className="notion-button"
+                          disabled={blocked}
+                          onClick={() => {
+                            const slug = result.slug;
+                            if (!slug) return;
+                            setBusy(true);
+                            void fetch("/api/channel-starter/publish", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ slug }),
+                            })
+                              .then(async (pubRes) => {
+                                const pub = (await pubRes.json()) as OrderResult & { ok?: boolean };
+                                setResult((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        publishOk: pub.publishOk,
+                                        publishSkipped: pub.publishSkipped,
+                                        vercelUrl: pub.vercelUrl ?? null,
+                                        publishError: pub.publishError ?? null,
+                                      }
+                                    : prev,
+                                );
+                              })
+                              .catch(() => {
+                                setResult((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        publishOk: false,
+                                        publishError: "publish gagal: Channel Starter :3010 tidak merespons",
+                                      }
+                                    : prev,
+                                );
+                              })
+                              .finally(() => setBusy(false));
+                          }}
+                        >
+                          Coba publish lagi
+                        </button>
+                      </>
+                    ) : null}
+                  </>
+                )}
+              </li>
+              <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell. Starter 20 Kr ≠ Edge Shield.</li>
             </ol>
             {formError && (
               <p className="kredit-error" role="alert">

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeInternalNext } from "@/lib/gate-next";
 import { isLoopbackHost } from "@/lib/operator-gate";
+import { isPortalPublicPath } from "@/lib/portal-public-paths";
 
 const COOKIE_SID = "nexus_portal_sid";
-
-const PUBLIC_PATHS = new Set(["/gate", "/masuk", "/daftar"]);
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.has(pathname);
-}
 
 function hasSessionCookie(request: NextRequest): boolean {
   const raw = request.cookies.get(COOKIE_SID)?.value?.trim() ?? "";
@@ -32,7 +27,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(dest, request.url));
   }
 
-  if (isPublicPath(pathname) || session) {
+  // /starter + /starter/preview/:slug (any UMKM). Not /operator, not topup approve.
+  if (isPortalPublicPath(pathname) || session) {
     return NextResponse.next();
   }
 

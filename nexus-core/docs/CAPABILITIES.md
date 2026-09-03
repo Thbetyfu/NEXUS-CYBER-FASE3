@@ -1,6 +1,6 @@
 # Nexus Cyber Capabilities
 
-Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED`. **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) (GaaS Edge Antibody Cowork). Pembaruan: 2026-09-02.
+Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX-RED`. **Model produk:** [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) (GaaS Edge Antibody Cowork). Pembaruan: 2026-09-03.
 
 ---
 
@@ -8,8 +8,8 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 
 | Kemampuan | Status | Catatan |
 | --- | --- | --- |
-| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent, 4 palet, Caddy header tepi; wizard `:3010`; seed demo `sites/contoh-nexcent`; publish Vercel **per folder situs** jika token/login (bukan git monorepo; `*.vercel.app` bukan WAF) |
-| **Pagar tipis** (tepi shared) | **Lab MVP** | Upsell `--tier tepi` → Caddy ke WAF `:8080` + Reflex judi/deface; **satu** slug/`PROTECTED_HOST` per lab; **tanpa** Job. Bukan Starter 20 Kr; bukan pulih Vercel |
+| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent, 4 palet, Caddy header tepi; wizard `:3010`; seed demo `sites/contoh-nexcent`; portal `/starter` + `/starter/preview/{slug}` **publik** (setiap slug); generate+`POST /publish/{slug}` ke Vercel **per folder** jika token di PC wizard (bukan git FASE3; `*.vercel.app` bukan WAF) |
+| **Pagar tipis** (tepi shared) | **Lab MVP** | Upsell `--tier tepi` → Caddy ke WAF `:8080` + Reflex judi/deface; **satu** slug/`PROTECTED_HOST` per lab; **tanpa** Job. Instance ini: **`bu-grace`**. Bukan Starter 20 Kr; bukan pulih Vercel |
 | Edge Antibody Cowork (Job/Loop) | **Sudah ada** | NEX-RED + gateway |
 
 ## Produk GaaS (mesin)

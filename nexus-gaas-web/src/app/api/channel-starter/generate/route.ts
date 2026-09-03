@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
 import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
 import { channelStarterInternalUrl, channelStarterPreviewUrl } from "@/lib/channel-starter-urls";
+import { summarizeVercelPublish } from "@/lib/starter-publish";
 import {
   ledgerFileFor,
   lookupIdentity,
@@ -27,6 +28,10 @@ type GenerateJson = {
   orderCode?: string | null;
   kind?: string | null;
   redirect?: string | null;
+  publishOk?: boolean;
+  publishSkipped?: boolean;
+  vercelUrl?: string | null;
+  publishError?: string | null;
 };
 
 function chargedResponse(
@@ -86,7 +91,32 @@ export async function POST(request: NextRequest) {
       method: "POST",
       body,
       redirect: "manual",
+      headers: { Accept: "application/json" },
     });
+
+    const contentType = upstream.headers.get("content-type") || "";
+    if (upstream.ok && contentType.includes("application/json")) {
+      const payload = (await upstream.json()) as {
+        slug?: string;
+        vercel?: unknown;
+        deploy?: { vercel?: unknown };
+      };
+      const slug = payload.slug || null;
+      const publish = summarizeVercelPublish(payload.vercel ?? payload.deploy?.vercel);
+      return chargedResponse(
+        snapshot,
+        orderId,
+        identity,
+        {
+          ok: true,
+          slug,
+          previewUrl: slug ? channelStarterPreviewUrl(slug) : null,
+          subdomain: slug ? `${slug}.${SUBDOMAIN_BASE}` : null,
+          ...publish,
+        },
+        200,
+      );
+    }
 
     if (upstream.status >= 300 && upstream.status < 400) {
       const location = upstream.headers.get("location");
@@ -101,6 +131,10 @@ export async function POST(request: NextRequest) {
           previewUrl: slug ? channelStarterPreviewUrl(slug) : null,
           subdomain: slug ? `${slug}.${SUBDOMAIN_BASE}` : null,
           redirect: location,
+          publishOk: false,
+          publishSkipped: true,
+          vercelUrl: null,
+          publishError: "Publish belum dijalankan (wizard lama 303). Token Vercel hanya di PC wizard.",
         },
         200,
       );

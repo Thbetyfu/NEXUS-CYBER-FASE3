@@ -6,6 +6,11 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Changed
+- **Channel Portal preview shareable:** `/starter` dan `/starter/preview/{slug}` **tanpa** cookie `nexus_portal_sid` (rewrite ke wizard `:3010`). Etalase `/` `/umkm` `/kredit` `/pesan` tetap `/gate`. `/starter/generate` dan `/starter/upsell` **bukan** publik. `/operator` tetap loopback. `POST /api/kredit/topup/approve` tetap fail-closed (bukan publik). Uji `portal-public-paths.test.ts`.
+- **Publish Vercel setelah generate Starter:** portal `POST /api/channel-starter/generate` (Accept JSON) + `POST /api/channel-starter/publish` memanggil wizard loopback (`python cli.py publish --slug`). Sukses = URL `*.vercel.app`; tanpa `VERCEL_TOKEN`/`vercel login` di PC wizard = **`publish gagal: set token di mesin wizard`** (bukan sukses palsu). Token tidak di portal Vercel. **Jangan** Connect Git NEXUS-CYBER-FASE3 ke project warung. Debit **20 Kr** tidak berubah. Bukan Midtrans. Bukan WAF massal per slug. Uji `starter-publish.test.ts` + `python -m unittest` channel-starter.
+- **Lab Edge Shield satu host (`bu-grace`):** `cli.py upsell enable --slug bu-grace --tier tepi` → `PROTECTED_HOST=bu-grace.nexus-lab.test`, origin `channel-origin:8099/bu-grace/`, Caddy `reverse_proxy gateway:8080` (bukan `file_server`). `gaas_active` lain dimatikan. Portofolio **bukan** host WAF pada instance ini. Compose: `channel-starter-upsell.env` menimpa `PROTECTED_HOST`/`TARGET_BACKEND` (kunci itu tidak lagi di blok `environment:`). Starter 20 Kr **bukan** SKU ini untuk setiap warung. Jangan tunnel `:3001` `:8081` `:11434`.
+
 ### Added
 - **Pilot stack harian (langkah 5 ops):** `deploy-local/PILOT-STACK.bat` menyalakan Ollama `:11434` + Channel Starter `:3010` + Portal `:3003` jika belum listen; **bukan** `START.bat` SOC/WAF. Tunnel tetap `START-PORTAL-PILOT.bat` (`:3003` saja). Urutan nyala di `deploy-local/README.md`. Vercel GaaS tidak memakai path LLM PC. Sleep/hibernate: `powercfg` tanpa Admin tidak mematikan hibernate.
 
