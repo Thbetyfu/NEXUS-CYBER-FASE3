@@ -12,6 +12,8 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 - **Runtime model tulis PC (langkah 2):** Ollama loopback `127.0.0.1:11434` (`deploy-local/START-LOCAL-LLM.bat`, `OLLAMA_HOST`). Portal `GET /api/local-llm/health` fetch server-side saja. Env `NEXUS_LOCAL_LLM_URL` di `.env.local` (bukan git). `nexus-tunnel.ps1` menolak tunnel `:11434`. Bukan NEX-AI WAF. Tidak `ollama pull` 70B.
 
 ### Changed
+- **Lihat teks sebelum debit Starter:** `/pesan/{starter}` tombol **Lihat teks** → `POST /api/local-llm/fill-starter` (tanpa debit); tagline/hero/tentang + sumber jujur; baru **Bayar 20 Kredit & buat site**. Gagal/timeout tetap template. Bukan Midtrans. Tidak tunnel `:11434`.
+
 - **Cerita Starter sebelum generate:** cerita non-kosong → `POST /api/local-llm/fill-starter` (bukan `:11434` dari HP). Sukses mengisi slot teks; fallback/preset tetap generate. Bukan halaman preview LLM.
 - **Form Channel Starter pendek:** `/pesan/umkm-starter` wajib nama usaha, WhatsApp site, kategori; cerita usaha opsional. Alamat, palet, teks panjang, CTA, dll. di **Lengkapi nanti** (default palet hijau + CTA/jam kategori). Debit 20 Kr + `CHANNEL_STARTER_URL` `:3010` tidak berubah. Bukan Midtrans. Bukan CTA WhatsApp paket.
 

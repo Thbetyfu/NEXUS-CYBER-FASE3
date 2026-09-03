@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const input = parseFillStarterInput(raw);
   if (!input) {
     return NextResponse.json(
-      { ok: false, usedFallback: true, error: "Butuh name dan story (teks, bukan HTML)." },
+      { ok: false, usedFallback: true, error: "Butuh name (teks, bukan HTML)." },
       { status: 400 },
     );
   }

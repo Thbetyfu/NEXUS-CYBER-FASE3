@@ -34,7 +34,7 @@ Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/co
 | Hosted | Job 200rb · Loop 300rb · Custom |
 | On-prem (besar) | Edge 18jt/thn · Loop 3,5jt/bln · Custom (sama model Pemerintah) |
 
-Form Starter: `/pesan/umkm-starter` (wajib: nama, WA usaha, kategori; opsional cerita → `POST /api/local-llm/fill-starter` di PC lalu generate; gagal/timeout = preset kategori). Alamat, palet, teks panjang, CTA, dll. di **Lengkapi nanti**. Alias `/order`. Proxy generate membaca `Location` `/preview/{slug}` atau `/sites/{slug}`; preview HTML di wizard `:3010`. Generate men-deploy folder situs ke Vercel jika token/login di mesin wizard (bukan git monorepo). Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.  
+Form Starter: `/pesan/umkm-starter` (wajib: nama, WA usaha, kategori; cerita opsional). Tombol **Lihat teks** → `POST /api/local-llm/fill-starter` (tanpa debit) menampilkan tagline/hero/tentang + sumber jujur (template kategori vs model lokal). Baru **Bayar 20 Kredit & buat site**. Gagal/timeout fill = template tetap tampil. Alamat, palet, dll. di **Lengkapi nanti**. Alias `/order`. Proxy generate membaca `Location` `/preview/{slug}` atau `/sites/{slug}`; preview HTML di wizard `:3010`. Generate men-deploy folder situs ke Vercel jika token/login di mesin wizard (bukan git monorepo). Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.  
 Distribusi pilot: [DISTRIBUTION_PILOT.md](./DISTRIBUTION_PILOT.md).  
 On-prem pitching: [COWORK_B2G.md](./COWORK_B2G.md). Unit ekonomi: [PRICING_UNIT_ECONOMICS.md](./PRICING_UNIT_ECONOMICS.md).
 
@@ -80,7 +80,7 @@ Portal di **Vercel**: `CHANNEL_STARTER_URL` harus URL **publik** ke wizard di PC
 
 Operator `/operator/topup` **bukan** lewat Host publik (trycloudflare = 404 kosong). Approve hanya `http://127.0.0.1:3003/operator/topup` atau `http://localhost:3003/operator/topup` di PC (Next.js mengirim XFF IPv4-mapped loopback). Antrian: `.operator-topup-id` = **email** (label Email) atau nama+email jika `displayName`/`name` tersimpan; tamu = **Tamu · ORDER-xxxxxxxx**. UUID wallet hanya `title` / span redup, bukan baris utama. HTML SSR di loopback. Sleep Windows OFF. `cloudflared tunnel login` + named hostname = tugas pemilik (bukan agen).
 
-### Runtime model tulis (langkah 3 — fill cerita, bukan preview LLM)
+### Runtime model tulis (langkah 4 — lihat teks dulu, bukan debit)
 
 Ollama di PC operator, bind **`127.0.0.1:11434`**. Bukan pengganti NEX-AI WAF (`nex-ai-protect` / `nex-ai-reflex`). HP **tidak** menembak `:11434`.
 
@@ -91,7 +91,7 @@ Ollama di PC operator, bind **`127.0.0.1:11434`**. Bukan pengganti NEX-AI WAF (`
 | Model | `NEXUS_LOCAL_LLM_MODEL=gemma3:1b` (default). **Dilarang** tag `nex-ai-protect` / `nex-ai-reflex` / 70B |
 | Health | Server: `GET /api/local-llm/health` → fetch `GET {url}/api/tags` |
 | Fill | Server: `POST /api/local-llm/fill-starter` `{ name, category, whatsapp, story }` → JSON slots (tagline, hero, about_body, cta_label, hours, description). Bukan HTML. Timeout ~25s → `{ usedFallback: true, …preset kategori }`. URL bukan loopback → 503, tidak fetch |
-| Klien | `StarterCheckout` memanggil **portal** `/api/local-llm/fill-starter` (bukan `:11434`). Fallback tetap generate |
+| Klien | **Lihat teks** → portal `/api/local-llm/fill-starter` (bukan `:11434`). Tampilkan tagline/hero/tentang + `usedFallback`. **Bayar 20 Kredit & buat site** = generate+debit. Fill gagal tetap template. |
 | Tunnel | **Jangan.** `START-PORTAL-PILOT.bat` tidak membuka `:11434`. `nexus-tunnel.ps1` menolak port itu. |
 
 ---
@@ -115,4 +115,4 @@ Portal legacy submodule **digantikan** folder **`nexus-gaas-web/`** (lab di FASE
 
 ---
 
-*2026-09-02 — fill cerita `POST /api/local-llm/fill-starter` (`gemma3:1b`, loopback); timeout = preset*
+*2026-09-03 — langkah 4: **Lihat teks** (fill, tanpa debit) lalu **Bayar 20 Kredit & buat site**; `usedFallback` jujur*

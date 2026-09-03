@@ -1,16 +1,18 @@
 /** Cerita → JSON copy slots. Server-side Ollama loopback only. Not NEX-AI WAF. */
 
 import {
-  CATEGORY_COPY,
-  normalizeStarterCategory,
-  type StarterCategory,
-} from "./starter-generate-payload.ts";
-import {
   FILL_STARTER_TIMEOUT_MS,
   localLlmBaseUrl,
   localLlmGenerateUrl,
   resolveWriterModel,
 } from "./local-llm.ts";
+import {
+  categoryPresetSlots,
+  normalizeStarterCategory,
+  type StarterCategory,
+} from "./starter-generate-payload.ts";
+
+export { categoryPresetSlots };
 
 export type FillStarterInput = {
   name: string;
@@ -33,18 +35,6 @@ export type FillStarterResult = FillStarterSlots & {
   model?: string;
 };
 
-export function categoryPresetSlots(category: string): FillStarterSlots {
-  const copy = CATEGORY_COPY[normalizeStarterCategory(category)];
-  return {
-    tagline: copy.tagline,
-    hero: `${copy.headline} ${copy.headline_accent}`.trim(),
-    about_body: copy.about_body,
-    cta_label: copy.cta_label,
-    hours: copy.hours,
-    description: copy.description,
-  };
-}
-
 export function parseFillStarterInput(raw: unknown): FillStarterInput | null {
   if (!raw || typeof raw !== "object") return null;
   const body = raw as Record<string, unknown>;
@@ -52,7 +42,7 @@ export function parseFillStarterInput(raw: unknown): FillStarterInput | null {
   const whatsapp = typeof body.whatsapp === "string" ? body.whatsapp.trim() : "";
   const story = typeof body.story === "string" ? body.story.trim() : "";
   const category = typeof body.category === "string" ? body.category.trim() : "profil";
-  if (!name || !story) return null;
+  if (!name) return null;
   return { name, category, whatsapp, story };
 }
 
@@ -110,6 +100,10 @@ export async function fillStarterCopy(
     status,
     body: { ...presets, usedFallback: true },
   });
+
+  if (!input.story.trim()) {
+    return fallback(200);
+  }
 
   const base = localLlmBaseUrl(env);
   if (!base.ok) {

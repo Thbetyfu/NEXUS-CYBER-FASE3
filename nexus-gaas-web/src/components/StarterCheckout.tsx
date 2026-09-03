@@ -9,7 +9,12 @@ import { KREDIT } from "@/lib/kredit";
 import {
   DEFAULT_STARTER_THEME,
   EMPTY_STARTER_EXTRAS,
+  applyFillSlotsToExtras,
   buildStarterGeneratePairs,
+  categoryPresetSlots,
+  fillCopySourceLabel,
+  splitHeroLine,
+  type StarterFillSlots,
   type StarterGenerateExtras,
 } from "@/lib/starter-generate-payload";
 
@@ -34,34 +39,21 @@ function slugFromRedirect(redirect: string | null | undefined): string | null {
   return match?.[1] ?? null;
 }
 
-type LocalFillSlots = {
-  tagline?: string;
-  hero?: string;
-  about_body?: string;
-  cta_label?: string;
-  hours?: string;
-  description?: string;
-};
-
-function mergeLocalFill(later: StarterGenerateExtras, fill: LocalFillSlots): StarterGenerateExtras {
+function slotsFromFillBody(fill: StarterFillSlots, category: string): StarterFillSlots {
+  const fallback = categoryPresetSlots(category);
+  const tagline = (fill.tagline ?? "").trim();
   const hero = (fill.hero ?? "").trim();
-  const words = hero.replace(/[.!?…]+$/g, "").split(/\s+/).filter(Boolean);
-  let headline = hero;
-  let headlineAccent = "";
-  if (words.length >= 4) {
-    const at = Math.ceil(words.length / 2);
-    headline = words.slice(0, at).join(" ");
-    headlineAccent = words.slice(at).join(" ");
+  const about = (fill.about_body ?? "").trim();
+  if (!tagline && !hero && !about) {
+    return fallback;
   }
   return {
-    ...later,
-    tagline: later.tagline.trim() || (fill.tagline ?? "").trim(),
-    headline: later.headline.trim() || headline,
-    headline_accent: later.headline_accent.trim() || headlineAccent,
-    about_body: later.about_body.trim() || (fill.about_body ?? "").trim(),
-    cta_label: later.cta_label.trim() || (fill.cta_label ?? "").trim(),
-    description: later.description.trim() || (fill.description ?? "").trim(),
-    hours: later.hours.trim() || (fill.hours ?? "").trim(),
+    tagline: tagline || fallback.tagline,
+    hero: hero || fallback.hero,
+    about_body: about || fallback.about_body,
+    cta_label: (fill.cta_label ?? "").trim() || fallback.cta_label,
+    hours: (fill.hours ?? "").trim() || fallback.hours,
+    description: (fill.description ?? "").trim() || fallback.description,
   };
 }
 
@@ -74,49 +66,54 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
   const [whatsapp, setWhatsapp] = useState("");
   const [story, setStory] = useState("");
   const [later, setLater] = useState<StarterGenerateExtras>(EMPTY_STARTER_EXTRAS);
+  const [heroDraft, setHeroDraft] = useState("");
   const [copyHint, setCopyHint] = useState("");
+  const [previewed, setPreviewed] = useState(false);
+  const [fillBusy, setFillBusy] = useState(false);
   const [result, setResult] = useState<OrderResult | null>(null);
 
   const patchLater = (patch: Partial<StarterGenerateExtras>) => {
     setLater((prev) => ({ ...prev, ...patch }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const applyPreview = (fill: StarterFillSlots, usedFallback: boolean) => {
+    const slots = slotsFromFillBody(fill, category);
+    setLater((prev) => applyFillSlotsToExtras(prev, slots));
+    setHeroDraft((slots.hero ?? "").trim());
+    setCopyHint(fillCopySourceLabel(usedFallback));
+    setPreviewed(true);
+  };
+
+  const handlePreview = async () => {
     setFormError("");
-    setCopyHint("");
-    setBusy(true);
-    let extras = later;
-    if (story.trim()) {
-      try {
-        const fillRes = await fetch("/api/local-llm/fill-starter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: businessName,
-            category,
-            whatsapp,
-            story,
-          }),
-        });
-        const fill = (await fillRes.json()) as {
-          usedFallback?: boolean;
-          tagline?: string;
-          hero?: string;
-          about_body?: string;
-          cta_label?: string;
-          hours?: string;
-          description?: string;
-        };
-        if (fillRes.ok && fill.usedFallback === false) {
-          extras = mergeLocalFill(later, fill);
-          setLater(extras);
-          setCopyHint("Teks diisi model lokal");
-        }
-      } catch {
-        /* generate tetap jalan: preset / pecahan cerita */
-      }
+    setFillBusy(true);
+    try {
+      const fillRes = await fetch("/api/local-llm/fill-starter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: businessName,
+          category,
+          whatsapp,
+          story,
+        }),
+      });
+      const fill = (await fillRes.json()) as StarterFillSlots & { usedFallback?: boolean };
+      applyPreview(fill, fill.usedFallback !== false);
+    } catch {
+      applyPreview(categoryPresetSlots(category), true);
+    } finally {
+      setFillBusy(false);
     }
+  };
+
+  const handlePay = async () => {
+    setFormError("");
+    setBusy(true);
+    const extras = {
+      ...later,
+      ...splitHeroLine(heroDraft),
+    };
     const fd = new FormData();
     const pairs = buildStarterGeneratePairs({
       businessName,
@@ -175,19 +172,29 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!previewed) {
+      void handlePreview();
+      return;
+    }
+    void handlePay();
+  };
+
   const cukup = (kredit?.balance ?? 0) >= KREDIT.starterPriceKr;
+  const blocked = busy || fillBusy;
 
   return (
     <>
       <Link href={pkg.segmentHref} className="order-back">
         ← Kembali ke paket
       </Link>
-      <p className="hub-kicker">Langkah 3–4 · form → Kredit → generate</p>
+      <p className="hub-kicker">Langkah 4 · lihat teks dulu, baru bayar</p>
       <h1 className="order-title">{pkg.title}</h1>
       <p className="order-lead">{pkg.summary}</p>
       <p className="order-lead">
-        Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> (fail-closed). 1 Kr = Rp 1.000. Isi Kredit di{" "}
-        <Link href="/kredit">/kredit</Link> (pending + WhatsApp + bukti). Bukan WAF/Job, bukan Midtrans.
+        Debit mesin = <strong>{KREDIT.starterPriceKr} Kr</strong> hanya pada tombol Bayar (fail-closed). 1 Kr = Rp 1.000.
+        Isi Kredit di <Link href="/kredit">/kredit</Link> (pending + WhatsApp + bukti). Bukan WAF/Job, bukan Midtrans.
       </p>
 
       <section className="auth-order-strip" aria-label="Akun pelanggan">
@@ -224,7 +231,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
       <KreditPanel
         kredit={kredit}
         kreditError={kreditError}
-        busy={busy}
+        busy={blocked}
         onRequestTopup={(amount) => void requestTopup(amount)}
         onLabFaucet={() => void isiKeran()}
         onSubmitProof={submitProof}
@@ -282,6 +289,8 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                 setWhatsapp("");
                 setStory("");
                 setCopyHint("");
+                setHeroDraft("");
+                setPreviewed(false);
                 setLater({ ...EMPTY_STARTER_EXTRAS });
               }}
             >
@@ -322,9 +331,44 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               rows={4}
               value={story}
               onChange={(e) => setStory(e.target.value)}
-              placeholder="Kosong = teks preset kategori. Isi singkat: model lokal di PC mengisi hero/tagline/tentang (bukan NEX-AI WAF)."
+              placeholder="Kosong = template kategori. Isi singkat: model lokal di PC mengisi hero/tagline/tentang (bukan NEX-AI WAF)."
             />
           </fieldset>
+
+          {previewed ? (
+            <fieldset className="order-preview-copy">
+              <legend>Teks situs — boleh diubah</legend>
+              {copyHint ? (
+                <p className="order-later-hint" role="status">
+                  {copyHint}
+                </p>
+              ) : null}
+              <label htmlFor="order-tag">Tagline</label>
+              <input
+                id="order-tag"
+                value={later.tagline}
+                onChange={(e) => patchLater({ tagline: e.target.value })}
+              />
+              <label htmlFor="order-hero">Hero</label>
+              <textarea
+                id="order-hero"
+                rows={2}
+                value={heroDraft}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setHeroDraft(value);
+                  patchLater(splitHeroLine(value));
+                }}
+              />
+              <label htmlFor="order-ab">Tentang</label>
+              <textarea
+                id="order-ab"
+                rows={4}
+                value={later.about_body}
+                onChange={(e) => patchLater({ about_body: e.target.value })}
+              />
+            </fieldset>
+          ) : null}
 
           <details className="notion-toggle order-later">
             <summary className="notion-toggle-summary">Lengkapi nanti</summary>
@@ -381,17 +425,21 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               <input
                 id="order-h"
                 value={later.headline}
-                onChange={(e) => patchLater({ headline: e.target.value })}
+                onChange={(e) => {
+                  patchLater({ headline: e.target.value });
+                  setHeroDraft(`${e.target.value} ${later.headline_accent}`.trim());
+                }}
                 placeholder="Kosong = cerita atau preset kategori"
               />
               <label htmlFor="order-ha">Kata aksen (berwarna)</label>
               <input
                 id="order-ha"
                 value={later.headline_accent}
-                onChange={(e) => patchLater({ headline_accent: e.target.value })}
+                onChange={(e) => {
+                  patchLater({ headline_accent: e.target.value });
+                  setHeroDraft(`${later.headline} ${e.target.value}`.trim());
+                }}
               />
-              <label htmlFor="order-tag">Tagline</label>
-              <input id="order-tag" value={later.tagline} onChange={(e) => patchLater({ tagline: e.target.value })} />
               <label htmlFor="order-desc">Deskripsi</label>
               <textarea
                 id="order-desc"
@@ -404,13 +452,6 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                 id="order-at"
                 value={later.about_title}
                 onChange={(e) => patchLater({ about_title: e.target.value })}
-              />
-              <label htmlFor="order-ab">Isi tentang</label>
-              <textarea
-                id="order-ab"
-                rows={3}
-                value={later.about_body}
-                onChange={(e) => patchLater({ about_body: e.target.value })}
               />
               <label htmlFor="order-et">Judul blok tambahan</label>
               <input
@@ -599,11 +640,6 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
             </div>
           </details>
 
-          {copyHint && (
-            <p className="order-later-hint" role="status">
-              {copyHint}
-            </p>
-          )}
           {formError && (
             <p className="kredit-error" role="alert">
               {formError}
@@ -615,9 +651,21 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               ditolak.
             </p>
           )}
-          <button type="submit" className="notion-button notion-button-primary order-submit" disabled={busy}>
-            {busy ? "Memproses…" : `Bayar ${KREDIT.starterPriceKr} Kredit & buat site`}
-          </button>
+          <div className="order-actions">
+            <button
+              type={previewed ? "button" : "submit"}
+              className={previewed ? "notion-button order-submit" : "notion-button notion-button-primary order-submit"}
+              disabled={blocked}
+              onClick={previewed ? () => void handlePreview() : undefined}
+            >
+              {fillBusy ? "Menyusun teks…" : "Lihat teks"}
+            </button>
+            {previewed ? (
+              <button type="submit" className="notion-button notion-button-primary order-submit" disabled={blocked}>
+                {busy ? "Memproses…" : `Bayar ${KREDIT.starterPriceKr} Kredit & buat site`}
+              </button>
+            ) : null}
+          </div>
         </form>
       )}
     </>

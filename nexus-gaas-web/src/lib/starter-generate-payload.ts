@@ -191,13 +191,70 @@ export function splitStorySentences(story: string): string[] {
   return parts.map((part) => part.trim()).filter(Boolean);
 }
 
-function heroFromFirstSentence(first: string, fallback: CategoryCopy): Pick<CategoryCopy, "headline" | "headline_accent"> {
-  const words = first.replace(/[.!?…]+$/g, "").split(/\s+/).filter(Boolean);
+export function splitHeroLine(hero: string): { headline: string; headline_accent: string } {
+  const words = hero.replace(/[.!?…]+$/g, "").split(/\s+/).filter(Boolean);
   if (words.length < 4) {
-    return { headline: words.join(" ") || fallback.headline, headline_accent: fallback.headline_accent };
+    return { headline: words.join(" "), headline_accent: "" };
   }
   const at = Math.ceil(words.length / 2);
   return { headline: words.slice(0, at).join(" "), headline_accent: words.slice(at).join(" ") };
+}
+
+function heroFromFirstSentence(first: string, fallback: CategoryCopy): Pick<CategoryCopy, "headline" | "headline_accent"> {
+  const split = splitHeroLine(first);
+  if (!split.headline) {
+    return { headline: fallback.headline, headline_accent: fallback.headline_accent };
+  }
+  if (!split.headline_accent) {
+    return { headline: split.headline, headline_accent: fallback.headline_accent };
+  }
+  return split;
+}
+
+export type StarterFillSlots = {
+  tagline?: string;
+  hero?: string;
+  about_body?: string;
+  cta_label?: string;
+  hours?: string;
+  description?: string;
+};
+
+export function categoryPresetSlots(category: string): Required<StarterFillSlots> {
+  const copy = CATEGORY_COPY[normalizeStarterCategory(category)];
+  return {
+    tagline: copy.tagline,
+    hero: `${copy.headline} ${copy.headline_accent}`.trim(),
+    about_body: copy.about_body,
+    cta_label: copy.cta_label,
+    hours: copy.hours,
+    description: copy.description,
+  };
+}
+
+/** Overwrite the three preview fields; keep other Lengkapi-nanti extras. */
+export function applyFillSlotsToExtras(
+  later: StarterGenerateExtras,
+  fill: StarterFillSlots,
+): StarterGenerateExtras {
+  const hero = (fill.hero ?? "").trim();
+  const split = splitHeroLine(hero);
+  return {
+    ...later,
+    tagline: (fill.tagline ?? "").trim(),
+    headline: split.headline,
+    headline_accent: split.headline_accent,
+    about_body: (fill.about_body ?? "").trim(),
+    cta_label: later.cta_label.trim() || (fill.cta_label ?? "").trim(),
+    description: later.description.trim() || (fill.description ?? "").trim(),
+    hours: later.hours.trim() || (fill.hours ?? "").trim(),
+  };
+}
+
+export function fillCopySourceLabel(usedFallback: boolean): string {
+  return usedFallback
+    ? "Teks dari template kategori (bukan model lokal)."
+    : "Teks dari model lokal di PC (bukan NEX-AI WAF).";
 }
 
 /** Story → hero / about / tagline. Empty story → category defaults. No LLM. */

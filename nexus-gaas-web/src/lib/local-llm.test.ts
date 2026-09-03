@@ -73,9 +73,10 @@ test("model tulis default kecil; protect/reflex/70B tidak dipilih", () => {
   assert.equal(resolveWriterModel({ NEXUS_LOCAL_LLM_MODEL: "llama3.2:1b" }), "llama3.2:1b");
 });
 
-test("parse input butuh name+story; HTML di slot model dibuang", () => {
+test("parse input butuh name; cerita boleh kosong; HTML di slot model dibuang", () => {
   assert.equal(parseFillStarterInput({ name: "Warung", story: "Nasi uduk." })?.name, "Warung");
-  assert.equal(parseFillStarterInput({ name: "Warung" }), null);
+  assert.equal(parseFillStarterInput({ name: "Warung" })?.story, "");
+  assert.equal(parseFillStarterInput({}), null);
   assert.equal(plainCopyText("<p>Halo</p>"), "Halo");
   const slots = parseModelSlots(
     '{"tagline":"<b>Rasa</b>","hero":"Hero","about_body":"Tentang","cta_label":"Chat","hours":"","description":"Desk"}',
@@ -119,6 +120,22 @@ test("fill memakai mock Ollama; model body bukan protect/reflex", async () => {
   assert.equal(body.tagline, "Nasi uduk pagi");
   assert.equal(body.hours, "06.00");
   assert.equal(postedModel, "gemma3:1b");
+});
+
+test("cerita kosong → preset tanpa fetch Ollama", async () => {
+  let fetched = false;
+  const { status, body } = await fillStarterCopy(
+    { name: "Warung", category: "fnb", whatsapp: "08", story: "" },
+    {},
+    async () => {
+      fetched = true;
+      return new Response("should not run", { status: 200 });
+    },
+  );
+  assert.equal(fetched, false);
+  assert.equal(status, 200);
+  assert.equal(body.usedFallback, true);
+  assert.equal(body.tagline, CATEGORY_COPY.fnb.tagline);
 });
 
 test("timeout Ollama → usedFallback preset kategori", async () => {

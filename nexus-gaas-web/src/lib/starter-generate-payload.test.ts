@@ -3,7 +3,11 @@ import { test } from "node:test";
 import {
   CATEGORY_COPY,
   DEFAULT_STARTER_THEME,
+  EMPTY_STARTER_EXTRAS,
+  applyFillSlotsToExtras,
   buildStarterGeneratePairs,
+  categoryPresetSlots,
+  fillCopySourceLabel,
   fillStarterCopy,
   splitStorySentences,
 } from "./starter-generate-payload.ts";
@@ -45,6 +49,21 @@ test("cerita dipecah ke tagline, hero, about — tanpa LLM", () => {
   assert.match(copy.about_body, /Langganan tetangga/);
   assert.equal(copy.description, story);
   assert.equal(copy.cta_label, CATEGORY_COPY.profil.cta_label);
+});
+
+test("applyFillSlots menimpa tagline/hero/tentang; label sumber jujur", () => {
+  const filled = applyFillSlotsToExtras(EMPTY_STARTER_EXTRAS, {
+    tagline: "Rasa pagi",
+    hero: "Nasi uduk setiap pagi untuk tetangga",
+    about_body: "Masak sebelum fajar.",
+    cta_label: "Pesan via WhatsApp",
+  });
+  assert.equal(filled.tagline, "Rasa pagi");
+  assert.equal(filled.about_body, "Masak sebelum fajar.");
+  assert.equal(filled.headline.startsWith("Nasi"), true);
+  assert.equal(fillCopySourceLabel(true), "Teks dari template kategori (bukan model lokal).");
+  assert.match(fillCopySourceLabel(false), /model lokal/);
+  assert.equal(categoryPresetSlots("fnb").cta_label, CATEGORY_COPY.fnb.cta_label);
 });
 
 test("Lengkapi nanti menimpa default; palet default hijau", () => {

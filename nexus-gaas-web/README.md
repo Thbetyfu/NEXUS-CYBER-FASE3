@@ -88,7 +88,7 @@ Buka http://127.0.0.1:3003
 - Top-up: permintaan pending + WhatsApp pemilik + form bukti (`data/topup-proofs/`) + approve operator **ada**. QRIS/VA **belum live**. Bukan billing produksi. Bukan auto-kredit dari WA.
 - Tidak menjual Job Cowork / Loop dari kasir 20 Kr.
 - SOC `:3001`/`:8081` **jangan** di-tunnel sebagai “portal”.
-- Ollama `:11434` **jangan** di-tunnel. Health: `GET /api/local-llm/health`. Fill: `POST /api/local-llm/fill-starter` (server fetch `NEXUS_LOCAL_LLM_URL`, model `NEXUS_LOCAL_LLM_MODEL` default `gemma3:1b`). Start: `nexus-core\deploy-local\START-LOCAL-LLM.bat`. Bukan NEX-AI WAF.
+- Ollama `:11434` **jangan** di-tunnel. Health: `GET /api/local-llm/health`. Fill: `POST /api/local-llm/fill-starter` dari tombol **Lihat teks** (bukan debit). Model `NEXUS_LOCAL_LLM_MODEL` default `gemma3:1b`. Start: `nexus-core\deploy-local\START-LOCAL-LLM.bat`. Bukan NEX-AI WAF.
 - Nama paket npm masih `nexus-channel-portal` — folder git = `nexus-gaas-web`.
 
 Dokumen: [`../nexus-core/docs/NEXUS_CHANNEL_PORTAL.md`](../nexus-core/docs/NEXUS_CHANNEL_PORTAL.md), [`../nexus-core/docs/CHANNEL_STARTER.md`](../nexus-core/docs/CHANNEL_STARTER.md), [`../nexus-core/docs/LIMITATIONS.md`](../nexus-core/docs/LIMITATIONS.md).
