@@ -70,7 +70,7 @@ Form wizard: http://127.0.0.1:3010/
 
 Preview: http://127.0.0.1:3010/preview/{slug} — **localhost = mesin yang `serve`**. `serve` men-seed demo `sites/contoh-nexcent`. Browser mendapat HTML, bukan JSON FastAPI. Jika Simple Browser masih JSON, proses 3010 masih kode lama — `START-PREVIEW.bat`.
 
-Generate **men-deploy folder situs** ke Vercel (project = slug) jika `vercel login` / `VERCEL_TOKEN`. **Jangan** Connect Git ke monorepo Nexus. `python cli.py publish --all`. `*.vercel.app` bukan WAF.
+Generate **men-deploy folder situs** ke Vercel (project = slug) jika `vercel login` / `VERCEL_TOKEN` di PC wizard (`channel-starter/.env`; restart `serve`). **Jangan** Connect Git ke monorepo Nexus. `python cli.py publish --all`. `*.vercel.app` bukan WAF.
 
 ## Struktur
 

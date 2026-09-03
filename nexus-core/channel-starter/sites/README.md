@@ -8,7 +8,7 @@ Satu folder = **satu** situs UMKM (HTML statis). Bukan satu repo GitHub untuk se
 | `warung-bu-siti/`, `kedai-palet-biru/`, … | Hasil generate **lokal** (gitignore) |
 | Project Vercel kosong + *No Production Deployment* | Dulu CLI `vercel` *link* tanpa `--prod`. Generate/`python cli.py publish` sekarang men-deploy Production per folder |
 
-`python cli.py generate` men-deploy folder situs ke Vercel **jika** `VERCEL_TOKEN` atau `vercel login` ada. **Jangan** *Connect Git Repository* ke `NEXUS-CYBER-FASE3`.
+`python cli.py generate` men-deploy folder situs ke Vercel **jika** `VERCEL_TOKEN` atau `vercel login` ada di PC wizard (`../.env`, gitignore; restart `serve`). **Jangan** *Connect Git Repository* ke `NEXUS-CYBER-FASE3`.
 
 ```powershell
 python cli.py publish --slug warung-bu-siti

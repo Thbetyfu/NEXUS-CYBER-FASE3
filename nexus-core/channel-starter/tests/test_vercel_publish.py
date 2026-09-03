@@ -11,8 +11,9 @@ package_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if package_root not in sys.path:
     sys.path.insert(0, package_root)
 
+from channel_starter.config import load_wizard_env
 from channel_starter.types import SiteCategory, SiteManifest, PricingTier
-from channel_starter.vercel_publish import _is_safe_site_dir, _parse_production_url, publish_site
+from channel_starter.vercel_publish import _is_safe_site_dir, _parse_production_url, publish_site, vercel_token
 
 
 class TestVercelPublish(unittest.TestCase):
@@ -80,6 +81,33 @@ class TestVercelPublish(unittest.TestCase):
         with patch.dict(os.environ, {"CHANNEL_STARTER_VERCEL_PUBLISH": "1", "VERCEL_TOKEN": "fake"}, clear=False):
             result = publish_site(manifest)
         self.assertTrue(result.get("skipped"))
+
+    def test_load_wizard_env_does_not_override(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            env_file = Path(tmp) / ".env"
+            env_file.write_text("VERCEL_TOKEN=from-file\n", encoding="utf-8")
+            with patch.dict(os.environ, {"VERCEL_TOKEN": "from-process"}, clear=False):
+                load_wizard_env(path=env_file)
+                self.assertEqual(os.environ["VERCEL_TOKEN"], "from-process")
+
+    def test_vercel_token_reads_windows_auth_json(self):
+        import json
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            auth = Path(tmp) / "xdg.data" / "com.vercel.cli" / "auth.json"
+            auth.parent.mkdir(parents=True)
+            auth.write_text(json.dumps({"token": "win-cli-token"}), encoding="utf-8")
+            with patch.dict(
+                os.environ,
+                {"LOCALAPPDATA": tmp, "APPDATA": tmp, "VERCEL_TOKEN": ""},
+                clear=False,
+            ):
+                self.assertEqual(vercel_token(), "win-cli-token")
 
 
 if __name__ == "__main__":

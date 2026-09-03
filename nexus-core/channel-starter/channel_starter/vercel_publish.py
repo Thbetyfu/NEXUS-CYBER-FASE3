@@ -17,8 +17,6 @@ from channel_starter.generator import DEMO_SLUG, get_manifest, list_sites, save_
 from channel_starter.types import SiteManifest
 
 _URL_RE = re.compile(r"https://[a-z0-9.-]+\.vercel\.app/?", re.I)
-_AUTH_JSON = Path.home() / ".local/share/com.vercel.cli/auth.json"
-_CONFIG_JSON = Path.home() / ".local/share/com.vercel.cli/config.json"
 _SKIP_SLUGS = {DEMO_SLUG, "cek-redirect"}
 _OFF = {"0", "false", "no", "off"}
 MSG_NO_TOKEN = "publish gagal: set token di mesin wizard"
@@ -35,14 +33,43 @@ def vercel_publish_enabled() -> bool:
     return _publish_flag() not in _OFF
 
 
+def _cli_data_dirs() -> list[Path]:
+    home = Path.home()
+    dirs = [
+        home / ".local/share/com.vercel.cli",
+        home / "Library/Application Support/com.vercel.cli",
+    ]
+    local = (os.getenv("LOCALAPPDATA") or "").strip()
+    appdata = (os.getenv("APPDATA") or "").strip()
+    xdg = (os.getenv("XDG_DATA_HOME") or "").strip()
+    if xdg:
+        dirs.append(Path(xdg) / "com.vercel.cli")
+    if local:
+        dirs.append(Path(local) / "com.vercel.cli")
+        dirs.append(Path(local) / "xdg.data" / "com.vercel.cli")
+    if appdata:
+        dirs.append(Path(appdata) / "com.vercel.cli")
+        dirs.append(Path(appdata) / "xdg.data" / "com.vercel.cli")
+    return dirs
+
+
+def _first_json_file(name: str) -> Path | None:
+    for folder in _cli_data_dirs():
+        path = folder / name
+        if path.is_file():
+            return path
+    return None
+
+
 def vercel_token() -> str:
     env = (os.getenv("VERCEL_TOKEN") or "").strip()
     if env:
         return env
-    if not _AUTH_JSON.is_file():
+    auth = _first_json_file("auth.json")
+    if auth is None:
         return ""
     try:
-        payload = json.loads(_AUTH_JSON.read_text(encoding="utf-8"))
+        payload = json.loads(auth.read_text(encoding="utf-8"))
     except Exception:
         return ""
     return str(payload.get("token") or "").strip()
@@ -52,10 +79,11 @@ def vercel_scope() -> str:
     env = (os.getenv("VERCEL_ORG_ID") or os.getenv("CHANNEL_STARTER_VERCEL_SCOPE") or "").strip()
     if env:
         return env
-    if not _CONFIG_JSON.is_file():
+    config = _first_json_file("config.json")
+    if config is None:
         return ""
     try:
-        payload = json.loads(_CONFIG_JSON.read_text(encoding="utf-8"))
+        payload = json.loads(config.read_text(encoding="utf-8"))
     except Exception:
         return ""
     return str(payload.get("currentTeam") or "").strip()

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
 import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
 import { channelStarterInternalUrl, channelStarterPreviewUrl } from "@/lib/channel-starter-urls";
-import { summarizeVercelPublish } from "@/lib/starter-publish";
+import { summarizeVercelPublish, type StarterPublishStatus } from "@/lib/starter-publish";
 import {
   ledgerFileFor,
   lookupIdentity,
@@ -50,6 +50,21 @@ function chargedResponse(
     },
     { status },
   );
+}
+
+async function wizardPublishStatus(base: string, slug: string): Promise<StarterPublishStatus> {
+  try {
+    const res = await fetch(`${base}/publish/${encodeURIComponent(slug)}`, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      return summarizeVercelPublish(undefined);
+    }
+    return summarizeVercelPublish(await res.json());
+  } catch {
+    return summarizeVercelPublish(undefined);
+  }
 }
 
 /** Debit 20 Kr dulu, baru proxy ke Channel Starter. Gagal generate → refund. */
@@ -102,7 +117,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const upstream = await fetch(`${CHANNEL_STARTER}/generate`, {
+    const upstream = await fetch(`${CHANNEL_STARTER}/generate?format=json`, {
       method: "POST",
       body,
       redirect: "manual",
@@ -136,6 +151,9 @@ export async function POST(request: NextRequest) {
     if (upstream.status >= 300 && upstream.status < 400) {
       const location = upstream.headers.get("location");
       const slug = slugFromGenerateLocation(location);
+      const publish = slug
+        ? await wizardPublishStatus(CHANNEL_STARTER, slug)
+        : summarizeVercelPublish(undefined);
       return chargedResponse(
         snapshot,
         orderId,
@@ -146,10 +164,7 @@ export async function POST(request: NextRequest) {
           previewUrl: slug ? channelStarterPreviewUrl(slug) : null,
           subdomain: slug ? `${slug}.${SUBDOMAIN_BASE}` : null,
           redirect: location,
-          publishOk: false,
-          publishSkipped: true,
-          vercelUrl: null,
-          publishError: "Publish belum dijalankan (wizard lama 303). Token Vercel hanya di PC wizard.",
+          ...publish,
         },
         200,
       );

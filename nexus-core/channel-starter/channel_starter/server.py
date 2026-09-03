@@ -232,7 +232,9 @@ def publish_site_route(slug: str):
 
 
 def wants_json(request: Request) -> bool:
-    """Portal/Node send Accept: application/json. Browser form posts keep the 303 HTML redirect."""
+    """Portal/Node send Accept: application/json or ?format=json. Browser form posts keep 303."""
+    if (request.query_params.get("format") or "").strip().lower() == "json":
+        return True
     accept = (request.headers.get("accept") or "").lower()
     return "application/json" in accept and "text/html" not in accept
 

@@ -98,6 +98,14 @@ class TestPreviewServer(unittest.TestCase):
                 self.assertEqual(body["slug"], "uji-redirect")
                 self.assertIn("vercel", body)
 
+                fmt = client.post(
+                    "/generate?format=json",
+                    data={"business_name": "Uji Redirect", "whatsapp": "081234567890"},
+                    follow_redirects=False,
+                )
+                self.assertEqual(fmt.status_code, 200)
+                self.assertEqual(fmt.json()["slug"], "uji-redirect")
+
             with patch(
                 "channel_starter.server.publish_slug",
                 return_value={
