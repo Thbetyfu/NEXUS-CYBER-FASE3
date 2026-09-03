@@ -1,4 +1,4 @@
-"""GaaS upsell wiring — satu PROTECTED_HOST aktif per lab instance."""
+"""GaaS upsell wiring — add tepi hosts to the lab host map (keep portfolio)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from channel_starter.config import (
-    CHANNEL_ORIGIN_BASE,
     DEPLOY_LOCAL_DIR,
     GAAS_REGISTRY_NAME,
     HTTP_ONLY,
@@ -19,6 +18,11 @@ from channel_starter.config import (
 )
 from channel_starter.deploy import apply_routing, reload_caddy
 from channel_starter.generator import get_manifest, list_sites, regenerate_site_html, save_manifest
+from channel_starter.host_map import (
+    origin_backend,
+    reset_host_map_portfolio_only,
+    write_host_map_from_sites,
+)
 from channel_starter.types import GaasUpsellStatus, PricingTier, SiteManifest, GAAS_UPSELL_TIERS
 
 
@@ -30,15 +34,13 @@ def _target_url(subdomain: str) -> str:
     return f"http://{subdomain}" if HTTP_ONLY else f"https://{subdomain}"
 
 
-def _origin_backend(slug: str) -> str:
-    return f"{CHANNEL_ORIGIN_BASE.rstrip('/')}/{slug}/"
+def get_active_upsells(*, sites_root: Path | str | None = None) -> list[SiteManifest]:
+    return [manifest for manifest in list_sites(sites_root) if manifest.gaas_active]
 
 
 def get_active_upsell(*, sites_root: Path | str | None = None) -> SiteManifest | None:
-    for manifest in list_sites(sites_root):
-        if manifest.gaas_active:
-            return manifest
-    return None
+    active = get_active_upsells(sites_root=sites_root)
+    return active[0] if active else None
 
 
 def _write_gaas_registry(manifest: SiteManifest, *, sites_root: Path | str | None = None) -> Path:
@@ -48,11 +50,12 @@ def _write_gaas_registry(manifest: SiteManifest, *, sites_root: Path | str | Non
     payload = {
         "active_slug": manifest.slug,
         "protected_host": manifest.protected_host or manifest.subdomain,
-        "target_backend": _origin_backend(manifest.slug),
+        "target_backend": origin_backend(manifest.slug),
         "gaas_tier": manifest.gaas_tier.value if manifest.gaas_tier else None,
         "cowork_job_id": manifest.cowork_job_id,
         "loop_schedule_id": manifest.loop_schedule_id,
         "updated_at": _utcnow().isoformat(),
+        "note": "Registry is informational; routing uses nexus-host-map.json (portfolio + all gaas_active).",
     }
     registry_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return registry_path
@@ -66,16 +69,15 @@ def _clear_gaas_registry(*, sites_root: Path | str | None = None) -> None:
 
 
 def write_deploy_local_env(manifest: SiteManifest) -> Path:
-    """Patch deploy-local env fragment consumed by gateway compose."""
+    """Overlay for compose. Must NOT replace PROTECTED_HOST / TARGET_BACKEND (portfolio stays)."""
     DEPLOY_LOCAL_DIR.mkdir(parents=True, exist_ok=True)
     host = manifest.protected_host or manifest.subdomain
-    target = _origin_backend(manifest.slug)
     live = _target_url(host)
     lines = [
         "# Channel Starter GaaS upsell — auto-generated",
-        f"PROTECTED_HOST={host}",
-        f"TARGET_BACKEND={target}",
-        "TARGET_BACKEND_HOST=",
+        "# Do not set PROTECTED_HOST or TARGET_BACKEND here: portfolio stays the default origin.",
+        "# Extra tepi hosts live in nexus-host-map.json (mounted into the gateway).",
+        "NEXUS_HOST_MAP_FILE=/app/data/nexus-host-map.json",
         f"NEX_RED_LIVE_TARGET={live}",
     ]
     UPSELL_ENV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -148,23 +150,6 @@ def create_loop_schedule(
     return str(schedule.get("schedule_id", ""))
 
 
-def _deactivate_other_sites(active_slug: str, *, sites_root: Path | str | None = None) -> list[str]:
-    cleared: list[str] = []
-    for manifest in list_sites(sites_root):
-        if manifest.slug == active_slug or not manifest.gaas_active:
-            continue
-        manifest.gaas_status = GaasUpsellStatus.NONE
-        manifest.gaas_tier = None
-        manifest.protected_host = ""
-        manifest.cowork_job_id = ""
-        manifest.loop_schedule_id = ""
-        manifest.upsell_at = None
-        save_manifest(manifest, sites_root=sites_root)
-        regenerate_site_html(manifest, sites_root=sites_root)
-        cleared.append(manifest.slug)
-    return cleared
-
-
 def enable_upsell(
     slug: str,
     *,
@@ -186,7 +171,6 @@ def enable_upsell(
     if not manifest:
         raise KeyError(f"Site not found: {slug}")
 
-    cleared = _deactivate_other_sites(slug, sites_root=sites_root)
     manifest.gaas_status = GaasUpsellStatus.ACTIVE
     manifest.gaas_tier = tier
     manifest.protected_host = manifest.subdomain
@@ -217,6 +201,7 @@ def enable_upsell(
 
     registry = _write_gaas_registry(manifest, sites_root=sites_root)
     env_path = write_deploy_local_env(manifest)
+    host_map = write_host_map_from_sites(sites_root=sites_root)
     routing = apply_routing(sites_root=sites_root)
 
     reload_result = None
@@ -228,10 +213,11 @@ def enable_upsell(
         "protected_host": manifest.protected_host,
         "gaas_tier": tier.value,
         "target_url": _target_url(manifest.protected_host),
-        "target_backend": _origin_backend(manifest.slug),
+        "target_backend": origin_backend(manifest.slug),
         "cowork_job_id": manifest.cowork_job_id,
         "loop_schedule_id": manifest.loop_schedule_id,
-        "cleared_slugs": cleared,
+        "cleared_slugs": [],
+        "host_map": str(host_map),
         "registry": str(registry),
         "deploy_env": str(env_path),
         "routing": routing,
@@ -241,8 +227,8 @@ def enable_upsell(
         "next_steps": [
             "Restart gateway: cd deploy-local && docker compose up -d gateway",
             (
-                f"Pagar tipis: hit WAF :8080 Host {manifest.protected_host} — "
-                "bukan *.vercel.app langsung; bukan Job; bukan pulih Vercel"
+                f"Pagar tipis: hit WAF :8080 Host {manifest.protected_host} "
+                "(portfolio.nexus-lab.test tetap di peta). Bukan *.vercel.app langsung; bukan Job."
                 if tier == PricingTier.TEPI and not start_job
                 else f"Scan via WAF: NEX_RED_LIVE_TARGET={_target_url(manifest.protected_host)}"
             ),
@@ -269,9 +255,15 @@ def disable_upsell(
     save_manifest(manifest, sites_root=sites_root)
     regenerate_site_html(manifest, sites_root=sites_root)
 
-    if get_active_upsell(sites_root=sites_root) is None:
+    remaining = get_active_upsells(sites_root=sites_root)
+    if remaining:
+        write_host_map_from_sites(sites_root=sites_root)
+        write_deploy_local_env(remaining[0])
+        _write_gaas_registry(remaining[0], sites_root=sites_root)
+    else:
         _clear_gaas_registry(sites_root=sites_root)
         clear_deploy_local_env()
+        reset_host_map_portfolio_only()
 
     routing = apply_routing(sites_root=sites_root)
     reload_result = reload_caddy() if reload_caddy_after else None
@@ -284,13 +276,29 @@ def disable_upsell(
 
 
 def upsell_status(*, sites_root: Path | str | None = None) -> dict:
-    active = get_active_upsell(sites_root=sites_root)
+    active_list = get_active_upsells(sites_root=sites_root)
+    active = active_list[0] if active_list else None
     registry_path = (Path(sites_root) if sites_root else SITES_DIR) / "_caddy" / GAAS_REGISTRY_NAME
     registry = None
     if registry_path.is_file():
         registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    host_map = None
+    from channel_starter.host_map import host_map_path
+
+    map_path = host_map_path()
+    if map_path.is_file():
+        host_map = json.loads(map_path.read_text(encoding="utf-8"))
     return {
         "active": active.model_dump(mode="json") if active else None,
+        "active_hosts": [
+            {
+                "slug": m.slug,
+                "protected_host": m.protected_host or m.subdomain,
+                "gaas_tier": m.gaas_tier.value if m.gaas_tier else None,
+            }
+            for m in active_list
+        ],
+        "host_map": host_map,
         "deploy_env_exists": UPSELL_ENV_FILE.is_file(),
         "deploy_env": str(UPSELL_ENV_FILE),
         "registry": registry,

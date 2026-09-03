@@ -24,7 +24,8 @@ http://starter.nexus-lab.test {
 	reverse_proxy host.docker.internal:3010
 }
 
-# Default lab catch-all → WAF gateway (portfolio / PROTECTED_HOST)
+# Default lab catch-all → WAF gateway (portfolio). Named tepi sites in
+# ChannelStarter.caddy also reverse_proxy gateway:8080 (Host header selects origin).
 :80 {
 	reverse_proxy gateway:8080
 }

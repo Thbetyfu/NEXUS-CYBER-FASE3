@@ -87,6 +87,7 @@ func NewNexusProxy(
 	// Lab Host aliases share this origin. ROUTER-SYNC may overwrite from
 	// Postgres; main re-binds after sync so named-host and loopback stay aligned.
 	BindLabInstanceOrigin(np.Router, target)
+	BindHostMap(np.Router)
 
 	// Jalankan sinkronisasi background antibodi imun.
 	np.StartImmunitySync()

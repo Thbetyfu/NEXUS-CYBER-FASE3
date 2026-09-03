@@ -245,6 +245,9 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertTrue(cfg.UPSELL_ENV_FILE.is_file())
         gaas_block = render_site_caddy_block(get_manifest(manifest.slug, sites_root=self.sites_root))
         self.assertIn("reverse_proxy gateway:8080", gaas_block)
+        env_text = cfg.UPSELL_ENV_FILE.read_text(encoding="utf-8")
+        self.assertNotIn("PROTECTED_HOST=", env_text)
+        self.assertNotIn("TARGET_BACKEND=", env_text)
 
         status = upsell_status(sites_root=self.sites_root)
         self.assertIsNotNone(status["active"])
@@ -293,6 +296,70 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertFalse(manifest.gaas_active)
         self.assertIsNone(manifest.gaas_tier)
         self.assertNotEqual(manifest.tier, PricingTier.TEPI)
+        block = render_site_caddy_block(manifest)
+        self.assertIn("file_server", block)
+        self.assertNotIn("reverse_proxy gateway:8080", block)
+
+    def test_upsell_second_tepi_keeps_portfolio_and_first_slug(self):
+        import channel_starter.config as cfg
+        import channel_starter.upsell as upsell_mod
+
+        deploy_dir = os.path.join(self.tmp.name, "deploy-local")
+        os.makedirs(deploy_dir, exist_ok=True)
+        (Path(deploy_dir) / ".env").write_text(
+            "PROTECTED_HOST=portfolio.nexus-lab.test\n"
+            "TARGET_BACKEND=https://portfolio-website-three-ruddy-65.vercel.app\n",
+            encoding="utf-8",
+        )
+        cfg.DEPLOY_LOCAL_DIR = Path(deploy_dir)
+        cfg.UPSELL_ENV_FILE = Path(deploy_dir) / "channel-starter-upsell.env"
+        upsell_mod.DEPLOY_LOCAL_DIR = cfg.DEPLOY_LOCAL_DIR
+        upsell_mod.UPSELL_ENV_FILE = cfg.UPSELL_ENV_FILE
+
+        first = generate_from_dict(
+            {"business_name": "Warung Satu", "category": "fnb", "whatsapp": "6281111111111"},
+            sites_root=self.sites_root,
+        )
+        second = generate_from_dict(
+            {"business_name": "Warung Dua", "category": "jasa", "whatsapp": "6282222222222"},
+            sites_root=self.sites_root,
+        )
+        from channel_starter.generator import get_manifest
+        from channel_starter.host_map import host_map_path
+        from channel_starter.upsell import enable_upsell
+
+        enable_upsell(first.slug, tier=PricingTier.TEPI, sites_root=self.sites_root)
+        result = enable_upsell(second.slug, tier=PricingTier.TEPI, sites_root=self.sites_root)
+        self.assertEqual(result["cleared_slugs"], [])
+        self.assertTrue(get_manifest(first.slug, sites_root=self.sites_root).gaas_active)
+        self.assertTrue(get_manifest(second.slug, sites_root=self.sites_root).gaas_active)
+
+        payload = json.loads(host_map_path().read_text(encoding="utf-8"))
+        hosts = {row["host"]: row["origin"] for row in payload["hosts"]}
+        self.assertIn("portfolio.nexus-lab.test", hosts)
+        self.assertEqual(
+            hosts["portfolio.nexus-lab.test"],
+            "https://portfolio-website-three-ruddy-65.vercel.app",
+        )
+        self.assertIn(first.subdomain, hosts)
+        self.assertIn(second.subdomain, hosts)
+        self.assertNotEqual(hosts[first.subdomain], hosts["portfolio.nexus-lab.test"])
+        self.assertIn("channel-origin:8099", hosts[second.subdomain])
+
+    def test_starter_generate_does_not_join_host_map(self):
+        import channel_starter.config as cfg
+
+        deploy_dir = os.path.join(self.tmp.name, "deploy-local-gen")
+        os.makedirs(deploy_dir, exist_ok=True)
+        cfg.DEPLOY_LOCAL_DIR = Path(deploy_dir)
+        from channel_starter.host_map import host_map_path
+
+        manifest = generate_from_dict(
+            {"business_name": "Tanpa WAF", "category": "profil", "whatsapp": "6283333333333"},
+            sites_root=self.sites_root,
+        )
+        self.assertFalse(manifest.gaas_active)
+        self.assertFalse(host_map_path().is_file())
         block = render_site_caddy_block(manifest)
         self.assertIn("file_server", block)
         self.assertNotIn("reverse_proxy gateway:8080", block)

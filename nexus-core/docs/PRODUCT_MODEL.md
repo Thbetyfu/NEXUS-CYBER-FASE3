@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.11 / 2026-09-03  
+**Versi:** 1.1.12 / 2026-09-03  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -12,20 +12,21 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 | | |
 | --- | --- |
 | **Apa (default, tanpa upsell env)** | Website **portofolio** pemilik di **Vercel** (repo terpisah [Portofolio-Thoriq](https://github.com/Thbetyfu/Portofolio-Thoriq)) di belakang WAF. Folder lab `playground/` **diarsip** — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) |
-| **Apa (instance lab ini, pemilik 2026-09-03 pilihan A)** | **Satu** host WAF: portofolio Vercel di belakang gateway. **`channel-starter-upsell.env` tidak boleh menimpa** `PROTECTED_HOST`. Bukan Edge Shield `bu-grace`. Bukan 1000 host |
+| **Apa (instance lab ini, pemilik 2026-09-03 pilihan B)** | **Satu gateway**, **lebih dari satu hostname**: portofolio Vercel **tetap** di peta, plus slug Channel Starter yang di-upsell `--tier tepi`. Bukan 1000 CNAME. Bukan setiap generate Starter 20 Kr |
 | **Di mana di stack** | Origin di belakang gateway; site UMKM **bukan** produk Job/Loop |
-| **Hostname** | Satu instance GaaS: `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Upsell `--tier tepi` opsional nanti — **bukan** demo wasit ini |
-| **Alur** | Pengunjung → Caddy `http://portfolio.nexus-lab.test` → **WAF `:8080`** → origin Vercel (jangan buka `*.vercel.app` untuk klaim Nexus) |
-| **Kenapa** | Bukti **Alur A** (Reflex) pada **satu** host lab untuk referee/investor. Job Cowork **bukan** SKU Starter 20 Kr dan **bukan** setiap warung |
+| **Hostname** | Default `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Extra tepi = `deploy-local/nexus-host-map.json` (Host → origin). Upsell **menambah** host, **bukan** menimpa portfolio |
+| **Alur** | Pengunjung → Caddy `http://{host}.nexus-lab.test` → **WAF `:8080`** → origin per Host (Vercel portfolio **atau** `channel-origin:8099/{slug}/`) |
+| **Kenapa** | Bukti **Alur A** (Reflex) pada **beberapa** kanal HTTP lab di **satu** instance. Job Cowork **bukan** SKU Starter 20 Kr dan **bukan** setiap warung otomatis |
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) — paket **Cowork**, bukan Edge Shield tepi |
-| **Bukan** | Starter 20 Kr = WAF; SOC publik; Loop penuh di harga Rp 20rb; CNAME massal; 100 UMKM di belakang WAF |
+| **Bukan** | Starter 20 Kr = WAF; SOC publik; Loop penuh di harga Rp 20rb; CNAME massal; klaim 100 UMKM / `*.vercel.app` naked di belakang WAF |
 
 Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/README.md`](../deploy-local/README.md). Portal lab: `cd nexus-gaas-web && npm run dev` (`:3003`; generate server-side ke `CHANNEL_STARTER_URL=http://127.0.0.1:3010`; preview browser **`/starter/` tanpa cookie** atau `CHANNEL_STARTER_PUBLIC_URL`; etalase `/` `/umkm` tetap `/gate`). Pilot luar rumah: tunnel **hanya** Channel Portal (`START-PORTAL-PILOT.bat` / `nexus-tunnel.ps1 -Portal`) — **bukan** SOC `:3001`/`:8081`, **bukan** Ollama `:11434`. Keran lab **opt-in** (`NEXUS_LAB_FAUCET=1` + mode lab). Distribusi: [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
 
 ```text
   Pengunjung → Caddy http://portfolio.nexus-lab.test → Gateway :8080 → origin Vercel
+  Pengunjung → Caddy http://{slug}.nexus-lab.test    → Gateway :8080 → channel-origin /{slug}/
                                       ↑
-                         PROTECTED_HOST = portfolio.nexus-lab.test
+                         host map (portfolio + tepi); PROTECTED_HOST default = portfolio
   (jangan demo naked *.vercel.app; jangan tunnel SOC :3001/:8081)
 ```
 
@@ -33,12 +34,12 @@ Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/READM
 
 ## 1. Dua lapisan produk (strategi 2026-08-22)
 
-Nexus Cyber **bukan** satu harga untuk semua segmen. **Tiga SKU:** Channel Starter (20 Kr, header tepi) ≠ Edge Shield (`--tier tepi`, satu `PROTECTED_HOST` per instance) ≠ Job/Loop Cowork. Default tanpa upsell: `PROTECTED_HOST` = `portfolio.nexus-lab.test`. Bukan WAF otomatis setiap warung. Naked `*.vercel.app` bukan “Nexus protected”.
+Nexus Cyber **bukan** satu harga untuk semua segmen. **Tiga SKU:** Channel Starter (20 Kr, header tepi) ≠ Edge Shield (`--tier tepi`, host map di **satu** lab gateway) ≠ Job/Loop Cowork. Default: `PROTECTED_HOST` = `portfolio.nexus-lab.test` **tetap** di peta. Upsell tepi **menambah** `{slug}.nexus-lab.test`. Bukan WAF otomatis setiap generate. Naked `*.vercel.app` bukan “Nexus protected”.
 
 | Lapisan | Nama | Target | Harga ilustrasi | Status kode |
 | --- | --- | --- | --- | --- |
 | **Entry** | **Channel Starter** | UMKM — website dari form + template | **~Rp 0–29rb/bulan** (validasi ≤20rb) | **Lab v0.1** — [`nexus-core/channel-starter/`](../channel-starter/) |
-| **Tepi** | **Edge Shield** (`--tier tepi`) | Satu `PROTECTED_HOST` per instance lab | ~Rp 35rb / 28rb (bukan 20 Kr) | **Lab MVP** — Caddy → WAF; bukan setiap warung |
+| **Tepi** | **Edge Shield** (`--tier tepi`) | Host map lab: portfolio + N slug (bukan mass CNAME) | ~Rp 35rb / 28rb (bukan 20 Kr) | **Lab MVP** — Caddy → WAF per Host; bukan setiap generate Starter |
 | **Inti** | **Edge Antibody Cowork** (GaaS) | Kanal keuangan, fintech, integrator; upsell UMKM naik tier | Job **Rp 200rb** · Loop **Rp 300rb**/bulan (pilot PC+tunnel) | **Sudah ada** (lab + Job Cowork) |
 
 ```text
@@ -46,7 +47,7 @@ Nexus Cyber **bukan** satu harga untuk semua segmen. **Tiga SKU:** Channel Start
            │                                      │
            └────────── Channel Starter ──────────┘
                               │
-                    [opsional] Edge Shield (`--tier tepi`, 1 host)
+                    [opsional] Edge Shield (`--tier tepi`, host map)
                               │
                     [opsional] Job Cowork
                               │
@@ -110,7 +111,7 @@ Nexus GaaS mengisi irisan **identifikasi – pengendalian – pemantauan** untuk
 
 ### Alur A — Tepi always-on
 
-Request masuk `PROTECTED_HOST` → Reflex (regex) + antibodi cache → origin atau 403. Insiden → pager Telegram (jika env diisi). **Sudah ada** di kode.
+Request masuk Host di peta (`PROTECTED_HOST` + `NEXUS_HOST_MAP`) → Reflex (regex) + antibodi cache → origin per Host atau 403. Insiden → pager Telegram (jika env diisi). **Sudah ada** di kode.
 
 ### Alur B — Job Cowork
 
@@ -181,7 +182,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
 | **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab `{slug}.nexus-lab.test` + publish Vercel per folder (jika token/login; bukan git Nexus) + **header tepi** (bukan WAF Reflex, bukan Job). Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
-| **Edge Shield** (kartu portal; teknis `--tier tepi`) | Upsell `--tier tepi`: Caddy ke WAF + Reflex judi/deface. **Satu** `PROTECTED_HOST` per lab. Bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb (belum punya web) / 28rb (sudah). **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
+| **Edge Shield** (kartu portal; teknis `--tier tepi`) | Upsell `--tier tepi`: Caddy ke WAF + Reflex. **Menambah** host ke peta lab (portfolio tetap). Bukan setiap generate 20 Kr; bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb / 28rb. **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 
 **Kredit (lab sekarang):** unit kasir Channel Starter di `/pesan/{sku}` (Starter = `/pesan/umkm-starter`; `/order` redirect). **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. **Bukan** e-money, **bukan** jual Job 200 Kredit otomatis dari portal. CLI `channel-starter` tetap tanpa debit.

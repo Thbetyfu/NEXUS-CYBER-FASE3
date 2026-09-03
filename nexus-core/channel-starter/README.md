@@ -36,7 +36,7 @@ DNS wildcard `*.sites.nexus.id` → IP VPS. **Belum:** provisioner billing otoma
 
 ## Upsell Pagar tipis / Tepi (tanpa Job)
 
-Etalase terpisah dari Starter 20 Kr. Satu slug per lab: Caddy `reverse_proxy gateway:8080` + Reflex judi/deface. **Bukan** Job Cowork.
+Etalase terpisah dari Starter 20 Kr. `cli.py upsell enable --slug … --tier tepi` menambah Host ke `deploy-local/nexus-host-map.json` dan mem-flip Caddy ke `reverse_proxy gateway:8080`. **Portfolio tetap** di peta. **Bukan** Job Cowork. Generate 20 Kr **tidak** auto-join.
 
 ```powershell
 python cli.py upsell enable --slug warung-bu-siti --tier tepi
@@ -44,7 +44,7 @@ python cli.py upsell status
 python cli.py upsell disable --slug warung-bu-siti
 ```
 
-Lalu restart gateway agar `PROTECTED_HOST` / `TARGET_BACKEND` terbaca. Trafik harus ke Host lab (WAF `:8080`). `*.vercel.app` langsung **tidak** dilindungi. Self-heal pin **tidak** memulihkan Vercel.
+Restart gateway agar host map terbaca. Trafik: `http://portfolio.nexus-lab.test` **dan** `http://warung-bu-siti.nexus-lab.test`. `*.vercel.app` langsung **tidak** dilindungi.
 
 `--tier cowork` tetap membuat Job jika bridge `:3004` hidup. `--no-job` memaksa tanpa Job; `--job` memaksa Job meski tier `tepi`.
 
@@ -56,7 +56,7 @@ python cli.py upsell status
 python cli.py upsell disable --slug warung-bu-siti
 ```
 
-Menulis `deploy-local/channel-starter-upsell.env` (`PROTECTED_HOST`, `TARGET_BACKEND`, `NEX_RED_LIVE_TARGET`) dan mengalihkan subdomain ke WAF gateway. Satu host GaaS aktif per instance lab.
+Menulis `nexus-host-map.json` (portfolio + semua `gaas_active`) dan mengalihkan subdomain tepi ke WAF. **Tidak** menimpa `PROTECTED_HOST`. Starter generate tetap tanpa WAF.
 
 ```powershell
 cd D:\NEXUS\nexus-core\channel-starter

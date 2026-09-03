@@ -173,11 +173,11 @@ def build_parser() -> argparse.ArgumentParser:
     dep_reload.add_argument("--caddy-container", default=None)
     dep_reload.set_defaults(func=cmd_deploy_reload)
 
-    ups = sub.add_parser("upsell", help="GaaS upsell — satu PROTECTED_HOST aktif")
+    ups = sub.add_parser("upsell", help="GaaS upsell — add tepi host to lab map (keep portfolio)")
     ups_sub = ups.add_subparsers(dest="upsell_command", required=True)
     ups_enable = ups_sub.add_parser(
         "enable",
-        help="Enable WAF for one slug (tepi = pagar tipis, no Job; cowork = Job default)",
+        help="Add slug to WAF host map (tepi = pagar tipis, no Job; does not remove portfolio)",
     )
     ups_enable.add_argument("--slug", required=True)
     ups_enable.add_argument("--tier", choices=["tepi", "cowork"], default="tepi")

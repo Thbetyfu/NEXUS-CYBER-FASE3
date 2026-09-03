@@ -411,5 +411,6 @@ func SeedInitialDomainSubscriptions() {
 	for _, dom := range domains {
 		upsertLabSubscription(dom, target)
 	}
+	SeedHostMapSubscriptions()
 	fmt.Printf("[SAAS-INIT] Bound lab workspaces %v → %s (compose TARGET_BACKEND; leftover OriginIP overwritten).\n", domains, target)
 }

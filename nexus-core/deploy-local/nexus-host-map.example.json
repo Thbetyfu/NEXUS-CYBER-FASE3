@@ -1,0 +1,10 @@
+{
+  "note": "Lab multi-host tepi on one gateway. Not mass CNAME. Not *.vercel.app naked.",
+  "hosts": [
+    {
+      "host": "portfolio.nexus-lab.test",
+      "origin": "https://portfolio-website-three-ruddy-65.vercel.app",
+      "kind": "portfolio"
+    }
+  ]
+}

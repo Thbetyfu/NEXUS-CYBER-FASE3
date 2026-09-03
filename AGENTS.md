@@ -4,16 +4,16 @@
 
 ## Lab target — apa yang dilindungi & kenapa (wajib dibaca)
 
-**Yang dilindungi (satu `PROTECTED_HOST` per instance):** **pilihan A pemilik (wasit investor, 2026-09-03)** = portofolio **Vercel** di belakang WAF (`portfolio.nexus-lab.test`). Tanpa `channel-starter-upsell.env`. **Jangan** pindah `PROTECTED_HOST` ke `bu-grace` untuk demo ini. **Jangan** klaim `*.vercel.app` naked = Nexus protected. Folder `playground/` **diarsip**.
+**Yang dilindungi (host map, pilihan B pemilik 2026-09-03):** **satu** gateway lab, **lebih dari satu** hostname. Default **`portfolio.nexus-lab.test`** (portofolio Vercel di belakang WAF) **tetap**. Upsell `--tier tepi` **menambah** `{slug}.nexus-lab.test` ke `nexus-host-map.json` — **tidak** menimpa portfolio. **Jangan** klaim `*.vercel.app` naked = Nexus protected. Folder `playground/` **diarsip**.
 
 | Item | Nilai / lokasi |
 | --- | --- |
-| Hostname lab (instance ini) | `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Upsell `--tier tepi` (mis. `bu-grace`) **mati** |
-| Alur | Pengunjung → Caddy `:80` → **Gateway WAF `:8080`** → origin portofolio Vercel (bukan tembak `*.vercel.app`) |
+| Hostname default | `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Extra tepi = host map, bukan overlay `PROTECTED_HOST` |
+| Alur | Pengunjung → Caddy `:80` → **Gateway WAF `:8080`** → origin **per Host** |
 | Start lab | `nexus-core/deploy-local/START.bat` — lihat `nexus-core/deploy-local/README.md`. `START-OFFLINE.bat` **ditolak** (playground diarsip) |
-| Bukan | Starter 20 Kr ≠ WAF untuk setiap warung; ≠ `--tier tepi` massal; ≠ expose SOC `:3001`/`:8081`; ≠ tunnel `:11434`; ≠ klaim `*.vercel.app` dilindungi |
+| Bukan | Starter 20 Kr ≠ WAF untuk setiap warung; ≠ mass CNAME; ≠ expose SOC `:3001`/`:8081`; ≠ tunnel `:11434`; ≠ klaim `*.vercel.app` dilindungi |
 
-**Kenapa satu host:** bukti **Alur A** (Reflex) pada **satu** kanal HTTP lab. Job Cowork tetap paket terpisah. Demo WAF = **`http://portfolio.nexus-lab.test`**, **bukan** landing Channel Portal, **bukan** URL Vercel langsung.
+**Kenapa beberapa host di satu instance:** bukti **Alur A** (Reflex) pada **portfolio + N slug tepi** tanpa 1000 CNAME. Job Cowork tetap paket terpisah. Demo WAF default = **`http://portfolio.nexus-lab.test`**. Slug tepi = **`http://{slug}.nexus-lab.test`** setelah `cli.py upsell enable --slug … --tier tepi`. **Bukan** landing Channel Portal, **bukan** URL Vercel langsung.
 
 **Inti produk yang sulit ditiru cepat:** Job Cowork (defense delta + antibody/vaccine-probe + replay + aturan `CLOSED_OK`/`CLOSED_GAP`) di `nexus-core/NEX-RED/jobs/` + gateway — bukan UI portal/harga.
 
@@ -29,6 +29,6 @@ Jangan mengklaim eBPF XDP nyata, JWT enterprise, Stripe/provisioner, pentest NEX
 
 Pembayaran: **bukan** PSP pihak ketiga (Midtrans/Stripe) — **jangan kerjakan**. Mata uang kasir = **Kredit**. Isi pelanggan = permintaan pending + approve operator (bukan keran sebagai CTA beli). QRIS/VA milik pemilik **belum live**. Keran lab hanya uji (`NEXUS_LAB_FAUCET`). Starter 20 Kr fail-closed.
 
-Pohon in-repo: **`nexus-gaas-web/`** (Channel Portal lab `:3003`) + **`nexus-core/`** (WAF, NEX-RED, `channel-starter`, `deploy-local`, docs). Produksi Vercel kanonik = GitHub **nexus-gaas-web** ([NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS)); salinan kerja opsional **`D:\nexus-gaas-web`** di luar repo ini **boleh drift**. Jika Connect Git FASE3 ke Vercel: Root Directory = `nexus-gaas-web` (**discouraged**; jangan Connect project warung). **Login/daftar/tamu pelanggan** diminta pemilik (ledger Kredit per cookie/akun, bukan satu wallet `lab` untuk semua browser). **Bukan** login operator/developer di `/umkm`. F-10 roster penuh **tetap ditunda**. **Jangan** expose SOC publik `:3001`/`:8081`. **Jangan** Loop/Job otomatis di Starter 20 Kr. **Pagar tipis** (`--tier tepi`) boleh untuk **satu** slug lab — bukan setiap warung otomatis, bukan Loop, bukan debit 20 Kr.
+Pohon in-repo: **`nexus-gaas-web/`** (Channel Portal lab `:3003`) + **`nexus-core/`** (WAF, NEX-RED, `channel-starter`, `deploy-local`, docs). Produksi Vercel kanonik = GitHub **nexus-gaas-web** ([NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS)); salinan kerja opsional **`D:\nexus-gaas-web`** di luar repo ini **boleh drift**. Jika Connect Git FASE3 ke Vercel: Root Directory = `nexus-gaas-web` (**discouraged**; jangan Connect project warung). **Login/daftar/tamu pelanggan** diminta pemilik (ledger Kredit per cookie/akun, bukan satu wallet `lab` untuk semua browser). **Bukan** login operator/developer di `/umkm`. F-10 roster penuh **tetap ditunda**. **Jangan** expose SOC publik `:3001`/`:8081`. **Jangan** Loop/Job otomatis di Starter 20 Kr. **Pagar tipis** (`--tier tepi`) **menambah** slug ke host map lab (portfolio tetap) — bukan setiap warung otomatis, bukan Loop, bukan debit 20 Kr.
 
 **NEX-AI only:** runtime reasoning/reflex hanya `nex-ai-protect` / `nex-ai-reflex` (model milik pemilik, bukan Ollama Hub). Jangan fallback Qwen/Llama/GPT. Lihat `.agents/rules/nex-ai-only.md` dan `nexus-core/docs/NEX_AI_RUNTIME.md`.

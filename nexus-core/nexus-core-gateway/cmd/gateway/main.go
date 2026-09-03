@@ -272,6 +272,7 @@ func main() {
 		log.Printf("[NEXUS-WARN] Failed to sync dynamic routes from database: %v", err)
 	}
 	proxy.BindLabInstanceOrigin(gateway.Router, target)
+	proxy.BindHostMap(gateway.Router)
 
 	// 7. Chain: BrowserIntegrity -> TokenBucket -> NexusProxy (defense-in-depth)
 	gatewayHandler := proxy.BrowserIntegrityCheck(rateLimiter.HTTPMiddleware(gateway))

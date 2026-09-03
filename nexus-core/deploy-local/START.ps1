@@ -74,6 +74,12 @@ if (-not (Test-Path $envFile)) {
     Copy-Item -LiteralPath $example -Destination $envFile
     Write-Host "[OK] .env dibuat dari .env.example" -ForegroundColor Green
 }
+$hostMap = Join-Path $PSScriptRoot "nexus-host-map.json"
+$hostMapExample = Join-Path $PSScriptRoot "nexus-host-map.example.json"
+if (-not (Test-Path $hostMap) -and (Test-Path $hostMapExample)) {
+    Copy-Item -LiteralPath $hostMapExample -Destination $hostMap
+    Write-Host "[OK] nexus-host-map.json dibuat (portfolio + tepi hosts)" -ForegroundColor Green
+}
 if (-not $env:NEX_AI_REQUIRED) {
     $nexLine = Get-Content -LiteralPath $envFile -ErrorAction SilentlyContinue |
         Where-Object { $_ -match '^\s*NEX_AI_REQUIRED=' } |

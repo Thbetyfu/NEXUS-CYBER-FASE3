@@ -47,8 +47,8 @@ func ParseProtectedHost(raw string) string {
 	return host
 }
 
-// ProtectedHostFromEnv is the single hostname this WAF instance is willing to
-// name in TLS ask / CNAME demos (PROTECTED_HOST). Not a multi-tenant list.
+// ProtectedHostFromEnv is the default named host (portfolio). Extra tepi names
+// come from NEXUS_HOST_MAP / NEXUS_HOST_MAP_FILE — not a mass CNAME list.
 func ProtectedHostFromEnv() string {
 	return ParseProtectedHost(os.Getenv("PROTECTED_HOST"))
 }

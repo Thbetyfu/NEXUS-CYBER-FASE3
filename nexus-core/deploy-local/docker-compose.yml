@@ -47,14 +47,16 @@ services:
     volumes:
       - ../nexus-core-gateway/geoip:/app/geoip
       - integrity_data:/app/data
+      - ./nexus-host-map.json:/app/data/nexus-host-map.json:ro
     env_file:
       - path: .env
         required: true
-      # Overlay last: `cli.py upsell enable` writes PROTECTED_HOST + TARGET_BACKEND.
-      # Do not also set those keys under `environment:` — that block wins over env_file.
+      # Overlay last: must NOT set PROTECTED_HOST / TARGET_BACKEND (portfolio stays).
+      # Extra tepi hosts are in nexus-host-map.json.
       - path: channel-starter-upsell.env
         required: false
     environment:
+      NEXUS_HOST_MAP_FILE: /app/data/nexus-host-map.json
       REDIS_URL: redis:6379
       POSTGRES_DSN: postgres://nexus:${POSTGRES_PASSWORD:-nexus_local_dev_only}@postgres:5432/nexus_cyber?sslmode=disable
       NEXUS_LICENSE_KEY: ${NEXUS_LICENSE_KEY:-nexus-cyber-dev}

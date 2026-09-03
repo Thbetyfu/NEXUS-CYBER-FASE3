@@ -7,7 +7,7 @@
 
 ## Model produk (GaaS)
 
-Nexus bukan multi-tenant WAF legacy. Arsitektur mendukung **satu instance per kanal** + **Job Cowork** (wasit + antibodi + replay) + **Command Center operator** (internal).
+Nexus bukan multi-tenant WAF legacy. Arsitektur lab: **satu gateway** + **host map** (portfolio + N tepi) + **Job Cowork** + **Command Center operator** (internal). Bukan CNAME massal.
 
 ```mermaid
 flowchart TB

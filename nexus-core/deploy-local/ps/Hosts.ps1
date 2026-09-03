@@ -1,4 +1,4 @@
-# Lab hostname helpers (one PROTECTED_HOST, not a registrar).
+# Lab hostname helpers (default PROTECTED_HOST = portfolio; extra tepi via host map).
 
 $script:HostsHelperDir = $PSScriptRoot
 
@@ -31,12 +31,8 @@ function Get-NexusProtectedHost {
         $fromEnv = Get-NexusEnvProtectedHostFromFile -Path $envPath
         if ($fromEnv) { $name = $fromEnv }
     }
-    # Overlay last, same as compose env_file: only if upsell enable wrote it.
-    $upsell = Join-Path $script:HostsHelperDir "..\channel-starter-upsell.env"
-    if (Test-Path -LiteralPath $upsell) {
-        $fromUpsell = Get-NexusEnvProtectedHostFromFile -Path $upsell
-        if ($fromUpsell) { $name = $fromUpsell }
-    }
+    # Do not read PROTECTED_HOST from channel-starter-upsell.env — tepi adds
+    # hosts to nexus-host-map.json instead of replacing portfolio.
     $name = $name -replace '^https?://', ''
     $name = $name.Split("/")[0]
     $name = $name.Split(":")[0]

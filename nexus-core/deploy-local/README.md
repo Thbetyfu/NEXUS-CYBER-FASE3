@@ -4,7 +4,7 @@ Folder ini = **`nexus-core/deploy-local/`** (git root `D:\NEXUS`). 1 klik: **`ne
 
 Lab **Alur A** (tepi) + uji **Alur B** (NEX-RED wasit). Model produk: [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md).
 
-**Cheat-sheet wasit / investor (pilihan A):** buka **http://portfolio.nexus-lab.test** (bukan URL `*.vercel.app`). Double-click **`START.bat`** (sebagai Administrator sekali agar baris `hosts` tertulis). **Jangan** tunnel SOC `:3001` / `:8081`. `PROTECTED_HOST` = `portfolio.nexus-lab.test` selama `channel-starter-upsell.env` **tidak** ada.
+**Cheat-sheet wasit / investor (pilihan B — multi-host):** buka **http://portfolio.nexus-lab.test** (bukan URL `*.vercel.app`). Slug tepi setelah upsell: **http://{slug}.nexus-lab.test**. Double-click **`START.bat`**. **Jangan** tunnel SOC `:3001` / `:8081`. `PROTECTED_HOST` tetap portfolio; extra host di `nexus-host-map.json`.
 
 Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di laptop, lalu mem-proxy situs portofolio di belakangnya.
 
@@ -12,7 +12,7 @@ Alur yang benar untuk bukti:
 
 `pengunjung → http://IP-laptop:80 atau http://PROTECTED_HOST (Caddy) → Gateway :8080 → origin`
 
-Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin = **Vercel di belakang WAF**. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy langsung (tanpa WAF). Hostname toko lab: **`portal.nexus-lab.test`** → `:3003`, **`starter.nexus-lab.test`** atau path **`/starter/`** → `:3010`. **Upsell Cowork:** `channel-starter/cli.py upsell enable --slug …` → WAF + Job; env `deploy-local/channel-starter-upsell.env`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. **Channel Portal (jual):** `cd nexus-gaas-web && npm run dev` (`:3003`). Generate Node = `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. Tunnel pembeli: **`START-PORTAL-PILOT.bat`** (`:3003` saja). Tunnel juri/WAF: `jury\START-FOR-JURY.bat` (`:80`). Jangan tunnel SOC.
+Lab default: `PROTECTED_HOST=portfolio.nexus-lab.test` (HTTP, berkas `hosts`). Origin portfolio = **Vercel di belakang WAF**. Upsell `--tier tepi` menulis `nexus-host-map.json` (portfolio **plus** slug) — **tidak** menimpa `PROTECTED_HOST`. Folder `playground/` diarsip — [`../docs/PLAYGROUND_ARCHIVE.md`](../docs/PLAYGROUND_ARCHIVE.md). Self-heal file hanya jika `INTEGRITY_MONITORED_DIR` diisi folder lokal (bukan restore Vercel). **Channel Starter:** subdomain statis `{slug}.nexus-lab.test` dilayani Caddy `file_server` (tanpa WAF) sampai `cli.py upsell enable --slug … --tier tepi`. Hostname toko lab: **`portal.nexus-lab.test`** → `:3003`, **`starter.nexus-lab.test`** atau path **`/starter/`** → `:3010`. Jangan buka URL Vercel langsung jika ingin membuktikan Nexus. **Channel Portal (jual):** `cd nexus-gaas-web && npm run dev` (`:3003`). Generate Node = `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. Tunnel pembeli: **`START-PORTAL-PILOT.bat`** (`:3003` saja). Tunnel juri/WAF: `jury\START-FOR-JURY.bat` (`:80`). Jangan tunnel SOC.
 
 ## Skenario lab: hotspot blue team
 

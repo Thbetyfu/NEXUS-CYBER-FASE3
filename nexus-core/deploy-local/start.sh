@@ -21,6 +21,10 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
   echo "[OK] .env dibuat dari .env.example"
 fi
+if [[ ! -f nexus-host-map.json && -f nexus-host-map.example.json ]]; then
+  cp nexus-host-map.example.json nexus-host-map.json
+  echo "[OK] nexus-host-map.json dibuat (portfolio + tepi hosts)"
+fi
 
 echo "[1/4] Memeriksa NEX-AI lokal (nex-ai-protect + nex-ai-reflex)..."
 CHECK_PY="$(cd "$(dirname "$0")/.." && pwd)/scripts/check_nex_ai.py"

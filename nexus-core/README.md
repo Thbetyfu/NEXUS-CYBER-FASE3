@@ -81,7 +81,7 @@ eBPF/XDP di kode = **stub**. Loop GaaS penuh **bukan** paket ~Rp 20rb.
 | --- | --- | --- |
 | Operator Job Cowork | Orkestrasi di `NEX-RED/jobs/` + tepi; tutup `CLOSED_OK` / `CLOSED_GAP` | Pentest Shannon / “anti zero-day” |
 | Generate situs UMKM | `channel-starter` + portal `/order` (20 Kredit lab) | WAF penuh / Job / Loop |
-| Pagar tipis | `cli.py upsell enable --slug … --tier tepi` — **satu** host lab, Reflex di tepi | Setiap warung otomatis; debit 20 Kr; Loop |
+| Pagar tipis | `cli.py upsell enable --slug … --tier tepi` — **tambah** host ke peta lab (portfolio tetap) | Setiap generate 20 Kr; debit 20 Kr; Loop; mass CNAME |
 | Demo “Nexus melindungi” | Trafik lewat `PROTECTED_HOST` / IP laptop + Caddy | URL Vercel origin langsung |
 
 Starter ~Rp 20rb = website + header tepi (lab). **Bukan** full WAF, **bukan** Job Cowork.

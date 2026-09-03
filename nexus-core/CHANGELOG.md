@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Added
+- **Multi-host tepi (pilihan B):** satu lab gateway melindungi **portfolio.nexus-lab.test plus** slug `--tier tepi` lewat `nexus-host-map.json` (Host → origin). `upsell enable` **menambah** host, tidak menimpa `PROTECTED_HOST` / tidak mematikan `gaas_active` lain. Generate Starter 20 Kr tetap `file_server` (bukan WAF). Bukan mass CNAME. Bukan `*.vercel.app` naked. Uji `TestBindHostMap_*` + `test_upsell_second_tepi_keeps_portfolio_and_first_slug`.
+
 ### Changed
 - **Demo A wasit investor:** `PROTECTED_HOST=portfolio.nexus-lab.test` (tanpa `channel-starter-upsell.env`); compose path dari `nexus-core/deploy-local`; jangan tunnel SOC. Bukan `bu-grace` WAF. Bukan `*.vercel.app` naked.
 

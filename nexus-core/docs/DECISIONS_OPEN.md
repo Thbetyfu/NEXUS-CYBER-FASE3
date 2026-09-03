@@ -12,7 +12,7 @@
 | Model inti | **GaaS Edge Antibody Cowork** (Job/Loop), bukan model multi-tenant self-serve lama |
 | UMKM Rp ~20rb/bulan | **Website + pagar dasar** = site template + **header tepi** (nosniff / frame / Referrer-Policy / CSP) + hostname lab `{slug}.nexus-lab.test` (Caddy `file_server` atau folder Vercel). **Bukan** WAF Reflex, **bukan** Job/Loop institusi. Jangan overclaim “pelindung tingkat UMKM” sebagai WAF. Lihat `/umkm` |
 | **Nama kartu portal (2026-09-01)** | SKU pelanggan: **Edge Shield (shared lab host)** (35/28rb Reflex 1 host), **UMKM/School Header Shield** (15rb header-only). Bukan “Pagar tipis”. Teknis tetap `--tier tepi`. |
-| **Pagar tipis (2026-08-31)** | SKU portal **35rb** (belum punya web) / **28rb** (sudah) = tepi shared: upsell `--tier tepi` → WAF Reflex judi/deface, **satu** host per lab. **Bukan** Starter 20 Kr, **bukan** Job, **bukan** Loop, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung |
+| **Pagar tipis (2026-08-31, host map 2026-09-03)** | SKU portal **35rb** / **28rb** = tepi: upsell `--tier tepi` → WAF Reflex, **tambah** host ke peta lab (portfolio tetap). **Bukan** Starter 20 Kr, **bukan** Job, **bukan** Loop, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung, **bukan** mass CNAME |
 | Harga Starter exact | **Rp 20.000/bulan** |
 | Subdomain produksi | **`*.nexus.id`** |
 | Pembayaran v1 (kontak) | WhatsApp `62895603358692` — pesan: *Saya mau beli Nexus Cyber!!* (saluran manusia, **bukan** gateway PSP). **Hanya on-prem publik:** Corporat On-prem + Pemerintah |
@@ -27,7 +27,7 @@
 | **Distribusi tahap awal** | **PC operator 24/7 + tunnel publik** — **tanpa VPS** dulu; SOC/DB tidak di-tunnel |
 | **Pilot luar rumah (2026-09-02)** | Fondasi minggu ini: tunnel **Channel Portal `:3003`** (+ preview `/starter` → `:3010`). WAF/juri tetap tunnel Caddy `:80` **terpisah**. Keran **mati** di instance publik (`NEXUS_LEDGER_MODE=live`, `NEXUS_LAB_FAUCET=0`). Bukan 100 warung WAF, bukan billing produksi, bukan Loop di 20rb |
 | **Portal segmen (satu situs)** | Hub `/` → `/umkm` · `/sekolah` · `/startup` · `/corporat` · `/pemerintah` (bukan website terpisah). Alias lama tetap redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/cowork` → `/corporat` |
-| **Harga UMKM / sekolah** | Harga tetap. **20rb/15rb** = **header tepi + hostname lab**, bukan WAF. **35rb/28rb Edge Shield** = Reflex di tepi, 1 `PROTECTED_HOST` per lab (`gaas_active` + `--tier tepi`), **bukan** Job/Loop, **bukan** setiap warung otomatis |
+| **Harga UMKM / sekolah** | Harga tetap. **20rb/15rb** = **header tepi + hostname lab**, bukan WAF. **35rb/28rb Edge Shield** = Reflex di tepi, host map lab (`gaas_active` + `--tier tepi`), **bukan** Job/Loop, **bukan** setiap generate otomatis |
 | **Harga startup** | **Belum:** Landing+pagar Rp 45.000 (**header tepi**, bukan WAF) · Landing+Tepi Rp 75.000 (**Alur A Reflex**, `--tier tepi`, 1 host lab — mesin pagar tipis, **bukan** Job, **bukan** alert Telegram pelanggan) · Job 200rb. **Sudah:** Tepi Rp 75.000 (mesin sama) · Job 200rb · Loop 300rb |
 | **Cabang “punya website?”** | Aktif di UMKM / sekolah / startup; **institusi & B2G** tanpa cabang website |
 | Peran integrator | Tim Nexus **boleh** jadi agensi/integrator (build + deploy + opsional Loop) |

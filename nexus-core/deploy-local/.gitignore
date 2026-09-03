@@ -1,4 +1,5 @@
 .env
 channel-starter-upsell.env
+nexus-host-map.json
 blue-team/KARTU-BLUE-TEAM.txt
 red-team/target.txt

@@ -32,7 +32,7 @@ Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain
   → Generator (JSON → template Nexcent)
   → Deploy lab `{slug}.nexus-lab.test` + publish folder situs ke Vercel (jika token/login; **bukan** git monorepo)
   → Site live (HTTP lab / HTTPS jika domain publik di-CNAME operator)
-  → [Opsional] upsell Pagar tipis `--tier tepi` (`gaas_active`, satu PROTECTED_HOST) — **bukan** Starter 20rb, **bukan** Job
+  → [Opsional] upsell Pagar tipis `--tier tepi` (`gaas_active`, **tambah** ke host map; portfolio tetap) — **bukan** Starter 20rb, **bukan** Job
   → [Opsional] `--tier cowork` = Job jika bridge hidup
 ```
 
@@ -43,7 +43,7 @@ Form (nama, kategori, WA, alamat, jam, foto URL, 4 warna, layanan, angka, domain
 | Paket | Isi | Harga ilustrasi/bulan | Job Cowork |
 | --- | --- | --- | --- |
 | **Starter** | Subdomain lab `{slug}.nexus-lab.test`, template Nexcent, 4 palet, Caddy `file_server` **atau** folder Vercel + **header tepi saja** (nosniff, `X-Frame-Options DENY`, Referrer-Policy, CSP `script-src 'none'`). **Bukan** WAF Reflex, **bukan** Job, **bukan** restore template | **Rp 0–29.000** | Tidak |
-| **Edge Shield** | Site (jika belum) + Caddy ke WAF + Reflex judi/deface. Satu host per lab. **Bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung | **Rp 35.000** belum / **Rp 28.000** sudah — `/umkm` `/sekolah` | Tidak |
+| **Edge Shield** | Site (jika belum) + Caddy ke WAF + Reflex judi/deface. Host map lab (portfolio + slug). **Bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung, **bukan** auto dari generate 20 Kr | **Rp 35.000** belum / **Rp 28.000** sudah — `/umkm` `/sekolah` | Tidak |
 | **Usaha** | Domain sendiri, halaman tambahan, SEO dasar | **Rp 49.000–99.000** | Tidak |
 | **Tepi (GaaS)** | Sama mesin pagar tipis + Alur A (Reflex + ban tepi). Portal **Startup Rp 75.000** = kartu ini di lab 1 host (`--tier tepi`). **Bukan** Job, **bukan** alert Telegram ke pelanggan (pager ban = operator lab). Baris 149–299rb = ilustrasi lama, bukan kartu `/startup` | **Rp 75.000** portal `/startup` · ilustrasi lama **Rp 149.000–299.000** | Tidak |
 | **Cowork (pilot)** | + Job/Loop + artefak risiko | **Rp 200.000** (Job) / **Rp 300.000**/bln (Loop) — jalur `/corporat` (alias `/institusi`, `/cowork`) | Ya |
