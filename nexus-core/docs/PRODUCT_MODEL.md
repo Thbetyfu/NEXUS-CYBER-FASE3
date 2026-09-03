@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.10 / 2026-09-03  
+**Versi:** 1.1.11 / 2026-09-03  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -12,21 +12,21 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 | | |
 | --- | --- |
 | **Apa (default, tanpa upsell env)** | Website **portofolio** pemilik di **Vercel** (repo terpisah [Portofolio-Thoriq](https://github.com/Thbetyfu/Portofolio-Thoriq)) di belakang WAF. Folder lab `playground/` **diarsip** — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) |
-| **Apa (instance lab ini, pemilik 2026-09-03)** | **Satu** Edge Shield `--tier tepi`: Channel Starter slug **`bu-grace`**. Origin = `channel-origin:8099/bu-grace/` (HTML statis lab), **bukan** `*.vercel.app`. Portofolio **bukan** `PROTECTED_HOST` selama `deploy-local/channel-starter-upsell.env` aktif |
+| **Apa (instance lab ini, pemilik 2026-09-03 pilihan A)** | **Satu** host WAF: portofolio Vercel di belakang gateway. **`channel-starter-upsell.env` tidak boleh menimpa** `PROTECTED_HOST`. Bukan Edge Shield `bu-grace`. Bukan 1000 host |
 | **Di mana di stack** | Origin di belakang gateway; site UMKM **bukan** produk Job/Loop |
-| **Hostname** | Satu instance GaaS: `PROTECTED_HOST`. Default compose **`portfolio.nexus-lab.test`**. Lab tepi aktif: **`bu-grace.nexus-lab.test`** |
-| **Alur** | Internet/tunnel → Caddy (`http://bu-grace.nexus-lab.test` → `reverse_proxy gateway:8080`, **bukan** `file_server`) → **WAF `:8080`** → origin channel-origin |
-| **Kenapa** | Bukti **Alur A** (Reflex di tepi) pada **satu** host lab. Job Cowork / gallery portofolio **bukan** SKU Starter 20 Kr dan **bukan** setiap warung |
+| **Hostname** | Satu instance GaaS: `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Upsell `--tier tepi` opsional nanti — **bukan** demo wasit ini |
+| **Alur** | Pengunjung → Caddy `http://portfolio.nexus-lab.test` → **WAF `:8080`** → origin Vercel (jangan buka `*.vercel.app` untuk klaim Nexus) |
+| **Kenapa** | Bukti **Alur A** (Reflex) pada **satu** host lab untuk referee/investor. Job Cowork **bukan** SKU Starter 20 Kr dan **bukan** setiap warung |
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) — paket **Cowork**, bukan Edge Shield tepi |
 | **Bukan** | Starter 20 Kr = WAF; SOC publik; Loop penuh di harga Rp 20rb; CNAME massal; 100 UMKM di belakang WAF |
 
 Operasi lab: **`nexus-core/deploy-local/START.bat`** — [`../deploy-local/README.md`](../deploy-local/README.md). Portal lab: `cd nexus-gaas-web && npm run dev` (`:3003`; generate server-side ke `CHANNEL_STARTER_URL=http://127.0.0.1:3010`; preview browser **`/starter/` tanpa cookie** atau `CHANNEL_STARTER_PUBLIC_URL`; etalase `/` `/umkm` tetap `/gate`). Pilot luar rumah: tunnel **hanya** Channel Portal (`START-PORTAL-PILOT.bat` / `nexus-tunnel.ps1 -Portal`) — **bukan** SOC `:3001`/`:8081`, **bukan** Ollama `:11434`. Keran lab **opt-in** (`NEXUS_LAB_FAUCET=1` + mode lab). Distribusi: [`DISTRIBUTION_PILOT.md`](./DISTRIBUTION_PILOT.md).
 
 ```text
-  Pengunjung → Caddy http://bu-grace.nexus-lab.test → Gateway :8080 → channel-origin /bu-grace/
+  Pengunjung → Caddy http://portfolio.nexus-lab.test → Gateway :8080 → origin Vercel
                                       ↑
-                         PROTECTED_HOST = bu-grace.nexus-lab.test  (tepi lab, 1 host)
-  (portfolio.nexus-lab.test bukan WAF host pada instance ini sampai upsell di-disable)
+                         PROTECTED_HOST = portfolio.nexus-lab.test
+  (jangan demo naked *.vercel.app; jangan tunnel SOC :3001/:8081)
 ```
 
 ---

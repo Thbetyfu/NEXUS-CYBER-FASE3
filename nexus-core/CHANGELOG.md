@@ -7,6 +7,15 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Changed
+- **Demo A wasit investor:** `PROTECTED_HOST=portfolio.nexus-lab.test` (tanpa `channel-starter-upsell.env`); compose path dari `nexus-core/deploy-local`; jangan tunnel SOC. Bukan `bu-grace` WAF. Bukan `*.vercel.app` naked.
+
+### Changed
+- **Token Vercel PC wizard:** `VERCEL_TOKEN` di `channel-starter/.env` (gitignore) atau `vercel login` (auth.json Windows `%LOCALAPPDATA%`). Restart `python cli.py serve` setelah isi env. Bukan Connect Git FASE3. Bukan Midtrans.
+
+### Fixed
+- **Generate Starter publish jujur:** wizard lama di `:3010` bisa 303 meski portal minta JSON. Portal sekarang `POST /generate?format=json`; jika tetap 303, `POST /publish/{slug}` — URL Vercel atau **`publish gagal: set token di mesin wizard`**, bukan klaim “publish belum dijalankan”. Restart wizard jika `/publish` 404. Bukan sukses palsu. Bukan Midtrans.
+
+### Changed
 - **Tiga SKU jujur:** Channel Starter (20 Kr, header tepi) ≠ Edge Shield `--tier tepi` (satu `PROTECTED_HOST` per lab, default tanpa upsell `portfolio.nexus-lab.test`) ≠ Job/Loop Cowork. Portal copy + FAQ: jangan klaim 100 UMKM di belakang WAF. Kasir: `kind: tepi` tidak debit 20 Kr. CLI upsell tepi tetap tanpa Job. Bukan Midtrans. Bukan CNAME massal. Bukan `*.vercel.app` = Nexus protected.
 - **Portal Vercel = etalase:** tanpa `CHANNEL_STARTER_URL` publik, generate/publish 503 + refund. `VERCEL=1` tidak fetch Ollama `:11434` (health/fill fallback). Named hostname butuh zona Cloudflare pemilik (belum). Generate + LLM + operator Acc di PC 24/7. Jangan tunnel `:11434`. Uji `npm test` + `python -m unittest` channel-starter.
 

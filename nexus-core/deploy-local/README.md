@@ -4,6 +4,8 @@ Folder ini = **`nexus-core/deploy-local/`** (git root `D:\NEXUS`). 1 klik: **`ne
 
 Lab **Alur A** (tepi) + uji **Alur B** (NEX-RED wasit). Model produk: [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md).
 
+**Cheat-sheet wasit / investor (pilihan A):** buka **http://portfolio.nexus-lab.test** (bukan URL `*.vercel.app`). Double-click **`START.bat`** (sebagai Administrator sekali agar baris `hosts` tertulis). **Jangan** tunnel SOC `:3001` / `:8081`. `PROTECTED_HOST` = `portfolio.nexus-lab.test` selama `channel-starter-upsell.env` **tidak** ada.
+
 Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di laptop, lalu mem-proxy situs portofolio di belakangnya.
 
 Alur yang benar untuk bukti:

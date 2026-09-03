@@ -4,16 +4,16 @@
 
 ## Lab target — apa yang dilindungi & kenapa (wajib dibaca)
 
-**Yang dilindungi (origin lab/deploy default):** website **portofolio** pemilik di **Vercel**, di belakang WAF — `PROTECTED_HOST` default **`portfolio.nexus-lab.test`**. Folder `playground/` **diarsip** (bukan di monorepo).
+**Yang dilindungi (satu `PROTECTED_HOST` per instance):** **pilihan A pemilik (wasit investor, 2026-09-03)** = portofolio **Vercel** di belakang WAF (`portfolio.nexus-lab.test`). Tanpa `channel-starter-upsell.env`. **Jangan** pindah `PROTECTED_HOST` ke `bu-grace` untuk demo ini. **Jangan** klaim `*.vercel.app` naked = Nexus protected. Folder `playground/` **diarsip**.
 
 | Item | Nilai / lokasi |
 | --- | --- |
-| Hostname lab | `PROTECTED_HOST` default **`portfolio.nexus-lab.test`** |
-| Alur | Pengunjung → Caddy/tunnel → **Gateway WAF `:8080`** → origin portofolio **Vercel** |
+| Hostname lab (instance ini) | `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Upsell `--tier tepi` (mis. `bu-grace`) **mati** |
+| Alur | Pengunjung → Caddy `:80` → **Gateway WAF `:8080`** → origin portofolio Vercel (bukan tembak `*.vercel.app`) |
 | Start lab | `nexus-core/deploy-local/START.bat` — lihat `nexus-core/deploy-local/README.md`. `START-OFFLINE.bat` **ditolak** (playground diarsip) |
-| Bukan | Portofolio ≠ produk yang dijual; ≠ Channel Starter UMKM; ≠ expose SOC `:3001`/`:8081`; ≠ tembak `*.vercel.app` langsung saat klaim Nexus melindungi |
+| Bukan | Starter 20 Kr ≠ WAF untuk setiap warung; ≠ `--tier tepi` massal; ≠ expose SOC `:3001`/`:8081`; ≠ tunnel `:11434`; ≠ klaim `*.vercel.app` dilindungi |
 
-**Kenapa portofolio:** origin HTTP **nyata** untuk membuktikan **Alur A** (tepi always-on) + **Job Cowork** (ukur → kendalikan → uji, termasuk `replay_missed` ≠ hijau palsu). Demo/pitching harus menunjuk mesin wasit pada host ini (atau `PROTECTED_HOST` setara), **bukan** hanya landing Channel Portal.
+**Kenapa satu host:** bukti **Alur A** (Reflex) pada **satu** kanal HTTP lab. Job Cowork tetap paket terpisah. Demo WAF = **`http://portfolio.nexus-lab.test`**, **bukan** landing Channel Portal, **bukan** URL Vercel langsung.
 
 **Inti produk yang sulit ditiru cepat:** Job Cowork (defense delta + antibody/vaccine-probe + replay + aturan `CLOSED_OK`/`CLOSED_GAP`) di `nexus-core/NEX-RED/jobs/` + gateway — bukan UI portal/harga.
 

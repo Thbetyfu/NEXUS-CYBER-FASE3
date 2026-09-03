@@ -10,18 +10,32 @@ function Get-NexusDeployEnvPath {
     return $null
 }
 
+function Get-NexusEnvProtectedHostFromFile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $found = $null
+    Get-Content -LiteralPath $Path | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -eq "" -or $line.StartsWith("#") -or $line -notmatch "=") { return }
+        $pair = $line.Split("=", 2)
+        if ($pair[0].Trim() -eq "PROTECTED_HOST" -and $pair[1].Trim()) {
+            $found = $pair[1].Trim()
+        }
+    }
+    return $found
+}
+
 function Get-NexusProtectedHost {
     $name = "portfolio.nexus-lab.test"
     $envPath = Get-NexusDeployEnvPath
     if ($envPath) {
-        Get-Content -LiteralPath $envPath | ForEach-Object {
-            $line = $_.Trim()
-            if ($line -eq "" -or $line.StartsWith("#") -or $line -notmatch "=") { return }
-            $pair = $line.Split("=", 2)
-            if ($pair[0].Trim() -eq "PROTECTED_HOST" -and $pair[1].Trim()) {
-                $name = $pair[1].Trim()
-            }
-        }
+        $fromEnv = Get-NexusEnvProtectedHostFromFile -Path $envPath
+        if ($fromEnv) { $name = $fromEnv }
+    }
+    # Overlay last, same as compose env_file: only if upsell enable wrote it.
+    $upsell = Join-Path $script:HostsHelperDir "..\channel-starter-upsell.env"
+    if (Test-Path -LiteralPath $upsell) {
+        $fromUpsell = Get-NexusEnvProtectedHostFromFile -Path $upsell
+        if ($fromUpsell) { $name = $fromUpsell }
     }
     $name = $name -replace '^https?://', ''
     $name = $name.Split("/")[0]
