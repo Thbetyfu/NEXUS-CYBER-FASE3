@@ -7,6 +7,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Security
+- **Fill-starter butuh sesi portal:** `POST /api/local-llm/fill-starter` memakai cookie `nexus_portal_sid` yang sama dengan generate (tamu setelah `/gate` atau akun). Tanpa sesi → **401** JSON `Sesi diperlukan`, bukan 200 LLM. Rate limit tetap. Fetch Ollama tetap loopback `gemma3:1b` di PC operator (bukan NEX-AI protect/reflex). **Tidak** debit 20 Kr. Vercel tetap fail-closed via `isOperatorLocalLlmRuntime`. Uji `local-llm.test.ts`.
 - **Wizard FastAPI bukan publik mutate:** Caddy `portal.nexus-lab.test` / `starter.nexus-lab.test` dan Next rewrite hanya **GET/HEAD** `/starter` + `/starter/preview/*` (bukan `handle_path /starter/*` / `/starter/:path*`). `POST /generate`, `POST /publish`, `POST /upsell`, `GET /sites` tetap loopback `:3010` atau portal `POST /api/channel-starter/*` (sesi + debit). Bukan WAF Starter 20 Kr. Bukan `*.vercel.app` protected. Uji `starter-public-rewrites.test.ts` + `test_caddy_starter_proxy.py`.
 
 ### Added

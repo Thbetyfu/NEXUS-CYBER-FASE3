@@ -17,6 +17,7 @@ import { CATEGORY_COPY } from "./starter-generate-payload.ts";
 import {
   categoryPresetSlots,
   fillStarterCopy,
+  handleFillStarterHttp,
   parseFillStarterInput,
   parseModelSlots,
   plainCopyText,
@@ -253,4 +254,78 @@ test("env protect tidak pernah dikirim ke Ollama", async () => {
     },
   );
   assert.equal(body.usedFallback, true);
+});
+
+test("fill-starter tanpa sesi: 401, tidak ke runtime LLM", async () => {
+  let fillCalled = false;
+  const result = await handleFillStarterHttp({
+    identity: null,
+    rateLimited: false,
+    raw: { name: "Warung", category: "fnb", whatsapp: "08", story: "Kopi tubruk setiap pagi." },
+    fill: async () => {
+      fillCalled = true;
+      return {
+        status: 200,
+        body: {
+          tagline: "x",
+          hero: "x",
+          about_body: "x",
+          cta_label: "x",
+          hours: "",
+          description: "x",
+          usedFallback: false,
+        },
+      };
+    },
+  });
+  assert.equal(fillCalled, false);
+  assert.equal(result.status, 401);
+  assert.equal(result.body.ok, false);
+  assert.equal(result.body.usedFallback, true);
+  assert.match(result.body.error ?? "", /Sesi diperlukan/);
+});
+
+test("fill-starter dengan sesi: lanjut cek runtime (Vercel fail-closed, tanpa debit)", async () => {
+  let fetched = "";
+  const result = await handleFillStarterHttp({
+    identity: { sid: "11111111-1111-4111-8111-111111111111" },
+    rateLimited: false,
+    raw: { name: "Warung", category: "fnb", whatsapp: "08", story: "Kopi tubruk setiap pagi." },
+    fill: (input) =>
+      fillStarterCopy(input, { VERCEL: "1", NEXUS_LOCAL_LLM_URL: "http://127.0.0.1:11434" }, async (url) => {
+        fetched = String(url);
+        return new Response("should not run", { status: 200 });
+      }),
+  });
+  assert.equal(fetched, "");
+  assert.equal(result.status, 503);
+  assert.equal(result.body.ok, false);
+  assert.equal(result.body.usedFallback, true);
+});
+
+test("fill-starter sesi + rate limit: 429 tanpa LLM", async () => {
+  let fillCalled = false;
+  const result = await handleFillStarterHttp({
+    identity: { sid: "11111111-1111-4111-8111-111111111111" },
+    rateLimited: true,
+    raw: { name: "Warung", category: "fnb", story: "Kopi." },
+    fill: async () => {
+      fillCalled = true;
+      return {
+        status: 200,
+        body: {
+          tagline: "",
+          hero: "",
+          about_body: "",
+          cta_label: "",
+          hours: "",
+          description: "",
+          usedFallback: true,
+        },
+      };
+    },
+  });
+  assert.equal(fillCalled, false);
+  assert.equal(result.status, 429);
+  assert.equal(result.body.ok, false);
 });

@@ -158,3 +158,85 @@ export async function fillStarterCopy(
     clearTimeout(timer);
   }
 }
+
+export type FillStarterJsonBody = FillStarterSlots & {
+  ok: boolean;
+  usedFallback: boolean;
+  error?: string;
+};
+
+/** Session gate (same class as generate) then rate limit then Ollama fill. No Kredit debit. */
+export async function handleFillStarterHttp(opts: {
+  identity: { sid: string } | null;
+  rateLimited: boolean;
+  raw: unknown;
+  fill?: typeof fillStarterCopy;
+}): Promise<{ status: number; body: FillStarterJsonBody }> {
+  if (!opts.identity) {
+    return {
+      status: 401,
+      body: {
+        ok: false,
+        usedFallback: true,
+        error: "Sesi diperlukan",
+        tagline: "",
+        hero: "",
+        about_body: "",
+        cta_label: "",
+        hours: "",
+        description: "",
+      },
+    };
+  }
+
+  if (opts.rateLimited) {
+    return {
+      status: 429,
+      body: {
+        ok: false,
+        usedFallback: true,
+        error: "Terlalu banyak permintaan. Coba lagi nanti.",
+        tagline: "",
+        hero: "",
+        about_body: "",
+        cta_label: "",
+        hours: "",
+        description: "",
+      },
+    };
+  }
+
+  const input = parseFillStarterInput(opts.raw);
+  if (!input) {
+    return {
+      status: 400,
+      body: {
+        ok: false,
+        usedFallback: true,
+        error: "Butuh name (teks, bukan HTML).",
+        tagline: "",
+        hero: "",
+        about_body: "",
+        cta_label: "",
+        hours: "",
+        description: "",
+      },
+    };
+  }
+
+  const fill = opts.fill ?? fillStarterCopy;
+  const { status, body } = await fill(input);
+  return {
+    status,
+    body: {
+      ok: status < 400,
+      usedFallback: body.usedFallback,
+      tagline: body.tagline,
+      hero: body.hero,
+      about_body: body.about_body,
+      cta_label: body.cta_label,
+      hours: body.hours,
+      description: body.description,
+    },
+  };
+}

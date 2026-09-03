@@ -60,7 +60,7 @@ Setelah itu aturan firewall 80/8080/9090 dan pengecualian folder repo tetap ters
 | `CHECK-NEX-AI.bat` | Cek Ollama lokal punya `nex-ai-protect` + `nex-ai-reflex` (helper yang sama dipakai START) |
 | `PILOT-STACK.bat` | Satu klik harian: Ollama `:11434` + Channel Starter `:3010` + Portal `:3003` jika belum listen. **Bukan** `START.bat` (SOC/WAF/Docker). Tunnel tetap `START-PORTAL-PILOT.bat` |
 | `START-PORTAL-PILOT.bat` | Cloudflare Tunnel ke Channel Portal `:3003` (bukan SOC, bukan WAF, **bukan** `:11434`) |
-| `START-LOCAL-LLM.bat` | Ollama `127.0.0.1:11434` + writer `gemma3:1b`; portal `/api/local-llm/health` dan `POST /api/local-llm/fill-starter` |
+| `START-LOCAL-LLM.bat` | Ollama `127.0.0.1:11434` + writer `gemma3:1b`; portal `/api/local-llm/health` dan `POST /api/local-llm/fill-starter` (sesi portal) |
 | `START-OFFLINE.bat` | **Ditolak** — playground diarsip; pakai `START.bat` |
 | `STATUS.bat` | Lihat kontainer hidup/mati |
 | `STOP.bat` | Matikan stack (data Postgres tetap di volume Docker) |

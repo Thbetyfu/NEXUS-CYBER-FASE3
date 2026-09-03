@@ -102,6 +102,11 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
           story,
         }),
       });
+      if (fillRes.status === 401) {
+        const next = `${window.location.pathname}${window.location.search}`;
+        window.location.assign(`/gate?next=${encodeURIComponent(next)}`);
+        return;
+      }
       const fill = (await fillRes.json()) as StarterFillSlots & { usedFallback?: boolean };
       applyPreview(fill, fill.usedFallback !== false);
     } catch {
