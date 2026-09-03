@@ -35,7 +35,7 @@ export function channelStarterInternalUrl(
 
 /**
  * Browser preview / wizard links.
- * Default `/starter` so a tunnel to the portal (:3003) can reverse-proxy to :3010.
+ * Default `/starter` so a tunnel to the portal (:3003) can GET-proxy wizard UI + preview to :3010.
  * Lab override: CHANNEL_STARTER_PUBLIC_URL=http://127.0.0.1:3010
  */
 export function channelStarterPublicBase(

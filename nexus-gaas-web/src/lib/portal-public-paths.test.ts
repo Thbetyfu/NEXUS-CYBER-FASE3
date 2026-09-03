@@ -19,7 +19,9 @@ test("/starter dan preview slug mana pun publik (funnel semua UMKM)", () => {
 
 test("generate/upsell wizard dan etalase tetap gerbang; operator/approve bukan publik", () => {
   assert.equal(isPortalPublicPath("/starter/generate"), false);
+  assert.equal(isPortalPublicPath("/starter/publish/kedai-siti"), false);
   assert.equal(isPortalPublicPath("/starter/upsell/kedai-siti/enable"), false);
+  assert.equal(isPortalPublicPath("/starter/upsell/status"), false);
   assert.equal(isPortalPublicPath("/starter/sites"), false);
   assert.equal(isPortalPublicPath("/"), false);
   assert.equal(isPortalPublicPath("/umkm"), false);

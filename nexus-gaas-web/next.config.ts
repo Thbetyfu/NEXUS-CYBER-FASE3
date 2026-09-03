@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { channelStarterInternalUrl, isLoopbackHttpOrigin } from "./src/lib/channel-starter-urls";
+import { channelStarterPublicRewrites } from "./src/lib/starter-public-rewrites";
 
 const publicHost = process.env.NEXUS_PORTAL_PUBLIC_HOST?.trim().replace(/^https?:\/\//, "");
 const starterInternal = channelStarterInternalUrl();
@@ -19,12 +20,7 @@ const nextConfig: NextConfig = {
     if (!isLoopbackHttpOrigin(starterInternal)) {
       return [];
     }
-    return [
-      {
-        source: "/starter/:path*",
-        destination: `${starterInternal}/:path*`,
-      },
-    ];
+    return channelStarterPublicRewrites(starterInternal);
   },
 };
 

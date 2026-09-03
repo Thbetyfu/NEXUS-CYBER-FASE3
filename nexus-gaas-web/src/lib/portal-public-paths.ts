@@ -11,7 +11,8 @@ function stripTrailingSlash(pathname: string): string {
 
 /**
  * Channel Starter funnel — any UMKM slug, not only bu-grace.
- * Public: wizard GET + preview. Not /starter/generate, /starter/upsell, /operator, or topup APIs.
+ * Public: GET wizard UI + GET preview. Not generate/publish/upsell/sites, /operator, or topup APIs.
+ * Caddy/Next must not catch-all proxy /starter/* — this helper is middleware only.
  */
 export function isPortalPublicPath(pathname: string): boolean {
   if (AUTH_PAGES.has(pathname)) {

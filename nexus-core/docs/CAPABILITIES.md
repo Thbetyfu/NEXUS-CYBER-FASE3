@@ -8,7 +8,7 @@ Status mengikuti kode di `nexus-core-gateway`, `nexus-admin-dashboard`, dan `NEX
 
 | Kemampuan | Status | Catatan |
 | --- | --- | --- |
-| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent, 4 palet, Caddy header tepi; wizard `:3010`; seed demo `sites/contoh-nexcent`; portal `/starter` + `/starter/preview/{slug}` **publik** (setiap slug); generate+`POST /publish/{slug}` ke Vercel **per folder** jika token di PC wizard (bukan git FASE3; `*.vercel.app` bukan WAF) |
+| **Channel Starter** (form→template UMKM) | **Lab v0.1 + S-3/S-6** | Template Nexcent, 4 palet, Caddy header tepi; wizard `:3010` **loopback** untuk mutate; seed demo `sites/contoh-nexcent`; portal **GET** `/starter` + `/starter/preview/{slug}` **publik** (setiap slug; bukan proxy POST generate/publish/upsell atau GET `/sites`); generate+publish Vercel lewat portal API (sesi+debit) + token di PC wizard (bukan git FASE3; `*.vercel.app` bukan WAF) |
 | **Pagar tipis** (tepi shared) | **Lab MVP** | Upsell `--tier tepi` → Caddy ke WAF `:8080` + Reflex; **host map** (portfolio + N slug). Generate 20 Kr **tidak** auto-join. **Bukan** mass CNAME; bukan `*.vercel.app` naked; bukan Job |
 | Edge Antibody Cowork (Job/Loop) | **Sudah ada** | NEX-RED + gateway |
 | Channel Portal di Vercel | **Etalase** | Copy + gerbang/Kredit. Generate, Ollama `:11434`, operator Acc **di PC**. `VERCEL=1` tidak fetch `:11434`. Bukan WAF |

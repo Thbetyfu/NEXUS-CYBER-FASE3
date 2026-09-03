@@ -22,7 +22,7 @@ Salinan lab (`D:\NEXUS\nexus-gaas-web`) dan folder saudara `D:\nexus-gaas-web` *
 
 ## nexus-gaas-web (in-repo)
 
-Channel Portal (Next.js `:3003`). Generate Node ke Channel Starter **`:3010`** (`CHANNEL_STARTER_URL=http://127.0.0.1:3010`); preview browser `/starter`. Pohon SaaS lama (Prisma/Midtrans) di cabang `archive/legacy-saas` pada repo GaaS.
+Channel Portal (Next.js `:3003`). Generate Node ke Channel Starter **`:3010`** (`CHANNEL_STARTER_URL=http://127.0.0.1:3010`); preview browser **GET** `/starter` + `/starter/preview/{slug}`. Pohon SaaS lama (Prisma/Midtrans) di cabang `archive/legacy-saas` pada repo GaaS.
 
 ## nexus-core
 

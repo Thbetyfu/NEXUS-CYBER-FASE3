@@ -199,7 +199,7 @@ Internet (juri / pelanggan)
         ▼
 Cloudflare Tunnel (cloudflared di Windows)
         │
-        ├── trycloudflare storefront → localhost:3003 (Channel Portal; /starter → :3010)
+        ├── trycloudflare storefront → localhost:3003 (Channel Portal; GET /starter + GET /starter/preview → :3010)
         ├── trycloudflare juri → localhost:80  (Caddy → WAF → portofolio lab)
         └── (nanti) named tunnel + domain → portal. / starter. / portfolio.
 

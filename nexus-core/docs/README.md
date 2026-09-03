@@ -9,7 +9,7 @@ Dokumen di folder ini **harus mengikuti kode**. Klaim yang tidak ada di reposito
 | Berkas | Isi |
 | --- | --- |
 | [PRODUCT_MODEL.md](./PRODUCT_MODEL.md) | Lab target portofolio + dua lapisan Starter + GaaS Job/L0/L1 |
-| [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) | Entry UMKM form→template (**lab v0.1**) |
+| [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) | Entry UMKM form→template (**lab v0.1**). Publik: `GET /starter` + `GET /starter/preview/{slug}` saja — bukan catch-all Caddy/Next ke FastAPI mutate |
 | [NEXUS_CHANNEL_PORTAL.md](./NEXUS_CHANNEL_PORTAL.md) | Pintu jual B2C/B2B — `nexus-gaas-web/` |
 | [COWORK_B2B.md](./COWORK_B2B.md) | GTM & playbook Cowork B2B (prioritas Q9) |
 | [COWORK_B2G.md](./COWORK_B2G.md) | Pitching on-prem B2G — lisensi Edge + Loop wajib |

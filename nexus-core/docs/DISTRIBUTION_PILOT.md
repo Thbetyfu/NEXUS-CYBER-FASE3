@@ -24,7 +24,7 @@ Tujuan: seluruh stack (portal, Channel Starter, gateway, Job Cowork, lab) **akti
 
 | Layanan | Publik? | Catatan |
 | --- | --- | --- |
-| Channel Portal (`nexus-gaas-web`, `:3003`) | **Ya** | Pintu jual — `npm run dev`; generate Node → `:3010` loopback; preview `/starter/` |
+| Channel Portal (`nexus-gaas-web`, `:3003`) | **Ya** | Pintu jual — `npm run dev`; generate Node → `:3010` loopback; preview **GET** `/starter` + `/starter/preview/{slug}` saja |
 | Site UMKM / origin Channel Starter | **Ya** | Subdomain lewat Caddy, atau `/starter` di portal |
 | WAF data plane (HTTP/HTTPS) | **Ya (demo juri)** | Tunnel **terpisah** ke Caddy `:80` — bukan digabung sebagai “toko” |
 | Command Center / SOC (`:3001`, `:8081`) | **Tidak** | Hanya localhost / VPN |
@@ -54,11 +54,12 @@ Aturan emas: **jangan tunnel-kan control plane** ke internet.
 
 ```text
 Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
-                └── path /starter/*  → rewrite Next → localhost:3010
+                └── GET /starter + GET /starter/preview/*  → rewrite Next → localhost:3010
+                    (bukan POST /starter/generate|publish|upsell, bukan GET /starter/sites)
          → Tunnel B (juri, opsional) → localhost:80  Caddy → WAF → portofolio
-                 Caddy Host portal.nexus-lab.test → :3003
-                 Caddy Host starter.nexus-lab.test → :3010
-         ↘ localhost saja: SOC :3001/:8081, DB, NEX-RED, /operator/topup, Ollama :11434
+                 Caddy Host portal.nexus-lab.test → GET preview/:3010, else :3003
+                 Caddy Host starter.nexus-lab.test → GET / dan GET /preview/* saja → :3010
+         ↘ localhost saja: SOC :3001/:8081, DB, NEX-RED, /operator/topup, Ollama :11434, FastAPI mutate :3010
 ```
 
 ### Cara jalanin storefront (HP luar)

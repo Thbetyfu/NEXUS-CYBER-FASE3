@@ -12,7 +12,14 @@ import /srv/channel-starter/_caddy/ChannelStarter.caddy
 # JANGAN menambah site untuk :3001 / :8081 / Postgres / Redis / NEX-RED.
 
 http://portal.nexus-lab.test {
-	handle_path /starter/* {
+	# GET wizard UI + GET preview only. Do not restore handle_path /starter/*
+	# (strips prefix and would proxy POST /generate, publish, upsell, GET /sites).
+	@starterPublicGet {
+		method GET HEAD
+		path /starter /starter/ /starter/preview /starter/preview/ /starter/preview/*
+	}
+	handle @starterPublicGet {
+		uri strip_prefix /starter
 		reverse_proxy host.docker.internal:3010
 	}
 	handle {
@@ -21,7 +28,13 @@ http://portal.nexus-lab.test {
 }
 
 http://starter.nexus-lab.test {
-	reverse_proxy host.docker.internal:3010
+	@starterPublicGet {
+		method GET HEAD
+		path / /preview /preview/ /preview/*
+	}
+	handle @starterPublicGet {
+		reverse_proxy host.docker.internal:3010
+	}
 }
 
 # Default lab catch-all → WAF gateway (portfolio). Named tepi sites in

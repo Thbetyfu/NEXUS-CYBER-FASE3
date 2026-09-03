@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Security
+- **Wizard FastAPI bukan publik mutate:** Caddy `portal.nexus-lab.test` / `starter.nexus-lab.test` dan Next rewrite hanya **GET/HEAD** `/starter` + `/starter/preview/*` (bukan `handle_path /starter/*` / `/starter/:path*`). `POST /generate`, `POST /publish`, `POST /upsell`, `GET /sites` tetap loopback `:3010` atau portal `POST /api/channel-starter/*` (sesi + debit). Bukan WAF Starter 20 Kr. Bukan `*.vercel.app` protected. Uji `starter-public-rewrites.test.ts` + `test_caddy_starter_proxy.py`.
+
 ### Added
 - **Multi-host tepi (pilihan B):** satu lab gateway melindungi **portfolio.nexus-lab.test plus** slug `--tier tepi` lewat `nexus-host-map.json` (Host → origin). `upsell enable` **menambah** host, tidak menimpa `PROTECTED_HOST` / tidak mematikan `gaas_active` lain. Generate Starter 20 Kr tetap `file_server` (bukan WAF). Bukan mass CNAME. Bukan `*.vercel.app` naked. Uji `TestBindHostMap_*` + `test_upsell_second_tepi_keeps_portfolio_and_first_slug`.
 

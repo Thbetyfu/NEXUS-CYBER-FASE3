@@ -2,7 +2,7 @@
 
 **Produksi (Vercel):** repo **nexus-gaas-web** — [NEXUS-CYBER-WEBISTE-GaaS](https://github.com/Thbetyfu/NEXUS-CYBER-WEBISTE-GaaS), folder kerja opsional `D:\nexus-gaas-web`. Deploy dari **root** repo itu. Alternatif (discouraged): Connect FASE3 dengan Vercel **Root Directory `nexus-gaas-web`**. Owner (re)connect di dashboard; agen tidak mengklik UI Vercel. **Jangan** Connect `warung-*` ke FASE3.
 
-**Lab (in-repo):** `cd nexus-gaas-web && npm run dev` · port **3003**. Generate (Node di PC) memakai **`CHANNEL_STARTER_URL=http://127.0.0.1:3010`**. Link preview browser = **`/starter/...`** (rewrite/Caddy ke wizard) atau `CHANNEL_STARTER_PUBLIC_URL` (hanya server / `channel-starter-urls.ts`, bukan `portal-config` klien). Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
+**Lab (in-repo):** `cd nexus-gaas-web && npm run dev` · port **3003**. Generate (Node di PC) memakai **`CHANNEL_STARTER_URL=http://127.0.0.1:3010`**. Link preview browser = **`GET /starter`** dan **`GET /starter/preview/{slug}`** (rewrite/Caddy ke wizard; **bukan** catch-all mutate) atau `CHANNEL_STARTER_PUBLIC_URL` (hanya server / `channel-starter-urls.ts`, bukan `portal-config` klien). Lab copy dan `D:\nexus-gaas-web` **boleh drift**. Tata letak: [REPO_LAYOUT.md](./REPO_LAYOUT.md).
 
 **Peran:** Pintu jual **satu situs**, multi-segmen — UMKM · Sekolah · Startup · **Corporat** · **Pemerintah**
 
@@ -11,7 +11,7 @@
 ## Alur pengunjung
 
 ```text
-/starter[/preview/{slug}]  (publik — tanpa cookie; rewrite ke wizard :3010)
+GET /starter + GET /starter/preview/{slug}  (publik — tanpa cookie; rewrite GET-only ke wizard :3010)
 /gate  (Login / Daftar / Tamu — skip jika cookie sesi ada; **wajib** untuk etalase)
  └─ /  (hub: pilih segmen)
      ├─ /umkm        → sudah/belum punya web? → kartu → /pesan/{sku}
@@ -25,7 +25,7 @@ Alias redirect: `/institusi` → `/corporat` · `/b2g` → `/pemerintah` · `/co
 
 **Header Shield 15rb/20rb** = **header tepi + hostname lab**, bukan WAF. **Edge Shield 35rb/28rb** (kartu portal; teknis `--tier tepi`) = Reflex judi/deface lewat WAF, **satu** `PROTECTED_HOST` per lab, **bukan** Job, **bukan** pulih Vercel, **bukan** `*.vercel.app` langsung. **Demo A (aktif):** host WAF = **`portfolio.nexus-lab.test`** (bukan setiap warung, bukan Starter 20 Kr). Job/Loop = `/corporat` / `--tier cowork`.
 
-Preview HTML shareable untuk **setiap slug** (bukan hanya `bu-grace`): `GET /starter` dan `GET /starter/preview/{slug}` di `:3003` **tanpa** login. `/gate` tetap wajib untuk hub/segmen/`/pesan`/`/kredit`. `/operator` dan approve Kredit **bukan** publik. `/starter/generate` dan `/starter/upsell` **bukan** path publik.
+Preview HTML shareable untuk **setiap slug** (bukan hanya `bu-grace`): `GET /starter` dan `GET /starter/preview/{slug}` di `:3003` **tanpa** login. Caddy/Next **tidak** mem-proxy `POST /starter/generate`, `POST /publish`, `POST /upsell`, atau `GET /starter/sites` ke FastAPI. `/gate` tetap wajib untuk hub/segmen/`/pesan`/`/kredit`. `/operator` dan approve Kredit **bukan** publik. `/starter/generate` dan `/starter/upsell` **bukan** path publik.
 
 Form Starter: `/pesan/umkm-starter` (wajib: nama, WA usaha, kategori; cerita opsional). Tombol **Lihat teks** → `POST /api/local-llm/fill-starter` (tanpa debit) menampilkan tagline/hero/tentang + sumber jujur (template kategori vs model lokal). Baru **Bayar 20 Kredit & buat site**. Gagal/timeout fill = template tetap tampil. Alamat, palet, dll. di **Lengkapi nanti**. Alias `/order`. Proxy generate (`Accept: application/json` atau `?format=json`; 303 → `POST /publish/{slug}`) ke `CHANNEL_STARTER_URL` loopback; preview HTML `/starter/preview/{slug}`. Generate memanggil `deploy_manifest` → `publish_site` (sama `python cli.py publish --slug`). UI sukses menampilkan URL Vercel atau **`publish gagal: set token di mesin wizard`**. Retry: `POST /api/channel-starter/publish` `{ slug }` (sesi pelanggan, bukan publik). Token/`vercel login` **hanya di PC wizard**. **Jangan** Connect Git **NEXUS-CYBER-FASE3** ke project Vercel warung. `*.vercel.app` **bukan** WAF. Starter 20 Kr **bukan** Edge Shield; jangan upsell `--tier tepi` massal tiap slug. Slug hasil generate klien **tidak** ikut git; demo `sites/contoh-nexcent` ikut.
 
