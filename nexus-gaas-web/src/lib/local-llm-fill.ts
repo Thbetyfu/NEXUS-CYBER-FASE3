@@ -114,9 +114,9 @@ export function parseModelSlots(text: string): FillStarterSlots | null {
 
 export function buildFillPrompt(input: FillStarterInput, category: StarterCategory): string {
   return [
-    "JSON saja (tanpa markdown). Kunci: tagline,hero,about_body,cta_label,hours,description.",
+    "JSON saja (tanpa markdown). Kunci: tagline,hero,about_body,cta_label,hours,description. Tutup JSON lengkap.",
     "Bahasa Indonesia, nada warung. Hanya fakta cerita. Jangan mengarang alamat, harga, atau klaim.",
-    "hours kosong jika jam tidak disebut. cta_label = tombol WA singkat. hero 1 kalimat. description 1–2 kalimat.",
+    "Kunci pendek. hours kosong jika jam tidak disebut (bukan nomor WA). cta_label tombol WA singkat. hero 1 kalimat. description 1 kalimat.",
     `Nama:${input.name}`,
     `Kategori:${category}`,
     `WA:${input.whatsapp || "-"}`,
