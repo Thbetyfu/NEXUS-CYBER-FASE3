@@ -7,6 +7,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Fixed
+- **Situs saya vs wizard lama:** `POST /sites/owned` pada FastAPI sebelum 60d91e0 = **405** (bukan daftar kosong). Portal memetakan 404/405 → **503** + pesan restart `cli.py serve`; operator loopback mendapat `operatorDetail`. Login juga `POST /sites/reassign` (formerGuestIds). Folder tanpa `portal_owner_*` tetap tidak diklaim. Uji `channel-starter-owned.test.ts` + `test_preview_server.py`.
 - **Publish Vercel scope:** `cli.py publish` memakai hanya `VERCEL_TOKEN` di `channel-starter/.env` (bukan `vercel login` / `auth.json`). `--scope` hanya jika `CHANNEL_STARTER_VERCEL_SCOPE` diisi; `VERCEL_ORG_ID` / CLI `currentTeam` tidak lagi dipaksa (itu penyebab `scope-not-accessible`). Restart `serve` setelah ubah `.env`. Bukan Connect Git FASE3. Uji `test_vercel_publish.py`.
 
 ### Security

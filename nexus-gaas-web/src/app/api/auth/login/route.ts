@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { wizardReassignGuestSites } from "@/lib/channel-starter-owned";
 import { applySidCookie, AuthError, loginAccount, publicIdentity } from "@/lib/portal-identity";
 import { clientKey, rateLimitAllow } from "@/lib/rate-limit";
 
@@ -19,6 +20,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const { identity, issuedSid } = await loginAccount(email, password, request);
+    if (identity.accountId) {
+      for (const guestId of identity.formerGuestIds || []) {
+        await wizardReassignGuestSites(guestId, identity.accountId, identity.email || email);
+      }
+    }
     const response = NextResponse.json({ ok: true, ...publicIdentity(identity) });
     applySidCookie(response, issuedSid);
     return response;

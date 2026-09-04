@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3003",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/kredit-ledger.test.ts src/lib/checkout.test.ts src/lib/kredit-proof.test.ts src/lib/kredit-operator-queue.test.ts src/lib/channel-starter-urls.test.ts src/lib/operator-gate.test.ts src/lib/starter-generate-payload.test.ts src/lib/local-llm.test.ts src/lib/portal-public-paths.test.ts src/lib/starter-publish.test.ts src/lib/starter-public-rewrites.test.ts src/lib/portal-site-owner.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/kredit-ledger.test.ts src/lib/checkout.test.ts src/lib/kredit-proof.test.ts src/lib/kredit-operator-queue.test.ts src/lib/channel-starter-urls.test.ts src/lib/operator-gate.test.ts src/lib/starter-generate-payload.test.ts src/lib/local-llm.test.ts src/lib/portal-public-paths.test.ts src/lib/starter-publish.test.ts src/lib/starter-public-rewrites.test.ts src/lib/portal-site-owner.test.ts src/lib/channel-starter-owned.test.ts"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",

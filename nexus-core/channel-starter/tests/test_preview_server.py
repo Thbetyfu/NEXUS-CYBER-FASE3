@@ -147,6 +147,17 @@ class TestPreviewServer(unittest.TestCase):
         self.assertEqual(api.status_code, 404)
         self.assertEqual(api.json()["detail"], "Site not found")
 
+        owned_get = client.get("/sites/owned", headers={"Accept": "application/json"})
+        self.assertEqual(owned_get.status_code, 405)
+
+        owned = client.post(
+            "/sites/owned",
+            json={"owner_id": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa", "owner_kind": "guest"},
+        )
+        self.assertEqual(owned.status_code, 200)
+        self.assertTrue(owned.json().get("ok"))
+        self.assertIn("sites", owned.json())
+
         bad = client.post("/generate", data={}, headers=html_headers)
         self.assertEqual(bad.status_code, 400)
         self.assertIn("text/html", bad.headers.get("content-type", ""))

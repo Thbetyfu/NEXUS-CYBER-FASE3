@@ -12,14 +12,20 @@ export function MySitesPanel() {
     setError("");
     void fetch("/api/channel-starter/sites")
       .then(async (res) => {
-        const data = (await res.json()) as { ok?: boolean; error?: string; sites?: OwnedSiteCard[] };
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          operatorDetail?: string;
+          sites?: OwnedSiteCard[];
+        };
         if (res.status === 401) {
           window.location.assign("/gate?next=/situs");
           return;
         }
         if (!res.ok || !data.ok) {
           setSites([]);
-          setError(data.error || "Tidak bisa memuat situs");
+          const detail = data.operatorDetail ? ` (${data.operatorDetail})` : "";
+          setError((data.error || "Tidak bisa memuat situs") + detail);
           return;
         }
         setSites(data.sites || []);
@@ -48,8 +54,9 @@ export function MySitesPanel() {
       {sites && sites.length === 0 && !error ? (
         <p className="order-lead">
           Belum ada situs terikat ke sesi ini. Generate di{" "}
-          <Link href="/pesan/umkm-starter">/pesan/umkm-starter</Link> (20 Kredit). Situs lama tanpa
-          pemilik di manifest tidak muncul — generate ulang, jangan mengklaim semua folder lab.
+          <Link href="/pesan/umkm-starter">/pesan/umkm-starter</Link> (20 Kredit) setelah login.
+          Situs lama tanpa pemilik di manifest tidak muncul — generate ulang, jangan mengklaim semua
+          folder lab.
         </p>
       ) : null}
       <ul className="my-sites-list">

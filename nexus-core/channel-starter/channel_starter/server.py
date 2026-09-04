@@ -328,6 +328,11 @@ async def sites_reassign(request: Request):
 
 @app.get("/sites/{slug}")
 def site_detail(slug: str, request: Request):
+    if slug in {"owned", "reassign"}:
+        return JSONResponse(
+            {"detail": "Use POST /sites/owned", "ok": False},
+            status_code=405,
+        )
     if wants_html(request):
         return RedirectResponse(url=f"/preview/{slug}", status_code=303)
     for manifest in list_sites():
