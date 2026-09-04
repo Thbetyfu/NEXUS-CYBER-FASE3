@@ -7,6 +7,10 @@ import type { OwnedSiteCard } from "@/lib/portal-site-owner";
 export function MySitesPanel() {
   const [sites, setSites] = useState<OwnedSiteCard[] | null>(null);
   const [error, setError] = useState("");
+  const [claimSlug, setClaimSlug] = useState("");
+  const [claimBusy, setClaimBusy] = useState(false);
+  const [claimError, setClaimError] = useState("");
+  const [claimNote, setClaimNote] = useState("");
 
   const load = useCallback(() => {
     setError("");
@@ -54,9 +58,8 @@ export function MySitesPanel() {
       {sites && sites.length === 0 && !error ? (
         <p className="order-lead">
           Belum ada situs terikat ke sesi ini. Generate di{" "}
-          <Link href="/pesan/umkm-starter">/pesan/umkm-starter</Link> (20 Kredit) setelah login.
-          Situs lama tanpa pemilik di manifest tidak muncul — generate ulang, jangan mengklaim semua
-          folder lab.
+          <Link href="/pesan/umkm-starter">/pesan/umkm-starter</Link> (20 Kredit) setelah login,
+          atau klaim slug lama yang Anda ingat (satu folder, bukan seluruh disk).
         </p>
       ) : null}
       <ul className="my-sites-list">
@@ -93,6 +96,70 @@ export function MySitesPanel() {
         <code>bu-grace</code> lalu <code>bu-grace-2</code>
         ). Generate baru tidak menimpa situs lama.
       </p>
+      <form
+        className="my-sites-claim"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setClaimBusy(true);
+          setClaimError("");
+          setClaimNote("");
+          try {
+            const res = await fetch("/api/channel-starter/sites/claim", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slug: claimSlug }),
+            });
+            const data = (await res.json()) as {
+              ok?: boolean;
+              error?: string;
+              outcome?: string;
+            };
+            if (res.status === 401) {
+              window.location.assign("/gate?next=/situs");
+              return;
+            }
+            if (!res.ok || data.ok === false) {
+              setClaimError(data.error || "Klaim slug gagal");
+              return;
+            }
+            setClaimNote(
+              data.outcome === "already_yours"
+                ? `Slug ${claimSlug.trim().toLowerCase()} sudah milik sesi ini.`
+                : `Slug ${claimSlug.trim().toLowerCase()} terikat ke sesi ini. Tanpa debit 20 Kr.`,
+            );
+            setClaimSlug("");
+            load();
+          } catch {
+            setClaimError("Klaim slug gagal");
+          } finally {
+            setClaimBusy(false);
+          }
+        }}
+      >
+        <h2 className="my-sites-claim-title">Klaim slug</h2>
+        <p className="my-sites-note">
+          Folder lama tanpa pemilik. Harus tahu slug persis. Bukan mengambil situs orang lain. Bukan
+          WAF. Tanpa debit Kredit.
+        </p>
+        {claimError ? (
+          <p className="kredit-error" role="alert">
+            {claimError}
+          </p>
+        ) : null}
+        {claimNote ? <p className="order-lead">{claimNote}</p> : null}
+        <label htmlFor="claim-slug">Slug</label>
+        <input
+          id="claim-slug"
+          required
+          value={claimSlug}
+          onChange={(e) => setClaimSlug(e.target.value)}
+          placeholder="bu-grace"
+          autoComplete="off"
+        />
+        <button type="submit" className="notion-button notion-button-primary" disabled={claimBusy}>
+          {claimBusy ? "Mengikat…" : "Klaim slug"}
+        </button>
+      </form>
       <p className="order-lead">
         <button type="button" className="notion-button" onClick={() => load()}>
           Muat ulang

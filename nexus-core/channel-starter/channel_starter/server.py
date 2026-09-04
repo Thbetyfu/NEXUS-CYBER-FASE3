@@ -20,7 +20,12 @@ from channel_starter.generator import (
     resolve_preview_index,
     slug_differs_note,
 )
-from channel_starter.ownership import list_owned_sites, reassign_guest_sites
+from channel_starter.ownership import (
+    claim_unowned_site,
+    list_owned_sites,
+    list_unowned_sites,
+    reassign_guest_sites,
+)
 from channel_starter.types import PricingTier, SiteManifest
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
 
@@ -331,9 +336,58 @@ async def sites_reassign(request: Request):
     return JSONResponse({"ok": True, "slugs": moved})
 
 
+@app.post("/sites/claim")
+async def sites_claim(request: Request):
+    """Stamp portal_owner_* on one unowned slug. Not a disk-wide assign. No debit."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    extra_raw = body.get("extra_owner_ids") or []
+    extra = extra_raw if isinstance(extra_raw, list) else []
+    outcome, row = claim_unowned_site(
+        slug=str(body.get("slug") or ""),
+        owner_id=str(body.get("owner_id") or ""),
+        owner_kind=str(body.get("owner_kind") or ""),
+        owner_email=str(body.get("owner_email") or ""),
+        extra_owner_ids=[str(item) for item in extra],
+    )
+    if outcome == "claimed":
+        return JSONResponse({"ok": True, "outcome": outcome, "site": row})
+    if outcome == "already_yours":
+        return JSONResponse({"ok": True, "outcome": outcome, "site": row})
+    if outcome == "not_found":
+        return JSONResponse(
+            {"ok": False, "outcome": outcome, "error": "Slug tidak ada"},
+            status_code=404,
+        )
+    if outcome == "owned_by_other":
+        return JSONResponse(
+            {"ok": False, "outcome": outcome, "error": "Slug sudah dimiliki"},
+            status_code=409,
+        )
+    if outcome == "reserved":
+        return JSONResponse(
+            {"ok": False, "outcome": outcome, "error": "Slug demo tidak diklaim"},
+            status_code=409,
+        )
+    return JSONResponse(
+        {"ok": False, "outcome": "invalid", "error": "Slug atau pemilik tidak valid"},
+        status_code=400,
+    )
+
+
+@app.post("/sites/unowned")
+def sites_unowned():
+    """Operator list of folders without portal_owner_*. Loopback wizard only."""
+    return JSONResponse({"ok": True, "sites": list_unowned_sites()})
+
+
 @app.get("/sites/{slug}")
 def site_detail(slug: str, request: Request):
-    if slug in {"owned", "reassign"}:
+    if slug in {"owned", "reassign", "claim", "unowned"}:
         return JSONResponse(
             {"detail": "Use POST /sites/owned", "ok": False},
             status_code=405,

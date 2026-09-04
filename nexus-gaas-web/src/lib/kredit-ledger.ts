@@ -257,3 +257,43 @@ export function slugFromGenerateLocation(location: string | null): string | null
     return null;
   }
 }
+
+const SLUG_NOTE = /\bslug=([a-z0-9-]{1,48})\b/i;
+
+/** Optional auto-attach: only slugs recorded on this identity's Starter debit. */
+export function slugsPaidOnLedger(entries: KreditEntry[]): string[] {
+  const found: string[] = [];
+  for (const entry of entries) {
+    if (entry.sku !== STARTER_SKU || entry.kind !== "debit") {
+      continue;
+    }
+    const match = entry.note.match(SLUG_NOTE);
+    const slug = match?.[1]?.toLowerCase();
+    if (slug && !found.includes(slug)) {
+      found.push(slug);
+    }
+  }
+  return found;
+}
+
+export async function rememberStarterSlug(
+  orderId: string,
+  slug: string,
+  filePath = defaultLedgerPath(),
+): Promise<void> {
+  const token = slug.trim().toLowerCase();
+  if (!orderId.trim() || !/^[a-z0-9-]{1,48}$/.test(token)) {
+    return;
+  }
+  await withLock(() => {
+    const ledger = readLedger(filePath);
+    const entry = [...ledger.entries]
+      .reverse()
+      .find((row) => row.orderId === orderId.trim() && row.sku === STARTER_SKU && row.kind === "debit");
+    if (!entry || SLUG_NOTE.test(entry.note)) {
+      return;
+    }
+    entry.note = `${entry.note} slug=${token}`;
+    writeLedger(filePath, ledger);
+  });
+}

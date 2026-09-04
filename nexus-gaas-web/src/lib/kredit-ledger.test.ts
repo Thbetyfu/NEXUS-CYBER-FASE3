@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { KREDIT } from "./kredit.ts";
-import { creditFaucet, debitStarter, getKreditSnapshot, isLabFaucetEnabled, migrateGuestLedger, refundStarter, slugFromGenerateLocation, approveTopupRequest } from "./kredit-ledger.ts";
+import { creditFaucet, debitStarter, getKreditSnapshot, isLabFaucetEnabled, migrateGuestLedger, refundStarter, slugFromGenerateLocation, slugsPaidOnLedger, approveTopupRequest } from "./kredit-ledger.ts";
 import { createTopupRequest, cancelTopupRequest, listPendingTopups, listOperatorQueue } from "./kredit-topup.ts";
 import { assertSafeId, ledgerPathFor, orderCodeFromId } from "./identity-paths.ts";
 import { hashPassword, verifyPassword } from "./passwords.ts";
@@ -162,5 +162,36 @@ test("keran mati kecuali NEXUS_LAB_FAUCET opt-in di mode lab", async () => {
   assert.equal(isLabFaucetEnabled(), true);
   process.env.NEXUS_LEDGER_MODE = prevMode;
   process.env.NEXUS_LAB_FAUCET = prevFaucet ?? "1";
+});
+
+test("ledger tanpa slug= tidak menandai folder disk; hanya note slug= di debit Starter", () => {
+  assert.deepEqual(
+    slugsPaidOnLedger([
+      {
+        id: "e1",
+        ts: "2026-09-03T00:00:00Z",
+        kind: "debit",
+        amount: -20,
+        sku: "channel-starter",
+        note: "Starter Channel Starter −20 Kr",
+        balanceAfter: 80,
+      },
+    ]),
+    [],
+  );
+  assert.deepEqual(
+    slugsPaidOnLedger([
+      {
+        id: "e2",
+        ts: "2026-09-05T00:00:00Z",
+        kind: "debit",
+        amount: -20,
+        sku: "channel-starter",
+        note: "Starter Channel Starter −20 Kr slug=bu-grace",
+        balanceAfter: 60,
+      },
+    ]),
+    ["bu-grace"],
+  );
 });
 

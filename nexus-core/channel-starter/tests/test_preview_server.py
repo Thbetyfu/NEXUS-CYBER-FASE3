@@ -150,6 +150,8 @@ class TestPreviewServer(unittest.TestCase):
 
         owned_get = client.get("/sites/owned", headers={"Accept": "application/json"})
         self.assertEqual(owned_get.status_code, 405)
+        claim_get = client.get("/sites/claim", headers={"Accept": "application/json"})
+        self.assertEqual(claim_get.status_code, 405)
 
         owned = client.post(
             "/sites/owned",
@@ -158,6 +160,22 @@ class TestPreviewServer(unittest.TestCase):
         self.assertEqual(owned.status_code, 200)
         self.assertTrue(owned.json().get("ok"))
         self.assertIn("sites", owned.json())
+
+        missing = client.post(
+            "/sites/claim",
+            json={
+                "slug": "slug-yang-tidak-ada",
+                "owner_id": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa",
+                "owner_kind": "guest",
+            },
+        )
+        self.assertEqual(missing.status_code, 404)
+        self.assertEqual(missing.json().get("outcome"), "not_found")
+
+        unowned = client.post("/sites/unowned")
+        self.assertEqual(unowned.status_code, 200)
+        self.assertTrue(unowned.json().get("ok"))
+        self.assertIn("sites", unowned.json())
 
         bad = client.post("/generate", data={}, headers=html_headers)
         self.assertEqual(bad.status_code, 400)

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
-import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
+import { debitStarter, refundStarter, rememberStarterSlug, slugFromGenerateLocation } from "@/lib/kredit-ledger";
 import { channelStarterInternalUrl, channelStarterPreviewUrl } from "@/lib/channel-starter-urls";
 import { summarizeVercelPublish, type StarterPublishStatus } from "@/lib/starter-publish";
 import { identityOwnerQuery, stampGenerateOwner } from "@/lib/portal-site-owner";
@@ -144,6 +144,9 @@ export async function POST(request: NextRequest) {
         deploy?: { vercel?: unknown };
       };
       const slug = payload.slug || null;
+      if (slug) {
+        await rememberStarterSlug(orderId, slug, ledgerPath);
+      }
       const publish = summarizeVercelPublish(payload.vercel ?? payload.deploy?.vercel);
       return chargedResponse(
         snapshot,
@@ -164,6 +167,9 @@ export async function POST(request: NextRequest) {
     if (upstream.status >= 300 && upstream.status < 400) {
       const location = upstream.headers.get("location");
       const slug = slugFromGenerateLocation(location);
+      if (slug) {
+        await rememberStarterSlug(orderId, slug, ledgerPath);
+      }
       const publish = slug
         ? await wizardPublishStatus(CHANNEL_STARTER, slug)
         : summarizeVercelPublish(undefined);

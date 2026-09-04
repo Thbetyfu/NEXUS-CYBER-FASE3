@@ -32,5 +32,6 @@ test("generate/upsell wizard dan etalase tetap gerbang; operator/approve bukan p
   assert.equal(isPortalPublicPath("/operator"), false);
   assert.equal(isPortalPublicPath("/operator/topup"), false);
   assert.equal(isPortalPublicPath("/operator/tepi"), false);
+  assert.equal(isPortalPublicPath("/operator/situs"), false);
   assert.equal(isPortalPublicPath("/api/kredit/topup/approve"), false);
 });

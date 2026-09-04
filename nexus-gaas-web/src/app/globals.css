@@ -2208,6 +2208,36 @@ input[type="text"]:focus, select:focus {
   color: #5c6570;
 }
 
+.my-sites-claim {
+  margin: 24px 0 16px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid #d5d8e0;
+  border-radius: var(--notion-radius-lg);
+}
+
+.my-sites-claim-title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  color: #12151a;
+}
+
+.my-sites-claim label {
+  display: block;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+
+.my-sites-claim input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--notion-border);
+  border-radius: var(--notion-radius);
+  background: #fff;
+  color: #12151a;
+}
+
 .order-form {
   padding: 24px;
 }

@@ -12,7 +12,13 @@ if package_root not in sys.path:
     sys.path.insert(0, package_root)
 
 from channel_starter.generator import generate_from_dict
-from channel_starter.ownership import list_owned_sites, reassign_guest_sites, site_owned_by
+from channel_starter.ownership import (
+    claim_unowned_site,
+    list_owned_sites,
+    list_unowned_sites,
+    reassign_guest_sites,
+    site_owned_by,
+)
 from channel_starter.types import SiteManifest, SiteCategory, PricingTier
 
 
@@ -148,6 +154,90 @@ class TestSiteOwnership(unittest.TestCase):
         self.assertEqual([row["slug"] for row in as_account], ["tamu-a"])
         self.assertEqual(still_guest, [])
         self.assertEqual([row["slug"] for row in bob], ["tamu-b"])
+
+    def test_unowned_claim_succeeds_once_then_rejects_other(self):
+        generate_from_dict(_base(business_name="Bu Grace", slug="bu-grace"), sites_root=self.sites_root)
+        generate_from_dict(
+            _base(
+                business_name="Milik B",
+                slug="milik-b",
+                portal_owner_id=self.owner_b,
+                portal_owner_kind="guest",
+            ),
+            sites_root=self.sites_root,
+        )
+
+        first, row = claim_unowned_site(
+            slug="bu-grace",
+            owner_id=self.owner_a,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(first, "claimed")
+        self.assertEqual(row["slug"], "bu-grace")
+        alice = list_owned_sites(owner_id=self.owner_a, owner_kind="guest", sites_root=self.sites_root)
+        self.assertEqual([item["slug"] for item in alice], ["bu-grace"])
+
+        second, _ = claim_unowned_site(
+            slug="bu-grace",
+            owner_id=self.owner_b,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(second, "owned_by_other")
+        bob = list_owned_sites(owner_id=self.owner_b, owner_kind="guest", sites_root=self.sites_root)
+        self.assertEqual([item["slug"] for item in bob], ["milik-b"])
+
+    def test_already_owned_by_other_rejected_self_idempotent(self):
+        generate_from_dict(
+            _base(
+                business_name="Milik A",
+                slug="milik-a",
+                portal_owner_id=self.owner_a,
+                portal_owner_kind="guest",
+            ),
+            sites_root=self.sites_root,
+        )
+        stolen, _ = claim_unowned_site(
+            slug="milik-a",
+            owner_id=self.owner_b,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(stolen, "owned_by_other")
+
+        again, row = claim_unowned_site(
+            slug="milik-a",
+            owner_id=self.owner_a,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(again, "already_yours")
+        self.assertEqual(row["slug"], "milik-a")
+
+        missing, _ = claim_unowned_site(
+            slug="tidak-ada",
+            owner_id=self.owner_a,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(missing, "not_found")
+        self.assertEqual(list_unowned_sites(sites_root=self.sites_root), [])
+
+    def test_claim_one_slug_leaves_other_unowned(self):
+        generate_from_dict(_base(business_name="Satu", slug="satu"), sites_root=self.sites_root)
+        generate_from_dict(_base(business_name="Dua", slug="dua"), sites_root=self.sites_root)
+        first, _ = claim_unowned_site(
+            slug="satu",
+            owner_id=self.owner_a,
+            owner_kind="guest",
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(first, "claimed")
+        leftover = [row["slug"] for row in list_unowned_sites(sites_root=self.sites_root)]
+        self.assertEqual(leftover, ["dua"])
+        alice = list_owned_sites(owner_id=self.owner_a, owner_kind="guest", sites_root=self.sites_root)
+        self.assertEqual([row["slug"] for row in alice], ["satu"])
 
 
 if __name__ == "__main__":

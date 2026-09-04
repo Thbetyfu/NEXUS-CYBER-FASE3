@@ -340,6 +340,20 @@ export async function logoutSession(request: NextRequest, dataDir = defaultDataD
   });
 }
 
+/** Operator attach: resolve a registered account. Never guesses from disk slugs. */
+export function lookupAccountByEmail(
+  emailRaw: string,
+  dataDir = defaultDataDir(),
+): { id: string; email: string } | null {
+  const email = normalizeEmail(emailRaw);
+  if (!email.includes("@") || email.length < 5) {
+    return null;
+  }
+  const store = readStore(identitiesPath(dataDir));
+  const account = store.accounts.find((row) => row.email === email);
+  return account ? { id: account.id, email: account.email } : null;
+}
+
 export function publicIdentity(identity: PortalIdentity | null) {
   if (!identity) {
     return { kind: null as IdentityKind | null, orderCode: null as string | null, email: null as string | null };

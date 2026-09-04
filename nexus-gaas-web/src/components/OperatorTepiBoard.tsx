@@ -41,7 +41,8 @@ export function OperatorTepiBoard({ initialSlug = "" }: { initialSlug?: string }
       <h1>Pasang Edge Shield (tepi)</h1>
       <p className="operator-topup-lead">
         SKU terpisah dari Starter 20 Kr. Menambah slug ke <code>nexus-host-map.json</code> tanpa menimpa{" "}
-        <code>portfolio.nexus-lab.test</code>. Tidak membuat Job/Loop. Fail-closed di luar lab. Alternatif CLI:
+        <code>portfolio.nexus-lab.test</code>. Tidak membuat Job/Loop. Fail-closed di luar lab. Slug tanpa
+        pemilik: <a href="/operator/situs">/operator/situs</a>. Alternatif CLI:
       </p>
       <pre style={{ fontSize: 13, overflowX: "auto" }}>{tepiEnableCli(slug || "bu-grace")}</pre>
       {error && (

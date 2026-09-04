@@ -15,8 +15,9 @@ export default function SitusPage() {
         <p className="hub-kicker">Channel Starter</p>
         <h1 className="order-title">Situs saya</h1>
         <p className="order-lead">
-          Hanya situs yang dibuat dengan cookie sesi ini (tamu atau akun). Tanpa debit Kredit. Bukan
-          daftar semua warung lab. Bukan WAF / Job Cowork.
+          Hanya situs terikat ke cookie sesi ini (tamu atau akun). Klaim slug lama satu per satu jika
+          folder belum punya pemilik. Tanpa debit Kredit. Bukan daftar semua warung lab. Bukan WAF /
+          Job Cowork.
         </p>
         <MySitesPanel />
       </main>
