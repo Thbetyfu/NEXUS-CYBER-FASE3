@@ -5,7 +5,7 @@ import { isVercelRuntime } from "./runtime-host.ts";
 export const DEFAULT_LOCAL_LLM_URL = "http://127.0.0.1:11434";
 /** Small instruct model for Channel Starter copy. Never WAF protect/reflex. Never 70B. */
 export const DEFAULT_LOCAL_LLM_MODEL = "gemma3:1b";
-/** Per Ollama generate attempt. One retry on abort → ~70s bound, not unbounded. */
+/** Per Ollama generate attempt. One retry on abort or unparseable JSON → ~70s bound, not unbounded. */
 export const FILL_STARTER_TIMEOUT_MS = 35_000;
 export const FILL_STARTER_TIMEOUT_RETRIES = 1;
 export const FILL_STARTER_KEEP_ALIVE = "30m";

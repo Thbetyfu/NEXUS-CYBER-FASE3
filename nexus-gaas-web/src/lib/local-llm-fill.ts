@@ -187,7 +187,8 @@ export async function fillStarterCopy(
       }
       const slots = parseModelSlots(responseText);
       if (!slots) {
-        return fallback(200, MSG_FILL_DOWN);
+        lastAbort = false;
+        continue;
       }
       return {
         status: 200,

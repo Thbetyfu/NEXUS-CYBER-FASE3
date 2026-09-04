@@ -254,6 +254,49 @@ test("timeout Ollama → retry sekali lalu usedFallback preset", async () => {
   assert.equal(down.body.tagline, CATEGORY_COPY.jasa.tagline);
 });
 
+test("parse gagal lalu retry sukses → usedFallback false", async () => {
+  const input = { name: "Toko", category: "jasa", whatsapp: "08", story: "Servis AC rumah." };
+  let calls = 0;
+  const { status, body } = await fillStarterCopy(input, {}, async () => {
+    calls += 1;
+    if (calls === 1) {
+      return new Response(JSON.stringify({ response: "model tidak merespons" }), { status: 200 });
+    }
+    return new Response(
+      JSON.stringify({
+        response: JSON.stringify({
+          tagline: "Servis AC",
+          hero: "Servis AC rumah",
+          about_body: "Perbaikan AC rumah.",
+          cta_label: "Chat WA",
+          hours: "",
+          description: "Servis AC rumah.",
+        }),
+      }),
+      { status: 200 },
+    );
+  });
+  assert.equal(calls, 2);
+  assert.equal(status, 200);
+  assert.equal(body.usedFallback, false);
+  assert.equal(body.tagline, "Servis AC");
+  assert.equal(body.error, undefined);
+});
+
+test("parse gagal dua kali → usedFallback preset", async () => {
+  const input = { name: "Toko", category: "jasa", whatsapp: "08", story: "Servis AC rumah." };
+  let calls = 0;
+  const { status, body } = await fillStarterCopy(input, {}, async () => {
+    calls += 1;
+    return new Response(JSON.stringify({ response: "bukan JSON slot" }), { status: 200 });
+  });
+  assert.equal(calls, 1 + FILL_STARTER_TIMEOUT_RETRIES);
+  assert.equal(status, 200);
+  assert.equal(body.usedFallback, true);
+  assert.equal(body.error, MSG_FILL_DOWN);
+  assert.equal(body.tagline, CATEGORY_COPY.jasa.tagline);
+});
+
 test("timeout lalu retry sukses → usedFallback false", async () => {
   const input = { name: "Toko", category: "jasa", whatsapp: "08", story: "Servis AC rumah." };
   let calls = 0;
