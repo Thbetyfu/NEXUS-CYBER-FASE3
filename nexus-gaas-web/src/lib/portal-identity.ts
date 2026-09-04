@@ -39,6 +39,7 @@ type AccountRow = {
   email: string;
   passwordHash: string;
   createdAt: string;
+  formerGuestIds?: string[];
 };
 
 type IdentityStore = {
@@ -55,6 +56,8 @@ export type PortalIdentity = {
   email?: string;
   walletId: string;
   orderCode: string;
+  /** Guest ids merged into this account (register). Not public. */
+  formerGuestIds?: string[];
 };
 
 export class AuthError extends Error {
@@ -141,6 +144,7 @@ function toIdentity(store: IdentityStore, session: SessionRow): PortalIdentity {
       email: account?.email,
       walletId: walletIdFor("account", session.accountId),
       orderCode: orderCodeFromId(session.accountId),
+      formerGuestIds: account?.formerGuestIds,
     };
   }
   const guestId = session.guestId ?? session.sid;
@@ -235,7 +239,7 @@ export async function registerAccount(
   request: NextRequest,
   migrateGuestLedger: LedgerMigrateFn,
   dataDir = defaultDataDir(),
-): Promise<{ identity: PortalIdentity; issuedSid: string }> {
+): Promise<{ identity: PortalIdentity; issuedSid: string; migratedGuestId?: string }> {
   const email = normalizeEmail(emailRaw);
   if (!email.includes("@") || email.length < 5) {
     throw new AuthError("Email tidak valid", 400);
@@ -250,17 +254,18 @@ export async function registerAccount(
     if (store.accounts.some((a) => a.email === email)) {
       throw new AuthError("Email sudah terdaftar", 409);
     }
+    const guestId =
+      existingSid && store.sessions[existingSid]?.kind === "guest"
+        ? store.sessions[existingSid].guestId ?? existingSid
+        : undefined;
     const accountId = randomUUID();
     store.accounts.push({
       id: accountId,
       email,
       passwordHash,
       createdAt: new Date().toISOString(),
+      formerGuestIds: guestId ? [guestId] : undefined,
     });
-    const guestId =
-      existingSid && store.sessions[existingSid]?.kind === "guest"
-        ? store.sessions[existingSid].guestId ?? existingSid
-        : undefined;
     if (guestId) {
       await migrateGuestLedger(guestId, accountId, dataDir);
     }
@@ -275,7 +280,7 @@ export async function registerAccount(
       createdAt: new Date().toISOString(),
     };
     writeStore(filePath, store);
-    return { identity: toIdentity(store, store.sessions[sid]), issuedSid: sid };
+    return { identity: toIdentity(store, store.sessions[sid]), issuedSid: sid, migratedGuestId: guestId };
   });
 }
 

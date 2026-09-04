@@ -222,6 +222,9 @@ def _form_from_manifest(manifest: SiteManifest) -> SiteForm:
         gallery=manifest.gallery,
         tier=manifest.tier,
         slug=manifest.slug,
+        portal_owner_id=manifest.portal_owner_id,
+        portal_owner_kind=manifest.portal_owner_kind,
+        portal_owner_email=manifest.portal_owner_email,
     )
 
 
@@ -280,6 +283,9 @@ def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> Si
         offerings=form.offerings,
         stats=form.stats,
         gallery=form.gallery,
+        portal_owner_id=(form.portal_owner_id or "").strip().lower(),
+        portal_owner_kind=(form.portal_owner_kind or "").strip().lower(),
+        portal_owner_email=(form.portal_owner_email or "").strip().lower(),
     )
     _write_html(form, manifest, sites_root=root)
     save_manifest(manifest, sites_root=root)

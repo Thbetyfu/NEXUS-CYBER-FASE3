@@ -270,6 +270,9 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
               </p>
             ) : null}
             <ol style={{ paddingLeft: 20, color: "var(--notion-text-muted)", fontSize: 14 }}>
+              <li>
+                Daftar nanti: <Link href="/situs">Situs saya</Link> (sesi yang sama, tanpa debit).
+              </li>
               {result.subdomain && <li>Domain lab: {result.subdomain}</li>}
               <li>
                 Saldo sekarang: {result.balance ?? kredit?.balance} {KREDIT.abbr}

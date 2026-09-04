@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { channelStarterInternalUrl } from "@/lib/channel-starter-urls";
+import { wizardListOwned } from "@/lib/channel-starter-owned";
 import { lookupIdentity, publicIdentity, readSidFromRequest } from "@/lib/portal-identity";
 import { summarizeVercelPublish } from "@/lib/starter-publish";
 
@@ -21,6 +22,14 @@ export async function POST(request: NextRequest) {
   }
   if (!SLUG.test(slug)) {
     return NextResponse.json({ ok: false, error: "slug tidak valid" }, { status: 400 });
+  }
+
+  const owned = await wizardListOwned(identity);
+  if (owned.status !== 200) {
+    return NextResponse.json({ ok: false, error: owned.error }, { status: owned.status });
+  }
+  if (!owned.sites.some((site) => site.slug === slug)) {
+    return NextResponse.json({ ok: false, error: "Bukan situs sesi ini" }, { status: 403 });
   }
 
   const CHANNEL_STARTER = channelStarterInternalUrl();

@@ -53,6 +53,9 @@ export function NavbarSession() {
 
   return (
     <div className="auth-links">
+      <Link href="/situs" className="notion-navbar-link">
+        Situs saya
+      </Link>
       {auth.kind === "account" && auth.email && (
         <span className="auth-links-label" title={auth.email}>
           {auth.email}

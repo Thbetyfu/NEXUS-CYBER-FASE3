@@ -75,6 +75,9 @@ export function Navbar() {
           <Link href="/pemerintah" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Pemerintah
           </Link>
+          <Link href="/situs" className="notion-navbar-link" onClick={() => setOpen(false)}>
+            Situs saya
+          </Link>
           <Link href="/kredit" className="notion-navbar-link" onClick={() => setOpen(false)}>
             Isi Kredit
           </Link>

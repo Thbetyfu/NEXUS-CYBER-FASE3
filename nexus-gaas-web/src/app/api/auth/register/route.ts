@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { wizardReassignGuestSites } from "@/lib/channel-starter-owned";
 import { migrateGuestLedgerUnlocked } from "@/lib/kredit-ledger";
 import { applySidCookie, AuthError, publicIdentity, registerAccount } from "@/lib/portal-identity";
 import { clientKey, rateLimitAllow } from "@/lib/rate-limit";
@@ -19,7 +20,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { identity, issuedSid } = await registerAccount(email, password, request, migrateGuestLedgerUnlocked);
+    const { identity, issuedSid, migratedGuestId } = await registerAccount(
+      email,
+      password,
+      request,
+      migrateGuestLedgerUnlocked,
+    );
+    if (migratedGuestId && identity.accountId) {
+      await wizardReassignGuestSites(migratedGuestId, identity.accountId, identity.email || email);
+    }
     const response = NextResponse.json({ ok: true, ...publicIdentity(identity) });
     applySidCookie(response, issuedSid);
     return response;

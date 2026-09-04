@@ -81,6 +81,7 @@ Generate **men-deploy folder situs** ke Vercel (project = slug) jika `vercel log
 | `channel_starter/presets.py` | Copy preset per kategori (tanpa LLM) |
 | `channel_starter/generator.py` | Render Jinja2 → `sites/{slug}/` + `vercel.json` |
 | `channel_starter/vercel_publish.py` | Deploy folder situs ke Vercel (bukan monorepo) |
+| `channel_starter/ownership.py` | Filter situs per identitas portal (bukan katalog publik) |
 | `channel_starter/server.py` | FastAPI form wizard + preview HTML |
 | `templates/_base.html` | Layout Nexcent (Figma Contoh-landing-page-nexus) |
 | `sites/README.md` | Isi folder vs Vercel vs git (jujur) |

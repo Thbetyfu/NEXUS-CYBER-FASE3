@@ -59,6 +59,7 @@ class TestPreviewServer(unittest.TestCase):
         listing = client.get("/preview")
         self.assertEqual(listing.status_code, 200)
         self.assertIn("contoh-nexcent", listing.text)
+        self.assertNotIn("Hasil generate", listing.text)
 
         tmp = tempfile.TemporaryDirectory()
         sites = Path(tmp.name) / "sites"

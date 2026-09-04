@@ -4,6 +4,7 @@ import { InsufficientKreditError, KREDIT } from "@/lib/kredit";
 import { debitStarter, refundStarter, slugFromGenerateLocation } from "@/lib/kredit-ledger";
 import { channelStarterInternalUrl, channelStarterPreviewUrl } from "@/lib/channel-starter-urls";
 import { summarizeVercelPublish, type StarterPublishStatus } from "@/lib/starter-publish";
+import { identityOwnerQuery, stampGenerateOwner } from "@/lib/portal-site-owner";
 import {
   ledgerFileFor,
   lookupIdentity,
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    stampGenerateOwner(body, identityOwnerQuery(identity));
     const upstream = await fetch(`${CHANNEL_STARTER}/generate?format=json`, {
       method: "POST",
       body,

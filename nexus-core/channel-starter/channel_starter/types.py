@@ -103,6 +103,10 @@ class SiteForm(BaseModel):
     gallery: list[GalleryItem] = Field(default_factory=list)
     tier: PricingTier = PricingTier.STARTER
     slug: str = ""
+    # Portal identity (cookie session), not business email/WhatsApp.
+    portal_owner_id: str = ""
+    portal_owner_kind: str = ""
+    portal_owner_email: str = ""
 
     @field_validator("theme")
     @classmethod
@@ -129,6 +133,22 @@ class SiteForm(BaseModel):
     def _ig(cls, value: str) -> str:
         text = (value or "").strip().lstrip("@")
         return text[:40]
+
+    @field_validator("portal_owner_kind")
+    @classmethod
+    def _owner_kind(cls, value: str) -> str:
+        key = (value or "").strip().lower()
+        return key if key in {"guest", "account"} else ""
+
+    @field_validator("portal_owner_id")
+    @classmethod
+    def _owner_id(cls, value: str) -> str:
+        return (value or "").strip().lower()[:64]
+
+    @field_validator("portal_owner_email")
+    @classmethod
+    def _owner_email(cls, value: str) -> str:
+        return (value or "").strip().lower()[:120]
 
     @field_validator("whatsapp")
     @classmethod
@@ -202,6 +222,9 @@ class SiteManifest(BaseModel):
     upsell_at: datetime | None = None
     vercel_url: str = ""
     vercel_project: str = ""
+    portal_owner_id: str = ""
+    portal_owner_kind: str = ""
+    portal_owner_email: str = ""
 
     @property
     def gaas_active(self) -> bool:

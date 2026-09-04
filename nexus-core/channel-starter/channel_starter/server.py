@@ -19,6 +19,7 @@ from channel_starter.generator import (
     preview_catalog,
     resolve_preview_index,
 )
+from channel_starter.ownership import list_owned_sites, reassign_guest_sites
 from channel_starter.types import PricingTier, SiteManifest
 from channel_starter.upsell import disable_upsell, enable_upsell, upsell_status
 
@@ -189,7 +190,7 @@ _FORM_HTML = """<!DOCTYPE html>
     <code>VERCEL_TOKEN</code> ada, men-deploy <strong>folder situs itu saja</strong> ke project Vercel
     bernama slug. Bukan git monorepo Nexus. Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
   </p>
-  <p><a href="/preview">Daftar preview</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site</a></p>
+  <p><a href="/preview">Daftar preview (contoh git)</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site (loopback, semua PII)</a></p>
 </body>
 </html>"""
 
@@ -285,7 +286,44 @@ async def browser_http_exception(request: Request, exc: StarletteHTTPException):
 
 @app.get("/sites")
 def sites_list():
+    """Operator dump on loopback only. Do not proxy via Caddy/Next."""
     return [m.model_dump(mode="json") for m in list_sites()]
+
+
+@app.post("/sites/owned")
+async def sites_owned(request: Request):
+    """Filter by portal owner id/email. No WhatsApp. Does not list unowned folders."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    extra_raw = body.get("extra_owner_ids") or []
+    extra = extra_raw if isinstance(extra_raw, list) else []
+    rows = list_owned_sites(
+        owner_id=str(body.get("owner_id") or ""),
+        owner_kind=str(body.get("owner_kind") or ""),
+        owner_email=str(body.get("owner_email") or ""),
+        extra_owner_ids=[str(item) for item in extra],
+    )
+    return JSONResponse({"ok": True, "sites": rows})
+
+
+@app.post("/sites/reassign")
+async def sites_reassign(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+    moved = reassign_guest_sites(
+        from_guest_id=str(body.get("from_guest_id") or ""),
+        to_account_id=str(body.get("to_account_id") or ""),
+        to_email=str(body.get("to_email") or ""),
+    )
+    return JSONResponse({"ok": True, "slugs": moved})
 
 
 @app.get("/sites/{slug}")
@@ -336,14 +374,14 @@ def preview_missing_html(slug: str) -> str:
     lalu <code>python cli.py serve</code> atau <code>START-PREVIEW.bat</code>.</p>
     <p>Demo yang ikut git ada di <code>sites/contoh-nexcent/</code> (wizard lama hanya baca
     folder <code>sites/</code>, bukan <code>examples/</code>).</p>
+    <p>Daftar situs pelanggan <strong>bukan</strong> di halaman ini (PII). Buka Channel Portal
+    <code>/situs</code> dengan cookie sesi yang sama saat generate.</p>
   </div>
   <h2>Yang bisa dilakukan</h2>
   <ol>
     <li>Isi <a href="/">form Generate</a> di wizard ini, lalu Anda diarahkan ke preview HTML.</li>
     <li>Atau buka contoh yang ikut git: <a href="/preview/contoh-nexcent">/preview/contoh-nexcent</a>.</li>
   </ol>
-  <h2>Hasil generate di mesin ini</h2>
-  <ul>{_manifest_links(catalog["generated"])}</ul>
   <h2>Contoh di git</h2>
   <ul>{_manifest_links(catalog["examples"])}</ul>
 </body>
@@ -366,8 +404,9 @@ def preview_index_html() -> str:
 <body>
   <h1>Preview di komputer ini</h1>
   <p><a href="/">Kembali ke form</a></p>
-  <h2>Hasil generate (<code>sites/</code>, klien tidak di-git)</h2>
-  <ul>{_manifest_links(catalog["generated"])}</ul>
+  <p>Hasil generate klien tidak di-daftar di sini (bukan katalog publik). Portal:
+  <code>/situs</code> (sesi yang sama dengan generate). Preview slug:
+  <code>/preview/{{slug}}</code>.</p>
   <h2>Contoh committed</h2>
   <ul>{_manifest_links(catalog["examples"])}</ul>
 </body>

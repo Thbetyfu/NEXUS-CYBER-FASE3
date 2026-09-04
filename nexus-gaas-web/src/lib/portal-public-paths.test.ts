@@ -27,6 +27,7 @@ test("generate/upsell wizard dan etalase tetap gerbang; operator/approve bukan p
   assert.equal(isPortalPublicPath("/umkm"), false);
   assert.equal(isPortalPublicPath("/kredit"), false);
   assert.equal(isPortalPublicPath("/pesan/umkm-starter"), false);
+  assert.equal(isPortalPublicPath("/situs"), false);
   assert.equal(isPortalPublicPath("/hub"), false);
   assert.equal(isPortalPublicPath("/operator"), false);
   assert.equal(isPortalPublicPath("/operator/topup"), false);
