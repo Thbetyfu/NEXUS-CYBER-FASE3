@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Fixed
+- **Publish Vercel scope:** `cli.py publish` memakai hanya `VERCEL_TOKEN` di `channel-starter/.env` (bukan `vercel login` / `auth.json`). `--scope` hanya jika `CHANNEL_STARTER_VERCEL_SCOPE` diisi; `VERCEL_ORG_ID` / CLI `currentTeam` tidak lagi dipaksa (itu penyebab `scope-not-accessible`). Restart `serve` setelah ubah `.env`. Bukan Connect Git FASE3. Uji `test_vercel_publish.py`.
+
 ### Security
 - **Host map fail-closed:** `BindHostMap` / `write_host_map` menolak Host selain `nexus-lab.test` (CRLF, `*`, domain asing) dan origin selain http(s) `channel-origin` atau `*.vercel.app` (bukan ftp/javascript/IP metadata). Generate Starter 20 Kr tetap tidak auto-join peta. Upsell HTTP publik tetap ditutup Caddy. Uji `TestBindHostMap_RejectsDangerousHostsAndOrigins` + `test_host_map.py`.
 - **Fill-starter butuh sesi portal:** `POST /api/local-llm/fill-starter` memakai cookie `nexus_portal_sid` yang sama dengan generate (tamu setelah `/gate` atau akun). Tanpa sesi → **401** JSON `Sesi diperlukan`, bukan 200 LLM. Rate limit tetap. Fetch Ollama tetap loopback `gemma3:1b` di PC operator (bukan NEX-AI protect/reflex). **Tidak** debit 20 Kr. Vercel tetap fail-closed via `isOperatorLocalLlmRuntime`. Uji `local-llm.test.ts`.
