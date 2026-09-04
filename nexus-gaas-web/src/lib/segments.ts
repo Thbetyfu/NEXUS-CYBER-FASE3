@@ -54,9 +54,9 @@ export type SegmentDef = {
 /**
  * Logika harga (pilot PC+tunnel, infra ≈ Rp 0):
  * - Belum punya site → margin di template + pagar; tetap ≤ toleransi UMKM (20–35rb).
- * - Sudah punya site → tanpa slot template; 15rb Header Shield / 28rb Edge Shield (lab 1 host).
+ * - Sudah punya site → tanpa slot template; 15rb Header Shield / 28rb Edge Shield (host map).
  * - 35rb / 28rb = Edge Shield lewat WAF Reflex (bukan Job, bukan pulih Vercel). 20rb tetap header-only.
- * - Startup tanpa site → landing 45rb (header tepi) / tepi 75rb Alur A Reflex (1 host lab, --tier tepi; bukan Job, bukan alert Telegram pelanggan).
+ * - Startup tanpa site → landing 45rb (header tepi) / tepi 75rb Alur A Reflex (--tier tepi, host map; bukan Job, bukan alert Telegram pelanggan).
  * - Corporat → cabang: hosted (Job/Loop) ATAU on-prem (besar / kritis seperti Pemerintah).
  * - Pemerintah → on-prem Edge + Loop wajib; tanpa kuis website; source tidak termasuk.
  */
@@ -65,10 +65,10 @@ export const SEGMENTS: SegmentDef[] = [
     id: "umkm",
     href: "/umkm",
     title: "UMKM",
-    short: "Warung, jasa, profil usaha — Starter 20rb = header tepi; 35rb = Edge Shield (1 host lab).",
+    short: "Warung, jasa, profil usaha — Starter 20rb = header tepi; 35rb = Edge Shield (host map, SKU terpisah).",
     headline: "UMKM website + Header Shield",
     subhead:
-      "Starter 20rb = site + header tepi saja. Edge Shield 35rb/28rb = Reflex judi/deface lewat WAF shared (lab 1 host). Bukan Job, bukan pulih Vercel.",
+      "Starter 20rb = site + header tepi saja. Edge Shield 35rb/28rb = Reflex judi/deface lewat WAF (tambah slug ke peta lab, portfolio tetap). Bukan Job, bukan pulih Vercel.",
     badge: "Paling cocok mulai",
     accent: "blue",
     askWebsite: true,
@@ -95,17 +95,17 @@ export const SEGMENTS: SegmentDef[] = [
         },
         {
           name: "Edge Shield (shared lab host)",
-          tag: "LAB 1 HOST",
-          forWho: "Site Starter + Reflex tipis di tepi Nexus — satu PROTECTED_HOST per lab, bukan setiap warung otomatis.",
+          tag: "SKU TEPI",
+          forWho: "Site Starter + Reflex di tepi Nexus — operator menambah slug ke host map; portfolio tetap. Bukan setiap generate otomatis.",
           price: priceKrLabel(35),
-          sub: priceIdrSub(35, " / bulan · 1 host lab"),
+          sub: priceIdrSub(35, " / bulan · host map lab"),
           popular: false,
           features: [
-            "Semua isi Starter 20rb + Caddy ke WAF :8080 (upsell --tier tepi)",
+            "Caddy ke WAF :8080 (upsell --tier tepi) — tambah host, bukan overlay PROTECTED_HOST",
             "Reflex tipis: injeksi judi/slot/deface di path/query/body lewat tepi",
             "Bukan Job Cowork / Loop; bukan debit Starter 20 Kr",
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
-            "Satu slug aktif per instance lab — bukan CNAME massal",
+            "Bukan CNAME massal; bukan setiap warung generate ikut WAF",
           ],
           cta: checkoutHref("umkm-tepi-belum"),
           ctaLabel: checkoutCtaLabel("tepi", false),
@@ -123,7 +123,7 @@ export const SEGMENTS: SegmentDef[] = [
             "1 host: header tepi (nosniff / frame / CSP), bukan WAF Reflex",
             "Hostname lab jika di-deploy Caddy / folder Vercel",
             "Tanpa template Channel Starter (site Anda tetap)",
-            "Anti-deface/judi butuh Edge Shield 28rb (tepi WAF, 1 host lab)",
+            "Anti-deface/judi butuh Edge Shield 28rb (tepi WAF, host map — bukan Loop)",
             "Bukan Job Cowork / laporan formal",
           ],
           cta: checkoutHref("umkm-pagar"),
@@ -131,16 +131,16 @@ export const SEGMENTS: SegmentDef[] = [
         },
         {
           name: "Edge Shield (shared lab host)",
-          tag: "LAB 1 HOST",
-          forWho: "Host yang sudah ada — Reflex judi/deface di tepi Nexus, satu host per lab.",
+          tag: "SKU TEPI",
+          forWho: "Host yang sudah ada — Reflex judi/deface di tepi Nexus; slug ditambah ke host map, portfolio tetap.",
           price: priceKrLabel(28),
-          sub: priceIdrSub(28, " / bulan · 1 host lab"),
+          sub: priceIdrSub(28, " / bulan · host map lab"),
           popular: false,
           features: [
             "Header tepi + reverse_proxy WAF :8080 (upsell --tier tepi, tanpa Job)",
             "Reflex tipis injeksi judi/slot/deface — bukan anti zero-day",
             "Bukan pulih Vercel / restore file origin remote",
-            "*.vercel.app langsung TIDAK dilindungi; trafik harus ke PROTECTED_HOST",
+            "*.vercel.app langsung TIDAK dilindungi; demo lewat Host lab (portfolio + slug tepi)",
           ],
           cta: checkoutHref("umkm-tepi-sudah"),
           ctaLabel: checkoutCtaLabel("tepi", false),
@@ -150,7 +150,7 @@ export const SEGMENTS: SegmentDef[] = [
     faqs: [
       {
         q: "Kenapa sudah punya website lebih murah?",
-        a: "Karena tidak ada slot template & isi konten dari kami. 15rb = Header Shield (header tepi). 28rb = Edge Shield (WAF Reflex 1 host lab). Tetap bukan wasit Job B2B.",
+        a: "Karena tidak ada slot template & isi konten dari kami. 15rb = Header Shield (header tepi). 28rb = Edge Shield (WAF Reflex, host map). Tetap bukan wasit Job B2B.",
       },
       {
         q: "Rp 20rb sudah termasuk keamanan?",
@@ -163,10 +163,10 @@ export const SEGMENTS: SegmentDef[] = [
     id: "sekolah",
     href: "/sekolah",
     title: "Sekolah",
-    short: "Profil sekolah, PPDB, berita — 20rb header tepi; 35rb Edge Shield (1 host lab).",
+    short: "Profil sekolah, PPDB, berita — 20rb header tepi; 35rb Edge Shield (host map, bukan Loop).",
     headline: "School website + Header Shield",
     subhead:
-      "Paket 20rb = template + header tepi. Edge Shield 35rb/28rb = Reflex judi/deface lewat WAF (lab 1 host). Bukan Job, bukan pulih Vercel.",
+      "Paket 20rb = template + header tepi. Edge Shield 35rb/28rb = Reflex judi/deface lewat WAF (host map, portfolio tetap). Bukan Job, bukan pulih Vercel.",
     badge: "Institusi pendidikan",
     accent: "amber",
     askWebsite: true,
@@ -193,10 +193,10 @@ export const SEGMENTS: SegmentDef[] = [
         },
         {
           name: "Edge Shield (shared lab host)",
-          tag: "LAB 1 HOST",
-          forWho: "Profil sekolah + Reflex tipis di tepi Nexus — satu host per lab, bukan Job institusi.",
+          tag: "SKU TEPI",
+          forWho: "Profil sekolah + Reflex di tepi Nexus — slug ditambah ke host map; bukan Job institusi.",
           price: priceKrLabel(35),
-          sub: priceIdrSub(35, " / bulan · 1 host lab"),
+          sub: priceIdrSub(35, " / bulan · host map lab"),
           popular: false,
           features: [
             "Semua isi paket 20rb + Caddy ke WAF :8080 (upsell --tier tepi)",
@@ -221,17 +221,17 @@ export const SEGMENTS: SegmentDef[] = [
             "Hostname lab jika di-deploy Caddy / folder Vercel",
             "HTTPS/tunnel sesuai setup pilot",
             "Tanpa rebuild konten dari Nexus",
-            "Anti-deface/judi butuh Edge Shield 28rb (tepi WAF, 1 host lab)",
+            "Anti-deface/judi butuh Edge Shield 28rb (tepi WAF, host map — bukan Loop)",
           ],
           cta: checkoutHref("sekolah-pagar"),
           ctaLabel: checkoutCtaLabel("request", false),
         },
         {
           name: "Edge Shield (shared lab host)",
-          tag: "LAB 1 HOST",
-          forWho: "Host sekolah sudah online — Reflex judi/deface di tepi, satu host per lab.",
+          tag: "SKU TEPI",
+          forWho: "Host sekolah sudah online — Reflex judi/deface di tepi; tambah ke host map, bukan Loop.",
           price: priceKrLabel(28),
-          sub: priceIdrSub(28, " / bulan · 1 host lab"),
+          sub: priceIdrSub(28, " / bulan · host map lab"),
           popular: false,
           features: [
             "Header tepi + reverse_proxy WAF :8080 (upsell --tier tepi, tanpa Job)",
@@ -247,11 +247,11 @@ export const SEGMENTS: SegmentDef[] = [
     faqs: [
       {
         q: "Apakah data siswa dijamin aman regulasi?",
-        a: "Tidak diklaim sertifikasi. 20rb/15rb = header tepi. Edge Shield 35/28rb = Reflex di WAF 1 host lab, bukan restore file, bukan Job.",
+        a: "Tidak diklaim sertifikasi. 20rb/15rb = header tepi. Edge Shield 35/28rb = Reflex di WAF (host map), bukan restore file, bukan Job.",
       },
       {
         q: "Rp 20rb sudah termasuk WAF atau anti-deface?",
-        a: "Tidak. Header Shield = header tepi + hostname lab. Edge Shield (kartu 35rb) = Reflex judi/deface lewat tepi, 1 host lab, bukan Job, bukan pulih Vercel.",
+        a: "Tidak. Header Shield = header tepi + hostname lab. Edge Shield (kartu 35rb) = Reflex judi/deface lewat tepi, host map lab, bukan Job, bukan pulih Vercel.",
       },
       FAQ_NO_MASS_WAF,
     ],
@@ -260,10 +260,10 @@ export const SEGMENTS: SegmentDef[] = [
     id: "startup",
     href: "/startup",
     title: "Startup",
-    short: "45rb = landing + header tepi; 75rb = tepi Alur A Reflex (1 host lab). Bukan Job, bukan alert Telegram.",
+    short: "45rb = landing + header tepi; 75rb = tepi Alur A Reflex (host map). Bukan Job, bukan alert Telegram.",
     headline: "Lindungi kanal sebelum scale",
     subhead:
-      "Belum punya web? 45rb = landing + header tepi (bukan WAF). 75rb = tepi Alur A Reflex, satu host lab (--tier tepi). Sudah punya kanal? Tepi 75rb atau Job terpisah. Bukan alert operator ke pelanggan.",
+      "Belum punya web? 45rb = landing + header tepi (bukan WAF). 75rb = tepi Alur A Reflex (--tier tepi, host map). Sudah punya kanal? Tepi 75rb atau Job Cowork terpisah. Bukan alert operator ke pelanggan.",
     badge: "Digital / early",
     accent: "green",
     askWebsite: true,
@@ -290,14 +290,14 @@ export const SEGMENTS: SegmentDef[] = [
         },
         {
           name: "Landing + Edge Shield (Alur A)",
-          tag: "LAB 1 HOST",
-          forWho: "Landing + tepi WAF Reflex (Alur A) — satu PROTECTED_HOST per lab, bukan Job.",
+          tag: "SKU TEPI",
+          forWho: "Landing + tepi WAF Reflex (Alur A) — tambah slug ke host map, bukan Job/Loop.",
           price: priceKrLabel(75),
-          sub: priceIdrSub(75, " / bulan · 1 host lab"),
+          sub: priceIdrSub(75, " / bulan · host map lab"),
           popular: false,
           features: [
             "Semua Landing + Header Shield (header tepi) + Caddy ke WAF :8080 (--tier tepi)",
-            "Alur A: Reflex judi/slot/deface + ban tepi — 1 host lab",
+            "Alur A: Reflex judi/slot/deface + ban tepi — host map, bukan Loop",
             "Bukan Job Cowork / Loop; bukan debit Starter 20 Kr",
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
             "Bukan alert Telegram ke pelanggan (pager ban = operator lab)",
@@ -328,11 +328,11 @@ export const SEGMENTS: SegmentDef[] = [
           tag: "REKOMENDASI",
           forWho: "Web/app sudah jalan — tepi Alur A Reflex, satu host lab, tanpa wasit Job.",
           price: priceKrLabel(75),
-          sub: priceIdrSub(75, " / bulan · 1 host lab"),
+          sub: priceIdrSub(75, " / bulan · host map lab"),
           popular: true,
           features: [
-            "1 PROTECTED_HOST di belakang WAF (upsell --tier tepi)",
-            "Alur A: Reflex judi/deface + ban tepi — Edge Shield, 1 host lab",
+            "Tambah host ke WAF map (upsell --tier tepi); portfolio tetap",
+            "Alur A: Reflex judi/deface + ban tepi — Edge Shield, bukan Job",
             "Bukan Job Cowork / Loop; tanpa artefak wasit formal",
             "Bukan pulih Vercel; *.vercel.app langsung TIDAK dilindungi",
             "Bukan alert Telegram ke pelanggan (pager ban = operator lab)",
@@ -373,7 +373,7 @@ export const SEGMENTS: SegmentDef[] = [
     faqs: [
       {
         q: "Bedanya dengan UMKM Rp 20rb?",
-        a: "45rb = landing + header tepi (bukan WAF). 75rb = Edge Shield Alur A Reflex, 1 host lab (--tier tepi) — lebih dari header saja, bukan Job, bukan alert Telegram pelanggan. Job 200rb terpisah.",
+        a: "45rb = landing + header tepi (bukan WAF). 75rb = Edge Shield Alur A Reflex, host map (--tier tepi) — lebih dari header saja, bukan Job, bukan alert Telegram pelanggan. Job 200rb terpisah.",
       },
       FAQ_NO_MASS_WAF,
     ],
@@ -418,7 +418,7 @@ export const SEGMENTS: SegmentDef[] = [
           price: priceKrLabel(300),
           sub: priceIdrSub(300, " / bulan"),
           popular: false,
-          features: ["1 Job / bulan", "Memori imun", "Operator + artefak"],
+          features: ["1 Job / bulan", "Memori imun", "Operator + artefak", "Cowork — bukan Starter 20 Kr, bukan SKU tepi"],
           cta: checkoutHref("corporat-loop"),
           ctaLabel: checkoutCtaLabel("request", false),
         },

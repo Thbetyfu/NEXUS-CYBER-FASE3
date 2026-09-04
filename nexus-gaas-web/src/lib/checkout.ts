@@ -25,7 +25,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     priceKr: 20,
     debitStarter: true,
     summary:
-      "Isi data usaha → isi ulang Kredit (pending, bukan keran gratis) jika saldo kurang → debit 20 Kr → generate site. Bukan WhatsApp. Bukan Job Cowork.",
+      "Isi data usaha → isi ulang Kredit (pending, bukan keran gratis) jika saldo kurang → debit 20 Kr → generate site + header tepi. Bukan WAF. Bukan WhatsApp. Bukan Job/Loop Cowork. Bukan --tier tepi.",
   },
   "umkm-tepi-belum": {
     sku: "umkm-tepi-belum",
@@ -35,7 +35,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     priceKr: 35,
     debitStarter: false,
     summary:
-      "Form 1 host lab. Bukan debit Starter 20 Kr, bukan generate otomatis, bukan Job/Loop. Operator pasang --tier tepi.",
+      "SKU tepi terpisah: operator menambah slug ke host map (portfolio tetap). Bukan debit Starter 20 Kr, bukan generate=WAF, bukan Job/Loop.",
   },
   "umkm-pagar": {
     sku: "umkm-pagar",
@@ -53,7 +53,8 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/umkm",
     priceKr: 28,
     debitStarter: false,
-    summary: "Reflex 1 host lab pada site yang sudah jalan. Bukan debit 20 Kr, bukan Job.",
+    summary:
+      "Reflex pada host yang sudah jalan: tambah ke nexus-host-map.json. Bukan debit 20 Kr, bukan overlay PROTECTED_HOST, bukan Job/Loop.",
   },
   "sekolah-starter": {
     sku: "sekolah-starter",
@@ -62,7 +63,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/sekolah",
     priceKr: 20,
     debitStarter: true,
-    summary: "Sama mesin Starter: form → 20 Kr → generate. Bukan WhatsApp. Bukan Job.",
+    summary: "Sama mesin Starter: form → 20 Kr → generate + header tepi. Bukan WAF. Bukan WhatsApp. Bukan Job/Loop.",
   },
   "sekolah-tepi-belum": {
     sku: "sekolah-tepi-belum",
@@ -71,7 +72,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/sekolah",
     priceKr: 35,
     debitStarter: false,
-    summary: "1 host lab, bukan debit Starter, bukan Job.",
+    summary: "SKU tepi: tambah host ke peta lab. Bukan debit Starter, bukan Job/Loop.",
   },
   "sekolah-pagar": {
     sku: "sekolah-pagar",
@@ -89,7 +90,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/sekolah",
     priceKr: 28,
     debitStarter: false,
-    summary: "Reflex 1 host lab. Bukan debit 20 Kr, bukan Job.",
+    summary: "Reflex via host map (portfolio tetap). Bukan debit 20 Kr, bukan Job/Loop.",
   },
   "startup-landing": {
     sku: "startup-landing",
@@ -99,7 +100,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     priceKr: 45,
     debitStarter: true,
     summary:
-      "Lab memakai mesin generate Starter (debit 20 Kr fail-closed). Harga daftar 45 Kr setara Rp 45.000 — top-up IDR belum. Bukan Job.",
+      "Lab memakai mesin generate Starter (debit 20 Kr fail-closed). Harga daftar 45 Kr setara Rp 45.000 — top-up IDR belum. Bukan WAF. Bukan Job/Loop.",
   },
   "startup-tepi-belum": {
     sku: "startup-tepi-belum",
@@ -108,7 +109,8 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/startup",
     priceKr: 75,
     debitStarter: false,
-    summary: "1 host lab Reflex. Bukan Job, bukan alert Telegram pelanggan, bukan debit 20 Kr sebagai Loop.",
+    summary:
+      "Alur A Reflex: operator --tier tepi, tambah host (portfolio tetap). Bukan Job/Loop, bukan alert Telegram pelanggan, bukan debit 20 Kr.",
   },
   "startup-job": {
     sku: "startup-job",
@@ -117,7 +119,8 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/startup",
     priceKr: 200,
     debitStarter: false,
-    summary: "Operator menjalankan Job. Bukan 200 Kr self-serve di kasir Starter. Bukan WhatsApp. Bukan Midtrans.",
+    summary:
+      "Job Cowork (wasit) — paket mahal terpisah. Bukan 20 Kr, bukan tepi-only, bukan 200 Kr self-serve di kasir Starter. Bukan WhatsApp. Bukan Midtrans.",
   },
   "startup-tepi-sudah": {
     sku: "startup-tepi-sudah",
@@ -126,7 +129,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/startup",
     priceKr: 75,
     debitStarter: false,
-    summary: "Alur A Reflex, 1 host lab. Bukan debit 20 Kr, bukan Job.",
+    summary: "Alur A Reflex via host map. Bukan debit 20 Kr, bukan Job/Loop Cowork.",
   },
   "startup-loop": {
     sku: "startup-loop",
@@ -135,7 +138,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/startup",
     priceKr: 300,
     debitStarter: false,
-    summary: "Retainership operator, bukan Loop otomatis di 20 Kr.",
+    summary: "Loop Cowork retainership — bukan tepi-only, bukan Loop otomatis di Starter 20 Kr.",
   },
   "corporat-job": {
     sku: "corporat-job",
@@ -144,7 +147,8 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/corporat",
     priceKr: 200,
     debitStarter: false,
-    summary: "Ajukan ke operator. Bukan WhatsApp. Bukan debit 200 Kr otomatis dari kasir Starter.",
+    summary:
+      "Job Cowork hosted. Bukan Starter 20 Kr, bukan Edge Shield tepi-only. Bukan WhatsApp. Bukan debit 200 Kr otomatis dari kasir Starter.",
   },
   "corporat-loop": {
     sku: "corporat-loop",
@@ -153,7 +157,7 @@ export const CHECKOUT_PACKAGES: Record<string, CheckoutPackage> = {
     segmentHref: "/corporat",
     priceKr: 300,
     debitStarter: false,
-    summary: "Retainership 1 host — operator, bukan self-serve Starter.",
+    summary: "Loop GaaS Cowork — retainership operator. Bukan self-serve Starter 20 Kr, bukan SKU tepi.",
   },
   "corporat-custom": {
     sku: "corporat-custom",

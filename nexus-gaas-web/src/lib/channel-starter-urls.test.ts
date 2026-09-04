@@ -4,6 +4,7 @@ import {
   channelStarterInternalUrl,
   channelStarterPreviewUrl,
   channelStarterPublicBase,
+  channelStarterUpsellEnableUrl,
   isLoopbackHttpOrigin,
 } from "./channel-starter-urls.ts";
 
@@ -22,6 +23,13 @@ test("tanpa env: internal loopback, publik path /starter", () => {
   assert.equal(channelStarterPreviewUrl("kedai"), "/starter/preview/kedai");
   assert.equal(isLoopbackHttpOrigin("http://127.0.0.1:3010"), true);
   assert.equal(isLoopbackHttpOrigin("https://abc.trycloudflare.com"), false);
+});
+
+test("URL upsell wizard tepi tanpa create_loop", () => {
+  const url = channelStarterUpsellEnableUrl("http://127.0.0.1:3010", "bu-grace");
+  assert.equal(url, "http://127.0.0.1:3010/upsell/bu-grace/enable?tier=tepi");
+  assert.doesNotMatch(url, /create_loop/);
+  assert.doesNotMatch(url, /cowork/);
 });
 
 test("Vercel storefront: jangan CHANNEL_STARTER ke laptop / loopback", () => {

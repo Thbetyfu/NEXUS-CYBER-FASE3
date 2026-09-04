@@ -7,7 +7,9 @@ import {
   FAQ_NO_MASS_WAF,
   HONEST_SKU_DISCLAIMER,
   NO_MASS_WAF_CLAIM,
+  PORTFOLIO_HOST_STAYS,
   SKU_SEPARATION_LINE,
+  tepiEnableCli,
 } from "./honest-copy.ts";
 import { safeInternalNext } from "./gate-next.ts";
 import { plansForSegment, SEGMENTS } from "./segments.ts";
@@ -89,8 +91,17 @@ test("Starter bukan klaim WAF; tepi SKU terpisah; Job/Loop bukan debit 20 Kr", (
       assert.notEqual(pkg.priceKr, 20);
       assert.match(pkg.summary, /bukan debit/i);
       assert.match(pkg.title, /Edge Shield/i);
+      assert.doesNotMatch(pkg.summary, /generate otomatis.*WAF|setiap generate/i);
     }
   }
+
+  const starter = getCheckout("umkm-starter");
+  assert.ok(starter);
+  assert.equal(starter.kind, "starter");
+  assert.equal(starter.debitStarter, true);
+  assert.doesNotMatch(starter.sku, /loop/i);
+  assert.doesNotMatch(JSON.stringify(starter), /create_loop/);
+  assert.match(starter.summary, /Bukan Job\/Loop/i);
 
   const tepiSkus = Object.values(CHECKOUT_PACKAGES).filter((p) => p.kind === "tepi");
   assert.ok(tepiSkus.length >= 4);
@@ -102,6 +113,11 @@ test("FAQ segmen: Starter ≠ tepi ≠ Loop; jangan klaim 100 UMKM di WAF", () =
   assert.match(HONEST_SKU_DISCLAIMER, /Starter/);
   assert.match(SKU_SEPARATION_LINE, /tepi/);
   assert.match(NO_MASS_WAF_CLAIM, /100 UMKM/);
+  assert.match(PORTFOLIO_HOST_STAYS, /portfolio\.nexus-lab\.test/);
+  assert.match(PORTFOLIO_HOST_STAYS, /host-map/);
+  assert.match(FAQ_NO_MASS_WAF.a, /tidak auto-join WAF/);
+  assert.doesNotMatch(FAQ_NO_MASS_WAF.a, /Satu PROTECTED_HOST per instance/);
+  assert.equal(tepiEnableCli("bu-grace"), "python cli.py upsell enable --slug bu-grace --tier tepi");
   for (const id of ["umkm", "sekolah", "startup"] as const) {
     const segment = SEGMENTS.find((s) => s.id === id);
     assert.ok(segment);

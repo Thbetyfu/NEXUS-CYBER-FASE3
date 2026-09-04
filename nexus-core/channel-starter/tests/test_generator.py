@@ -374,6 +374,32 @@ class TestChannelStarterDeploy(unittest.TestCase):
         self.assertIn("file_server", block)
         self.assertNotIn("reverse_proxy gateway:8080", block)
 
+    def test_upsell_tepi_rejects_create_loop(self):
+        import channel_starter.config as cfg
+        import channel_starter.upsell as upsell_mod
+
+        deploy_dir = os.path.join(self.tmp.name, "deploy-local-loop")
+        os.makedirs(deploy_dir, exist_ok=True)
+        cfg.DEPLOY_LOCAL_DIR = Path(deploy_dir)
+        cfg.UPSELL_ENV_FILE = Path(deploy_dir) / "channel-starter-upsell.env"
+        upsell_mod.DEPLOY_LOCAL_DIR = cfg.DEPLOY_LOCAL_DIR
+        upsell_mod.UPSELL_ENV_FILE = cfg.UPSELL_ENV_FILE
+
+        manifest = generate_from_dict(
+            {"business_name": "Tanpa Loop", "category": "fnb", "whatsapp": "6284444444444"},
+            sites_root=self.sites_root,
+        )
+        from channel_starter.upsell import enable_upsell
+
+        with self.assertRaises(ValueError) as ctx:
+            enable_upsell(
+                manifest.slug,
+                tier=PricingTier.TEPI,
+                sites_root=self.sites_root,
+                create_loop=True,
+            )
+        self.assertIn("cowork", str(ctx.exception).lower())
+
     def test_upsell_second_tepi_keeps_portfolio_and_first_slug(self):
         import channel_starter.config as cfg
         import channel_starter.upsell as upsell_mod
@@ -429,10 +455,21 @@ class TestChannelStarterDeploy(unittest.TestCase):
         from channel_starter.host_map import host_map_path
 
         manifest = generate_from_dict(
-            {"business_name": "Tanpa WAF", "category": "profil", "whatsapp": "6283333333333"},
+            {
+                "business_name": "Tanpa WAF",
+                "category": "profil",
+                "whatsapp": "6283333333333",
+                "create_loop": True,
+                "create_job": True,
+            },
             sites_root=self.sites_root,
         )
         self.assertFalse(manifest.gaas_active)
+        self.assertEqual(manifest.loop_schedule_id, "")
+        self.assertEqual(manifest.cowork_job_id, "")
+        dump = manifest.model_dump()
+        self.assertNotIn("create_loop", dump)
+        self.assertNotIn("create_job", dump)
         self.assertFalse(host_map_path().is_file())
         block = render_site_caddy_block(manifest)
         self.assertIn("file_server", block)

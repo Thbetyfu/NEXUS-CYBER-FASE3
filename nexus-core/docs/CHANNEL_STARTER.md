@@ -128,7 +128,7 @@ docker compose up -d gateway channel-origin
 python ..\channel-starter\cli.py deploy apply --reload
 ```
 
-Satu `PROTECTED_HOST` aktif per lab. Site upsell lewat WAF gateway; origin statis di `channel-origin:8099`. **Tidak** membuat Job NEX-RED. Scan/demo lewat Host lab, bukan `*.vercel.app`.
+Satu gateway, **lebih dari satu** hostname: site upsell lewat WAF; origin statis di `channel-origin:8099`. **Tidak** membuat Job NEX-RED. **Tidak** menimpa `PROTECTED_HOST` (portfolio tetap di `nexus-host-map.json`). Scan/demo lewat Host lab, bukan `*.vercel.app`. Portal operator: `http://127.0.0.1:3003/operator/tepi` (loopback).
 
 ### Upsell Cowork (S-6, Job)
 

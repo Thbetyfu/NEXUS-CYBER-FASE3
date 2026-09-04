@@ -64,7 +64,8 @@ export function OperatorTopupBoard({ initialItems = [] }: { initialItems?: Opera
       <h1>Konfirmasi isi Kredit</h1>
       <p className="operator-topup-lead">
         Bukan SOC publik. Saldo pelanggan naik hanya setelah tombol ini (atau{" "}
-        <code>POST /api/kredit/topup/approve</code>). WhatsApp tidak mengkredit otomatis. Bukan Midtrans.
+        <code>POST /api/kredit/topup/approve</code>). WhatsApp tidak mengkredit otomatis. Bukan Midtrans. Edge Shield
+        tepi: <a href="/operator/tepi">/operator/tepi</a> (bukan Loop, bukan debit 20 Kr).
       </p>
       {error && (
         <p className="kredit-error" role="alert">

@@ -164,6 +164,9 @@ def enable_upsell(
     if tier not in GAAS_UPSELL_TIERS:
         raise ValueError(f"Upsell tier must be tepi or cowork, got {tier.value}")
 
+    if create_loop and tier != PricingTier.COWORK:
+        raise ValueError("create_loop hanya untuk --tier cowork (Job/Loop), bukan tepi atau Starter")
+
     # Pagar tipis (`tepi`): Caddy → gateway + Reflex, tanpa Job. Cowork tetap Job default.
     start_job = create_job if create_job is not None else (tier == PricingTier.COWORK)
 

@@ -365,8 +365,12 @@ def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> Si
     return manifest
 
 
+_GENERATE_BLOCKED = frozenset({"create_loop", "create_job", "loop_schedule_id", "cowork_job_id"})
+
+
 def generate_from_dict(data: dict, *, sites_root: Path | str | None = None) -> SiteManifest:
-    form = SiteForm.model_validate(inflate_flat_fields(dict(data)))
+    cleaned = {key: value for key, value in dict(data).items() if key not in _GENERATE_BLOCKED}
+    form = SiteForm.model_validate(inflate_flat_fields(cleaned))
     return generate_site(form, sites_root=sites_root)
 
 

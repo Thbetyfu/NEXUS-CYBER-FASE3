@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.15 / 2026-09-04  
+**Versi:** 1.1.16 / 2026-09-05  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -173,8 +173,8 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 | Paket | Isi | Bentuk |
 | --- | --- | --- |
-| **Job GaaS** | Satu siklus ukur→kendalikan→uji pada satu host | Proyek berbatas (48–72 jam) |
-| **Loop GaaS** | Instance tetap + Job berkala (mingguan / per rilis) | Retainership |
+| **Job GaaS** | Satu siklus ukur→kendalikan→uji pada satu host | Proyek berbatas (48–72 jam) — **Cowork**, bukan Starter 20 Kr, bukan SKU tepi |
+| **Loop GaaS** | Instance tetap + Job berkala (mingguan / per rilis) | Retainership Cowork — **bukan** Loop di 20 Kr, **bukan** tepi-only |
 | **On-prem instance** | Gateway di mesin klien + operasi Job | Lisensi + **Loop wajib** (B2G) — lihat [COWORK_B2G.md](./COWORK_B2G.md) |
 
 ### 7.2 Channel Starter (entry — lab v0.1)
@@ -182,7 +182,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
 | **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab `{slug}.nexus-lab.test` + publish Vercel per folder (jika token/login; bukan git Nexus) + **header tepi** (bukan WAF Reflex, bukan Job). Nama tampilan sama → slug unik (`bu-grace-2`) jika folder sudah ada. Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
-| **Edge Shield** (kartu portal; teknis `--tier tepi`) | Upsell `--tier tepi`: Caddy ke WAF + Reflex. **Menambah** host ke peta lab (portfolio tetap). Bukan setiap generate 20 Kr; bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb / 28rb. **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
+| **Edge Shield** (kartu portal; teknis `--tier tepi`) | Upsell `--tier tepi`: Caddy ke WAF + Reflex. **Menambah** host ke peta lab (portfolio tetap). Bukan setiap generate 20 Kr; bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb / 28rb. Form `/pesan/umkm-tepi-*` **tidak** debit 20 Kr. Lab: `python cli.py upsell enable --slug … --tier tepi` atau `http://127.0.0.1:3003/operator/tepi` (loopback; fail-closed di etalase). **Bukan** Loop | ~Rp 35.000 / 28.000 · **bukan** Loop |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 
 **Kredit (lab sekarang):** unit kasir Channel Starter di `/pesan/{sku}` (Starter = `/pesan/umkm-starter`; `/order` redirect). **1 Kredit = Rp 1.000**. Starter = **20 Kredit**. Keran lab; generate fail-closed jika saldo kurang; gagal generate → refund. **Bukan** e-money, **bukan** jual Job 200 Kredit otomatis dari portal. CLI `channel-starter` tetap tanpa debit.
@@ -239,7 +239,7 @@ Konteks regulasi (POJK 30/2025 risiko siber ITSK, ketahanan siber perbankan) = *
 | Ekspor artefak risiko | **Sudah ada** | `jobs/data/artifacts/*.md|json` + digest ThreatLog operator |
 | Memori imun host persisten | **Sudah ada** | PG + file; `antibody_audits.job_id` opsional |
 | Channel Starter (form→template) | **Lab v0.1** | `nexus-core/channel-starter/` (Milestone 18) |
-| Edge Shield (`--tier tepi`) | **Lab MVP** | Caddy → `:8080` + Reflex judi/deface; 1 host; tanpa Job |
+| Edge Shield (`--tier tepi`) | **Lab MVP** | Caddy → `:8080` + Reflex; **tambah** host ke peta (portfolio tetap); tanpa Job |
 | Channel Portal legacy / F-10 | **Ditunda** | F-10 back-office |
 | eBPF XDP nyata | **Stub** | `ebpf_stub.go` |
 

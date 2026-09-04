@@ -4,7 +4,7 @@ Folder ini = **`nexus-core/deploy-local/`** (git root `D:\NEXUS`). 1 klik: **`ne
 
 Lab **Alur A** (tepi) + uji **Alur B** (NEX-RED wasit). Model produk: [`../docs/PRODUCT_MODEL.md`](../docs/PRODUCT_MODEL.md).
 
-**Cheat-sheet wasit / investor (pilihan B — multi-host):** buka **http://portfolio.nexus-lab.test** (bukan URL `*.vercel.app`). Slug tepi setelah upsell: **http://{slug}.nexus-lab.test**. Double-click **`START.bat`**. **Jangan** tunnel SOC `:3001` / `:8081`. `PROTECTED_HOST` tetap portfolio; extra host di `nexus-host-map.json`.
+**Cheat-sheet wasit / investor (pilihan B — multi-host):** buka **http://portfolio.nexus-lab.test** (bukan URL `*.vercel.app`). Slug tepi setelah upsell: **http://{slug}.nexus-lab.test**. CLI: `python cli.py upsell enable --slug … --tier tepi` (portfolio tetap). Portal operator loopback: `http://127.0.0.1:3003/operator/tepi`. Double-click **`START.bat`**. **Jangan** tunnel SOC `:3001` / `:8081`. `PROTECTED_HOST` tetap portfolio; extra host di `nexus-host-map.json`. Starter 20 Kr ≠ tepi ≠ Job/Loop Cowork.
 
 Folder ini menyalakan **tim biru** (WAF Gateway + Postgres + Redis + Caddy) di laptop, lalu mem-proxy situs portofolio di belakangnya.
 

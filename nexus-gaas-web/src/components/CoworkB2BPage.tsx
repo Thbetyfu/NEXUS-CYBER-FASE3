@@ -35,7 +35,7 @@ const PLANS = [
     price: "Rp 200.000",
     sub: "sekali · pilot PC+tunnel",
     features: [
-      "Satu PROTECTED_HOST",
+      "Satu host dalam scope Job (bukan setiap generate Starter)",
       "Defense delta + antibody loop",
       "Artefak MD/JSON",
       "Gerbang L0/L1",
@@ -111,7 +111,8 @@ export function CoworkB2BPage() {
             style={{ color: "var(--notion-text-muted)", maxWidth: 640, margin: "0 auto 2rem" }}
           >
             Job Cowork mengukur celah di tepi vs origin, memasang antibodi virtual, dan menutup Job hanya jika replay
-            jujur — bukan laporan hijau default. Loop GaaS untuk retainership berkala.
+            jujur — bukan laporan hijau default. Ini paket Cowork (Job Rp 200rb / Loop Rp 300rb), bukan Starter 20 Kr
+            dan bukan Edge Shield tepi. Loop GaaS untuk retainership berkala.
           </motion.p>
           <motion.div
             className="flex justify-center gap-4"
@@ -161,7 +162,7 @@ export function CoworkB2BPage() {
             Paket B2B
           </h2>
           <p className="text-center" style={{ color: "var(--notion-text-muted)", marginBottom: "2rem" }}>
-            Harga ilustrasi — kontrak final setelah scope `PROTECTED_HOST` dan izin uji jinak.
+            Harga ilustrasi — kontrak final setelah scope host lab dan izin uji jinak. Bukan kasir Starter 20 Kr.
           </p>
           <div className="notion-pricing-grid">
             {PLANS.map((plan, i) => (

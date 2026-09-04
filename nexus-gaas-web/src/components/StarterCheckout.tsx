@@ -358,7 +358,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                   </>
                 )}
               </li>
-              <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = upsell. Starter 20 Kr ≠ Edge Shield.</li>
+              <li>Header tepi (nosniff / frame / CSP) di Caddy. Wasit Job = Cowork terpisah. Starter 20 Kr ≠ Edge Shield tepi ≠ Loop.</li>
             </ol>
             {formError && (
               <p className="kredit-error" role="alert">

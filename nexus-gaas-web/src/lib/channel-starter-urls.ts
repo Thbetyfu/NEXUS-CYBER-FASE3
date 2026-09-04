@@ -54,3 +54,9 @@ export function channelStarterPreviewUrl(
 ): string {
   return `${channelStarterPublicBase(env)}/preview/${slug}`;
 }
+
+/** Wizard mutate: tepi only. Never attach create_loop (Cowork is a separate SKU). */
+export function channelStarterUpsellEnableUrl(base: string, slug: string): string {
+  const origin = stripTrailingSlash(base);
+  return `${origin}/upsell/${encodeURIComponent(slug)}/enable?tier=tepi`;
+}

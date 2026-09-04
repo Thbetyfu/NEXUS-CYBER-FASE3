@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Changed
+- **Tiga SKU jujur (host map + Cowork):** Channel Starter 20 Kr = site + header, **bukan** WAF. Edge Shield `--tier tepi` = tambah slug ke `nexus-host-map.json` (**portfolio tetap**, bukan overlay `PROTECTED_HOST`), kasir `/pesan/*-tepi-*` tanpa debit 20 Kr, lab CLI atau `/operator/tepi` loopback (fail-closed di etalase). Job/Loop = Cowork (`/corporat`, `/cowork`) — **bukan** 20 Kr, **bukan** tepi-only. Generate Starter tetap `file_server` / tidak auto-join peta. `--tier tepi` menolak `create_loop`. Bukan Midtrans. Bukan CNAME massal.
+
 ### Fixed
 - **Slug generate unik:** nama usaha sama (`Bu Grace` jahit vs tahu) tidak menimpa `sites/bu-grace`. Default debit generate mengalokasikan `bu-grace-2` / `-3` jika folder (atau slug dimiliki) sudah ada. `replaceExisting` hanya menimpa jika pemilik sesi sama. Publish Vercel `--name {slug}` per folder. Uji `test_generator.py`.
 - **Publish Vercel auth:** `VERCEL_TOKEN` di `.env` menang; else `vercel login` (`auth.json`) tanpa `--scope` stale (`currentTeam` / `VERCEL_ORG_ID`). Tanpa keduanya: pesan `vercel login` **atau** set token — bukan hanya “set token”. Bukan Connect Git FASE3. Uji `test_vercel_publish.py`.

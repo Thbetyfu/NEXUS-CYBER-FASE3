@@ -34,6 +34,8 @@ test("cerita kosong memakai preset kategori (cta + hero + jam)", () => {
   assert.equal(payload.cta_label, "Pesan via WhatsApp");
   assert.equal(payload.hours, CATEGORY_COPY.fnb.hours);
   assert.equal(payload.tier, "starter");
+  assert.equal(payload.create_loop, undefined);
+  assert.equal(payload.create_job, undefined);
   assert.equal(payload.offering_1_title, "");
 });
 
