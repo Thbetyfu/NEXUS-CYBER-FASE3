@@ -112,12 +112,13 @@ class TestPreviewServer(unittest.TestCase):
                 return_value={
                     "ok": False,
                     "skipped": True,
-                    "user_message": "publish gagal: set token di mesin wizard",
+                    "user_message": "publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env",
                 },
             ):
                 pub = client.post("/publish/uji-redirect", headers={"Accept": "application/json"})
             self.assertEqual(pub.status_code, 200)
-            self.assertEqual(pub.json()["user_message"], "publish gagal: set token di mesin wizard")
+            self.assertIn("vercel login", pub.json()["user_message"])
+            self.assertIn("VERCEL_TOKEN", pub.json()["user_message"])
         finally:
             tmp.cleanup()
 

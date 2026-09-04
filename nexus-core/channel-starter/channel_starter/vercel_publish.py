@@ -3,12 +3,14 @@
 Each UMKM site is its own Vercel project (HTML statis). Never deploy the Nexus
 monorepo. Hosting on *.vercel.app is not WAF / Job Cowork.
 
-Auth is the gitignored VERCEL_TOKEN on this wizard PC — not interactive
-`vercel login`, not CLI currentTeam, not VERCEL_ORG_ID from a linked project.
+Auth: VERCEL_TOKEN in gitignored channel-starter/.env first; else token from
+`vercel login` (CLI auth.json). Do not inject --scope from currentTeam or
+VERCEL_ORG_ID unless CHANNEL_STARTER_VERCEL_SCOPE is set.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -22,7 +24,9 @@ _URL_RE = re.compile(r"https://[a-z0-9.-]+\.vercel\.app/?", re.I)
 _SKIP_SLUGS = {DEMO_SLUG, "cek-redirect"}
 _OFF = {"0", "false", "no", "off"}
 _LINK_ENV = ("VERCEL_ORG_ID", "VERCEL_PROJECT_ID")
-MSG_NO_TOKEN = "publish gagal: set token di mesin wizard"
+MSG_NO_TOKEN = (
+    "publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env"
+)
 MSG_DISABLED = "publish gagal: CHANNEL_STARTER_VERCEL_PUBLISH dimatikan di mesin wizard"
 MSG_NO_CLI = "publish gagal: vercel CLI tidak ada di mesin wizard"
 MSG_SCOPE = (
@@ -37,22 +41,69 @@ def _publish_flag() -> str:
 
 
 def vercel_publish_enabled() -> bool:
-    """False only when explicitly off. Auto still attempts; missing token is an honest skip."""
+    """False only when explicitly off. Auto still attempts; missing auth is an honest skip."""
     return _publish_flag() not in _OFF
 
 
-def vercel_token() -> str:
-    """Wizard PC only: VERCEL_TOKEN from process env / channel-starter/.env. Not CLI auth.json."""
+def _cli_data_dirs() -> list[Path]:
+    home = Path.home()
+    dirs = [
+        home / ".local/share/com.vercel.cli",
+        home / "Library/Application Support/com.vercel.cli",
+    ]
+    local = (os.getenv("LOCALAPPDATA") or "").strip()
+    appdata = (os.getenv("APPDATA") or "").strip()
+    xdg = (os.getenv("XDG_DATA_HOME") or "").strip()
+    if xdg:
+        dirs.append(Path(xdg) / "com.vercel.cli")
+    if local:
+        dirs.append(Path(local) / "com.vercel.cli")
+        dirs.append(Path(local) / "xdg.data" / "com.vercel.cli")
+    if appdata:
+        dirs.append(Path(appdata) / "com.vercel.cli")
+        dirs.append(Path(appdata) / "xdg.data" / "com.vercel.cli")
+    return dirs
+
+
+def _first_json_file(name: str) -> Path | None:
+    for folder in _cli_data_dirs():
+        path = folder / name
+        if path.is_file():
+            return path
+    return None
+
+
+def env_vercel_token() -> str:
+    """Gitignored .env / process env only — not CLI auth.json."""
     return (os.getenv("VERCEL_TOKEN") or "").strip()
 
 
+def cli_auth_token() -> str:
+    """Token stored by `vercel login` (auth.json). Never print this."""
+    auth = _first_json_file("auth.json")
+    if auth is None:
+        return ""
+    try:
+        payload = json.loads(auth.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, TypeError):
+        return ""
+    if not isinstance(payload, dict):
+        return ""
+    return str(payload.get("token") or "").strip()
+
+
+def vercel_token() -> str:
+    """Env token wins; else CLI login token. Empty = neither path."""
+    return env_vercel_token() or cli_auth_token()
+
+
 def vercel_scope() -> str:
-    """Optional team slug. Empty = CLI uses the token's default team (no --scope)."""
+    """Optional team slug. Empty = no --scope (do not use currentTeam / VERCEL_ORG_ID)."""
     return (os.getenv("CHANNEL_STARTER_VERCEL_SCOPE") or "").strip()
 
 
 def _vercel_subprocess_env(token: str) -> dict[str, str]:
-    """Pass VERCEL_TOKEN; drop linked-project org/project so CLI login / leftover IDs cannot pin --scope."""
+    """Pass token; drop linked-project org/project so leftover IDs cannot pin --scope."""
     env = {k: v for k, v in os.environ.items() if k not in _LINK_ENV}
     env["VERCEL_TOKEN"] = token
     return env
@@ -116,7 +167,7 @@ def _scope_error(text: str) -> bool:
 
 
 def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
-    """Deploy sites/{slug} as its own Vercel project. Fail-closed without VERCEL_TOKEN."""
+    """Deploy sites/{slug} as its own Vercel project. Skip honestly without env token or CLI login."""
     slug = manifest.slug
     if not vercel_publish_enabled():
         return {
@@ -132,7 +183,7 @@ def publish_site(manifest: SiteManifest, *, timeout: int = 180) -> dict:
         return {
             "ok": False,
             "skipped": True,
-            "reason": "no VERCEL_TOKEN in channel-starter/.env",
+            "reason": "no VERCEL_TOKEN / vercel login",
             "user_message": MSG_NO_TOKEN,
         }
     site_dir = Path(manifest.output_dir)

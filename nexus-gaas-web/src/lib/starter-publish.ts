@@ -1,6 +1,7 @@
 /** Map Channel Starter `publish_site` JSON to portal UI. Never fake a Vercel success. */
 
-export const PUBLISH_NO_TOKEN = "publish gagal: set token di mesin wizard";
+export const PUBLISH_NO_TOKEN =
+  "publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env";
 
 export type StarterPublishStatus = {
   publishOk: boolean;

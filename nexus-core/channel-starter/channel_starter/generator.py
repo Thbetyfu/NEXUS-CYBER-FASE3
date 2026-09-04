@@ -138,7 +138,7 @@ def _publish_txt(manifest: SiteManifest) -> str:
         f"Vercel: {vercel_line}\n"
         "\n"
         "Generate men-deploy folder INI ke project Vercel bernama slug, jika "
-        "VERCEL_TOKEN ada di channel-starter/.env. Bukan repo GitHub. Bukan monorepo Nexus.\n"
+        "VERCEL_TOKEN di channel-starter/.env atau vercel login. Bukan repo GitHub. Bukan monorepo Nexus.\n"
         "\n"
         "JANGAN Connect Git Repository ke github.com/Thbetyfu/NEXUS-CYBER-FASE3\n"
         "(atau monorepo Nexus lain). Itu gateway/SOC, bukan landing warung.\n"

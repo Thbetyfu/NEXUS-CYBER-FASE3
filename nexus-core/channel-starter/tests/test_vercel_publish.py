@@ -14,11 +14,14 @@ if package_root not in sys.path:
 from channel_starter.config import load_wizard_env
 from channel_starter.types import SiteCategory, SiteManifest, PricingTier
 from channel_starter.vercel_publish import (
+    MSG_NO_TOKEN,
     MSG_SCOPE,
     _is_safe_site_dir,
     _parse_production_url,
     _vercel_subprocess_env,
     build_deploy_cmd,
+    cli_auth_token,
+    env_vercel_token,
     publish_site,
     vercel_scope,
     vercel_token,
@@ -74,7 +77,9 @@ class TestVercelPublish(unittest.TestCase):
             result = publish_site(manifest)
         self.assertFalse(result.get("ok"))
         self.assertTrue(result.get("skipped"))
-        self.assertEqual(result.get("user_message"), "publish gagal: set token di mesin wizard")
+        self.assertEqual(result.get("user_message"), MSG_NO_TOKEN)
+        self.assertIn("vercel login", MSG_NO_TOKEN)
+        self.assertIn("VERCEL_TOKEN", MSG_NO_TOKEN)
 
     def test_demo_slug_not_published(self):
         manifest = SiteManifest(
@@ -102,13 +107,31 @@ class TestVercelPublish(unittest.TestCase):
                 load_wizard_env(path=env_file)
                 self.assertEqual(os.environ["VERCEL_TOKEN"], "from-process")
 
-    def test_vercel_token_ignores_cli_auth_json(self):
+    def test_env_token_wins_over_cli_auth_json(self):
         import json
         import tempfile
         from pathlib import Path
 
         with tempfile.TemporaryDirectory() as tmp:
-            auth = Path(tmp) / "xdg.data" / "com.vercel.cli" / "auth.json"
+            auth = Path(tmp) / "com.vercel.cli" / "auth.json"
+            auth.parent.mkdir(parents=True)
+            auth.write_text(json.dumps({"token": "win-cli-token"}), encoding="utf-8")
+            with patch.dict(
+                os.environ,
+                {"LOCALAPPDATA": tmp, "APPDATA": tmp, "VERCEL_TOKEN": "from-env"},
+                clear=False,
+            ):
+                self.assertEqual(env_vercel_token(), "from-env")
+                self.assertEqual(cli_auth_token(), "win-cli-token")
+                self.assertEqual(vercel_token(), "from-env")
+
+    def test_cli_auth_json_used_when_env_empty(self):
+        import json
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            auth = Path(tmp) / "com.vercel.cli" / "auth.json"
             auth.parent.mkdir(parents=True)
             auth.write_text(json.dumps({"token": "win-cli-token"}), encoding="utf-8")
             with patch.dict(
@@ -116,7 +139,9 @@ class TestVercelPublish(unittest.TestCase):
                 {"LOCALAPPDATA": tmp, "APPDATA": tmp, "VERCEL_TOKEN": ""},
                 clear=False,
             ):
-                self.assertEqual(vercel_token(), "")
+                self.assertEqual(env_vercel_token(), "")
+                self.assertEqual(cli_auth_token(), "win-cli-token")
+                self.assertEqual(vercel_token(), "win-cli-token")
 
     def test_scope_only_from_channel_starter_env(self):
         with patch.dict(
@@ -158,6 +183,108 @@ class TestVercelPublish(unittest.TestCase):
         self.assertEqual(env["VERCEL_TOKEN"], "from-env")
         self.assertNotIn("VERCEL_ORG_ID", env)
         self.assertNotIn("VERCEL_PROJECT_ID", env)
+
+    def _site_manifest(self, tmp: str, slug: str = "kedai-palet-biru"):
+        from pathlib import Path
+
+        site = Path(tmp) / slug
+        site.mkdir()
+        (site / "index.html").write_text("<html></html>", encoding="utf-8")
+        return SiteManifest(
+            site_id="CS-TEST",
+            slug=slug,
+            business_name="Kedai",
+            category=SiteCategory.FNB,
+            tier=PricingTier.STARTER,
+            subdomain=f"{slug}.nexus-lab.test",
+            output_dir=str(site),
+            index_path=str(site / "index.html"),
+        )
+
+    def test_publish_env_token_path_omits_stale_scope(self):
+        import tempfile
+        from unittest.mock import MagicMock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self._site_manifest(tmp)
+            proc = MagicMock()
+            proc.returncode = 0
+            proc.stdout = "https://kedai-palet-biru.vercel.app\n"
+            proc.stderr = ""
+            captured: dict = {}
+
+            def fake_run(cmd, **kwargs):
+                captured["cmd"] = cmd
+                captured["env"] = kwargs.get("env") or {}
+                return proc
+
+            with patch.dict(
+                os.environ,
+                {
+                    "CHANNEL_STARTER_VERCEL_PUBLISH": "1",
+                    "VERCEL_TOKEN": "env-token",
+                    "CHANNEL_STARTER_VERCEL_SCOPE": "",
+                    "VERCEL_ORG_ID": "team_stale",
+                },
+                clear=False,
+            ), patch("channel_starter.vercel_publish._find_vercel_bin", return_value=["vercel"]), patch(
+                "channel_starter.vercel_publish.subprocess.run",
+                side_effect=fake_run,
+            ), patch("channel_starter.vercel_publish.save_manifest"):
+                result = publish_site(manifest)
+        self.assertTrue(result.get("ok"))
+        self.assertEqual(result.get("url"), "https://kedai-palet-biru.vercel.app")
+        self.assertIn("--token", captured["cmd"])
+        self.assertIn("env-token", captured["cmd"])
+        self.assertNotIn("--scope", captured["cmd"])
+        self.assertNotIn("VERCEL_ORG_ID", captured["env"])
+
+    def test_publish_cli_login_path_omits_stale_scope(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            auth = Path(tmp) / "com.vercel.cli" / "auth.json"
+            auth.parent.mkdir(parents=True)
+            auth.write_text(json.dumps({"token": "cli-login-token"}), encoding="utf-8")
+            config = Path(tmp) / "com.vercel.cli" / "config.json"
+            config.write_text(json.dumps({"currentTeam": "team_stale_from_cli"}), encoding="utf-8")
+            manifest = self._site_manifest(tmp)
+            proc = MagicMock()
+            proc.returncode = 0
+            proc.stdout = "https://kedai-palet-biru.vercel.app\n"
+            proc.stderr = ""
+            captured: dict = {}
+
+            def fake_run(cmd, **kwargs):
+                captured["cmd"] = cmd
+                captured["env"] = kwargs.get("env") or {}
+                return proc
+
+            with patch.dict(
+                os.environ,
+                {
+                    "CHANNEL_STARTER_VERCEL_PUBLISH": "1",
+                    "VERCEL_TOKEN": "",
+                    "CHANNEL_STARTER_VERCEL_SCOPE": "",
+                    "VERCEL_ORG_ID": "team_from_link",
+                    "LOCALAPPDATA": tmp,
+                    "APPDATA": tmp,
+                },
+                clear=False,
+            ), patch("channel_starter.vercel_publish._find_vercel_bin", return_value=["vercel"]), patch(
+                "channel_starter.vercel_publish.subprocess.run",
+                side_effect=fake_run,
+            ), patch("channel_starter.vercel_publish.save_manifest"):
+                result = publish_site(manifest)
+        self.assertTrue(result.get("ok"))
+        self.assertEqual(result.get("url"), "https://kedai-palet-biru.vercel.app")
+        self.assertIn("cli-login-token", captured["cmd"])
+        self.assertNotIn("--scope", captured["cmd"])
+        self.assertNotIn("team_stale_from_cli", captured["cmd"])
+        self.assertNotIn("VERCEL_ORG_ID", captured["env"])
 
     def test_scope_not_accessible_honest_message(self):
         import tempfile

@@ -186,9 +186,10 @@ _FORM_HTML = """<!DOCTYPE html>
     <button type="submit">Generate site</button>
   </form>
   <p class="note">
-    Starter menulis <code>vercel.json</code> dan, jika <code>VERCEL_TOKEN</code> ada di
-    <code>channel-starter/.env</code>, men-deploy <strong>folder situs itu saja</strong> ke project Vercel
-    bernama slug. Bukan git monorepo Nexus. Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
+    Starter menulis <code>vercel.json</code> dan men-deploy <strong>folder situs itu saja</strong>
+    ke project Vercel bernama slug jika ada <code>VERCEL_TOKEN</code> di
+    <code>channel-starter/.env</code> atau sesi <code>vercel login</code>.
+    Bukan git monorepo Nexus. Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
   </p>
   <p><a href="/preview">Daftar preview (contoh git)</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site (loopback, semua PII)</a></p>
 </body>

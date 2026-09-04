@@ -14,7 +14,7 @@ test("sukses publish menampilkan URL Vercel, bukan sukses palsu", () => {
   assert.equal(status.publishError, null);
 });
 
-test("tanpa token: pesan jujur set token di mesin wizard", () => {
+test("tanpa token dan tanpa login: pesan jujur vercel login atau VERCEL_TOKEN", () => {
   const status = summarizeVercelPublish({
     ok: false,
     skipped: true,

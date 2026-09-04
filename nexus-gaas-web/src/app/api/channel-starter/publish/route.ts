@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         vercelUrl: null,
         publishError: /fetch failed|ECONNREFUSED/i.test(message)
           ? "publish gagal: Channel Starter :3010 tidak hidup"
-          : "publish gagal: set token di mesin wizard",
+          : "publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env",
       },
       { status: 502 },
     );

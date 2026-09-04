@@ -298,7 +298,8 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
                   </>
                 ) : (
                   <>
-                    {result.publishError || "publish gagal: set token di mesin wizard"}
+                    {result.publishError ||
+                      "publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env"}
                     {result.slug ? (
                       <>
                         {" "}
