@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from channel_starter.themes import DEFAULT_THEME_ID, THEMES, resolve_theme
 
@@ -107,6 +107,10 @@ class SiteForm(BaseModel):
     portal_owner_id: str = ""
     portal_owner_kind: str = ""
     portal_owner_email: str = ""
+    # Paid generate defaults unique. True = update this slug if owner matches (no UI).
+    replace_existing: bool = Field(default=False, alias="replaceExisting")
+
+    model_config = ConfigDict(populate_by_name=True)
 
     @field_validator("theme")
     @classmethod
@@ -157,6 +161,15 @@ class SiteForm(BaseModel):
         if digits.startswith("0"):
             digits = "62" + digits[1:]
         return digits
+
+    @field_validator("replace_existing", mode="before")
+    @classmethod
+    def _replace_flag(cls, value: object) -> bool:
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return False
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
     @model_validator(mode="after")
     def _apply_theme_hex(self) -> "SiteForm":

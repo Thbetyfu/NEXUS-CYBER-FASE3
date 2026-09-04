@@ -7,6 +7,7 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 ## [Unreleased]
 
 ### Fixed
+- **Slug generate unik:** nama usaha sama (`Bu Grace` jahit vs tahu) tidak menimpa `sites/bu-grace`. Default debit generate mengalokasikan `bu-grace-2` / `-3` jika folder (atau slug dimiliki) sudah ada. `replaceExisting` hanya menimpa jika pemilik sesi sama. Publish Vercel `--name {slug}` per folder. Uji `test_generator.py`.
 - **Publish Vercel auth:** `VERCEL_TOKEN` di `.env` menang; else `vercel login` (`auth.json`) tanpa `--scope` stale (`currentTeam` / `VERCEL_ORG_ID`). Tanpa keduanya: pesan `vercel login` **atau** set token — bukan hanya “set token”. Bukan Connect Git FASE3. Uji `test_vercel_publish.py`.
 - **Situs saya vs wizard lama:** `POST /sites/owned` pada FastAPI sebelum 60d91e0 = **405** (bukan daftar kosong). Portal memetakan 404/405 → **503** + pesan restart `cli.py serve`; operator loopback mendapat `operatorDetail`. Login juga `POST /sites/reassign` (formerGuestIds). Folder tanpa `portal_owner_*` tetap tidak diklaim. Uji `channel-starter-owned.test.ts` + `test_preview_server.py`.
 - **Publish Vercel scope:** `cli.py publish` memakai hanya `VERCEL_TOKEN` di `channel-starter/.env` (bukan `vercel login` / `auth.json`). `--scope` hanya jika `CHANNEL_STARTER_VERCEL_SCOPE` diisi; `VERCEL_ORG_ID` / CLI `currentTeam` tidak lagi dipaksa (itu penyebab `scope-not-accessible`). Restart `serve` setelah ubah `.env`. Bukan Connect Git FASE3. Uji `test_vercel_publish.py`.

@@ -23,6 +23,7 @@ from channel_starter.types import (
     SiteForm,
     SiteManifest,
     StatItem,
+    slugify,
 )
 
 _CATEGORY_LABELS = {
@@ -238,16 +239,86 @@ def _fill_form(form: SiteForm) -> SiteForm:
     return SiteForm.model_validate(merged)
 
 
+def slug_folder_taken(slug: str, *, sites_root: Path | str | None = None) -> bool:
+    """True if sites/{slug} already exists (dir or file). Empty preferred slug is taken."""
+    if not slug:
+        return True
+    dest = (Path(sites_root) if sites_root else SITES_DIR) / slug
+    return dest.exists()
+
+
+def _owners_match(existing: SiteManifest, form: SiteForm) -> bool:
+    have = (existing.portal_owner_id or "").strip().lower()
+    want = (form.portal_owner_id or "").strip().lower()
+    if have and want:
+        return have == want
+    have_email = (existing.portal_owner_email or "").strip().lower()
+    want_email = (form.portal_owner_email or "").strip().lower()
+    return bool(have_email and want_email and have_email == want_email)
+
+
+def may_replace_slug(slug: str, form: SiteForm, *, sites_root: Path | str | None = None) -> bool:
+    """Overwrite only when replaceExisting and the folder is unowned or owned by this session."""
+    if not form.replace_existing or not slug:
+        return False
+    root = Path(sites_root) if sites_root else SITES_DIR
+    dest = root / slug
+    if not dest.exists():
+        return True
+    existing = get_manifest(slug, sites_root=root)
+    if existing is None:
+        return False
+    if not (existing.portal_owner_id or "").strip() and not (existing.portal_owner_email or "").strip():
+        return True
+    return _owners_match(existing, form)
+
+
+def allocate_unique_slug(
+    preferred: str,
+    *,
+    sites_root: Path | str | None = None,
+    form: SiteForm | None = None,
+) -> str:
+    """Keep preferred if free or replaceable; else bu-grace-2, -3, … then a short suffix."""
+    root = Path(sites_root) if sites_root else SITES_DIR
+    base = slugify(preferred) if preferred else "site"
+    if form is not None and may_replace_slug(base, form, sites_root=root):
+        return base
+    if not slug_folder_taken(base, sites_root=root):
+        return base
+    for n in range(2, 1000):
+        suffix = f"-{n}"
+        room = 64 - len(suffix)
+        candidate = f"{base[:room]}{suffix}" if len(base) + len(suffix) > 64 else f"{base}{suffix}"
+        if is_safe_slug(candidate) and not slug_folder_taken(candidate, sites_root=root):
+            return candidate
+    suffix = f"-{uuid.uuid4().hex[:6]}"
+    room = 64 - len(suffix)
+    return f"{base[:room]}{suffix}"
+
+
+def slug_differs_note(business_name: str, slug: str) -> str:
+    base = slugify(business_name)
+    if not slug or slug == base:
+        return ""
+    return (
+        f"Slug situs {slug} (bukan {base}) karena alamat itu sudah terpakai. "
+        "Nama tampilan di halaman tetap nama usaha."
+    )
+
+
 def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> SiteManifest:
     root = Path(sites_root) if sites_root else SITES_DIR
     root.mkdir(parents=True, exist_ok=True)
     form = _fill_form(form)
 
-    slug = form.resolved_slug()
+    slug = allocate_unique_slug(form.resolved_slug(), sites_root=root, form=form)
+    form = form.model_copy(update={"slug": slug})
     out_dir = root / slug
+    prior = get_manifest(slug, sites_root=root) if may_replace_slug(slug, form, sites_root=root) else None
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    site_id = f"CS-{uuid.uuid4().hex[:8].upper()}"
+    site_id = prior.site_id if prior else f"CS-{uuid.uuid4().hex[:8].upper()}"
     manifest = SiteManifest(
         site_id=site_id,
         slug=slug,
@@ -286,6 +357,8 @@ def generate_site(form: SiteForm, *, sites_root: Path | str | None = None) -> Si
         portal_owner_id=(form.portal_owner_id or "").strip().lower(),
         portal_owner_kind=(form.portal_owner_kind or "").strip().lower(),
         portal_owner_email=(form.portal_owner_email or "").strip().lower(),
+        vercel_url=prior.vercel_url if prior else "",
+        vercel_project=prior.vercel_project if prior else "",
     )
     _write_html(form, manifest, sites_root=root)
     save_manifest(manifest, sites_root=root)

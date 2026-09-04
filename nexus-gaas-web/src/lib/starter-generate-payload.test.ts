@@ -80,3 +80,16 @@ test("Lengkapi nanti menimpa default; palet default hijau", () => {
   assert.equal(payload.hours, "Sabtu 08.00–12.00");
   assert.equal(payload.headline, CATEGORY_COPY.jasa.headline);
 });
+
+test("checkout generate tidak mengirim slug atau replaceExisting", () => {
+  const payload = mapFrom(
+    buildStarterGeneratePairs({
+      businessName: "Bu Grace",
+      category: "fnb",
+      whatsapp: "081234567890",
+    }),
+  );
+  assert.equal(payload.slug, undefined);
+  assert.equal(payload.replaceExisting, undefined);
+  assert.equal(payload.replace_existing, undefined);
+});

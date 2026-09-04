@@ -18,6 +18,7 @@ from channel_starter.generator import (
     list_sites,
     preview_catalog,
     resolve_preview_index,
+    slug_differs_note,
 )
 from channel_starter.ownership import list_owned_sites, reassign_guest_sites
 from channel_starter.types import PricingTier, SiteManifest
@@ -190,6 +191,8 @@ _FORM_HTML = """<!DOCTYPE html>
     ke project Vercel bernama slug jika ada <code>VERCEL_TOKEN</code> di
     <code>channel-starter/.env</code> atau sesi <code>vercel login</code>.
     Bukan git monorepo Nexus. Bukan Job Cowork. Bukan klaim *.vercel.app di belakang WAF.
+    Nama usaha yang sama tidak menimpa folder lama — slug baru (<code>bu-grace-2</code>) jika
+    <code>sites/{slug}</code> sudah ada. Nama tampilan boleh berbeda dari slug.
   </p>
   <p><a href="/preview">Daftar preview (contoh git)</a> · <a href="/preview/contoh-nexcent">Buka contoh Nexcent</a> · <a href="/sites">JSON site (loopback, semua PII)</a></p>
 </body>
@@ -221,6 +224,7 @@ async def generate_form(request: Request):
                 "preview": f"/preview/{manifest.slug}",
                 "deploy": deploy,
                 "vercel": vercel or {},
+                "slugNote": slug_differs_note(manifest.business_name, manifest.slug),
             }
         )
     return RedirectResponse(url=f"/preview/{manifest.slug}", status_code=303)

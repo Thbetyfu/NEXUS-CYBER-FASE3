@@ -181,7 +181,7 @@ Implementasi lab: NEX-RED + `GET /nexred/lab/antibody-signal`, `POST /nexred/lab
 
 | Paket | Isi | Ilustrasi |
 | --- | --- | --- |
-| **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab `{slug}.nexus-lab.test` + publish Vercel per folder (jika token/login; bukan git Nexus) + **header tepi** (bukan WAF Reflex, bukan Job). Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
+| **Starter** | Form lengkap → template Nexcent (4 palet) → subdomain lab `{slug}.nexus-lab.test` + publish Vercel per folder (jika token/login; bukan git Nexus) + **header tepi** (bukan WAF Reflex, bukan Job). Nama tampilan sama → slug unik (`bu-grace-2`) jika folder sudah ada. Preview lab: `/preview/{slug}`; contoh git `sites/contoh-nexcent`. Lab kasir: **20 Kredit** | ~Rp 0–29rb/bulan · **lab:** 20 Kredit |
 | **Edge Shield** (kartu portal; teknis `--tier tepi`) | Upsell `--tier tepi`: Caddy ke WAF + Reflex. **Menambah** host ke peta lab (portfolio tetap). Bukan setiap generate 20 Kr; bukan Job; bukan pulih Vercel; bukan `*.vercel.app` langsung. Portal: 35rb / 28rb. **Bukan** debit 20 Kr | ~Rp 35.000 / 28.000 · **bukan** Loop |
 | **Usaha / Tepi / Cowork** | Upsell domain, tepi, Job | lihat [CHANNEL_STARTER.md](./CHANNEL_STARTER.md) |
 

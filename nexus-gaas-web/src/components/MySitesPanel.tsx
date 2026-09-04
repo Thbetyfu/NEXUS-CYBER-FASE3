@@ -89,6 +89,11 @@ export function MySitesPanel() {
         })}
       </ul>
       <p className="order-lead">
+        Nama tampilan boleh sama; slug folder/preview harus unik (
+        <code>bu-grace</code> lalu <code>bu-grace-2</code>
+        ). Generate baru tidak menimpa situs lama.
+      </p>
+      <p className="order-lead">
         <button type="button" className="notion-button" onClick={() => load()}>
           Muat ulang
         </button>

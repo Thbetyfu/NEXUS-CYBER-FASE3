@@ -102,7 +102,10 @@ python cli.py generate --name "Warung Bu Siti" --category fnb --whatsapp 0812345
 python cli.py serve
 ```
 
-Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Browser form POST = 303 ke preview. Portal (`Accept: application/json` atau `?format=json`) = JSON + hasil `publish_site`. Kalau wizard masih 303, portal `POST /publish/{slug}` supaya pesan token jujur. `POST /publish/{slug}` = `python cli.py publish --slug`. Restart `START-PREVIEW.bat` jika `/publish/{slug}` 404 atau `POST /sites/owned` **405** (proses `serve` lama). `/situs` gagal memuat (bukan “belum ada situs”) sampai wizard baru hidup. Folder tanpa `portal_owner_*` tidak muncul — generate ulang setelah login.
+Form: http://127.0.0.1:3010/ · Preview: `/preview/{slug}` (HTML). Browser form POST = 303 ke preview. Portal (`Accept: application/json` atau `?format=json`) = JSON + hasil `publish_site`. Kalau wizard masih 303, portal `POST /publish/{slug}` supaya pesan token jujur.
+
+Generate menulis folder `sites/{slug}/`. Nama usaha yang sama **tidak** menimpa folder lama: slug baru (`bu-grace-2`) kecuali `replaceExisting` + pemilik sesi sama. `POST /publish/{slug}` = `python cli.py publish --slug` (project Vercel = nama slug). Restart `START-PREVIEW.bat` jika `/publish/{slug}` 404 atau `POST /sites/owned` **405**. `/situs` gagal memuat (bukan “belum ada situs”) sampai wizard baru hidup. Folder tanpa `portal_owner_*` tidak muncul — generate ulang setelah login.
+
 
 **Vercel (PC operator):** generate/`cli.py publish --slug` memakai `VERCEL_TOKEN` di `channel-starter/.env` (gitignore) jika ada; kalau tidak, token `vercel login` (CLI `auth.json`) tanpa `--scope` dari `currentTeam` / `VERCEL_ORG_ID` — `--scope` hanya jika `CHANNEL_STARTER_VERCEL_SCOPE` diisi. Tanpa keduanya: **`publish gagal: vercel login di PC wizard, atau set VERCEL_TOKEN di channel-starter/.env`**. Restart `python cli.py serve` setelah ubah `.env`. Jangan Connect Git **NEXUS-CYBER-FASE3** ke project warung. Hosting `*.vercel.app` **bukan** WAF. Preview: portal `GET /starter/preview/{slug}`; pelanggan **`/situs`**. Mutate wizard hanya loopback `:3010` atau portal `POST /api/channel-starter/*`.
 

@@ -30,7 +30,7 @@ type GenerateJson = {
   publishOk?: boolean;
   publishSkipped?: boolean;
   vercelUrl?: string | null;
-  publishError?: string | null;
+  slugNote?: string | null;
 };
 
 function chargedResponse(
@@ -119,6 +119,15 @@ export async function POST(request: NextRequest) {
 
   try {
     stampGenerateOwner(body, identityOwnerQuery(identity));
+    const replaceFlag = String(body.get("replaceExisting") || body.get("replace_existing") || "")
+      .trim()
+      .toLowerCase();
+    const replaceExisting = ["1", "true", "yes", "on"].includes(replaceFlag);
+    if (!replaceExisting) {
+      body.delete("slug");
+      body.delete("replaceExisting");
+      body.delete("replace_existing");
+    }
     const upstream = await fetch(`${CHANNEL_STARTER}/generate?format=json`, {
       method: "POST",
       body,
@@ -130,6 +139,7 @@ export async function POST(request: NextRequest) {
     if (upstream.ok && contentType.includes("application/json")) {
       const payload = (await upstream.json()) as {
         slug?: string;
+        slugNote?: string;
         vercel?: unknown;
         deploy?: { vercel?: unknown };
       };
@@ -142,6 +152,7 @@ export async function POST(request: NextRequest) {
         {
           ok: true,
           slug,
+          slugNote: payload.slugNote || null,
           previewUrl: slug ? channelStarterPreviewUrl(slug) : null,
           subdomain: slug ? `${slug}.${SUBDOMAIN_BASE}` : null,
           ...publish,

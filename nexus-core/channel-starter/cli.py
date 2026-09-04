@@ -34,6 +34,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
             custom_domain=args.domain or "",
             tier=PricingTier(args.tier),
             slug=args.slug or "",
+            replace_existing=bool(args.replace_existing),
         )
         manifest = generate_site(form, sites_root=args.sites_dir)
 
@@ -152,6 +153,11 @@ def build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--domain", default="", help="Custom domain host, e.g. tokoanda.com")
     gen.add_argument("--tier", choices=[t.value for t in PricingTier], default="starter")
     gen.add_argument("--slug", default="")
+    gen.add_argument(
+        "--replace-existing",
+        action="store_true",
+        help="Overwrite sites/{slug} if it exists (same folder). Default: unique slug (bu-grace-2).",
+    )
     gen.add_argument("--json-file", help="Path to JSON form payload")
     gen.set_defaults(func=cmd_generate)
 

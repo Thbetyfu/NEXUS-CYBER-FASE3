@@ -35,6 +35,7 @@ type OrderResult = {
   publishSkipped?: boolean;
   vercelUrl?: string | null;
   publishError?: string | null;
+  slugNote?: string | null;
 };
 
 function slugFromRedirect(redirect: string | null | undefined): string | null {
@@ -186,6 +187,7 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         publishSkipped: data.publishSkipped,
         vercelUrl: data.vercelUrl ?? null,
         publishError: data.publishError ?? null,
+        slugNote: data.slugNote ?? null,
       });
     } catch {
       setFormError("Portal tidak menghubungi Channel Starter (:3010). Kredit tidak hang — generate gagal di-refund.");
@@ -264,6 +266,11 @@ export function StarterCheckout({ pkg }: { pkg: CheckoutPackage }) {
         <div className="notion-callout notion-callout-blue">
           <div className="notion-callout-content">
             <p style={{ fontWeight: 700, marginBottom: 12 }}>Site dibuat — 20 Kredit terdebet</p>
+            {result.slugNote ? (
+              <p className="order-later-hint" role="status">
+                {result.slugNote}
+              </p>
+            ) : null}
             {copyHint ? (
               <p className="order-later-hint" role="status">
                 {copyHint}

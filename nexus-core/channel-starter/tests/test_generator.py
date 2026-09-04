@@ -211,6 +211,80 @@ class TestChannelStarterDeploy(unittest.TestCase):
         )
         self.assertIn("Dari Sites", Path(found).read_text(encoding="utf-8"))
 
+    def test_second_generate_same_name_gets_unique_slug(self):
+        first = generate_from_dict(
+            {
+                "business_name": "Bu Grace",
+                "category": "jasa",
+                "whatsapp": "6281111111111",
+                "tagline": "jahit",
+                "portal_owner_id": "alice",
+            },
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(first.slug, "bu-grace")
+        first_html = Path(first.index_path).read_text(encoding="utf-8")
+        self.assertIn("jahit", first_html)
+
+        second = generate_from_dict(
+            {
+                "business_name": "Bu Grace",
+                "category": "fnb",
+                "whatsapp": "6282222222222",
+                "tagline": "tahu",
+                "portal_owner_id": "alice",
+            },
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(second.slug, "bu-grace-2")
+        self.assertTrue((Path(self.sites_root) / "bu-grace" / "index.html").is_file())
+        self.assertIn("jahit", Path(first.index_path).read_text(encoding="utf-8"))
+        self.assertIn("tahu", Path(second.index_path).read_text(encoding="utf-8"))
+        slugs = {m.slug for m in list_sites(self.sites_root)}
+        self.assertEqual(slugs, {"bu-grace", "bu-grace-2"})
+
+        third = generate_from_dict(
+            {
+                "business_name": "Bu Grace",
+                "whatsapp": "6283333333333",
+                "tagline": "tahu",
+                "slug": "bu-grace",
+                "replaceExisting": "true",
+                "portal_owner_id": "alice",
+            },
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(third.slug, "bu-grace")
+        self.assertIn("tahu", Path(first.index_path).read_text(encoding="utf-8"))
+        self.assertIn("tahu", Path(second.index_path).read_text(encoding="utf-8"))
+
+    def test_replace_existing_other_owner_does_not_clobber(self):
+        generate_from_dict(
+            {
+                "business_name": "Bu Grace",
+                "whatsapp": "6281111111111",
+                "tagline": "milik-alice",
+                "portal_owner_id": "alice",
+            },
+            sites_root=self.sites_root,
+        )
+        other = generate_from_dict(
+            {
+                "business_name": "Bu Grace",
+                "whatsapp": "6282222222222",
+                "tagline": "milik-bob",
+                "slug": "bu-grace",
+                "replaceExisting": True,
+                "portal_owner_id": "bob",
+            },
+            sites_root=self.sites_root,
+        )
+        self.assertEqual(other.slug, "bu-grace-2")
+        self.assertIn(
+            "milik-alice",
+            (Path(self.sites_root) / "bu-grace" / "index.html").read_text(encoding="utf-8"),
+        )
+
     def test_site_address_http_for_lab(self):
         self.assertTrue(site_address("foo.nexus-lab.test").startswith("http://"))
 
