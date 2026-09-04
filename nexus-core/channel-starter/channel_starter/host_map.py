@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 from channel_starter import config as cfg
 
 DEFAULT_PORTFOLIO_HOST = "portfolio.nexus-lab.test"
 DEFAULT_PORTFOLIO_ORIGIN = "https://portfolio-website-three-ruddy-65.vercel.app"
 HOST_MAP_NAME = "nexus-host-map.json"
+_LAB_HOST_EXACT = "nexus-lab.test"
+_LAB_HOST_SUFFIX = ".nexus-lab.test"
 
 
 def origin_backend(slug: str) -> str:
@@ -18,6 +21,64 @@ def origin_backend(slug: str) -> str:
 
 def host_map_path() -> Path:
     return cfg.DEPLOY_LOCAL_DIR / HOST_MAP_NAME
+
+
+def _has_control_chars(value: str) -> bool:
+    return any(ch in value for ch in ("\r", "\n", "\x00"))
+
+
+def is_lab_map_host(host: str) -> bool:
+    """Public Host header in the lab map: a single nexus-lab.test name, no wildcards."""
+    original = host or ""
+    if _has_control_chars(original):
+        return False
+    raw = original.strip().lower()
+    if not raw or "*" in raw or "/" in raw or " " in raw or "@" in raw:
+        return False
+    if "://" in raw:
+        parsed = urlparse(raw)
+        raw = (parsed.hostname or "").lower()
+    if ":" in raw:
+        raw = raw.split(":", 1)[0]
+    if raw == _LAB_HOST_EXACT or raw.endswith(_LAB_HOST_SUFFIX):
+        return True
+    return False
+
+
+def is_lab_map_origin(origin: str) -> bool:
+    """Fail-closed origin: http(s) to channel-origin:8099 or *.vercel.app. Not ftp/javascript/CRLF."""
+    original = origin or ""
+    if _has_control_chars(original):
+        return False
+    raw = original.strip()
+    if not raw or "*" in raw or "@" in raw:
+        return False
+    if "://" not in raw:
+        raw = "http://" + raw
+    parsed = urlparse(raw)
+    if parsed.scheme not in ("http", "https"):
+        return False
+    if parsed.username or parsed.password:
+        return False
+    host = (parsed.hostname or "").lower()
+    if host == "channel-origin" or host.endswith(".vercel.app"):
+        return True
+    return False
+
+
+def accept_host_map_entry(host: str, origin: str) -> tuple[str, str] | None:
+    if not is_lab_map_host(host) or not is_lab_map_origin(origin):
+        return None
+    name = (host or "").strip().lower()
+    if "://" in name:
+        parsed = urlparse(name)
+        name = (parsed.hostname or "").lower()
+    if ":" in name:
+        name = name.split(":", 1)[0]
+    origin_raw = origin.strip()
+    if "://" not in origin_raw:
+        origin_raw = "http://" + origin_raw
+    return name, origin_raw
 
 
 def _env_value(path: Path, key: str) -> str:
@@ -34,12 +95,18 @@ def _env_value(path: Path, key: str) -> str:
 def portfolio_host() -> str:
     env_path = cfg.DEPLOY_LOCAL_DIR / ".env"
     host = _env_value(env_path, "PROTECTED_HOST") or DEFAULT_PORTFOLIO_HOST
-    return host.split("/")[0].split(":")[0].lower()
+    host = host.split("/")[0].split(":")[0].lower()
+    if not is_lab_map_host(host):
+        return DEFAULT_PORTFOLIO_HOST
+    return host
 
 
 def portfolio_origin() -> str:
     env_path = cfg.DEPLOY_LOCAL_DIR / ".env"
-    return _env_value(env_path, "TARGET_BACKEND") or DEFAULT_PORTFOLIO_ORIGIN
+    origin = _env_value(env_path, "TARGET_BACKEND") or DEFAULT_PORTFOLIO_ORIGIN
+    if not is_lab_map_origin(origin):
+        return DEFAULT_PORTFOLIO_ORIGIN
+    return origin
 
 
 def write_host_map(
@@ -47,21 +114,26 @@ def write_host_map(
     *,
     path: Path | None = None,
 ) -> Path:
-    """Write host map. Always keep portfolio as first entry."""
+    """Write host map. Always keep portfolio as first entry. Skip junk Host/origin."""
     dest = path or host_map_path()
     dest.parent.mkdir(parents=True, exist_ok=True)
     by_host: dict[str, dict] = {}
-    by_host[portfolio_host()] = {
-        "host": portfolio_host(),
-        "origin": portfolio_origin(),
+    p_host = portfolio_host()
+    p_origin = portfolio_origin()
+    by_host[p_host] = {
+        "host": p_host,
+        "origin": p_origin,
         "kind": "portfolio",
     }
     for item in entries:
-        host = str(item.get("host") or "").strip().lower()
-        origin = str(item.get("origin") or "").strip()
-        if not host or not origin:
+        accepted = accept_host_map_entry(
+            str(item.get("host") or ""),
+            str(item.get("origin") or ""),
+        )
+        if accepted is None:
             continue
-        if host == portfolio_host():
+        host, origin = accepted
+        if host == p_host:
             continue
         by_host[host] = {
             "host": host,

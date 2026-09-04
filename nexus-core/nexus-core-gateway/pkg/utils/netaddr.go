@@ -25,7 +25,7 @@ func RequestHost(host string) string {
 // Empty means “IP / localhost only” — hotspot lab still works without a custom name.
 func ParseProtectedHost(raw string) string {
 	raw = strings.TrimSpace(raw)
-	if raw == "" {
+	if raw == "" || strings.ContainsAny(raw, "\r\n\x00") {
 		return ""
 	}
 	if strings.Contains(raw, "://") {
@@ -35,7 +35,7 @@ func ParseProtectedHost(raw string) string {
 		}
 	}
 	host := strings.ToLower(RequestHost(raw))
-	if host == "" || host == "*" || strings.Contains(host, "*") || host == "localhost" {
+	if host == "" || host == "*" || strings.Contains(host, "*") || host == "localhost" || strings.ContainsAny(host, "\r\n\x00") {
 		return ""
 	}
 	if net.ParseIP(host) != nil {

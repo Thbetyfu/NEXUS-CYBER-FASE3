@@ -23,7 +23,7 @@ Backend Go di `nexus-core-gateway` — paket utama:
 
 - **`TestCsrfShield`:** GET set cookie; POST tanpa token → 403; POST dengan token cocok → 200; bypass rute lab (`/api/verify-session`).
 - **`TestDynamicRouterWildcardAndFallback`:** `PROTECTED_HOST` + host map lab — **bukan** multi-tenant massal / CNAME 1000.
-- **Host map tepi:** `TestBindHostMap_TwoHostsKeepDistinctOrigins`, `TestBindHostMap_SecondHostDoesNotReplacePortfolio` — portfolio dan slug tepi origin berbeda; loopback tetap Vercel.
+- **Host map tepi:** `TestBindHostMap_TwoHostsKeepDistinctOrigins`, `TestBindHostMap_SecondHostDoesNotReplacePortfolio`, `TestBindHostMap_RejectsDangerousHostsAndOrigins` — portfolio dan slug tepi origin berbeda; loopback tetap Vercel; Host/origin junk tidak diikat. Channel-starter: `tests/test_host_map.py`.
 - **ROUTER-SYNC origin:** leftover `127.0.0.1:3001` tidak menimpa Vercel. Tes masih mencakup origin HTTP `portfolio:3002` jika `TARGET_BACKEND` diset (bukan mode START default).
 - **Lab session vs PoW:** `TestBrowserIntegrity_NamedHostWithoutSessionIsPoW` (pengunjung tetap challenge); `TestVerifySession_LabTokenMintsSession` / fail-closed env kosong. Bukan skip PoW publik.
 - **ROUTER-SYNC origin bind:** `TestSeedUpsertsStaleLabOriginToVercel` / `ToOfflinePortfolio`; `TestNamedHostAndLoopbackAgreeAfterRouterSync_Vercel` / `_Offline`; `TestRouterSyncWithoutRebindSplitsHosts` — leftover `127.0.0.1:3001` tidak membagi named-host vs loopback; host onboard ekstra tidak diubah.

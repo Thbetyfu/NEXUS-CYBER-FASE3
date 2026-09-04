@@ -1,6 +1,6 @@
 # Model Produk Nexus Cyber — GaaS + Channel Starter
 
-**Versi:** 1.1.14 / 2026-09-03  
+**Versi:** 1.1.15 / 2026-09-04  
 **Status:** Dokumen hidup — sumber kebenaran model produk. Kontrak teknis: [`CAPABILITIES.md`](./CAPABILITIES.md), [`LIMITATIONS.md`](./LIMITATIONS.md). Keputusan belum final: [`DECISIONS_OPEN.md`](./DECISIONS_OPEN.md). Ringkas agen: [`../../AGENTS.md`](../../AGENTS.md) (git root). Folder **`.agents/`** gitignore — tidak di remote.
 
 ---
@@ -14,7 +14,7 @@ Sebelum mengklaim demo atau mengubah WAF/Job, agen dan operator wajib paham **or
 | **Apa (default, tanpa upsell env)** | Website **portofolio** pemilik di **Vercel** (repo terpisah [Portofolio-Thoriq](https://github.com/Thbetyfu/Portofolio-Thoriq)) di belakang WAF. Folder lab `playground/` **diarsip** — [PLAYGROUND_ARCHIVE.md](./PLAYGROUND_ARCHIVE.md) |
 | **Apa (instance lab ini, pemilik 2026-09-03 pilihan B)** | **Satu gateway**, **lebih dari satu hostname**: portofolio Vercel **tetap** di peta, plus slug Channel Starter yang di-upsell `--tier tepi`. Bukan 1000 CNAME. Bukan setiap generate Starter 20 Kr |
 | **Di mana di stack** | Origin di belakang gateway; site UMKM **bukan** produk Job/Loop |
-| **Hostname** | Default `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Extra tepi = `deploy-local/nexus-host-map.json` (Host → origin). Upsell **menambah** host, **bukan** menimpa portfolio |
+| **Hostname** | Default `PROTECTED_HOST` = **`portfolio.nexus-lab.test`**. Extra tepi = `deploy-local/nexus-host-map.json` (Host → origin). Upsell **menambah** host, **bukan** menimpa portfolio. Peta **fail-closed**: hanya Host `*.nexus-lab.test` dan origin http(s) `channel-origin:8099` / `*.vercel.app` |
 | **Alur** | Pengunjung → Caddy `http://{host}.nexus-lab.test` → **WAF `:8080`** → origin per Host (Vercel portfolio **atau** `channel-origin:8099/{slug}/`) |
 | **Kenapa** | Bukti **Alur A** (Reflex) pada **beberapa** kanal HTTP lab di **satu** instance. Job Cowork **bukan** SKU Starter 20 Kr dan **bukan** setiap warung otomatis |
 | **Inti jual / moat teknis** | Siklus wasit Job: defense delta → antibodi → vaccine-probe/replay → tutup jujur (`replay_missed` → `CLOSED_GAP`, bukan `CLOSED_OK`) — paket **Cowork**, bukan Edge Shield tepi |

@@ -3,10 +3,17 @@ package proxy
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"strings"
 
 	"github.com/nexus-cyber/nexus-core-gateway/pkg/utils"
+)
+
+const (
+	labHostMapExact  = "nexus-lab.test"
+	labHostMapSuffix = ".nexus-lab.test"
 )
 
 // HostMapEntry is one Caddy Host → origin pair on a single lab gateway.
@@ -102,12 +109,9 @@ func BindHostMap(router *DynamicRouter) {
 	}
 	var bound []string
 	for _, e := range entries {
-		host := utils.ParseProtectedHost(e.Host)
-		if host == "" {
-			continue
-		}
-		origin := strings.TrimSpace(e.Origin)
-		if origin == "" {
+		host, origin, err := AcceptHostMapEntry(e.Host, e.Origin)
+		if err != nil {
+			fmt.Printf("[HOST-MAP] skip %q: %v\n", strings.TrimSpace(e.Host), err)
 			continue
 		}
 		if err := router.AddRoute(host, origin); err != nil {
@@ -124,14 +128,64 @@ func BindHostMap(router *DynamicRouter) {
 // SeedHostMapSubscriptions upserts map hosts so ROUTER-SYNC cannot stale-split them.
 func SeedHostMapSubscriptions() {
 	for _, e := range LoadHostMap() {
-		host := utils.ParseProtectedHost(e.Host)
-		origin := strings.TrimSpace(e.Origin)
-		if host == "" || origin == "" {
+		host, origin, err := AcceptHostMapEntry(e.Host, e.Origin)
+		if err != nil {
 			continue
-		}
-		if normalized, err := NormalizeProxyOrigin(origin); err == nil {
-			origin = normalized
 		}
 		upsertLabSubscription(host, origin)
 	}
+}
+
+func hostMapHasControlChars(s string) bool {
+	return strings.ContainsAny(s, "\r\n\x00")
+}
+
+func isLabHostMapName(host string) bool {
+	return host == labHostMapExact || strings.HasSuffix(host, labHostMapSuffix)
+}
+
+// AcceptHostMapEntry fail-closes junk Host→origin pairs (CRLF, wildcard, non-lab
+// DNS, non-http). Lab tepi origin http://channel-origin:8099/{slug}/ stays valid.
+func AcceptHostMapEntry(rawHost, rawOrigin string) (string, string, error) {
+	if hostMapHasControlChars(rawHost) || hostMapHasControlChars(rawOrigin) {
+		return "", "", fmt.Errorf("control characters are not allowed")
+	}
+	host := utils.ParseProtectedHost(rawHost)
+	if host == "" || !isLabHostMapName(host) {
+		return "", "", fmt.Errorf("host must be a nexus-lab.test name")
+	}
+	origin, err := normalizeHostMapOrigin(rawOrigin)
+	if err != nil {
+		return "", "", err
+	}
+	return host, origin, nil
+}
+
+func normalizeHostMapOrigin(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" || strings.Contains(raw, "*") || strings.Contains(raw, "@") {
+		return "", fmt.Errorf("invalid host-map origin")
+	}
+	normalized, err := NormalizeProxyOrigin(raw)
+	if err != nil {
+		return "", err
+	}
+	u, err := url.Parse(normalized)
+	if err != nil || u.Host == "" || u.User != nil {
+		return "", fmt.Errorf("invalid origin URL")
+	}
+	h := strings.ToLower(u.Hostname())
+	if h == "" || isBlockedMetadataHost(h) {
+		return "", fmt.Errorf("origin host is not allowed")
+	}
+	if ip := net.ParseIP(h); ip != nil {
+		if ip.IsUnspecified() || ip.IsMulticast() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || isCloudMetadataIP(ip) {
+			return "", fmt.Errorf("origin IP range is not allowed")
+		}
+		return "", fmt.Errorf("host-map origin must not be a raw IP")
+	}
+	if h == "channel-origin" || strings.HasSuffix(h, ".vercel.app") {
+		return normalized, nil
+	}
+	return "", fmt.Errorf("origin must be channel-origin or *.vercel.app")
 }

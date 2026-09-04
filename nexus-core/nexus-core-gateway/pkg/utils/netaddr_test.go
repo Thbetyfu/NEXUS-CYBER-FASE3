@@ -32,6 +32,9 @@ func TestParseProtectedHost(t *testing.T) {
 	if ParseProtectedHost("") != "" {
 		t.Fatal("empty stays empty")
 	}
+	if ParseProtectedHost("portfolio.nexus-lab.test\r\nHost: evil.com") != "" {
+		t.Fatal("CRLF is not a protected hostname")
+	}
 }
 
 func TestIsLoopbackRequestHost(t *testing.T) {
