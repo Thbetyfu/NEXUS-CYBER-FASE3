@@ -43,8 +43,8 @@ Aturan emas: **jangan tunnel-kan control plane** ke internet.
 - [ ] Power plan: tidak sleep / hibernate  
 - [ ] UPS (sangat disarankan) — listrik putus = semua klien down  
 - [ ] Docker Desktop / stack `deploy-local` auto-start (opsional Task Scheduler)  
-- [ ] Tunnel daemon (cloudflared) sebagai service Windows — restart otomatis  
-- [ ] Hostname publik terdaftar (portal + contoh site)  
+- [ ] Tunnel daemon: `KEEP-PORTAL-ALIVE.bat install` → task **`NexusPortalKeepAlive`** (logon + poll). Quick hostname **bukan** permanen.  
+- [ ] Hostname publik tetap: **zona DNS Cloudflare + named tunnel** (beli/tambah domain — belum ada; jangan dikarang)  
 - [ ] Backup mingguan: config, `hosts-registry`, artefak Job  
 - [ ] Copy kontrak/WA jujur: *pilot hosting di infrastruktur operator — bukan SLA data center*
 
@@ -66,9 +66,9 @@ Internet → Tunnel A (storefront) → localhost:3003  Channel Portal
 
 1. Channel Starter: `python cli.py serve` di `nexus-core/channel-starter` (`:3010`).  
 2. Portal: `nexus-gaas-web/.env.local` — `NEXUS_LEDGER_MODE=live`, `NEXUS_LAB_FAUCET=0`, `CHANNEL_STARTER_URL=http://127.0.0.1:3010`. `npm run dev`.  
-3. `nexus-core\deploy-local\START-PORTAL-PILOT.bat` (cloudflared → `:3003`).  
+3. `nexus-core\deploy-local\KEEP-PORTAL-ALIVE.bat` atau `START-PORTAL-PILOT.bat` (cloudflared → `:3003` jika belum hidup).  
 4. HP: `/gate` → daftar → `/kredit` Isi → WA + bukti → approve di `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`.  
-5. Sleep/hibernate OFF. Named tunnel + `cloudflared tunnel login` = pemilik. Bukan Midtrans. Bukan SOC publik.
+5. Sleep/hibernate OFF (sudah Never di PC lab jika STANDBYIDLE 0). Named tunnel = pemilik setelah ada zona DNS. `KEEP-PORTAL-ALIVE.bat install` = task `NexusPortalKeepAlive`. Bukan Midtrans. Bukan SOC publik.
 
 ### Runtime model tulis (PC, bukan tunnel)
 

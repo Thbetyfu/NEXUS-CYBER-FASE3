@@ -43,7 +43,8 @@ START-LOCAL-LLM.bat
 
 # jendela 4
 cd nexus-core\deploy-local
-START-PORTAL-PILOT.bat
+KEEP-PORTAL-ALIVE.bat
+# sekali: KEEP-PORTAL-ALIVE.bat install  (task NexusPortalKeepAlive)
 ```
 
 Uji data seluler: `/gate` → daftar → `/kredit` Isi → WhatsApp + bukti → di PC `http://127.0.0.1:3003/operator/topup` → `/pesan/umkm-starter`. Sleep OFF. Login Cloudflare named tunnel = pemilik.

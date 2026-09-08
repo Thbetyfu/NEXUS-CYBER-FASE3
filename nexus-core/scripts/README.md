@@ -32,7 +32,7 @@ scripts/
 
 ## tunnel/
 
-Cloudflare Tunnel untuk demo — **jangan** expose `:8081` / `:3001` / DB / NEX-RED. Storefront: `-Portal` (`:3003`). Juri WAF: default `:80`.
+Cloudflare Tunnel untuk demo — **jangan** expose `:8081` / `:3001` / DB / NEX-RED / `:11434`. Storefront keep-alive: `deploy-local/KEEP-PORTAL-ALIVE.bat` (`:3003` saja). Juri WAF: `nexus-tunnel.ps1` default `:80`.
 
 ## tests/
 

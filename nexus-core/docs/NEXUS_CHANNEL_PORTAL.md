@@ -77,7 +77,7 @@ Portal di **Vercel** = **etalase copy**. Generate, fill LLM (`:11434`), dan `/op
 
 1. `cd nexus-core/channel-starter` → `python cli.py serve` (`:3010`)
 2. `cd nexus-gaas-web` → salin `.env.local.example` → `npm run dev` (`:3003`)
-3. Tunnel storefront: `nexus-core\deploy-local\START-PORTAL-PILOT.bat` atau `nexus-tunnel.ps1 -Portal`
+3. Tunnel storefront: `nexus-core\deploy-local\KEEP-PORTAL-ALIVE.bat` (atau `START-PORTAL-PILOT.bat`). Task logon: `KEEP-PORTAL-ALIVE.bat install` (`NexusPortalKeepAlive`). Hostname trycloudflare **berganti** jika daemon recreate; named host = zona DNS nanti.
 4. **Juri / WAF portofolio** (terpisah): `START.bat` + `nexus-tunnel.ps1` (default `:80`). Hostname Caddy `portal.nexus-lab.test` / `starter.nexus-lab.test` jika named tunnel ke Caddy.
 
 ### Uji HP (data seluler)

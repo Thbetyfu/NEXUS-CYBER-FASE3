@@ -7,7 +7,7 @@ set "CORE=%~dp0.."
 echo ============================================================
 echo   NEXUS -- PILOT STACK (PC harian, bukan START.bat SOC)
 echo   Nyala: Ollama :11434 + Channel Starter :3010 + Portal :3003
-echo   Tunnel: jalankan START-PORTAL-PILOT.bat (hanya :3003)
+echo   Tunnel: KEEP-PORTAL-ALIVE.bat (hanya :3003; install = task NexusPortalKeepAlive)
 echo   JANGAN: :3001 :8081 :11434 tunnel  /  docker START.bat
 echo   Vercel Channel Portal produksi TIDAK memakai Ollama PC ini.
 echo ============================================================
@@ -44,7 +44,7 @@ if not errorlevel 1 (
 
 echo.
 echo --- Setelah hijau, tunnel pembeli (bukan operator, bukan LLM) ---
-echo   Double-click START-PORTAL-PILOT.bat
+echo   Double-click KEEP-PORTAL-ALIVE.bat  (atau START-PORTAL-PILOT.bat)
 echo   Approve Kredit: http://127.0.0.1:3003/operator/topup  (hanya PC)
 echo.
 echo Sleep PC: Settings - System - Power and battery - Screen and sleep

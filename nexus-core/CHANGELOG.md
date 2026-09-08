@@ -6,6 +6,9 @@ Dokumen hidup (`nexus-core/README.md`, `nexus-core/docs/CAPABILITIES.md`, `nexus
 
 ## [Unreleased]
 
+### Added
+- **Channel Portal keep-alive (process-level, bukan URL abadi):** `deploy-local/KEEP-PORTAL-ALIVE.bat` memastikan Next `0.0.0.0:3003` (skip jika GET `/gate` 200) dan `cloudflared tunnel --url http://127.0.0.1:3003` hanya jika belum ada proses itu; menulis `PORTAL-TUNNEL-URL.txt` (gitignore). Task Windows **`NexusPortalKeepAlive`** (logon + tiap 5 menit). Quick trycloudflare **tetap berganti** jika daemon recreate; named hostname butuh zona DNS yang belum ada. **524** = Node hung; **NXDOMAIN** = nama tunnel hilang. Bukan SOC `:3001`/`:8081`, bukan `:11434`.
+
 ### Changed
 - **Tiga SKU jujur (host map + Cowork):** Channel Starter 20 Kr = site + header, **bukan** WAF. Edge Shield `--tier tepi` = tambah slug ke `nexus-host-map.json` (**portfolio tetap**, bukan overlay `PROTECTED_HOST`), kasir `/pesan/*-tepi-*` tanpa debit 20 Kr, lab CLI atau `/operator/tepi` loopback (fail-closed di etalase). Job/Loop = Cowork (`/corporat`, `/cowork`) — **bukan** 20 Kr, **bukan** tepi-only. Generate Starter tetap `file_server` / tidak auto-join peta. `--tier tepi` menolak `create_loop`. Bukan Midtrans. Bukan CNAME massal.
 

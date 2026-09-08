@@ -14,7 +14,7 @@
 # DILARANG: -Dashboard / :3001 / :8081 / :5432 / :6379 / :3004 (SOC, DB, NEX-RED)
 # DILARANG KERAS: :11434 (Ollama / model tulis) — tidak ada override.
 # One-click juri: deploy-local\jury\START-FOR-JURY.bat
-# One-click storefront: deploy-local\START-PORTAL-PILOT.bat
+# One-click storefront keep-alive: deploy-local\KEEP-PORTAL-ALIVE.bat
 # ==============================================================================
 
 param(
